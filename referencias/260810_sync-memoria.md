@@ -25,46 +25,52 @@ mesmo erro de reescrever `DECISOES.md` — perde a fonte de verdade.
 protocolo.** É dado pessoal de quem opera, não conteúdo de pipeline —
 fica local, ou num repo privado do próprio projeto.
 
+## Global (uma vez) vs. por projeto (repetido)
+
+Os três agentes suportam um arquivo de memória **global**, no diretório do
+usuário, que carrega em toda sessão, de qualquer projeto — configure uma
+vez, nunca mais repita por projeto:
+
+| Agente | Arquivo global | Arquivo por projeto (sobrepõe o global) |
+|---|---|---|
+| Claude Code | `~/.claude/CLAUDE.md` | `CLAUDE.md` na raiz do projeto |
+| Gemini CLI | `~/.gemini/GEMINI.md` | `GEMINI.md` na raiz do projeto |
+| Kimi CLI / Kimi Code | `~/.kimi/AGENTS.md` | `AGENTS.md` (ou `./.kimi/AGENTS.md`) na raiz do projeto |
+
+Identidade (nome, preferências, formato obrigatório de resposta) é a
+mesma em todo lugar → use o **global**. Regra que só vale num projeto
+específico → arquivo por projeto (ele tem prioridade sobre o global).
+
 ## O que você precisa fazer, dependendo de quem você é
 
-Não copie o conteúdo cegamente pra todo lugar. O mecanismo de import muda
-por agente — identifique quem você é antes de agir (nome do binário,
-variável de ambiente, ou pergunte se não tiver certeza) e siga só a seção
-correspondente.
+Os três agentes resolvem import com a mesma sintaxe — `@caminho/arquivo.md`
+— seja no arquivo global ou no de projeto. Isso lê o arquivo de destino em
+tempo real, sem duplicar texto: mudou a fonte, mudou em todo lugar sem
+rodar nada de novo.
 
-### Se você é Claude Code
-Arquivo de memória: `CLAUDE.md` na raiz do repo.
-Claude Code resolve imports com sintaxe `@caminho/arquivo.md` — isso lê o
-arquivo de destino em tempo real, não duplica texto.
-1. Abra (ou crie) `CLAUDE.md` na raiz do projeto.
-2. Garanta que contenha a linha: `@<caminho-do-arquivo-de-identidade>`
+1. Abra (ou crie) o arquivo global do seu agente (tabela acima).
+2. Garanta que contenha a linha: `@<caminho-completo-do-arquivo-de-identidade>`
 3. Se a linha já existir, não faça nada — já está sincronizado por
-   definição (é referência, não cópia; sempre reflete a versão atual).
+   definição (é referência, não cópia).
 
-### Se você é Gemini CLI
-Arquivo de memória: `GEMINI.md` na raiz do projeto (existe também um
-arquivo global de usuário para regra que vale em todo projeto — não use
-esse aqui, esta regra é por projeto).
-Gemini CLI também resolve `@arquivo.md` nativamente, mesma lógica do
-Claude Code.
-1. Abra (ou crie) `GEMINI.md` na raiz do projeto.
-2. Garanta a linha: `@<caminho-do-arquivo-de-identidade>`
-3. Se já existir, não faça nada.
+**Cuidado com espaço no caminho.** `@` costuma parsear até o próximo
+espaço em branco — se a pasta do arquivo de identidade tem espaço no nome
+(comum em pasta pessoal tipo "Meus Documentos" ou nome com espaço duplo),
+o import pode cortar o caminho no meio e falhar silenciosamente. Nesse
+caso use o modo conteúdo abaixo em vez de import — ele não depende de
+path parsing nenhum.
 
-### Se você é Kimi CLI
-Arquivo de memória: `AGENTS.md` na raiz do projeto.
-**Import por `@arquivo.md` não está confirmado para Kimi CLI no momento em
-que isto foi escrito** — trate como não suportado até verificar o
-contrário. Nesse caso a sincronização precisa copiar o conteúdo de fato,
-não apontar pra ele.
-1. Rode o script de sincronização (ex.: `mb-sync-memoria.py --target
-   kimi`, se o projeto tiver um).
-2. O script escreve o conteúdo do arquivo de identidade dentro de
-   `AGENTS.md`, entre marcadores (`<!-- MEGABRAIN:AUTO-SYNC:START -->` /
-   `END`) — idempotente, não duplica se rodar de novo.
-3. Sem script disponível? Copie o conteúdo manualmente entre esses mesmos
-   marcadores, nunca em outro lugar do arquivo, e confira que os
-   marcadores não existem duplicados.
+### Alternativa sem @import: modo conteúdo (recomendado se o caminho tem espaço)
+
+`bin/mb-sync-memoria.py --source <identidade> --target all --modo
+conteudo --dir <pasta>` injeta o CONTEÚDO do arquivo de identidade dentro
+de `CLAUDE.md`/`GEMINI.md`/`AGENTS.md`, entre marcadores
+(`<!-- MEGABRAIN:AUTO-SYNC:START/END -->`) — idempotente, atualiza sem
+duplicar, funciona pros três agentes, sem depender de sintaxe de import.
+`--dir "%USERPROFILE%"` (Windows) ou `--dir ~` (Linux/Mac) instala global.
+
+Pra instalar só num agente: troque `--target all` por `--target
+claude|gemini|kimi`.
 
 ## Depois de sincronizar
 
