@@ -1,0 +1,357 @@
+---
+name: megabrain
+description: Protocolo de execução multi-agente — gates de entrega anti-slop, Duplo Diamante para projetos de design, roteamento de arquitetura (skill vs script vs subagente), e camada de projeto (fases macro, regras de ouro). Use ao iniciar entrega complexa, passar trabalho de um agente para o outro, ou definir como dois agentes de IA colaboram no mesmo projeto sem pisar um no outro.
+---
+
+# megabrain — protocolo operacional
+
+Protocolo multi-agente e agnóstico de modelo — roda igual em qualquer CLI ou
+chat de IA com acesso a arquivo (Claude Code, Kimi CLI, ou colado direto
+numa conversa via `referencias/260810_PROMPT-PORTATIL.md`).
+
+**Estrutura:** este arquivo (gates de entrega + multi-agente),
+`MEGABRAIN.md` (fases macro de projeto, artefatos, regras de ouro, níveis
+de adoção) e `referencias/260810_*.md` (execução: anti-slop, metaprompts,
+Duplo Diamante, roteamento de código, evaluation, prompt portátil).
+
+Rode os gates abaixo em **entrega**: arquivo, peça, proposta, deck, código,
+análise. Em pergunta rápida ou conversa casual, **não rode** — aqui o
+protocolo é o próprio slop.
+
+## TL;DR
+
+`assumir → enquadrar → orçar contexto → gerar → auditar → reparar (1×) → verificar → passar o bastão → registrar`
+
+Os dois gates que ninguém pula: **4 (auditar)** separa entrega de slop. **7
+(bastão)** é o que impede o outro agente de começar do zero.
+
+---
+
+## 0. Gate ASSUMIR — multi-agente
+
+Antes de tocar em qualquer arquivo de `projetos/<nome>/`:
+
+1. `git pull`
+2. Leia nesta ordem: `ESTADO.md` → `HANDOFF.md` → o fim de `DECISOES.md` →
+   `LICOES.md`. **Não varra a árvore antes disso.**
+3. Cheque a trava em `HANDOFF.md`:
+   - `TRAVADO_POR:` é o outro agente **e** `ATÉ:` no futuro → não escreva nos
+     caminhos em `ESCOPO:`. Trabalhe em outro lugar ou avise quem opera.
+   - Trava vencida ou `livre` → assuma: escreva seu nome, `ATÉ:` agora+2h,
+     `ESCOPO:` com os caminhos que você vai tocar.
+4. Só então planeje.
+
+**Output do outro agente é rascunho, não verdade.** Se você está retomando
+trabalho de outro agente, audite antes de construir em cima. O erro caro do
+pipeline multi-agente é herdar uma premissa errada e ampliá-la por três
+etapas.
+
+### Divisão de trabalho entre agentes (default sugerido)
+
+| | Agente de contexto grande / custo baixo | Agente de julgamento / síntese | Agente de fallback (opcional) |
+|---|---|---|---|
+| Recebe | varredura, extração, leitura longa, boilerplate, refactor mecânico, primeira passada | enquadramento, decisão de design, auditoria, texto final, entrega final | o que os outros dois fariam — sem papel fixo |
+| Entrega | material bruto + resumo | artefato pronto | mesmo padrão dos gates de quem está substituindo |
+
+Não é hierarquia, é economia de token. Inverta quando fizer sentido pro
+projeto. Um terceiro agente sem setup dedicado entra só como fallback —
+mesmos arquivos de estado, mesmo Gate 0, sem versão separada do
+protocolo.
+
+---
+
+## 1. Gate ENQUADRAR — antes de qualquer token de output
+
+Responda internamente. Se algo estiver vago, **pergunte antes de produzir**
+(máx. 2 perguntas objetivas).
+
+1. **Artefato** — qual o objeto final e em que app ele é aberto? (.pptx,
+   .fig, .md, código, imagem)
+2. **Leitor** — quem consome e que decisão essa pessoa toma depois de
+   ler/ver?
+3. **Critério de aprovação** — escreva 3 critérios verificáveis *antes* de
+   gerar.
+4. **Restrição dura** — prazo, formato, marca, tom, limite técnico.
+5. **Contraexemplo** — como seria a versão óbvia e genérica disso? Nomeie.
+   Você vai evitá-la.
+
+> Item 5 é o truque mais barato do kit. Nomear o slop esperado reduz a
+> chance de produzi-lo.
+
+### 1b. Se for projeto de design
+
+Antes de tudo: **o projeto já tem um router/comando próprio** (uma skill que
+já sabe em que fase o projeto está)? Use-o em vez de aplicar o Duplo
+Diamante genérico na mão.
+
+Se não houver, declare **em qual fase do Duplo Diamante** você está — e não
+misture os modos:
+
+```
+◇ 1 Pesquisa (divergir) → 2 Análise (convergir) ◇ 3 Ideação (divergir) → 4 Design (convergir) ◇
+```
+
+- Julgar durante a divergência mata as ideias boas; divergir durante a
+  convergência impede a decisão.
+- Não passe da fase 2 sem enunciar o problema numa **frase falseável**.
+- Fidelidade proporcional à certeza. Alta fidelidade cedo compra
+  comprometimento emocional e trava a exploração.
+- Trave grade, escala tipográfica (máx. 5 passos), paleta (máx. 3 famílias +
+  neutros) e espaçamento **antes** de compor.
+- Stage gates: fim da fase 2 (problema definido) e fim da fase 4 (solução
+  final). Não antes.
+- **Referência antes de adjetivo.** Como montar e usar a biblioteca:
+  `referencias/260810_galerias-referencia.md` — só nas fases divergentes
+  (1 e 3).
+- **Se o artefato final vira código** (landing, app UI, componente), o
+  Estágio 4 sai daqui: `referencias/260810_impeccable-routing.md`. Pixel e
+  papel continuam neste protocolo.
+
+Roteiro dos 4 estágios: `referencias/260810_design-projects.md`
+
+**Fase do Duplo Diamante entra no `ESTADO.md`.** É o campo que evita o outro
+agente reabrir uma fase já fechada.
+
+---
+
+## 2. Gate ORÇAR CONTEXTO
+
+Contexto é orçamento, não depósito. Num pipeline de dois agentes, é
+orçamento **compartilhado**: o que você queima é contexto que o outro não
+terá.
+
+- **Leia sob demanda.** Nunca despeje repositório/pasta inteira. Glob →
+  Grep → Read do trecho.
+- **Checkpoint em arquivo.** Tarefa longa: escreva estado/decisões num
+  `.md`. Contexto longo degrada (context rot); o arquivo não.
+- **Delegue o barulho.** Varredura, coleta, leitura ampla → subagente ou o
+  outro modelo. Receba só a conclusão.
+- **Ferramenta mínima viável.** Se você não consegue dizer com certeza qual
+  ferramenta usar, o conjunto está inchado.
+- **Exemplos canônicos, não exaustivos.** 2–3 representativos batem 15 casos
+  de borda.
+- Acima de ~85%: escreva `HANDOFF.md`, commite e recomece. Não tente
+  terminar no fio.
+
+Detalhe: `referencias/260810_context-engineering.md`
+
+---
+
+## 3. Gate GERAR
+
+- Estrutura antes de prosa. Esqueleto → preencher.
+- Uma afirmação por parágrafo.
+- Toda alegação factual sobre o mundo atual → **buscar antes**, nunca de
+  memória (preços, cargos, versões, leis, datas).
+- Números, datas, preços: verificados ou marcados `[ESTIMATIVA]`.
+- Específico > geral. "Reduz 40% do tempo de export" > "melhora a
+  eficiência".
+
+---
+
+## 4. Gate AUDITAR — anti-slop (obrigatório)
+
+Releia o que gerou e **reescreva**. Listas completas:
+`referencias/260810_anti-slop.md`
+
+### 4.1 Léxico
+Se apareceu, reescreva a frase inteira (não troque o sinônimo — a frase era
+vazia):
+
+EN: `delve, tapestry, testament to, ever-evolving landscape, navigate the
+complexities, unlock, harness, leverage, robust, seamless, game-changer,
+elevate, empower, cutting-edge, revolutionize, holistic, synergy, myriad,
+plethora, meticulous, crucial, pivotal, underscores, realm, beacon, curated,
+streamline, transformative, foster`
+
+PT: `no mundo de hoje, no cenário atual, cada vez mais, de forma eficaz, é
+importante ressaltar, vale destacar, em suma, nesse sentido, dessa forma,
+por fim, revolucionar, potencializar, alavancar, robusto, impactante,
+entregar valor, jornada (vazio), ecossistema (vazio), curadoria (vazia), de
+forma holística, sinergia, disruptivo, imersivo, solução completa, ponta a
+ponta`
+
+### 4.2 Estrutura
+- ❌ "Não é apenas X — é Y" (antítese oca)
+- ❌ Regra de três compulsiva ("rápido, simples e poderoso")
+- ❌ Travessão como muleta de ritmo (máx. 1 a cada 3 parágrafos)
+- ❌ Parágrafo final que repete o que acabou de ser dito
+- ❌ Bullets `**Rótulo:** frase` **quando é reflexo, não escolha** — ver
+  seção 8
+- ❌ Abrir reafirmando a pergunta do usuário
+- ❌ Fechar com "Me avise se quiser..." / "Espero que ajude!"
+- ❌ Hedge empilhado ("pode potencialmente às vezes") — escolha o grau de
+  certeza e assuma
+- ❌ Todos os parágrafos com o mesmo comprimento
+- ❌ Conectivo mentiroso: se remover "além disso" não muda o sentido, ele
+  fingia uma relação lógica
+
+### 4.3 Substância
+- **"E daí?"** — remova o parágrafo. A peça perdeu algo? Se não, corte.
+- **Substituição de marca** — troque o cliente pelo concorrente. Ainda faz
+  sentido? Então é sobre a categoria. Especifique.
+- **Trade-off** — toda recomendação declara o que custa? Sem contrapartida
+  é folheto de vendas.
+- **Fonte** — todo número, data, preço, cargo, versão é verificado ou
+  rotulado `[ESTIMATIVA]`?
+
+### 4.4 Compressão
+Reescreva 30% menor. Se nada essencial se perdeu, **entregue a versão
+menor.** Slop comprime sem perda; argumento denso resiste.
+
+### 4.5 Se for peça visual
+Léxico visual banido: gradiente roxo→azul · mesh gradient sem motivo ·
+glassmorphism não motivado · Inter/Poppins/Montserrat como default sem
+justificativa · radius 8px em tudo · drop shadow em tudo · foto de banco
+com gente apontando pra laptop · grid de 3 cards ícone+headline+3 linhas ·
+dashboard fake · tudo centralizado · isométrico genérico · mockup de
+iPhone flutuando em 3/4.
+
+Testes: print sem logo (dá pra saber de quem é?) · hierarquia em 3 segundos
+· contraste WCAG AA (4.5:1 / 3:1) · toda decisão visual tem motivo
+declarável.
+
+### 4.6 Auditoria cruzada (só multi-agente)
+Quando o material veio do outro agente, some estes:
+- A premissa de partida foi **verificada** ou herdada de confiança?
+- Alguma afirmação factual chegou sem fonte e sem `[ESTIMATIVA]`?
+- O outro agente decidiu algo que deveria estar em `DECISOES.md` e não
+  está? Registre agora.
+
+### Reparo
+**Uma rodada, limitada.** Loop de autocrítica sem limite converge para uma
+média homogênea — corrige slop léxico e introduz slop estrutural. Se após 1
+reparo ainda está ruim, o problema é o enquadramento (Gate 1), não a
+redação.
+
+---
+
+## 5. Gate VERIFICAR
+
+- Arquivo abre no app de destino? Formato correto? Convenção de nome
+  consistente?
+- Links/caminhos existem?
+- Números conferem (recalcule, não copie)?
+- Datas conferidas contra hoje?
+- Contradiz algo já registrado em `DECISOES.md`?
+
+Alto risco (cliente, dinheiro, prazo público): delegue a verificação a um
+subagente — ou **ao outro modelo** — passando **só o artefato e a rubrica**,
+sem o histórico. Contexto zero é a característica útil, não a limitação.
+
+Rubricas prontas: `referencias/260810_evaluation-gates.md`
+
+---
+
+## 6. Gate PASSAR O BASTÃO
+
+Antes de encerrar a sessão, sempre. Não é opcional e não é resumo bonito —
+é o insumo do próximo agente.
+
+1. Reescreva `ESTADO.md` (5 linhas, sobrescreve).
+2. Reescreva `HANDOFF.md`: o que fez, o que ficou aberto, o próximo passo
+   concreto, arquivos tocados, e `TRAVADO_POR: livre`.
+3. Anexe a `DECISOES.md` toda decisão tomada **com a alternativa
+   descartada**. Decisão sem alternativa registrada volta a ser
+   rediscutida daqui a duas semanas.
+4. `git add -A && git commit -m "<agente>: <o que mudou>" && git push`
+
+Um handoff que diz "continuar o projeto" não é handoff. Próximo passo tem
+verbo e objeto.
+
+---
+
+## 7. Gate APRENDER
+
+Ao fim de tarefa não-trivial, **proponha a entrada já escrita** e peça só
+confirmação.
+
+```
+## YYMMDD — <contexto em até 5 palavras>
+GATILHO: quando essa situação reaparece
+LIÇÃO: o que deu errado ou foi descoberto
+ATALHO: o que fazer direto da próxima vez
+```
+
+Dois destinos: **global** (vale pra qualquer projeto) ou **do projeto**
+(`projetos/<nome>/LICOES.md` — específica de um cliente/produto). Regra:
+*seria útil num projeto completamente diferente?* Sim → global. Não →
+projeto. Sempre **append**, nunca reescreva.
+
+Lição 3× vira skill própria ou regra em `MEGABRAIN.md`.
+
+---
+
+## 8. Precedência de formato
+
+**Formato que o usuário pediu explicitamente vence este protocolo.** O
+protocolo governa o **conteúdo** dentro das seções, nunca a estrutura
+delas. Ordem: **formato pedido > protocolo > default do modelo.**
+
+---
+
+## 9. Roteamento de arquitetura
+
+| Preciso de... | Use |
+|---|---|
+| Regra que vale em toda sessão, nos dois agentes | `AGENTS.md` (curto — custa contexto sempre) |
+| Procedimento repetível sob demanda | Skill dedicada |
+| Router de projeto (já sabe a fase, o estado) | Skill/comando do próprio projeto |
+| Trabalho barulhento sem sujar contexto | Subagente, ou o outro modelo |
+| Garantia determinística (não "pedido") | Hook / script |
+| Conhecimento pesado e raro | Referência em `referencias/260810_*.md`, sob demanda |
+| Estado que atravessa sessões e modelos | `ESTADO.md`, `HANDOFF.md`, `DECISOES.md`, `LICOES.md` |
+| Fases macro do projeto, artefatos, regras de ouro | `MEGABRAIN.md` |
+
+⚠️ `AGENTS.md` e skills são **pedidos, não garantias**. Se algo precisa
+acontecer sempre e sem falha, é hook ou script.
+
+Detalhe: `referencias/260810_workflow-architecture.md`
+
+---
+
+## 10. Referências (carregue sob demanda)
+
+Todas em `referencias/`.
+
+| Arquivo | Quando ler |
+|---|---|
+| `260810_anti-slop.md` | Escrita, copy, qualquer texto entregue |
+| `260810_metaprompt-patterns.md` | Construir/refinar prompt ou brief |
+| `260810_metaprompt-templates.md` | Templates T1–T8 prontos |
+| `260810_context-engineering.md` | Tarefa longa, muitos arquivos, agente |
+| `260810_workflow-architecture.md` | Decidir skill vs subagente vs hook |
+| `260810_design-projects.md` | Projeto visual/design (Duplo Diamante) |
+| `260810_galerias-referencia.md` | Direção visual concreta (Estágios 1 e 3) |
+| `260810_impeccable-routing.md` | A entrega é interface que vira código |
+| `260810_evaluation-gates.md` | Definir rubrica e avaliar output |
+| `260810_PROMPT-PORTATIL.md` | Levar o protocolo pra uma IA sem skills |
+| `260810_sync-memoria.md` | Configurar agente novo num projeto — sincronizar identidade em CLAUDE.md/GEMINI.md/AGENTS.md |
+
+Camada de projeto (fases macro, artefatos, regras de ouro, níveis de
+adoção): `MEGABRAIN.md`. O arquivo de identidade que essa sincronização
+usa como fonte é local ao seu projeto — nunca faz parte deste pacote.
+
+---
+
+## Como isso costuma dar errado
+
+1. **Rodar os gates como teatro.** Anunciar "✅ auditoria concluída" sem
+   reescrever nada. O gate só existe se o texto mudou.
+2. **Pular o Gate 0.** Começar a trabalhar sem ler `ESTADO.md` é como o
+   outro agente nunca tivesse existido. Todo o ganho do pipeline evapora
+   aqui.
+3. **Handoff vago.** "Continuar de onde parei" obriga o próximo agente a
+   reconstruir contexto do zero — mais caro que ter feito tudo num modelo
+   só.
+4. **Confiar no output do outro modelo.** Premissa errada herdada e
+   ampliada por três etapas é o modo de falha caro do multi-agente.
+5. **Loop de crítica infinito.** Passa de 1 reparo, vira mingau homogêneo.
+6. **Atropelar o formato do usuário.** Ver seção 8 — o formato dele vence.
+7. **Confundir conciso com raso.** Anti-slop corta enchimento, não
+   argumento. A compressão de 30% é sobre palavras.
+8. **Aplicar em conversa casual.** O protocolo é pra entrega.
+9. **Os dois agentes na mesma hora sem trava.** Merge conflict em `.md` é
+   chato; em arquivo binário, é perda de trabalho. Respeite `TRAVADO_POR`.
+10. **`DECISOES.md` reescrito.** É append-only. Reescrever apaga o registro
+    de por que a alternativa foi descartada.
