@@ -316,6 +316,7 @@ Todas em `referencias/`.
 
 | Arquivo | Quando ler |
 |---|---|
+| `260810_gates-entrega.md` | Versao longa dos gates deste arquivo (camada micro, entrega a entrega) |
 | `260810_anti-slop.md` | Escrita, copy, qualquer texto entregue |
 | `260810_metaprompt-patterns.md` | Construir/refinar prompt ou brief |
 | `260810_metaprompt-templates.md` | Templates T1–T8 prontos |

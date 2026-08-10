@@ -10,7 +10,7 @@ markdown (regra de ouro 21: garantia real e script, nao markdown).
 Uso:
   mb-sync.py status  [--dir CAMINHO]
   mb-sync.py lock    --agente NOME --escopo CAMINHO [CAMINHO ...] [--horas N] [--dir CAMINHO]
-  mb-sync.py release [--dir CAMINHO]
+  mb-sync.py release --agente NOME [--force] [--dir CAMINHO]
 
 Sem argumentos: roda "status" no diretorio atual.
 Saida de "status" tem codigo de saida 0 (livre/vencida - pode escrever) ou
@@ -121,9 +121,18 @@ def cmd_lock(args):
 def cmd_release(args):
     caminho = Path(args.dir) / HANDOFF_NAME
     texto = read_handoff(caminho)
-    if not texto or parse_lock(texto) is None:
+    lock = parse_lock(texto)
+    if not texto or lock is None:
         print("nada para liberar (ja estava livre)")
         return 0
+    agora = dt.datetime.now()
+    vencida = bool(lock["ate"]) and lock["ate"] < agora
+    if lock["agente"] != args.agente and not vencida and not args.force:
+        print(
+            f"recusado: a trava e de {lock['agente']} (ate {lock['ate'] or 'sem prazo'}), "
+            f"nao de {args.agente}. Use --force so se souber o que esta fazendo."
+        )
+        return 1
     bloco = f"{MARK_START}\nTRAVADO_POR: livre\n{MARK_END}\n"
     write_handoff(caminho, bloco, texto)
     print("liberado: TRAVADO_POR: livre")
@@ -142,7 +151,13 @@ def main():
     p_lock.add_argument("--escopo", nargs="+", required=True)
     p_lock.add_argument("--horas", type=float, default=2.0)
 
-    sub.add_parser("release")
+    p_rel = sub.add_parser("release")
+    p_rel.add_argument("--agente", required=True)
+    p_rel.add_argument(
+        "--force",
+        action="store_true",
+        help="liberar trava de outro agente ainda no prazo (use com consciencia)",
+    )
 
     args = ap.parse_args()
     comando = args.comando or "status"
