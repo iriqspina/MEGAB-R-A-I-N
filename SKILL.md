@@ -41,6 +41,18 @@ Antes de tocar em qualquer arquivo de `projetos/<nome>/`:
      `ESCOPO:` com os caminhos que você vai tocar.
 4. Só então planeje.
 
+Script que torna a trava garantia, e nao disciplina de markdown:
+
+```
+python bin/mb-sync.py --dir <projeto> status
+python bin/mb-sync.py --dir <projeto> lock --agente <seu-nome> --escopo caminho/ [--horas 2]
+python bin/mb-sync.py --dir <projeto> release --agente <seu-nome>
+```
+
+`status` sai com codigo 0 (livre, pode escrever) ou 1 (travado por outro).
+`release` recusa liberar trava alheia dentro do prazo; `--force` existe, mas e
+decisao consciente.
+
 **Output do outro agente é rascunho, não verdade.** Se você está retomando
 trabalho de outro agente, audite antes de construir em cima. O erro caro do
 pipeline multi-agente é herdar uma premissa errada e ampliá-la por três
