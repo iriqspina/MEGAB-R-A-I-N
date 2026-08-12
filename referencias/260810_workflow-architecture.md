@@ -107,7 +107,7 @@ redescobrir do zero (o start a frio é o custo real).
 4. Executar         → skill de formato
 5. Auditar          → Gate 4 anti-slop
 6. Verificar        → abre? números batem? caminhos existem?
-7. Registrar        → licoes-metaprotocolo.md
+7. Registrar        → licoes-megabrain.md
 ```
 
 Etapa 2 é a mais pulada e a mais cara de pular.
@@ -119,7 +119,7 @@ Etapa 2 é a mais pulada e a mais cara de pular.
 Gatilho: **a mesma lição apareceu 3 vezes.**
 
 ```
-1× → nota em licoes-metaprotocolo.md
+1× → nota em licoes-megabrain.md
 2× → nota + tag de recorrência
 3× → vire regra do PIPELINE.md ou skill própria, e limpe as notas
 ```

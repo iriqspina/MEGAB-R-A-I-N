@@ -165,4 +165,4 @@ ATALHO: [o que fazer direto da próxima vez]
 ```
 
 Registre só o que muda ação futura. Narrativa de sessão não entra.
-Destino: `licoes-metaprotocolo.md` da fonte canônica do MEGABRAIN.
+Destino: `licoes-megabrain.md` da fonte canônica do MEGABRAIN.

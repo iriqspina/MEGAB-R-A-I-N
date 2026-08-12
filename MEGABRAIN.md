@@ -7,7 +7,7 @@ multi-agente (gates de entrega, Claude+Kimi, roteamento) que agora vive em
 `skills/megabrain/SKILL.md`. A versão que sobe pro GitHub é
 `260810_github-export/` — igual na estrutura, sem nada pessoal.
 
-Versão: ver `VERSAO.txt`. Lições vivas: `licoes-metaprotocolo.md`.
+Versão: ver `VERSAO.txt`. Lições vivas: `licoes-megabrain.md`.
 Referências de execução: `referencias/260810_*.md`.
 
 ---
@@ -166,6 +166,6 @@ decide **em que fase o projeto está**. Um não substitui o outro.
 4. Espalhar → `sincronizar-pipeline.cmd`.
 5. A cópia dentro de cada projeto não se edita — a fonte manda.
 
-Origem: `PIPELINE.md` v2 (Rodada, djinn, metaprotocolo, Financeiro da Silva)
+Origem: `PIPELINE.md` v2 (Rodada, djinn, megabrain, Financeiro da Silva)
 fundida com a v3 multi-agente (Claude+Kimi, gates de entrega, bastão) em
 260810. Ver `260810_VISAO-GERAL.md` para o que mudou nesta fusão e por quê.
