@@ -314,6 +314,7 @@ delas. Ordem: **formato pedido > protocolo > default do modelo.**
 | Conhecimento pesado e raro | Referência em `referencias/260810_*.md`, sob demanda |
 | Estado que atravessa sessões e modelos | `ESTADO.md`, `HANDOFF.md`, `DECISOES.md`, `LICOES.md` |
 | Fases macro do projeto, artefatos, regras de ouro | `MEGABRAIN.md` |
+| Ação que o sandbox conectado não alcança (pasta home, caminho fora do que foi conectado, delete/rename bloqueado, ação de SO) | `/kimi` — Kimi CLI roda local, sem sandbox (`referencias/260811_kimi-handoff.md`) |
 
 ⚠️ `AGENTS.md` e skills são **pedidos, não garantias**. Se algo precisa
 acontecer sempre e sem falha, é hook ou script.
@@ -340,6 +341,7 @@ Todas em `referencias/`.
 | `260810_evaluation-gates.md` | Definir rubrica e avaliar output |
 | `260810_PROMPT-PORTATIL.md` | Levar o protocolo pra uma IA sem skills |
 | `260810_sync-memoria.md` | Configurar agente novo num projeto — sincronizar identidade em CLAUDE.md/GEMINI.md/AGENTS.md |
+| `260811_kimi-handoff.md` | Tarefa bateu numa parede do sandbox (pasta home, caminho não conectado, delete/rename bloqueado) — empacotar pro Kimi |
 
 Camada de projeto (fases macro, artefatos, regras de ouro, níveis de
 adoção): `MEGABRAIN.md`. O arquivo de identidade que essa sincronização
