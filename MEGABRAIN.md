@@ -1,11 +1,32 @@
-# MEGABRAIN · camada de projeto
+# MEGABRAIN v3 · pipeline local completa (com camada pessoal)
 
-Complementa `SKILL.md` (gates de entrega + multi-agente). Este arquivo
-governa o **projeto inteiro**, não a entrega isolada.
+**TL;DR:** este arquivo é o canônico local — substitui `PIPELINE.md` como
+documento-mestre. Junta a camada macro (fases de projeto, artefatos, regras
+de ouro, níveis de adoção — herdadas do `PIPELINE.md` v2) com a camada micro
+multi-agente (gates de entrega, Claude+Kimi, roteamento) que agora vive em
+`skills/megabrain/SKILL.md`. A versão que sobe pro GitHub é
+`260810_github-export/` — igual na estrutura, sem nada pessoal.
+
+Versão: ver `VERSAO.txt`. Lições vivas: `licoes-metaprotocolo.md`.
+Referências de execução: `referencias/260810_*.md`.
 
 ---
 
-## 1 · Fases do projeto (macro)
+## 1 · Relação entre os três arquivos
+
+| Arquivo | Escopo | Editar aqui? |
+|---|---|---|
+| `skills/megabrain/SKILL.md` | Router do `/megabrain` — gates de entrega, multi-agente (Claude+Kimi), roteamento de arquitetura | Sim — é o que dispara |
+| `260810_MEGABRAIN.md` (este) | Camada de projeto: fases macro, artefatos, regras de ouro, níveis de adoção, biblioteca visual pessoal | Sim |
+| `260810_memoria-pessoal.md` | Perfil de identidade (nome, TDAH, formato de resposta obrigatório) — fonte da sincronização entre agentes, nunca sai desta pasta | Sim |
+| `PIPELINE.md` | v2, congelado — mantido por histórico, não recebe mudança nova | Não |
+
+`PIPELINE.md` continua no disco (não apago nem renomeio arquivo já escrito)
+com um aviso de descontinuação no topo apontando pra cá.
+
+---
+
+## 2 · Fases do projeto (macro — herdado do PIPELINE.md v2)
 
 ```
 estado → grelhar → spec → tickets → implementar → validar → publicar → registrar
@@ -15,11 +36,11 @@ estado → grelhar → spec → tickets → implementar → validar → publicar
    (git, build, testes, o que está no ar) e devolve um retrato de 5 linhas,
    TL;DR primeiro. Sinal que não se mediu vira `?`, nunca chute.
 2. **GRELHAR** — entender antes de especificar. Interrogatório até fechar
-   cada ramo. O que se aprende vira termo num glossário do domínio ou
-   decisão registrada — nunca fica só na conversa.
-3. **SPEC** — uma por feature, viva, com critérios de aceite verificáveis.
-   Sonda de 2 minutos antes: suposição de viabilidade vira linha SIM/NÃO
-   medida antes de entrar na spec.
+   cada ramo. O que se aprende vira termo no `CONTEXT.md` ou decisão
+   registrada — nunca fica só na conversa.
+3. **SPEC** — uma por feature, viva, em `.scratch/<feature>/spec.md`, com
+   critérios de aceite verificáveis. Sonda de 2 minutos antes: suposição de
+   viabilidade vira linha SIM/NÃO medida antes de entrar na spec.
 4. **TICKETS** — decomposição com dependência (`Blocked by`, prioridade,
    critério de aceite próprio).
 5. **IMPLEMENTAR** — um ticket por vez, TDD por fatia. Revisão em dois eixos
@@ -30,87 +51,121 @@ estado → grelhar → spec → tickets → implementar → validar → publicar
    defeito sumiu — nunca remenda pra defender o erro.
 7. **PUBLICAR** — portões impossíveis de pular, pausa antes do irreversível.
    Build → verificar artefato → auditoria → harness → **pausa** → deploy →
-   smoke → linha no changelog. O agente prepara e testa, nunca executa
-   deploy ou migração: entrega um script pronto que roda os portões e
-   pausa antes do irreversível.
+   smoke → linha no CHANGELOG. O agente prepara e testa, nunca executa
+   deploy ou migração: entrega `.cmd` pronto que roda os portões e pausa.
 8. **REGISTRAR** — sessão sem rastro não aconteceu. Diário ganha entrada;
-   lição nova entra no arquivo de lições sem pedir permissão. Lição 3× vira
-   regra deste arquivo ou de uma skill.
+   lição nova entra no arquivo de lições (GATILHO/LIÇÃO/ATALHO) sem pedir
+   permissão. Lição 3× vira regra deste arquivo ou de uma skill.
 
-## 2 · Artefatos (o que existe em todo projeto adulto)
+## 3 · Artefatos (o que existe em todo projeto adulto)
 
 | Artefato | Papel |
 |---|---|
-| glossário do domínio | termo ambíguo se resolve aqui |
-| regras fixas do repo | convenções invioláveis do projeto |
-| tracker vivo por feature | spec, plano, decomposição, issues |
-| `docs/` | planos e handoffs, datados |
-| atalhos numerados + leiame | o dia a dia em um clique |
-| relatório vivo | retrato auto-atualizante — edita-se o gerador, nunca o output |
-| changelog | o que subiu, mais novo primeiro |
-| pasta de descartáveis | sondas e scripts de uma vez só |
-| `MEGABRAIN/` | esta pipeline sincronizada — cópia não se edita |
+| `CONTEXT.md` | glossário do domínio |
+| regras do repo (`CLAUDE.md` ou equivalente) | regras fixas do projeto |
+| `.scratch/<feature>/` | tracker vivo: spec, plano, grelha, issues |
+| `docs/` | planos e handoffs, `YYMMDD` quando datado |
+| `Atalhos\*.cmd` + `LEIAME` | dia a dia num clique, numerados |
+| relatório vivo (`RELATORIO.html`) | retrato auto-atualizante — edita-se o gerador, nunca o HTML |
+| `CHANGELOG.md` | o que subiu, mais novo primeiro |
+| `_arquivo\_tmp\` | sondas e scripts de uma vez só |
+| `MEGABRAIN\` | esta pipeline sincronizada — não editar a cópia |
 
-## 3 · Regras de ouro (valem em todo projeto)
+## 4 · Regras de ouro (valem em todo projeto)
 
 1. Nunca escrever código sem plano ou spec. Sem exceção.
 2. Um comando de terminal por vez — prompt interativo engole a linha colada.
-3. Data no nome de arquivo só fora do repo (exports, entregas). Dentro,
-   nome estável — quem versiona é o git.
+3. `YYMMDD` só fora do repo (exports, entregas). Dentro, nome estável.
 4. Gerado nunca se edita — edita-se a fonte/o gerador.
-5. Arquivo gigante se lê por trecho, nunca inteiro sem necessidade.
-6. Deploy, migração, irreversível: sempre script pronto com pausa antes do
-   ponto sem volta — nunca lista de comandos soltos.
-7. Ao pedir uma ação a quem opera, sempre o caminho completo do
-   arquivo/pasta.
+5. Arquivo gigante se lê por trecho (Grep/offset), nunca inteiro sem necessidade.
+6. Deploy, migração, irreversível: sempre `.cmd` pronto com pausa — nunca lista
+   de comandos no chat.
+7. Ao pedir ação, sempre o caminho completo da pasta/arquivo.
 8. Local-first — dado pessoal não sobe pra serviço externo.
-9. Medir > supor. Marcador de "não medido" em vez de chute.
-10. Tela que muda não se distingue de travada — tarefa longa nunca
-    redireciona a saída inteira pra arquivo; dois canais (tela + log).
-11. Achado é endereço, não posição — nunca renumerar; derrubado fica
-    riscado com o porquê; novo pega o próximo número livre.
-12. Commit alheio pendente não sequestra arquivo novo — checar o estado do
-    versionamento antes de criar arquivo; havendo pendência, adicionar só
-    a lista explícita do que é seu.
-13. Buscar comportamento por verbos e sinônimos, não pelo termo exato do
-    pedido.
-14. Teste vermelho pós-conserto: reapontar ou apagar — nunca remendar
-    seletor que defende o erro.
-15. Feedback de uma ação nasce no campo visual de quem agiu.
-16. Formato de resposta padrão: TL;DR no topo; primeira frase de cada
-    parte resume a parte; tópicos numerados.
-17. Portar entre agentes/runtimes: hooks não atravessam, skills atravessam
-    sem edição. Regra sempre-ativa e estática vai pro system prompt, não
-    pro hook.
-18. Memória/arquivo legado: normalizar pra UTF-8 puro antes de editar por
+9. Medir > supor. `?` em vez de chute; hash e byte em vez de "deve estar igual".
+10. Tela muda não se distingue de travada — tarefa longa nunca redireciona a
+    saída inteira pra arquivo; dois relatores (tela + log) ou Tee.
+11. Achado é endereço, não posição — nunca renumerar; derrubado fica riscado
+    com o porquê; novo pega o próximo número livre.
+12. Commit alheio pendente não sequestra arquivo novo — checar `git status`
+    antes de versionar; havendo pendência, `git add <lista explícita>`.
+13. Buscar comportamento por verbos e sinônimos, não pelo termo do enunciado.
+14. Teste vermelho pós-conserto: reapontar ou apagar — nunca remendar seletor
+    que defende erro.
+15. Feedback de ação nasce no campo visual de quem clicou.
+16. Navegador não executa `.cmd` por link — copiar caminho + Win+R, ou clique
+    direto na pasta.
+17. Formato de resposta padrão: TL;DR no topo; primeira frase de cada parte
+    resume a parte; tópicos numerados.
+18. Portar entre agentes/runtimes: hooks não atravessam, skills atravessam
+    sem edição. Sempre-ativo e estático vai pro system prompt, não pro hook.
+19. Memória/arquivo legado: normalizar pra UTF-8 puro antes de editar por
     programa.
-19. Quadro que se monitora todo dia vira widget fixo + tarefa agendada, em
-    vez de depender de lembrar de pedir.
-20. **Garantia real é script, não markdown.** O que precisa acontecer
-    sempre e sem falha vive em script/hook, nunca só numa skill.
-21. Formato pedido explicitamente vence o protocolo. Ordem: formato pedido
-    > protocolo > default.
+20. Quadro que se monitora vira widget pinado + tarefa agendada.
+21. **Garantia real é script, não markdown.** O que precisa acontecer sempre
+    e sem falha vive em `.cmd`/script/hook, nunca só numa skill.
+22. Formato pedido explicitamente vence o protocolo. Ordem: formato pedido >
+    protocolo > default.
 
-## 4 · Camada micro (gates de entrega + multi-agente)
+## 5 · Camada micro (gates de entrega + multi-agente)
 
-Vive em `SKILL.md` — não duplicado aqui.
+Vive em `skills/megabrain/SKILL.md` — router completo: gates
+assumir/enquadrar/orçar/gerar/auditar/reparar/verificar/bastão/aprender,
+divisão Claude↔Kimi, roteamento de arquitetura (skill vs subagente vs hook
+vs script), Duplo Diamante pra projeto de design. Não duplicado aqui —
+edite lá.
 
-## 5 · Níveis de adoção por projeto
+## 6 · Biblioteca visual pessoal (âncoras concretas)
+
+Metodologia genérica — como montar e usar qualquer biblioteca de referência —
+está em `referencias/260810_galerias-referencia.md` (essa parte foi pro
+GitHub, é método, não gosto pessoal). Aqui fica só a lista concreta:
+
+- **Motion/web:** osmo.supply (execução: componentes, easings) ·
+  tympanus.net/codrops (técnica com código aberto) · land-book.com (volume) ·
+  siteinspire.com (curadoria seca) · lapa.ninja (seções isoladas) ·
+  onepagelove.com (one-pagers) · awwwards.com (teto de ambição — enviesa pra
+  espetáculo) · recent.design (mais multidisciplinar, gráfico + digital) ·
+  refero.design (screenshots de UI real — a melhor pra Operate/Read) ·
+  navbar.gallery · footer.design
+- **UI/game UI:** gameuidatabase.com (HUD, menu, inventário) ·
+  interfaceingame.com (por jogo e elemento) · artstation.com (material e
+  atmosfera, não layout)
+
+## 7 · Níveis de adoção por projeto
 
 | Nível | O que o projeto tem | Quando |
 |---|---|---|
-| **1 · referência** | `MEGABRAIN/` + glossário do domínio | projeto novo ou exploração |
-| **2 · tracker** | + tracker de specs/tickets + regras do repo | entrou em desenvolvimento |
-| **3 · ciclo completo** | + harness com carimbo + atalhos + relatório vivo + deploy com portões | produto no ar |
+| **1 · referência** | `MEGABRAIN\` + `CONTEXT.md` | projeto novo ou exploração |
+| **2 · tracker** | + `.scratch/` com specs/tickets + regras do repo | entrou em desenvolvimento |
+| **3 · ciclo completo** | + harness com carimbo + `Atalhos\` + relatório vivo + deploy com portões | produto no ar |
 
-Todo projeto nasce no nível 1. Subir de nível é decisão explícita, com
-spec — nunca por acidente.
+Todo projeto nasce no nível 1 (`novo-projeto.cmd`). Subir de nível é decisão
+explícita, com spec — nunca por acidente.
 
-## 6 · Como esta pipeline evolui
+## 8 · Roteamento de projetos pessoais → skill dedicada
 
-1. Lição nova → arquivo de lições (GATILHO/LIÇÃO/ATALHO, datada).
+Quando o projeto **já tem router próprio**, use-o em vez de aplicar o
+Duplo Diamante genérico daqui na mão — o router específico já carrega o
+estado real do projeto:
+
+| Projeto | Skill/comando |
+|---|---|
+| App que conduz outros projetos criativos pelo Duplo Diamante | `/designdiamond` |
+| Rodada | `/rodada` |
+| Portfólio | `/portfoliohs` |
+
+Regra: `/megabrain` decide **qual pipeline usar**; o router do projeto
+decide **em que fase o projeto está**. Um não substitui o outro.
+
+## 9 · Como esta pipeline evolui
+
+1. Lição nova → arquivo de lições (GATILHO/LIÇÃO/ATALHO, data `YYMMDD`).
 2. Lição 3× → entra neste arquivo ou na `SKILL.md`.
-3. Editou a fonte → registre a mudança no changelog da própria pipeline.
-4. Espalhe a versão nova pros projetos que adotaram (script de sincronização
-   próprio de cada setup).
+3. Editou a fonte → bump em `VERSAO.txt` (data + uma linha do que mudou).
+4. Espalhar → `sincronizar-pipeline.cmd`.
 5. A cópia dentro de cada projeto não se edita — a fonte manda.
+
+Origem: `PIPELINE.md` v2 (Rodada, djinn, metaprotocolo, Financeiro da Silva)
+fundida com a v3 multi-agente (Claude+Kimi, gates de entrega, bastão) em
+260810. Ver `260810_VISAO-GERAL.md` para o que mudou nesta fusão e por quê.
