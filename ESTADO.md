@@ -2,19 +2,14 @@
 
 - Versão ativa: 4.0
 - Fase: concluída / entregue no GitHub e propagada para projetos derivados
-- Última ação: implementada diferenciação de usuário no protocolo e
-  propagada para todos os projetos derivados.
-  - `bin/mb_utils.py`: novos helpers `extract_usuario` e `detectar_usuario`.
-  - `bin/mb-sync.py`: campo `USUARIO:` no `HANDOFF.md`, detectado de
-    `260810_memoria-pessoal.md` ou via `--usuario`.
-  - `bin/mb-sync-memoria.py`: propaga `USUARIO:` para `CLAUDE.md`,
-    `GEMINI.md` e `AGENTS.md`; suporta `--usuario` para forçar perfil.
-  - `260810_memoria-pessoal.md` e arquivos em
-    `260810_backup-raiz-perfil/` atualizados com `USUARIO: <USUARIO> (Iriq)`.
-  - `referencias/260810_sync-memoria.md` documenta o novo campo.
-  - Push da central para `https://github.com/iriqspina/MEGAB-R-A-I-N.git`.
-  - Projetos derivados sincronizados: Financeiro da Silva, Jarvis, Rodada
-    (com push), TLOU (commit local; sem remote).
-- Próximo passo: configurar remote do TLOU se o <USUARIO> quiser push;
-  adotar bibliotecas do `requirements.txt` quando o ambiente permitir.
+- Última ação: adicionada seção de migração v4.0 em `MEGABRAIN.md`,
+  `260810_MEGABRAIN.md` e `README.md` para explicar a diferenciação de
+  usuário a quem forkar/clonar ou sincronizar projetos derivados. Central
+  pushada para `https://github.com/iriqspina/MEGAB-R-A-I-N.git` (commit
+  `db386a0`). Próximo passo imediato: re-sincronizar os quatro projetos
+  derivados para que recebam a documentação nova.
+- Próximo passo: propagar documentação v4.0 para Financeiro da Silva,
+  Jarvis, Rodada e TLOU; configurar remote do TLOU se o <USUARIO> quiser
+  push; adotar bibliotecas do `requirements.txt` quando o ambiente
+  permitir.
 - Alerta: nenhum
