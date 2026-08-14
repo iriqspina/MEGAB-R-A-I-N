@@ -40,9 +40,8 @@ ESCOPO: -
   item antigo.
 
 ## Próximo passo concreto
-Rodar `python MEGABRAIN/bin/mb-check-version.py --projeto <pasta> --auto`
-nos quatro projetos derivados para propagar v4.3. Commitar/pushar Rodada e
-TLOU. Após isso, a entrega estará totalmente concluída.
+Configurar remote do TLOU e fazer push, ou deixar o commit local até que
+o <USUARIO> defina onde o repo deve morar. A entrega v4.3 está concluída.
 
 ## Arquivos tocados
 - `bin/mb-backup-central.py` (novo)
