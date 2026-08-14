@@ -1,38 +1,41 @@
 # HANDOFF — megabrain core
 
-TRAVADO_POR: kimi
-ATÉ: 2026-08-14 04:00
-ESCOPO:
-  - bin/mb-relatorio-dna.py
-  - bin/mb-check-version.py
-  - bin/mb-generate-template.py
-  - MEGABRAIN-RELATORIO-DNA.html
-  - DECISOES.md
-  - ESTADO.md
-  - HANDOFF.md
-  - VERSAO.txt
-  - 260810_github-export/
-  - _github-repo-local/
+TRAVADO_POR: livre
+ATÉ: -
+ESCOPO: -
 
 ## O que foi feito
-- Corrigido o entendimento sobre aspirador: ferramenta de revisão de código pós-implementação, não coletora de informacionais.
-- Definida arquitetura: relatório DNA (template canônico do megabrain) separado de relatório de projeto.
-- Atualizado `DECISOES.md` com separação de responsabilidades, backup de DNA e versionamento portátil.
+- Criado `bin/mb-relatorio-dna.py` que gera `MEGABRAIN-RELATORIO-DNA.html`: HTML autocontido, interativo, com árvore de desenvolvimento visual (skill tree) e seção "Para a IA".
+- Atualizado `bin/mb-check-version.py`: detecta central automaticamente (env `MEGABRAIN_CENTRAL` ou diretório do script), sincroniza `bin/` e o relatório DNA, e adicionou `--verificar-git`.
+- Atualizado `bin/mb-generate-template.py`: portátil, inclui scripts de versionamento/relatório/aspirador, cria `.gitignore` e exclui `skills/conclusao-megabrain`.
+- Corrigido `bin/mb-aspirador.py`: não coleta mais informacionais da raiz do projeto; mantém apenas notas locais em `.mb-aspirador/`.
+- Atualizada `referencias/260813_aspirador-codigo.md` para refletir a função corrigida do aspirador.
+- Bump `VERSAO.txt` para v3.7.
+- Sincronizado pacote público e feito push para `https://github.com/iriqspina/MEGAB-R-A-I-N.git`.
 
-## O que está em andamento
-- Criar gerador `bin/mb-relatorio-dna.py` que produz HTML interativo com árvore de desenvolvimento visual (skill tree).
-- Tornar `mb-check-version.py` portátil (env var + auto-detect) e capaz de verificar contra git remote.
-- Atualizar template público e sincronizar com `_github-repo-local`.
+## O que ficou aberto
+- Melhorias visuais na árvore de desenvolvimento (responsividade, mais nós, animações).
+- Gerador de relatório de projeto específico (instância aplicada, ex.: TLOU).
+- Integração automática de download + atualização de DNA a partir do git.
 
 ## Próximo passo concreto
-Finalizar scripts, rodar gerador, testar localmente, sincronizar para `_github-repo-local`, commitar e fazer push para `origin/main`.
+Quando quiser evoluir o visual da árvore ou criar o gerador de relatório de projeto, rode `python bin/mb-relatorio-dna.py` e sincronize para `_github-repo-local`.
 
 ## Arquivos tocados
+- `bin/mb-relatorio-dna.py` (novo)
+- `bin/mb-check-version.py`
+- `bin/mb-generate-template.py`
+- `bin/mb-aspirador.py`
+- `referencias/260813_aspirador-codigo.md`
+- `MEGABRAIN-RELATORIO-DNA.html` (gerado)
+- `.gitignore` (novo)
+- `VERSAO.txt`
 - `DECISOES.md`
 - `ESTADO.md`
 - `HANDOFF.md`
+- `260810_github-export/`
+- `_github-repo-local/`
 
 <!-- mb-sync:lock:start -->
-TRAVADO_POR: kimi
-ATÉ: 2026-08-14 04:00
+TRAVADO_POR: livre
 <!-- mb-sync:lock:end -->

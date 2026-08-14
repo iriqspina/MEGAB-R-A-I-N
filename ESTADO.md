@@ -1,7 +1,7 @@
 # ESTADO — megabrain core
 
-- Versão ativa: 3.6
-- Fase: implementação — relatório DNA + versionamento portátil
-- Última ação: redefine aspirador como componente de revisão de código; separa relatório DNA (template canônico) de relatório de projeto
-- Próximo passo: gerar `MEGABRAIN-RELATORIO-DNA.html`, tornar scripts portáteis e sincronizar para o repo público
+- Versão ativa: 3.7
+- Fase: concluída / aguardando próxima rodada
+- Última ação: entrega v3.7 no GitHub com Relatório DNA, scripts portáteis e verificação remota
+- Próximo passo: evoluir visual da árvore de desenvolvimento ou criar gerador de relatório de projeto
 - Alerta: nenhum
