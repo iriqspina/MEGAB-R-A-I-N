@@ -1,0 +1,619 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+mb-relatorio-projeto.py — gera o "relatório de projeto": um único HTML que
+concentra contexto (específico do projeto + geral do megabrain), estado/
+handoff, situação viva, próximas ações e dados pendentes.
+
+É o IRMÃO do relatório DNA (bin/mb-relatorio-dna.py):
+  - Relatório DNA    -> descreve o PROTOCOLO (genérico, vive em MEGABRAIN/dna/).
+  - Relatório de projeto -> descreve a INSTÂNCIA (um projeto específico, ex.:
+    Financeiro da Silva, TLOU, Rodada). Vive na raiz do projeto (RELATORIO.html).
+
+Os dois são "direcionados ao usuário e às IAs": frontend humano (dashboard
+navegável) + backend IA (JSON-LD, <meta> tags, seção "Para a IA").
+
+Regra de ouro que este script existe para cumprir: **gerado nunca se edita**.
+Quando algo mudar, edite o(s) .md fonte e rode este script de novo — nunca
+edite o HTML de saída na mão. Os .md fonte não mudam de lugar; este script só
+os LÊ como referência para montar o relatório (handoff incluso: ESTADO.md,
+HANDOFF.md e DECISOES.md são lidos, nunca movidos).
+
+Uso mínimo:
+    python bin/mb-relatorio-projeto.py --projeto "./meu-projeto" --plano "03_plano/PLANO.md"
+
+Uso completo (referência: Financeiro da Silva):
+    python bin/mb-relatorio-projeto.py \
+      --projeto "<PROJETOS_ROOT>/Financeiro da Silva" \
+      --titulo "Financeiro da Silva" \
+      --plano "03_plano/PLANO.md" \
+      --extra "02_contas_e_assinaturas/ASSINATURAS.md" \
+      --extra "04_referencias/taxas-pix-no-credito_2026-08.md" \
+      --skill "skills/financeirodasilva/SKILL.md" \
+      --tldr "uma frase resumindo a situação agora"
+
+Fontes lidas (todas opcionais, exceto --plano):
+    CONTEXT.md                          (auto — contexto específico do domínio)
+    ESTADO.md / HANDOFF.md / DECISOES.md (auto, se existirem — handoff/estado
+                                          concentrado no relatório SEM mover
+                                          os arquivos; se não existirem, o
+                                          relatório assume que --plano já
+                                          concentra estado+decisões, comum em
+                                          projeto nível 1-2)
+    --plano PATH        arquivo "vivo" principal (situação, estratégia) — obrigatório
+    --extra PATH (N×)   arquivos adicionais; cada um vira uma seção própria
+    --skill PATH         SKILL.md do router do projeto — extrai "Próximos passos"
+    --tldr TEXTO          uma frase; se omitido, usa o 1º parágrafo do --plano
+    --megabrain-central PATH  para puxar um resumo do contexto GERAL (MEGABRAIN.md
+                          da central); se não encontrar, usa um resumo genérico embutido
+"""
+
+import argparse
+import datetime as dt
+import html
+import json
+import os
+import re
+import sys
+from pathlib import Path
+
+DEFAULT_OUT_NAME = "RELATORIO.html"
+
+RESOLUCAO_TITULOS_PADRAO = [
+    "resolução", "resolucao", "plano de ação", "plano de acao",
+    "estratégia", "estrategia", "alternativas", "caminhos pra resolver",
+    "caminhos para resolver", "o que fazer",
+]
+
+GENERIC_MEGABRAIN_RESUMO = (
+    "Protocolo de execução multi-agente e anti-slop: estado -> grelhar -> spec -> "
+    "tickets -> implementar -> validar -> publicar -> registrar, com gates de "
+    "entrega (enquadrar, orçar contexto, gerar, auditar, reparar, verificar, "
+    "passar o bastão, aprender) sobre cada peça não-trivial."
+)
+
+
+# --------------------------------------------------------------------------
+# Leitura de arquivos
+# --------------------------------------------------------------------------
+
+def ler(path: Path) -> str:
+    if not path or not path.is_file():
+        return ""
+    try:
+        return path.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        return path.read_text(encoding="latin-1")
+
+
+def primeiro_paragrafo(texto: str) -> str:
+    for bloco in re.split(r"\n\s*\n", texto.strip()):
+        linha = bloco.strip().lstrip("#").strip()
+        if linha and not linha.startswith("|"):
+            # remove marcações simples pra virar frase corrida
+            linha = re.sub(r"\*\*(.+?)\*\*", r"\1", linha)
+            linha = re.sub(r"`(.+?)`", r"\1", linha)
+            return linha
+    return ""
+
+
+# --------------------------------------------------------------------------
+# Conversor markdown -> HTML (subconjunto suficiente para os .md do projeto)
+# --------------------------------------------------------------------------
+
+def _inline(texto: str) -> str:
+    texto = html.escape(texto)
+    texto = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", texto)
+    texto = re.sub(r"`([^`]+?)`", r"<code>\1</code>", texto)
+    texto = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r'<a href="\2">\1</a>', texto)
+    return texto
+
+
+def markdown_para_html(texto: str, pendencias: list, fonte_nome: str) -> str:
+    """Converte um subconjunto de markdown (headers, tabelas, listas,
+    checkboxes, negrito, código, links, citação, hr) em HTML. Também coleta
+    linhas '- [ ]' / '- [x]' em `pendencias` (lista compartilhada), marcadas
+    com a fonte."""
+    linhas = texto.replace("\r\n", "\n").split("\n")
+    out = []
+    i = 0
+    n = len(linhas)
+    in_ul = False
+
+    def fechar_lista():
+        nonlocal in_ul
+        if in_ul:
+            out.append("</ul>")
+            in_ul = False
+
+    while i < n:
+        linha = linhas[i]
+        s = linha.strip()
+
+        # tabela: linha com '|' seguida de linha separadora '---|---'
+        if s.startswith("|") and i + 1 < n and re.match(r"^\|?[\s:|-]+\|?$", linhas[i + 1].strip()):
+            fechar_lista()
+            cabecalho = [c.strip() for c in s.strip("|").split("|")]
+            out.append('<div class="tbl-wrap"><table><thead><tr>')
+            for c in cabecalho:
+                out.append(f"<th>{_inline(c)}</th>")
+            out.append("</tr></thead><tbody>")
+            i += 2
+            while i < n and linhas[i].strip().startswith("|"):
+                celulas = [c.strip() for c in linhas[i].strip().strip("|").split("|")]
+                out.append("<tr>")
+                for c in celulas:
+                    out.append(f"<td>{_inline(c)}</td>")
+                out.append("</tr>")
+                i += 1
+            out.append("</tbody></table></div>")
+            continue
+
+        # headings
+        m = re.match(r"^(#{1,4})\s+(.*)$", s)
+        if m:
+            fechar_lista()
+            nivel = min(len(m.group(1)) + 2, 6)  # relatório começa em h2
+            out.append(f"<h{nivel}>{_inline(m.group(2))}</h{nivel}>")
+            i += 1
+            continue
+
+        # hr (mas não confundir com separador de tabela, já tratado acima)
+        if re.match(r"^-{3,}\s*$", s):
+            fechar_lista()
+            out.append("<hr>")
+            i += 1
+            continue
+
+        # checkbox
+        m = re.match(r"^[-*]\s+\[([ xX])\]\s+(.*)$", s)
+        if m:
+            if not in_ul:
+                out.append('<ul class="chk">')
+                in_ul = True
+            feito = m.group(2 - 1) if False else m.group(1).lower() == "x"
+            texto_item = m.group(2)
+            pendencias.append({"texto": texto_item, "feito": feito, "fonte": fonte_nome})
+            marca = "☑" if feito else "☐"
+            cls = "done" if feito else "open"
+            out.append(f'<li class="{cls}"><span class="mk">{marca}</span> {_inline(texto_item)}</li>')
+            i += 1
+            continue
+
+        # lista simples
+        m = re.match(r"^[-*]\s+(.*)$", s)
+        if m:
+            if not in_ul:
+                out.append("<ul>")
+                in_ul = True
+            out.append(f"<li>{_inline(m.group(1))}</li>")
+            i += 1
+            continue
+
+        # citação
+        if s.startswith(">"):
+            fechar_lista()
+            out.append(f"<blockquote>{_inline(s.lstrip('> ').strip())}</blockquote>")
+            i += 1
+            continue
+
+        # linha em branco
+        if not s:
+            fechar_lista()
+            i += 1
+            continue
+
+        # parágrafo (junta linhas seguidas até próxima linha especial/vazia)
+        fechar_lista()
+        buf = [s]
+        i += 1
+        while i < n and linhas[i].strip() and not re.match(
+            r"^(#{1,4}\s|[-*]\s|\||>|-{3,}\s*$)", linhas[i].strip()
+        ):
+            buf.append(linhas[i].strip())
+            i += 1
+        out.append(f"<p>{_inline(' '.join(buf))}</p>")
+
+    fechar_lista()
+    return "\n".join(out)
+
+
+def extrair_secoes_resolucao(texto: str, fonte_nome: str, titulos_candidatos) -> list:
+    """Varre um markdown por headings (##/###) cujo texto bate com alguma
+    palavra-chave de 'resolução' (plano de ação, estratégia, alternativas...)
+    e devolve blocos [(titulo, corpo_markdown, fonte)] — cada bloco vai até o
+    próximo heading de nível igual ou menor. Não move nada do arquivo fonte,
+    só copia o trecho pro relatório em destaque."""
+    linhas = texto.replace("\r\n", "\n").split("\n")
+    candidatos_norm = [c.lower() for c in titulos_candidatos]
+    blocos = []
+    i = 0
+    n = len(linhas)
+    while i < n:
+        m = re.match(r"^(#{1,4})\s+(.*)$", linhas[i].strip())
+        if m:
+            nivel = len(m.group(1))
+            titulo = m.group(2).strip()
+            titulo_norm = titulo.lower()
+            if any(c in titulo_norm for c in candidatos_norm):
+                corpo = []
+                j = i + 1
+                while j < n:
+                    m2 = re.match(r"^(#{1,4})\s+", linhas[j].strip())
+                    if m2 and len(m2.group(1)) <= nivel:
+                        break
+                    corpo.append(linhas[j])
+                    j += 1
+                blocos.append((titulo, "\n".join(corpo).strip(), fonte_nome))
+                i = j
+                continue
+        i += 1
+    return blocos
+
+
+# --------------------------------------------------------------------------
+# CSS / JS (mesma linguagem visual já usada nos relatórios do <USUARIO>)
+# --------------------------------------------------------------------------
+
+def css() -> str:
+    return """
+:root{--ink:#0E1B1F;--ink2:#4A6169;--ink3:#7C99A1;--edge:#DCE7EA;--surf:#fff;--bg:#EAF1F3;
+  --ok:#1F7A4C;--warn:#B8791F;--bad:#B34A31;--acc:#0B6C7A;--m:ui-monospace,"SF Mono",Consolas,monospace}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;
+  padding:40px 22px 80px}
+.wrap{max-width:960px;margin:0 auto}
+h1{font-size:26px;letter-spacing:-.03em}
+.sub{font-family:var(--m);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-top:6px}
+.tldr{margin:26px 0;padding:20px 22px;border-radius:18px;background:var(--surf);border-left:8px solid var(--ok);
+  box-shadow:0 10px 30px rgba(11,60,70,.08);font-size:18px;line-height:1.45}
+.tldr.atencao{border-left-color:var(--warn)} .tldr.ruim{border-left-color:var(--bad)}
+nav{position:sticky;top:0;z-index:40;background:rgba(234,241,243,.92);backdrop-filter:blur(6px);
+  display:flex;gap:6px;flex-wrap:wrap;padding:10px 0;margin:0 0 8px}
+nav a{font-family:var(--m);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);
+  background:var(--surf);border:1px solid var(--edge);border-radius:999px;padding:6px 12px;text-decoration:none}
+nav a:hover{color:var(--acc);border-color:var(--acc)}
+h2{font-size:12px;font-family:var(--m);letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);
+  margin:34px 0 12px;scroll-margin-top:52px}
+h3{font-size:15px;color:var(--acc);margin:18px 0 8px}
+h4{font-size:13px;color:var(--ink2);margin:14px 0 6px}
+p{margin:8px 0;color:var(--ink2)}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;background:var(--surf);border-radius:16px;overflow:hidden;
+  box-shadow:0 8px 24px rgba(11,60,70,.06);margin:10px 0}
+th{text-align:left;font-family:var(--m);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink3);font-weight:500;vertical-align:top;padding:12px 16px;border-bottom:1px solid var(--edge)}
+td{padding:12px 16px;border-bottom:1px solid var(--edge);vertical-align:top}
+tr:last-child td{border-bottom:0}
+ul{margin:8px 0 8px 20px;color:var(--ink2)} li{margin:4px 0}
+ul.chk{list-style:none;margin-left:0}
+ul.chk li{display:flex;gap:8px;align-items:flex-start}
+ul.chk li.done{color:var(--ink3);text-decoration:line-through}
+ul.chk .mk{font-family:var(--m)}
+blockquote{border-left:3px solid var(--edge);padding:4px 14px;color:var(--ink3);margin:10px 0}
+code{font-family:var(--m);font-size:13px;color:var(--acc);background:#F4F8F9;padding:1px 5px;border-radius:5px}
+a{color:var(--acc)}
+hr{border:0;border-top:1px solid var(--edge);margin:18px 0}
+.card-ai{background:#0E1B1F;color:#DCE7EA;border-radius:16px;padding:18px 22px;margin:10px 0}
+.card-ai code{background:rgba(255,255,255,.08);color:#7dd3fc}
+.pend{display:flex;gap:8px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--edge)}
+.pend:last-child{border-bottom:0}
+.pend .src{font-family:var(--m);font-size:10px;color:var(--ink3);white-space:nowrap}
+.section-file{font-family:var(--m);font-size:11px;color:var(--ink3);margin:-6px 0 10px}
+.di{background:var(--surf);border-radius:16px;padding:6px 22px;box-shadow:0 8px 24px rgba(11,60,70,.06)}
+.di div{padding:14px 0;border-bottom:1px solid var(--edge)} .di div:last-child{border-bottom:0}
+.cp{font-family:var(--m);font-size:10px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;
+  border:1px solid var(--edge);background:#F4F8F9;color:var(--acc);border-radius:999px;padding:4px 12px;margin-left:10px}
+.cp:hover{background:#E2EDEF}
+footer{margin-top:40px;color:var(--ink2);font-size:14px;line-height:1.7}
+footer code{background:var(--surf);padding:3px 8px;border-radius:7px}
+details{background:var(--surf);border-radius:14px;padding:2px 18px;margin:10px 0;box-shadow:0 6px 18px rgba(11,60,70,.05)}
+summary{cursor:pointer;font-family:var(--m);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--acc);padding:12px 0}
+"""
+
+
+def js() -> str:
+    return """
+function cp(btn,t){
+  var txt='"'+t+'"';
+  var ok=function(){var o=btn.textContent;btn.textContent='copiado \u2713';setTimeout(function(){btn.textContent=o;},1400);};
+  function legacy(){
+    var ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.select();
+    try{document.execCommand('copy');ok();}catch(e){btn.textContent=t;}
+    document.body.removeChild(ta);
+  }
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(ok,legacy);}else{legacy();}
+}
+"""
+
+
+# --------------------------------------------------------------------------
+# Montagem do relatório
+# --------------------------------------------------------------------------
+
+def secao(id_, titulo, corpo_html, arquivo_fonte=None):
+    tag = f'<div class="section-file">fonte: <code>{html.escape(arquivo_fonte)}</code></div>' if arquivo_fonte else ""
+    return f'<section id="{id_}"><h2>{html.escape(titulo)}</h2>{tag}{corpo_html}</section>'
+
+
+def gerar(args, data_iso: str) -> str:
+    projeto = Path(args.projeto).resolve()
+    pendencias = []
+
+    # --- contexto específico ---
+    context_path = projeto / (args.context or "CONTEXT.md")
+    context_txt = ler(context_path)
+
+    # --- contexto geral (MEGABRAIN central, se acessível) ---
+    resumo_geral = GENERIC_MEGABRAIN_RESUMO
+    central_link = None
+    if args.megabrain_central:
+        central = Path(args.megabrain_central)
+        mb_md = ler(central / "MEGABRAIN.md")
+        if mb_md:
+            resumo_geral = primeiro_paragrafo(mb_md) or resumo_geral
+            central_link = str(central)
+
+    # --- estado / handoff (opcional) ---
+    estado_txt = ler(projeto / "ESTADO.md")
+    handoff_txt = ler(projeto / "HANDOFF.md")
+    decisoes_txt = ler(projeto / "DECISOES.md")
+    tem_handoff_dedicado = bool(estado_txt or handoff_txt or decisoes_txt)
+
+    # --- plano vivo (obrigatório) ---
+    plano_rel = args.plano
+    plano_path = projeto / plano_rel
+    plano_txt = ler(plano_path)
+    if not plano_txt:
+        print(f"AVISO: --plano não encontrado ou vazio: {plano_path}")
+
+    # --- extras ---
+    extras = []
+    for rel in (args.extra or []):
+        p = projeto / rel
+        t = ler(p)
+        if t:
+            extras.append((rel, t))
+        else:
+            print(f"AVISO: --extra não encontrado ou vazio: {p}")
+
+    # --- skill router (próximos passos) ---
+    skill_txt = ""
+    skill_rel = args.skill
+    if skill_rel:
+        skill_txt = ler(projeto / skill_rel)
+
+    # --- tldr ---
+    tldr = args.tldr or primeiro_paragrafo(plano_txt) or "sem TL;DR definido — passe --tldr ou verifique o --plano"
+    tldr_classe = args.tldr_classe if args.tldr_classe in ("ok", "atencao", "ruim") else "atencao"
+
+    # --- render das seções (markdown -> html), coletando pendências ---
+    html_context = markdown_para_html(context_txt, pendencias, str(args.context or "CONTEXT.md")) if context_txt else ""
+    html_plano = markdown_para_html(plano_txt, pendencias, plano_rel) if plano_txt else "<p>(vazio)</p>"
+    html_estado = markdown_para_html(estado_txt, pendencias, "ESTADO.md") if estado_txt else ""
+    html_handoff = markdown_para_html(handoff_txt, pendencias, "HANDOFF.md") if handoff_txt else ""
+    html_decisoes = markdown_para_html(decisoes_txt, pendencias, "DECISOES.md") if decisoes_txt else ""
+    html_extras = [(rel, markdown_para_html(t, pendencias, rel)) for rel, t in extras]
+
+    # próximos passos: tenta achar a tabela "Próximos passos" dentro do skill_txt inteiro
+    html_skill = ""
+    if skill_txt:
+        html_skill = markdown_para_html(skill_txt, [], skill_rel)  # não conta pendência do próprio router
+
+    pendentes = [p for p in pendencias if not p["feito"]]
+    feitas = [p for p in pendencias if p["feito"]]
+
+    # --- resolução: alternativas pra resolver a situação pendente (não é     ---
+    # --- "caminhos" de arquivo — é o que fazer). Varre plano + extras.       ---
+    resolucao_blocos = []
+    if not args.sem_resolucao:
+        titulos = list(RESOLUCAO_TITULOS_PADRAO) + list(args.resolucao_titulo or [])
+        if plano_txt:
+            resolucao_blocos += extrair_secoes_resolucao(plano_txt, plano_rel, titulos)
+        for rel, t in extras:
+            resolucao_blocos += extrair_secoes_resolucao(t, rel, titulos)
+
+    # --- seções HTML ---
+    secoes = []
+
+    secoes.append(secao("contexto", "Contexto específico do projeto", html_context or "<p>sem CONTEXT.md</p>",
+                         str(args.context or "CONTEXT.md")) if html_context else "")
+
+    secoes.append(f"""
+    <section id="geral"><h2>Contexto geral (megabrain)</h2>
+      <p>{html.escape(resumo_geral)}</p>
+      {'<p class="section-file">fonte: <code>' + html.escape(central_link) + '/MEGABRAIN.md</code></p>' if central_link else '<p class="section-file">resumo genérico embutido — passe --megabrain-central para puxar da fonte real</p>'}
+    </section>""")
+
+    if tem_handoff_dedicado:
+        corpo = (html_estado + html_handoff + html_decisoes) or "<p>sem conteúdo</p>"
+        secoes.append(secao("handoff", "Estado e handoff", corpo, None))
+    else:
+        secoes.append(f"""
+        <section id="handoff"><h2>Estado e handoff</h2>
+          <p>Este projeto não tem <code>ESTADO.md</code>/<code>HANDOFF.md</code>/<code>DECISOES.md</code>
+          dedicados (nível 1-2 de adoção) — <code>{html.escape(plano_rel)}</code> concentra situação,
+          decisões e diário. Ver seção "Situação viva" abaixo.</p>
+        </section>""")
+
+    if resolucao_blocos:
+        partes = []
+        for titulo, corpo_md, fonte in resolucao_blocos:
+            corpo_html = markdown_para_html(corpo_md, [], fonte)  # não conta pendência 2x
+            partes.append(
+                f'<h3>{_inline(titulo)}</h3>'
+                f'<div class="section-file">fonte: <code>{html.escape(fonte)}</code></div>'
+                f'{corpo_html}'
+            )
+        secoes.append(secao(
+            "resolucao", "Resolução — alternativas pra resolver agora",
+            "".join(partes) + '<p class="section-file">também aparece por inteiro em "Situação viva" — '
+            "aqui é só o recorte em destaque.</p>",
+            None,
+        ))
+
+    secoes.append(secao("situacao", "Situação viva", html_plano, plano_rel))
+
+    for rel, h in html_extras:
+        titulo = Path(rel).stem.replace("_", " ").replace("-", " ").strip().capitalize()
+        secoes.append(secao(f"extra-{Path(rel).stem}", titulo, h, rel))
+
+    if html_skill:
+        secoes.append(secao("proximos", "Próximas ações (router)", html_skill, skill_rel))
+
+    if pendencias:
+        linhas_pend = []
+        for p in pendentes:
+            linhas_pend.append(
+                f'<div class="pend"><span class="mk">\u2610</span>'
+                f'<span>{_inline(p["texto"])}<div class="src">{html.escape(p["fonte"])}</div></span></div>'
+            )
+        bloco_feitas = ""
+        if feitas:
+            itens = "".join(
+                f'<div class="pend"><span class="mk">\u2611</span>'
+                f'<span>{_inline(f["texto"])}<div class="src">{html.escape(f["fonte"])}</div></span></div>'
+                for f in feitas
+            )
+            bloco_feitas = f"<details><summary>{len(feitas)} já resolvidas</summary>{itens}</details>"
+        corpo = ("".join(linhas_pend) or "<p>nenhuma pendência em aberto — bom sinal.</p>") + bloco_feitas
+        secoes.append(secao("pendencias", f"Dados pendentes ({len(pendentes)} em aberto)", corpo, None))
+
+    # caminhos (todas as fontes lidas, com botão de copiar)
+    fontes = []
+    if context_txt:
+        fontes.append(("CONTEXT.md", str(context_path)))
+    if plano_txt:
+        fontes.append((plano_rel, str(plano_path)))
+    for rel, _ in extras:
+        fontes.append((rel, str(projeto / rel)))
+    if skill_txt:
+        fontes.append((skill_rel, str(projeto / skill_rel)))
+    if estado_txt:
+        fontes.append(("ESTADO.md", str(projeto / "ESTADO.md")))
+    if handoff_txt:
+        fontes.append(("HANDOFF.md", str(projeto / "HANDOFF.md")))
+    if decisoes_txt:
+        fontes.append(("DECISOES.md", str(projeto / "DECISOES.md")))
+    linhas_fontes = "".join(
+        f'<tr><th>{html.escape(nome)}</th><td><button class="cp" onclick="cp(this,{json.dumps(caminho)})">copiar caminho</button>'
+        f'<span class="section-file" style="margin:0 0 0 10px;display:inline">{html.escape(caminho)}</span></td></tr>'
+        for nome, caminho in fontes
+    )
+    secoes.append(f"""
+    <section id="fontes"><h2>Fontes deste relatório (não editar o HTML — editar aqui e regerar)</h2>
+      <p class="section-file">"Fontes" = caminho de arquivo. Pra rotas de decisão financeira, ver a seção
+      "Resolução" acima.</p>
+      <div class="tbl-wrap"><table><tbody>{linhas_fontes}</tbody></table></div>
+    </section>""")
+
+    # --- JSON-LD / meta pra IA ---
+    json_ld = json.dumps({
+        "@context": "https://schema.org",
+        "@type": "Report",
+        "name": f"{args.titulo} — relatório de projeto",
+        "dateCreated": data_iso,
+        "abstract": tldr,
+        "about": {"@type": "Thing", "name": args.titulo},
+        "isPartOf": {"@type": "SoftwareApplication", "name": "megabrain"},
+        "pendencias_abertas": [p["texto"] for p in pendentes],
+    }, ensure_ascii=False, indent=2)
+
+    nav_ids = []
+    if html_context:
+        nav_ids.append("contexto")
+    nav_ids.append("geral")
+    nav_ids.append("handoff")
+    if resolucao_blocos:
+        nav_ids.append("resolucao")
+    nav_ids.append("situacao")
+    for rel, _ in html_extras:
+        nav_ids.append(f"extra-{Path(rel).stem}")
+    if html_skill:
+        nav_ids.append("proximos")
+    if pendencias:
+        nav_ids.append("pendencias")
+    nav_ids.append("fontes")
+    nav_html = "".join(f'<a href="#{i}">{i.replace("extra-", "")}</a>' for i in nav_ids)
+
+    ai_box = f"""
+    <section id="ia"><h2>Para a IA</h2>
+      <div class="card-ai">
+        <p><strong>Este HTML é o relatório de projeto</strong> — a instância aplicada de
+        <code>{html.escape(args.titulo)}</code>. Leia-o inteiro antes de vasculhar os .md
+        soltos: ele já concentra contexto específico, contexto geral do megabrain,
+        estado/handoff, situação viva e pendências. Se precisar do detalhe bruto de uma
+        fonte, o caminho absoluto está na seção "Fontes" acima — nunca edite este HTML,
+        edite a fonte e rode <code>bin/mb-relatorio-projeto.py</code> de novo.</p>
+        <p><strong>TL;DR:</strong> {html.escape(tldr)}</p>
+        <p><strong>Pendências em aberto:</strong> {len(pendentes)}</p>
+      </div>
+      <details><summary>Metadados estruturados (JSON-LD)</summary><pre><code>{html.escape(json_ld)}</code></pre></details>
+    </section>"""
+
+    return f"""<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{html.escape(args.titulo)} · relatório de projeto</title>
+<meta name="generator" content="mb-relatorio-projeto.py">
+<meta name="megabrain:tipo" content="relatorio-de-projeto">
+<meta name="megabrain:projeto" content="{html.escape(args.titulo)}">
+<meta name="megabrain:timestamp" content="{html.escape(data_iso)}">
+<meta name="megabrain:tldr" content="{html.escape(tldr)}">
+<meta name="megabrain:pendencias-abertas" content="{len(pendentes)}">
+<meta name="description" content="Relatório de projeto — contexto, estado, situação e próximas ações concentrados num único arquivo, para humano e IA.">
+<script type="application/ld+json">{json_ld}</script>
+<style>{css()}</style></head><body><div class="wrap">
+<h1>{html.escape(args.titulo)} · relatório de projeto</h1>
+<div class="sub">gerado em {html.escape(data_iso[:16].replace('T', ' '))} · bin/mb-relatorio-projeto.py · irmão do relatório DNA</div>
+<div class="tldr {tldr_classe}">{_inline(tldr)}</div>
+<nav>{nav_html}</nav>
+{''.join(secoes)}
+{ai_box}
+<footer>
+<p><b>Como este arquivo se atualiza:</b> nunca se edita o HTML. Edite as fontes listadas
+acima e rode <code>python bin/mb-relatorio-projeto.py</code> de novo (mesmos argumentos).
+Se o "gerado em" lá em cima está velho, o retrato está velho.</p>
+<p>Template reaplicável a qualquer projeto megabrain — ver
+<code>MEGABRAIN.md</code> seção "Relatório de projeto".</p>
+</footer>
+</div>
+<script>{js()}</script>
+</body></html>
+"""
+
+
+def main():
+    ap = argparse.ArgumentParser(description="Gerador do relatório de projeto (irmão do relatório DNA)")
+    ap.add_argument("--projeto", required=True, help="raiz do projeto")
+    ap.add_argument("--titulo", required=True, help="nome do projeto (aparece no título)")
+    ap.add_argument("--plano", required=True, help="caminho (relativo à raiz) do arquivo vivo principal")
+    ap.add_argument("--context", default="CONTEXT.md", help="caminho relativo do glossário (default CONTEXT.md)")
+    ap.add_argument("--extra", action="append", default=[], help="arquivo .md extra (repetível)")
+    ap.add_argument("--skill", default=None, help="SKILL.md do router do projeto (opcional)")
+    ap.add_argument("--tldr", default=None, help="uma frase; default: 1º parágrafo do --plano")
+    ap.add_argument("--tldr-classe", default="atencao", choices=["ok", "atencao", "ruim"])
+    ap.add_argument("--megabrain-central", default=None, help="pasta central do megabrain, para puxar o contexto geral real")
+    ap.add_argument("--saida", default=None, help="caminho do HTML de saída (default: RELATORIO.html na raiz do projeto)")
+    ap.add_argument("--sem-resolucao", action="store_true", help="desliga a extração automática da seção Resolução")
+    ap.add_argument("--resolucao-titulo", action="append", default=[],
+                     help="palavra-chave extra (além das padrão) pra achar heading de resolução no --plano/--extra (repetível)")
+    args = ap.parse_args()
+
+    projeto = Path(args.projeto)
+    if not projeto.is_dir():
+        print(f"ERRO: projeto não encontrado: {projeto}")
+        sys.exit(1)
+
+    saida = Path(args.saida).resolve() if args.saida else projeto / DEFAULT_OUT_NAME
+    data_iso = dt.datetime.now().isoformat()
+
+    html_out = gerar(args, data_iso)
+    saida.parent.mkdir(parents=True, exist_ok=True)
+    saida.write_text(html_out, encoding="utf-8")
+    print(f"Relatório de projeto gerado: {saida}")
+
+
+if __name__ == "__main__":
+    main()

@@ -6,15 +6,15 @@
 <title>MEGABRAIN — Relatório DNA</title>
 <meta name="generator" content="mb-relatorio-dna.py">
 <meta name="megabrain:versao" content="v3.7 · 2026-08-14">
-<meta name="megabrain:timestamp" content="2026-08-13T23:29:08.819032">
-<meta name="megabrain:componentes" content="MEGABRAIN, 0 · Assumir, 1 · Enquadrar, 2 · Orçar Contexto, 3 · Gerar, 4 · Auditar, 5 · Reparar, 6 · Verificar, Aspirador, mb-sync.py, mb-check-version.py, Relatório DNA, mb-sync-memoria.py, Duplo Diamante, 7 · Passar o Bastão, 8 · Aprender">
+<meta name="megabrain:timestamp" content="2026-08-14T17:37:48.639782">
+<meta name="megabrain:componentes" content="MEGABRAIN, 0 · Assumir, 1 · Enquadrar, 2 · Orçar Contexto, 3 · Gerar, 4 · Auditar, 5 · Reparar, 6 · Verificar, Aspirador, mb-sync.py, mb-check-version.py, Relatório DNA, Relatório de projeto, mb-sync-memoria.py, Duplo Diamante, 7 · Passar o Bastão, 8 · Aprender">
 <meta name="description" content="DNA completo do protocolo megabrain. Frontend humano, metadados para IA.">
 <script type="application/ld+json">{
   "@context": "https://schema.org",
   "@type": "TechArticle",
   "name": "MEGABRAIN — Relatório DNA",
   "version": "v3.7 · 2026-08-14",
-  "dateCreated": "2026-08-13T23:29:08.819032",
+  "dateCreated": "2026-08-14T17:37:48.639782",
   "description": "DNA completo do protocolo megabrain: gates, ferramentas, métodos e instruções para replicação.",
   "about": {
     "@type": "SoftwareApplication",
@@ -32,6 +32,7 @@
       "mb-sync.py",
       "mb-check-version.py",
       "Relatório DNA",
+      "Relatório de projeto",
       "mb-sync-memoria.py",
       "Duplo Diamante",
       "7 · Passar o Bastão",
@@ -97,7 +98,12 @@
     {
       "@type": "Thing",
       "name": "Relatório DNA",
-      "description": "Este HTML: DNA completo do megabrain."
+      "description": "Este HTML: DNA completo do megabrain, em dna/."
+    },
+    {
+      "@type": "Thing",
+      "name": "Relatório de projeto",
+      "description": "Irmão do DNA: concentra a instância de UM projeto."
     },
     {
       "@type": "Thing",
@@ -209,7 +215,7 @@
     .tree-wrap { position: relative; overflow-x: auto; padding: 1rem 0; }
     .tree {
       position: relative;
-      width: 1040px;
+      width: 1080px;
       height: 620px;
       margin: 0 auto;
       user-select: none;
@@ -271,7 +277,7 @@
 <body>
 <header>
   <h1>MEGABRAIN</h1>
-  <p>Relatório DNA · v3.7 · 2026-08-14 · gerado em 2026-08-13</p>
+  <p>Relatório DNA · v3.7 · 2026-08-14 · gerado em 2026-08-14</p>
   <span class="badge">Protocolo multi-agente + anti-slop</span>
 </header>
 
@@ -289,8 +295,8 @@
     <p class="hint">Clique nos nós para ver detalhes. Cores: <span style="color:var(--accent)">gates</span>, <span style="color:var(--ok)">ferramentas</span>, <span style="color:var(--accent-2)">métodos</span>.</p>
     <div class="tree-wrap">
       <div class="tree">
-        <svg><line x1="500" y1="40" x2="80" y2="180" /><line x1="500" y1="40" x2="220" y2="180" /><line x1="500" y1="40" x2="360" y2="180" /><line x1="500" y1="40" x2="500" y2="180" /><line x1="500" y1="40" x2="640" y2="180" /><line x1="500" y1="40" x2="780" y2="180" /><line x1="500" y1="40" x2="920" y2="180" /><line x1="80" y1="180" x2="300" y2="340" /><line x1="360" y1="180" x2="460" y2="340" /><line x1="640" y1="180" x2="140" y2="340" /><line x1="920" y1="180" x2="620" y2="340" /><line x1="80" y1="180" x2="780" y2="340" /><line x1="220" y1="180" x2="940" y2="340" /><line x1="500" y1="180" x2="620" y2="340" /><line x1="920" y1="180" x2="320" y2="500" /><line x1="320" y1="500" x2="680" y2="500" /></svg>
-        <div class="node raiz" style="left:500px;top:40px" data-id="raiz" data-label="MEGABRAIN" data-desc="Protocolo de execução multi-agente e anti-slop." data-detalhe="O megabrain é um protocolo operacional para agentes de IA trabalharem juntos sem pisar um no outro e para evitar entregas genéricas.">MEGABRAIN</div><div class="node gate" style="left:80px;top:180px" data-id="g0" data-label="0 · Assumir" data-desc="Checa trava, lê ESTADO/HANDOFF/DECISOES/LICOES." data-detalhe="Gate 0 garante que apenas um agente escreva por vez. Usa HANDOFF.md e o script mb-sync.py para travar/liberar o projeto.">0 · Assumir</div><div class="node gate" style="left:220px;top:180px" data-id="g1" data-label="1 · Enquadrar" data-desc="Define artefato, leitor, critérios e restrições." data-detalhe="Antes de gerar qualquer output, responde: artefato, leitor, 3 critérios verificáveis, restrição dura e a versão genérica a evitar.">1 · Enquadrar</div><div class="node gate" style="left:360px;top:180px" data-id="g2" data-label="2 · Orçar Contexto" data-desc="Contexto é orçamento compartilhado." data-detalhe="Leia sob demanda (Glob → Grep → Read), checkpoint em arquivo e delegue varredura a subagentes. Acima de ~85%, handoff e recomece.">2 · Orçar Contexto</div><div class="node gate" style="left:500px;top:180px" data-id="g3" data-label="3 · Gerar" data-desc="Estrutura antes de prosa; uma afirmação por parágrafo." data-detalhe="Fatos sobre o mundo atual são buscados antes; números têm fonte ou rótulo [ESTIMATIVA].">3 · Gerar</div><div class="node gate" style="left:640px;top:180px" data-id="g4" data-label="4 · Auditar" data-desc="Anti-slop: léxico, estrutura, substância, compressão." data-detalhe="Releia e reescreva. Corte léxico banido, teste &#x27;e daí?&#x27;, declare trade-offs e comprima 30% sem perda.">4 · Auditar</div><div class="node gate" style="left:780px;top:180px" data-id="g5" data-label="5 · Reparar" data-desc="Uma rodada só de autocrítica." data-detalhe="Loop infinito de autocrítica homogeneiza o texto. Se uma rodada não resolver, volte ao enquadramento.">5 · Reparar</div><div class="node gate" style="left:920px;top:180px" data-id="g6" data-label="6 · Verificar" data-desc="Arquivo abre? Números batem? Links funcionam?" data-detalhe="Alto risco: delegue a um subagente ou outro modelo sem histórico.">6 · Verificar</div><div class="node ferramenta" style="left:140px;top:340px" data-id="aspirador" data-label="Aspirador" data-desc="Revisão pós-implementação: limpa código mecanicamente." data-detalhe="Default dry-run. Detecta trailing whitespace, linhas em branco, tabs misturados, imports não usados. Só aplica correções mecânicas seguras com backup.">Aspirador</div><div class="node ferramenta" style="left:300px;top:340px" data-id="sync" data-label="mb-sync.py" data-desc="Trava de handoff multi-agente." data-detalhe="Escreve TRAVADO_POR/ATÉ/ESCOPO em HANDOFF.md. status/lock/release. Garantia executável para que dois agentes não escrevam ao mesmo tempo.">mb-sync.py</div><div class="node ferramenta" style="left:460px;top:340px" data-id="version" data-label="mb-check-version.py" data-desc="Sincroniza megabrain dos projetos com a central." data-detalhe="Compara VERSAO.txt. Central mais nova → sync. Projeto mais novo → avisa. Modo --verificar-git consulta o repositório público.">mb-check-version.py</div><div class="node ferramenta" style="left:620px;top:340px" data-id="relatorio" data-label="Relatório DNA" data-desc="Este HTML: DNA completo do megabrain." data-detalhe="Gera um relatório autocontido, interativo, com árvore de desenvolvimento visual, para humano e IA replicarem o protocolo.">Relatório DNA</div><div class="node ferramenta" style="left:780px;top:340px" data-id="memoria" data-label="mb-sync-memoria.py" data-desc="Sincroniza identidade entre agentes." data-detalhe="Copia perfil pessoal para CLAUDE.md/GEMINI.md/AGENTS.md de forma idempotente.">mb-sync-memoria.py</div><div class="node metodo" style="left:940px;top:340px" data-id="duplo" data-label="Duplo Diamante" data-desc="Pesquisa → Análise → Ideação → Design." data-detalhe="Para projetos de design. Não misture modos divergente/convergente. Trave grade, tipografia, paleta e espaçamento antes de compor.">Duplo Diamante</div><div class="node gate" style="left:320px;top:500px" data-id="g7" data-label="7 · Passar o Bastão" data-desc="Reescreve ESTADO.md, HANDOFF.md, anexa DECISOES.md." data-detalhe="Handoff com verbo e objeto. Próximo agente não começa do zero.">7 · Passar o Bastão</div><div class="node gate" style="left:680px;top:500px" data-id="g8" data-label="8 · Aprender" data-desc="Registra lição no formato GATILHO/LIÇÃO/ATALHO." data-detalhe="Lição 3× vira regra em MEGABRAIN.md ou skill própria.">8 · Aprender</div>
+        <svg><line x1="500" y1="40" x2="80" y2="180" /><line x1="500" y1="40" x2="220" y2="180" /><line x1="500" y1="40" x2="360" y2="180" /><line x1="500" y1="40" x2="500" y2="180" /><line x1="500" y1="40" x2="640" y2="180" /><line x1="500" y1="40" x2="780" y2="180" /><line x1="500" y1="40" x2="920" y2="180" /><line x1="80" y1="180" x2="260" y2="340" /><line x1="360" y1="180" x2="400" y2="340" /><line x1="640" y1="180" x2="120" y2="340" /><line x1="920" y1="180" x2="540" y2="340" /><line x1="540" y1="340" x2="680" y2="340" /><line x1="80" y1="180" x2="820" y2="340" /><line x1="220" y1="180" x2="960" y2="340" /><line x1="500" y1="180" x2="540" y2="340" /><line x1="920" y1="180" x2="320" y2="500" /><line x1="320" y1="500" x2="680" y2="500" /></svg>
+        <div class="node raiz" style="left:500px;top:40px" data-id="raiz" data-label="MEGABRAIN" data-desc="Protocolo de execução multi-agente e anti-slop." data-detalhe="O megabrain é um protocolo operacional para agentes de IA trabalharem juntos sem pisar um no outro e para evitar entregas genéricas.">MEGABRAIN</div><div class="node gate" style="left:80px;top:180px" data-id="g0" data-label="0 · Assumir" data-desc="Checa trava, lê ESTADO/HANDOFF/DECISOES/LICOES." data-detalhe="Gate 0 garante que apenas um agente escreva por vez. Usa HANDOFF.md e o script mb-sync.py para travar/liberar o projeto.">0 · Assumir</div><div class="node gate" style="left:220px;top:180px" data-id="g1" data-label="1 · Enquadrar" data-desc="Define artefato, leitor, critérios e restrições." data-detalhe="Antes de gerar qualquer output, responde: artefato, leitor, 3 critérios verificáveis, restrição dura e a versão genérica a evitar.">1 · Enquadrar</div><div class="node gate" style="left:360px;top:180px" data-id="g2" data-label="2 · Orçar Contexto" data-desc="Contexto é orçamento compartilhado." data-detalhe="Leia sob demanda (Glob → Grep → Read), checkpoint em arquivo e delegue varredura a subagentes. Acima de ~85%, handoff e recomece.">2 · Orçar Contexto</div><div class="node gate" style="left:500px;top:180px" data-id="g3" data-label="3 · Gerar" data-desc="Estrutura antes de prosa; uma afirmação por parágrafo." data-detalhe="Fatos sobre o mundo atual são buscados antes; números têm fonte ou rótulo [ESTIMATIVA].">3 · Gerar</div><div class="node gate" style="left:640px;top:180px" data-id="g4" data-label="4 · Auditar" data-desc="Anti-slop: léxico, estrutura, substância, compressão." data-detalhe="Releia e reescreva. Corte léxico banido, teste &#x27;e daí?&#x27;, declare trade-offs e comprima 30% sem perda.">4 · Auditar</div><div class="node gate" style="left:780px;top:180px" data-id="g5" data-label="5 · Reparar" data-desc="Uma rodada só de autocrítica." data-detalhe="Loop infinito de autocrítica homogeneiza o texto. Se uma rodada não resolver, volte ao enquadramento.">5 · Reparar</div><div class="node gate" style="left:920px;top:180px" data-id="g6" data-label="6 · Verificar" data-desc="Arquivo abre? Números batem? Links funcionam?" data-detalhe="Alto risco: delegue a um subagente ou outro modelo sem histórico.">6 · Verificar</div><div class="node ferramenta" style="left:120px;top:340px" data-id="aspirador" data-label="Aspirador" data-desc="Revisão pós-implementação: limpa código mecanicamente." data-detalhe="Default dry-run. Detecta trailing whitespace, linhas em branco, tabs misturados, imports não usados. Só aplica correções mecânicas seguras com backup.">Aspirador</div><div class="node ferramenta" style="left:260px;top:340px" data-id="sync" data-label="mb-sync.py" data-desc="Trava de handoff multi-agente." data-detalhe="Escreve TRAVADO_POR/ATÉ/ESCOPO em HANDOFF.md. status/lock/release. Garantia executável para que dois agentes não escrevam ao mesmo tempo.">mb-sync.py</div><div class="node ferramenta" style="left:400px;top:340px" data-id="version" data-label="mb-check-version.py" data-desc="Sincroniza megabrain dos projetos com a central." data-detalhe="Compara VERSAO.txt. Central mais nova → sync. Projeto mais novo → avisa. Modo --verificar-git consulta o repositório público.">mb-check-version.py</div><div class="node ferramenta" style="left:540px;top:340px" data-id="relatorio" data-label="Relatório DNA" data-desc="Este HTML: DNA completo do megabrain, em dna/." data-detalhe="Gera dna/RELATORIO-DNA.html (+ dna/dna.json), autocontido e interativo, com árvore de desenvolvimento visual, para humano e IA replicarem o protocolo.">Relatório DNA</div><div class="node ferramenta" style="left:680px;top:340px" data-id="relatorio_projeto" data-label="Relatório de projeto" data-desc="Irmão do DNA: concentra a instância de UM projeto." data-detalhe="mb-relatorio-projeto.py gera RELATORIO.html na raiz de um projeto: contexto específico + geral, estado/handoff, situação viva, próximas ações e pendências — tudo num arquivo só, pra humano e IA.">Relatório de projeto</div><div class="node ferramenta" style="left:820px;top:340px" data-id="memoria" data-label="mb-sync-memoria.py" data-desc="Sincroniza identidade entre agentes." data-detalhe="Copia perfil pessoal para CLAUDE.md/GEMINI.md/AGENTS.md de forma idempotente.">mb-sync-memoria.py</div><div class="node metodo" style="left:960px;top:340px" data-id="duplo" data-label="Duplo Diamante" data-desc="Pesquisa → Análise → Ideação → Design." data-detalhe="Para projetos de design. Não misture modos divergente/convergente. Trave grade, tipografia, paleta e espaçamento antes de compor.">Duplo Diamante</div><div class="node gate" style="left:320px;top:500px" data-id="g7" data-label="7 · Passar o Bastão" data-desc="Reescreve ESTADO.md, HANDOFF.md, anexa DECISOES.md." data-detalhe="Handoff com verbo e objeto. Próximo agente não começa do zero.">7 · Passar o Bastão</div><div class="node gate" style="left:680px;top:500px" data-id="g8" data-label="8 · Aprender" data-desc="Registra lição no formato GATILHO/LIÇÃO/ATALHO." data-detalhe="Lição 3× vira regra em MEGABRAIN.md ou skill própria.">8 · Aprender</div>
       </div>
     </div>
     <div class="detail-panel">
@@ -309,17 +315,17 @@
     <p>--- name: megabrain description: Protocolo de execução multi-agente — gates de entrega anti-slop, Duplo Diamante para projetos de design, roteamento de arquitetura (skill vs script vs subagente), e camada de projeto (fases macro, regras de ouro). Use ao iniciar entrega complexa, passar trabalho de u</p>
 
     <h3>O que é o Relatório DNA</h3>
-    <p>Este arquivo é o <strong>DNA</strong> do megabrain: tendo ele, uma pessoa ou IA pode entender o protocolo completo, replicar a estrutura e adaptá-la a outros projetos. Ele substitui a necessidade de vasculhar vários arquivos <code>.md</code> separados.</p>
+    <p>Este arquivo é o <strong>DNA</strong> do megabrain: tendo ele, uma pessoa ou IA pode entender o protocolo completo, replicar a estrutura e adaptá-la a outros projetos. Ele substitui a necessidade de vasculhar vários arquivos <code>.md</code> separados. Desde 260814 ele vive em <code>dna/</code> (pasta), não mais solto na raiz — a pasta também guarda <code>dna/dna.json</code> (dados estruturados) e <code>dna/.dna-backup/</code> (histórico de versões).</p>
 
     <h3>Relatório DNA vs Relatório de Projeto</h3>
     <div class="card-grid">
       <div class="card">
         <h4>Relatório DNA</h4>
-        <p>Canônico, genérico, vem do template do megabrain. Descreve o protocolo, gates, ferramentas e métodos.</p>
+        <p>Canônico, genérico, vem do template do megabrain. Descreve o protocolo, gates, ferramentas e métodos. Gerado por <code>bin/mb-relatorio-dna.py</code>, vive em <code>dna/</code>.</p>
       </div>
       <div class="card">
         <h4>Relatório de Projeto</h4>
-        <p>Instância aplicada a um projeto específico (ex.: TLOU). Inclui estado, decisões, lições e contexto particular.</p>
+        <p>Instância aplicada a um projeto específico (ex.: Financeiro da Silva, TLOU). Concentra contexto específico e geral, estado/handoff, situação viva e pendências — pra não precisar abrir vários .md soltos. Gerado por <code>bin/mb-relatorio-projeto.py</code>, vive na raiz do projeto (<code>RELATORIO.html</code>).</p>
       </div>
     </div>
   </section>
@@ -341,11 +347,15 @@
       </div>
       <div class="card">
         <h4>mb-check-version.py</h4>
-        <p>Sincroniza a cópia do megabrain dentro de cada projeto com a central. Pode consultar o git remote.</p>
+        <p>Sincroniza a cópia do megabrain dentro de cada projeto com a central (inclui a pasta <code>dna/</code> e <code>bin/</code> inteiro). Pode consultar o git remote.</p>
       </div>
       <div class="card">
         <h4>mb-relatorio-dna.py</h4>
-        <p>Gera este HTML. Backup automático em <code>.dna-backup/</code>.</p>
+        <p>Gera este HTML dentro de <code>dna/</code>. Backup automático em <code>dna/.dna-backup/</code>.</p>
+      </div>
+      <div class="card">
+        <h4>mb-relatorio-projeto.py</h4>
+        <p>Irmão deste gerador: monta o relatório de UM projeto (contexto, estado/handoff, situação, pendências) num HTML só, na raiz do projeto.</p>
       </div>
       <div class="card">
         <h4>mb-sync-memoria.py</h4>
@@ -378,7 +388,7 @@
     <h2>Como usar</h2>
     <h3>1. Instalar o megabrain num projeto</h3>
     <pre><code>python MEGABRAIN/bin/mb-check-version.py --projeto "./meu-projeto"</code></pre>
-    <p>Isso cria a pasta <code>MEGABRAIN/</code> dentro do projeto com o protocolo, referências e este relatório DNA.</p>
+    <p>Isso cria a pasta <code>MEGABRAIN/</code> dentro do projeto com o protocolo, referências, <code>bin/</code> inteiro e a pasta <code>dna/</code>.</p>
 
     <h3>2. Verificar se há atualização</h3>
     <pre><code>python MEGABRAIN/bin/mb-check-version.py --projeto "./meu-projeto" --verificar-git</code></pre>
@@ -389,7 +399,11 @@
 python MEGABRAIN/bin/mb-aspirador.py --dir "./meu-projeto" --aplicar</code></pre>
 
     <h3>4. Gerar/atualizar este relatório DNA</h3>
-    <pre><code>python bin/mb-relatorio-dna.py --central "./MEGABRAIN" --saida "./MEGABRAIN/MEGABRAIN-RELATORIO-DNA.html"</code></pre>
+    <pre><code>python bin/mb-relatorio-dna.py --central "./MEGABRAIN" --saida "./MEGABRAIN/dna/RELATORIO-DNA.html"</code></pre>
+
+    <h3>5. Gerar o relatório de UM projeto (irmão do DNA)</h3>
+    <pre><code>python bin/mb-relatorio-projeto.py --projeto "./meu-projeto" --titulo "Meu Projeto" --plano "ESTADO.md ou PLANO.md"</code></pre>
+    <p>Ver seção "Relatório de projeto" em <code>MEGABRAIN.md</code> para o guia completo de argumentos.</p>
   </section>
 
   <section id="ia">
@@ -398,9 +412,10 @@ python MEGABRAIN/bin/mb-aspirador.py --dir "./meu-projeto" --aplicar</code></pre
       <p>Este HTML é o <strong>DNA canônico</strong> do megabrain. Se você está lendo isso como IA, use as informações abaixo para replicar ou adaptar o protocolo:</p>
       <ul>
         <li><strong>Versão:</strong> v3.7 · 2026-08-14</li>
-        <li><strong>Gerado em:</strong> 2026-08-13T23:29:08.819032</li>
-        <li><strong>Componentes principais:</strong> MEGABRAIN, 0 · Assumir, 1 · Enquadrar, 2 · Orçar Contexto, 3 · Gerar, 4 · Auditar, 5 · Reparar, 6 · Verificar, Aspirador, mb-sync.py, mb-check-version.py, Relatório DNA, mb-sync-memoria.py, Duplo Diamante, 7 · Passar o Bastão, 8 · Aprender</li>
+        <li><strong>Gerado em:</strong> 2026-08-14T17:37:48.639782</li>
+        <li><strong>Componentes principais:</strong> MEGABRAIN, 0 · Assumir, 1 · Enquadrar, 2 · Orçar Contexto, 3 · Gerar, 4 · Auditar, 5 · Reparar, 6 · Verificar, Aspirador, mb-sync.py, mb-check-version.py, Relatório DNA, Relatório de projeto, mb-sync-memoria.py, Duplo Diamante, 7 · Passar o Bastão, 8 · Aprender</li>
         <li><strong>Regra de ouro:</strong> garantia real é script, não markdown. Use <code>mb-sync.py</code> para travar, <code>mb-check-version.py</code> para sincronizar.</li>
+        <li><strong>Se procura o relatório de UM projeto</strong> (não o protocolo), é outro artefato: <code>RELATORIO.html</code> na raiz do projeto, gerado por <code>mb-relatorio-projeto.py</code> — não confundir os dois.</li>
       </ul>
       <p>Para replicar: copie a estrutura de <code>MEGABRAIN.md</code>, <code>SKILL.md</code>, <code>referencias/</code> e <code>bin/</code>. Mantenha <code>ESTADO.md</code>, <code>HANDOFF.md</code>, <code>DECISOES.md</code> e <code>LICOES.md</code> por projeto.</p>
     </div>
@@ -410,7 +425,7 @@ python MEGABRAIN/bin/mb-aspirador.py --dir "./meu-projeto" --aplicar</code></pre
   &quot;@type&quot;: &quot;TechArticle&quot;,
   &quot;name&quot;: &quot;MEGABRAIN — Relatório DNA&quot;,
   &quot;version&quot;: &quot;v3.7 · 2026-08-14&quot;,
-  &quot;dateCreated&quot;: &quot;2026-08-13T23:29:08.819032&quot;,
+  &quot;dateCreated&quot;: &quot;2026-08-14T17:37:48.639782&quot;,
   &quot;description&quot;: &quot;DNA completo do protocolo megabrain: gates, ferramentas, métodos e instruções para replicação.&quot;,
   &quot;about&quot;: {
     &quot;@type&quot;: &quot;SoftwareApplication&quot;,
@@ -428,6 +443,7 @@ python MEGABRAIN/bin/mb-aspirador.py --dir "./meu-projeto" --aplicar</code></pre
       &quot;mb-sync.py&quot;,
       &quot;mb-check-version.py&quot;,
       &quot;Relatório DNA&quot;,
+      &quot;Relatório de projeto&quot;,
       &quot;mb-sync-memoria.py&quot;,
       &quot;Duplo Diamante&quot;,
       &quot;7 · Passar o Bastão&quot;,
@@ -493,7 +509,12 @@ python MEGABRAIN/bin/mb-aspirador.py --dir "./meu-projeto" --aplicar</code></pre
     {
       &quot;@type&quot;: &quot;Thing&quot;,
       &quot;name&quot;: &quot;Relatório DNA&quot;,
-      &quot;description&quot;: &quot;Este HTML: DNA completo do megabrain.&quot;
+      &quot;description&quot;: &quot;Este HTML: DNA completo do megabrain, em dna/.&quot;
+    },
+    {
+      &quot;@type&quot;: &quot;Thing&quot;,
+      &quot;name&quot;: &quot;Relatório de projeto&quot;,
+      &quot;description&quot;: &quot;Irmão do DNA: concentra a instância de UM projeto.&quot;
     },
     {
       &quot;@type&quot;: &quot;Thing&quot;,
@@ -517,12 +538,13 @@ python MEGABRAIN/bin/mb-aspirador.py --dir "./meu-projeto" --aplicar</code></pre
     }
   ]
 }</code></pre>
+    <p class="hint">Os mesmos dados, em JSON puro, também ficam em <code>dna/dna.json</code>.</p>
   </section>
 </main>
 
 <footer>
-  <p>MEGABRAIN · Relatório DNA · gerado por <code>mb-relatorio-dna.py</code></p>
-  <p>Backup automático em <code>.dna-backup/</code></p>
+  <p>MEGABRAIN · Relatório DNA · gerado por <code>mb-relatorio-dna.py</code> · vive em <code>dna/</code></p>
+  <p>Backup automático em <code>dna/.dna-backup/</code></p>
 </footer>
 
 <script>

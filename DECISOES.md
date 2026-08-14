@@ -37,3 +37,86 @@
 - Alternativa descartada: fazer download automático e silencioso da nova versão. Motivo: o usuário disse explicitamente que é leigo e prefere confirmar antes; automação total sem aviso esconde o que mudou.
 - Decisão: o repositório público do GitHub é a fonte canônica externa do megabrain. Quem clona recebe o DNA e pode rodar `mb-check-version.py --verificar-git` para saber se está desatualizado.
 - Alternativa descartada: distribuir o megabrain só por pasta local/compartilhada. Motivo: o amigo do <USUARIO> precisa baixar de forma simples e o git é o canal natural.
+
+## 260814 — relatório DNA vira pasta (`dna/`), não arquivo solto
+- Decisão: `bin/mb-relatorio-dna.py` passa a gravar em `MEGABRAIN\dna\` —
+  `RELATORIO-DNA.html` (o artefato principal, mesma importância de antes) +
+  `dna.json` (mesmos dados em JSON puro, pra script/IA consumir sem parsear
+  HTML) + `README.md` (índice de uma linha) + `.dna-backup/` (histórico,
+  antes solto na raiz da central). HTML legado de versões < 260814 é migrado
+  automaticamente pro backup na primeira execução, não fica perdido nem
+  sobrescrito sem rastro.
+- Alternativa descartada: manter arquivo único solto na raiz. Motivo: pedido
+  explícito do <USUARIO> — a pasta deixa o DNA no mesmo formato de "pasta com
+  propósito único" que o resto do projeto usa (`referencias/`, `skills/`,
+  `bin/`), e abre espaço pra crescer (JSON estruturado, backups) sem poluir
+  a raiz da central.
+- Decisão: `mb-check-version.py` sincroniza a pasta `dna/` inteira pro
+  projeto (mapeamento `("dna", "dna")`), não mais o arquivo solto.
+
+## 260814 — gerador genérico de relatório de projeto (`mb-relatorio-projeto.py`)
+- Decisão: criar `bin/mb-relatorio-projeto.py`, o item que ficava aberto no
+  HANDOFF desde a v3.7 ("gerador de relatório de projeto específico").
+  Generaliza o padrão já usado manualmente no Financeiro da Silva
+  (`RELATORIO.html` escrito à mão) em um script parametrizável: qualquer
+  projeto passa `--projeto`, `--titulo`, `--plano` (+ opcionais `--extra`,
+  `--skill`, `--tldr`, `--megabrain-central`) e recebe um HTML único que
+  concentra contexto específico + geral, estado/handoff, situação viva,
+  próximas ações e dados pendentes (auto-extraídos de `- [ ]`/`- [x]` de
+  todas as fontes lidas, com a fonte de cada item).
+- Alternativa descartada: continuar escrevendo `RELATORIO.html` à mão por
+  projeto. Motivo: viola a regra de ouro 4 (gerado nunca se edita — o
+  `RELATORIO.html` do Financeiro da Silva era HTML escrito direto, sem
+  gerador, contradizendo a própria regra); também não escala pra outros
+  projetos sem reescrever do zero cada vez.
+- Decisão: o relatório de projeto lê `ESTADO.md`/`HANDOFF.md`/`DECISOES.md`
+  do projeto **como referência**, sem mover ou duplicar os arquivos —
+  handoff concentrado na leitura (seção "Estado e handoff" do relatório),
+  fonte continua sendo os `.md`. Projeto sem esses três arquivos (nível 1-2
+  de adoção, ex.: Financeiro da Silva) usa o próprio arquivo `--plano` como
+  fonte combinada de estado + decisões, e o relatório declara isso
+  explicitamente em vez de fingir uma seção vazia.
+- Alternativa descartada: mover ESTADO/HANDOFF/DECISOES pra dentro do
+  relatório ou exigir que todo projeto os tenha. Motivo: pedido explícito do
+  <USUARIO> foi "não precisa mudar os md de lugar, só usar como referência";
+  exigir os três arquivos em projeto pessoal pequeno é burocracia sem uso —
+  a tabela de níveis de adoção (seção 7) já cobre esse caso.
+- Referência de uso completo (todos os argumentos preenchidos):
+  `Financeiro da Silva/05_scripts/gerar_relatorio.py`.
+
+## 260814 — "caminhos" vira "resolução" no relatório de projeto
+- Decisão: renomear a seção `id="caminhos"` do `mb-relatorio-projeto.py` pra
+  `id="fontes"` (tabela de caminho de arquivo, só isso) e criar uma seção
+  nova, `id="resolucao"` ("Resolução — alternativas pra resolver agora"),
+  posicionada acima de "Situação viva". A seção varre `--plano` + `--extra`
+  por headings `##`/`###` cujo título bate com palavras-chave ("plano de
+  ação", "estratégia", "alternativas", "resolução", "o que fazer"...) e
+  copia esses trechos em destaque, sem duplicar/mover nada do arquivo fonte.
+- Motivo: pedido explícito do <USUARIO> — "caminhos" no relatório dele
+  significava "rotas pra resolver a questão financeira" (alternativas de
+  decisão), não "caminho de pasta/arquivo". A ambiguidade só apareceu na
+  prática, lendo o relatório do Financeiro da Silva.
+- Alternativa descartada: manter "caminhos" só pra arquivo e criar um termo
+  novo pras alternativas de decisão sem integrá-lo ao gerador (ex.: pedir
+  pro <USUARIO> escrever as alternativas direto no `PLANO.md` sem extração
+  automática). Motivo: quebraria a filosofia de concentração — a ideia é o
+  relatório destacar automaticamente o que já existe no `.md` fonte, não
+  exigir reescrever o conteúdo em outro lugar.
+- Novos argumentos: `--sem-resolucao` (desliga a extração) e
+  `--resolucao-titulo PALAVRA` (repetível, adiciona palavra-chave própria
+  do domínio do projeto).
+- Aplicado no Financeiro da Silva no mesmo commit: `PLANO.md` ganhou o fato
+  "R$ 1.300 confirmados no débito" (informado por <USUARIO> em 14/08,
+  checagem direta — não é estimativa) mais uma subseção "Uso do débito
+  disponível" dentro de "Plano de ação para 20/08" com 3 alternativas
+  (concentrar no Nubank / usar parcial / guardar tudo), cada uma com o
+  porquê antes do como e uma recomendação (não três opções empatadas) — a
+  seção "Resolução" do `RELATORIO.html` já extrai isso automaticamente.
+
+## 260814 — caminhos absolutos não podem voltar pro SKILL.md
+- Decisão: manter `<MEGABRAIN_ROOT>` como placeholder no `skills/megabrain/SKILL.md`, não substituir por `<MEGABRAIN_ROOT>/` mesmo que a central do <USUARIO> esteja nesse caminho.
+- Alternativa descartada: deixar o caminho absoluto no SKILL.md da central, confiando que o `mb-generate-template.py` vai sanitizar no template público. Motivo: o SKILL.md da central também é copiado para dentro de projetos (`MEGABRAIN/skills/megabrain/SKILL.md`) e pode ser usado em outra máquina — caminho absoluto quebra fora do PC do <USUARIO> e vaza a estrutura de pasta pessoal.
+
+## 260814 — pastas internas ficam fora do template público
+- Decisão: adicionar `_to_delete/` e `alteracoes-pendentes/` à lista `EXCLUIR` do `bin/mb-generate-template.py`. Essas pastas são de uso interno da central e não devem ir para o repo público.
+- Alternativa descartada: deixar o gerador copiar tudo que não está na lista antiga. Motivo: `_to_delete/` contém arquivos temporários de decisão e `alteracoes-pendentes/` contém trabalho em andamento específico do <USUARIO> — ambos poluiriam o pacote público sem agregar valor.

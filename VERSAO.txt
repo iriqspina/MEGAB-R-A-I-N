@@ -1,3 +1,3 @@
-2026-08-14 · v3.7 — adiciona Relatório DNA (`MEGABRAIN-RELATORIO-DNA.html`)
+2026-08-14 · v3.9 — `mb-relatorio-projeto.py`: seção "caminhos" renomeada pra
 
 Histórico completo: ver repositório privado da pasta central.

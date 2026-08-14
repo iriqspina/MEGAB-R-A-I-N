@@ -11,12 +11,22 @@ Frontend voltado para humano (árvore de desenvolvimento tipo skill tree,
 seções navegáveis, cards). Backend para IA (JSON-LD, <meta> tags e seção
 "Para a IA").
 
+Desde 260814, a saída vive numa PASTA (`dna/`), não mais num arquivo solto na
+raiz da central — o relatório continua sendo o artefato principal
+(`dna/RELATORIO-DNA.html`), mas a pasta também guarda um `dna/dna.json`
+(mesmos dados em JSON puro, pra script/IA consumir sem parsear HTML) e um
+`dna/README.md` (índice de uma linha). Isso deixa o DNA com o mesmo formato
+de "pasta com propósito único" que o resto do projeto usa (`referencias/`,
+`skills/`, `bin/`).
+
 Uso:
     python bin/mb-relatorio-dna.py [--central PATH] [--saida PATH]
 
 Sem argumentos, detecta a central a partir do diretório do script e salva
-`MEGABRAIN-RELATORIO-DNA.html` na raiz dela. Antes de sobrescrever, copia o
-arquivo anterior para `.dna-backup/`.
+`dna/RELATORIO-DNA.html` dentro dela. Antes de sobrescrever, copia o arquivo
+anterior para `dna/.dna-backup/`. Se existir o arquivo legado
+`MEGABRAIN-RELATORIO-DNA.html` solto na raiz da central (versões < 260814),
+ele é migrado para `dna/.dna-backup/` na primeira execução.
 """
 
 import argparse
@@ -29,8 +39,10 @@ import shutil
 import sys
 from pathlib import Path
 
+DNA_DIR_NAME = "dna"
 BACKUP_DIR_NAME = ".dna-backup"
-DEFAULT_OUT_NAME = "MEGABRAIN-RELATORIO-DNA.html"
+DEFAULT_OUT_FILENAME = "RELATORIO-DNA.html"
+LEGACY_FLAT_NAME = "MEGABRAIN-RELATORIO-DNA.html"  # nome antigo, solto na raiz (< 260814)
 
 
 def detectar_central() -> Path:
@@ -103,22 +115,25 @@ NOS = [
      "detalhe": "Alto risco: delegue a um subagente ou outro modelo sem histórico."},
 
     # Ferramentas/métodos conectados
-    {"id": "aspirador", "label": "Aspirador", "grupo": "ferramenta", "x": 140, "y": 340,
+    {"id": "aspirador", "label": "Aspirador", "grupo": "ferramenta", "x": 120, "y": 340,
      "desc": "Revisão pós-implementação: limpa código mecanicamente.",
      "detalhe": "Default dry-run. Detecta trailing whitespace, linhas em branco, tabs misturados, imports não usados. Só aplica correções mecânicas seguras com backup."},
-    {"id": "sync", "label": "mb-sync.py", "grupo": "ferramenta", "x": 300, "y": 340,
+    {"id": "sync", "label": "mb-sync.py", "grupo": "ferramenta", "x": 260, "y": 340,
      "desc": "Trava de handoff multi-agente.",
      "detalhe": "Escreve TRAVADO_POR/ATÉ/ESCOPO em HANDOFF.md. status/lock/release. Garantia executável para que dois agentes não escrevam ao mesmo tempo."},
-    {"id": "version", "label": "mb-check-version.py", "grupo": "ferramenta", "x": 460, "y": 340,
+    {"id": "version", "label": "mb-check-version.py", "grupo": "ferramenta", "x": 400, "y": 340,
      "desc": "Sincroniza megabrain dos projetos com a central.",
      "detalhe": "Compara VERSAO.txt. Central mais nova → sync. Projeto mais novo → avisa. Modo --verificar-git consulta o repositório público."},
-    {"id": "relatorio", "label": "Relatório DNA", "grupo": "ferramenta", "x": 620, "y": 340,
-     "desc": "Este HTML: DNA completo do megabrain.",
-     "detalhe": "Gera um relatório autocontido, interativo, com árvore de desenvolvimento visual, para humano e IA replicarem o protocolo."},
-    {"id": "memoria", "label": "mb-sync-memoria.py", "grupo": "ferramenta", "x": 780, "y": 340,
+    {"id": "relatorio", "label": "Relatório DNA", "grupo": "ferramenta", "x": 540, "y": 340,
+     "desc": "Este HTML: DNA completo do megabrain, em dna/.",
+     "detalhe": "Gera dna/RELATORIO-DNA.html (+ dna/dna.json), autocontido e interativo, com árvore de desenvolvimento visual, para humano e IA replicarem o protocolo."},
+    {"id": "relatorio_projeto", "label": "Relatório de projeto", "grupo": "ferramenta", "x": 680, "y": 340,
+     "desc": "Irmão do DNA: concentra a instância de UM projeto.",
+     "detalhe": "mb-relatorio-projeto.py gera RELATORIO.html na raiz de um projeto: contexto específico + geral, estado/handoff, situação viva, próximas ações e pendências — tudo num arquivo só, pra humano e IA."},
+    {"id": "memoria", "label": "mb-sync-memoria.py", "grupo": "ferramenta", "x": 820, "y": 340,
      "desc": "Sincroniza identidade entre agentes.",
      "detalhe": "Copia perfil pessoal para CLAUDE.md/GEMINI.md/AGENTS.md de forma idempotente."},
-    {"id": "duplo", "label": "Duplo Diamante", "grupo": "metodo", "x": 940, "y": 340,
+    {"id": "duplo", "label": "Duplo Diamante", "grupo": "metodo", "x": 960, "y": 340,
      "desc": "Pesquisa → Análise → Ideação → Design.",
      "detalhe": "Para projetos de design. Não misture modos divergente/convergente. Trave grade, tipografia, paleta e espaçamento antes de compor."},
 
@@ -138,6 +153,7 @@ CONEXOES = [
     ("g2", "version"),
     ("g4", "aspirador"),
     ("g6", "relatorio"),
+    ("relatorio", "relatorio_projeto"),
     ("g0", "memoria"),
     ("g1", "duplo"),
     ("g3", "relatorio"),
@@ -235,7 +251,7 @@ def css() -> str:
     .tree-wrap { position: relative; overflow-x: auto; padding: 1rem 0; }
     .tree {
       position: relative;
-      width: 1040px;
+      width: 1080px;
       height: 620px;
       margin: 0 auto;
       user-select: none;
@@ -325,6 +341,26 @@ def js() -> str:
     """
 
 
+def gerar_json_ld(versao: str, data_iso: str) -> dict:
+    return {
+        "@context": "https://schema.org",
+        "@type": "TechArticle",
+        "name": "MEGABRAIN — Relatório DNA",
+        "version": versao,
+        "dateCreated": data_iso,
+        "description": "DNA completo do protocolo megabrain: gates, ferramentas, métodos e instruções para replicação.",
+        "about": {
+            "@type": "SoftwareApplication",
+            "name": "megabrain",
+            "featureList": [n["label"] for n in NOS],
+        },
+        "hasPart": [
+            {"@type": "Thing", "name": n["label"], "description": n["desc"]}
+            for n in NOS
+        ],
+    }
+
+
 def gerar_html(central: Path, versao: str, data_iso: str) -> str:
     resumo_megabrain = ler_resumo_arquivo(central, "MEGABRAIN.md")
     resumo_skill = ler_resumo_arquivo(central, "skills/megabrain/SKILL.md")
@@ -348,25 +384,7 @@ def gerar_html(central: Path, versao: str, data_iso: str) -> str:
         d = mapa[destino_id]
         linhas.append(f'<line x1="{o["x"]}" y1="{o["y"]}" x2="{d["x"]}" y2="{d["y"]}" />')
 
-    # JSON-LD para IA
-    json_ld = json.dumps({
-        "@context": "https://schema.org",
-        "@type": "TechArticle",
-        "name": "MEGABRAIN — Relatório DNA",
-        "version": versao,
-        "dateCreated": data_iso,
-        "description": "DNA completo do protocolo megabrain: gates, ferramentas, métodos e instruções para replicação.",
-        "about": {
-            "@type": "SoftwareApplication",
-            "name": "megabrain",
-            "featureList": [n["label"] for n in NOS],
-        },
-        "hasPart": [
-            {"@type": "Thing", "name": n["label"], "description": n["desc"]}
-            for n in NOS
-        ],
-    }, ensure_ascii=False, indent=2)
-
+    json_ld = json.dumps(gerar_json_ld(versao, data_iso), ensure_ascii=False, indent=2)
     meta_componentes = ", ".join(n["label"] for n in NOS)
 
     return f"""<!DOCTYPE html>
@@ -424,17 +442,17 @@ def gerar_html(central: Path, versao: str, data_iso: str) -> str:
     <p>{html.escape(resumo_skill)}</p>
 
     <h3>O que é o Relatório DNA</h3>
-    <p>Este arquivo é o <strong>DNA</strong> do megabrain: tendo ele, uma pessoa ou IA pode entender o protocolo completo, replicar a estrutura e adaptá-la a outros projetos. Ele substitui a necessidade de vasculhar vários arquivos <code>.md</code> separados.</p>
+    <p>Este arquivo é o <strong>DNA</strong> do megabrain: tendo ele, uma pessoa ou IA pode entender o protocolo completo, replicar a estrutura e adaptá-la a outros projetos. Ele substitui a necessidade de vasculhar vários arquivos <code>.md</code> separados. Desde 260814 ele vive em <code>dna/</code> (pasta), não mais solto na raiz — a pasta também guarda <code>dna/dna.json</code> (dados estruturados) e <code>dna/.dna-backup/</code> (histórico de versões).</p>
 
     <h3>Relatório DNA vs Relatório de Projeto</h3>
     <div class="card-grid">
       <div class="card">
         <h4>Relatório DNA</h4>
-        <p>Canônico, genérico, vem do template do megabrain. Descreve o protocolo, gates, ferramentas e métodos.</p>
+        <p>Canônico, genérico, vem do template do megabrain. Descreve o protocolo, gates, ferramentas e métodos. Gerado por <code>bin/mb-relatorio-dna.py</code>, vive em <code>dna/</code>.</p>
       </div>
       <div class="card">
         <h4>Relatório de Projeto</h4>
-        <p>Instância aplicada a um projeto específico (ex.: TLOU). Inclui estado, decisões, lições e contexto particular.</p>
+        <p>Instância aplicada a um projeto específico (ex.: Financeiro da Silva, TLOU). Concentra contexto específico e geral, estado/handoff, situação viva e pendências — pra não precisar abrir vários .md soltos. Gerado por <code>bin/mb-relatorio-projeto.py</code>, vive na raiz do projeto (<code>RELATORIO.html</code>).</p>
       </div>
     </div>
   </section>
@@ -456,11 +474,15 @@ def gerar_html(central: Path, versao: str, data_iso: str) -> str:
       </div>
       <div class="card">
         <h4>mb-check-version.py</h4>
-        <p>Sincroniza a cópia do megabrain dentro de cada projeto com a central. Pode consultar o git remote.</p>
+        <p>Sincroniza a cópia do megabrain dentro de cada projeto com a central (inclui a pasta <code>dna/</code> e <code>bin/</code> inteiro). Pode consultar o git remote.</p>
       </div>
       <div class="card">
         <h4>mb-relatorio-dna.py</h4>
-        <p>Gera este HTML. Backup automático em <code>.dna-backup/</code>.</p>
+        <p>Gera este HTML dentro de <code>dna/</code>. Backup automático em <code>dna/.dna-backup/</code>.</p>
+      </div>
+      <div class="card">
+        <h4>mb-relatorio-projeto.py</h4>
+        <p>Irmão deste gerador: monta o relatório de UM projeto (contexto, estado/handoff, situação, pendências) num HTML só, na raiz do projeto.</p>
       </div>
       <div class="card">
         <h4>mb-sync-memoria.py</h4>
@@ -493,7 +515,7 @@ def gerar_html(central: Path, versao: str, data_iso: str) -> str:
     <h2>Como usar</h2>
     <h3>1. Instalar o megabrain num projeto</h3>
     <pre><code>python MEGABRAIN/bin/mb-check-version.py --projeto "./meu-projeto"</code></pre>
-    <p>Isso cria a pasta <code>MEGABRAIN/</code> dentro do projeto com o protocolo, referências e este relatório DNA.</p>
+    <p>Isso cria a pasta <code>MEGABRAIN/</code> dentro do projeto com o protocolo, referências, <code>bin/</code> inteiro e a pasta <code>dna/</code>.</p>
 
     <h3>2. Verificar se há atualização</h3>
     <pre><code>python MEGABRAIN/bin/mb-check-version.py --projeto "./meu-projeto" --verificar-git</code></pre>
@@ -504,7 +526,11 @@ def gerar_html(central: Path, versao: str, data_iso: str) -> str:
 python MEGABRAIN/bin/mb-aspirador.py --dir "./meu-projeto" --aplicar</code></pre>
 
     <h3>4. Gerar/atualizar este relatório DNA</h3>
-    <pre><code>python bin/mb-relatorio-dna.py --central "./MEGABRAIN" --saida "./MEGABRAIN/MEGABRAIN-RELATORIO-DNA.html"</code></pre>
+    <pre><code>python bin/mb-relatorio-dna.py --central "./MEGABRAIN" --saida "./MEGABRAIN/dna/RELATORIO-DNA.html"</code></pre>
+
+    <h3>5. Gerar o relatório de UM projeto (irmão do DNA)</h3>
+    <pre><code>python bin/mb-relatorio-projeto.py --projeto "./meu-projeto" --titulo "Meu Projeto" --plano "ESTADO.md ou PLANO.md"</code></pre>
+    <p>Ver seção "Relatório de projeto" em <code>MEGABRAIN.md</code> para o guia completo de argumentos.</p>
   </section>
 
   <section id="ia">
@@ -516,17 +542,19 @@ python MEGABRAIN/bin/mb-aspirador.py --dir "./meu-projeto" --aplicar</code></pre
         <li><strong>Gerado em:</strong> {html.escape(data_iso)}</li>
         <li><strong>Componentes principais:</strong> {html.escape(meta_componentes)}</li>
         <li><strong>Regra de ouro:</strong> garantia real é script, não markdown. Use <code>mb-sync.py</code> para travar, <code>mb-check-version.py</code> para sincronizar.</li>
+        <li><strong>Se procura o relatório de UM projeto</strong> (não o protocolo), é outro artefato: <code>RELATORIO.html</code> na raiz do projeto, gerado por <code>mb-relatorio-projeto.py</code> — não confundir os dois.</li>
       </ul>
       <p>Para replicar: copie a estrutura de <code>MEGABRAIN.md</code>, <code>SKILL.md</code>, <code>referencias/</code> e <code>bin/</code>. Mantenha <code>ESTADO.md</code>, <code>HANDOFF.md</code>, <code>DECISOES.md</code> e <code>LICOES.md</code> por projeto.</p>
     </div>
     <h3>Metadados estruturados</h3>
     <pre><code>{html.escape(json_ld)}</code></pre>
+    <p class="hint">Os mesmos dados, em JSON puro, também ficam em <code>dna/dna.json</code>.</p>
   </section>
 </main>
 
 <footer>
-  <p>MEGABRAIN · Relatório DNA · gerado por <code>mb-relatorio-dna.py</code></p>
-  <p>Backup automático em <code>.dna-backup/</code></p>
+  <p>MEGABRAIN · Relatório DNA · gerado por <code>mb-relatorio-dna.py</code> · vive em <code>dna/</code></p>
+  <p>Backup automático em <code>dna/.dna-backup/</code></p>
 </footer>
 
 <script>{js()}</script>
@@ -535,10 +563,24 @@ python MEGABRAIN/bin/mb-aspirador.py --dir "./meu-projeto" --aplicar</code></pre
 """
 
 
+def migrar_arquivo_legado(central: Path, pasta_dna: Path) -> None:
+    """Se existir o HTML antigo solto na raiz (< 260814), move para o backup
+    dentro da nova pasta dna/ em vez de deixá-lo perdido ou sobrescrevê-lo."""
+    legado = central / LEGACY_FLAT_NAME
+    if not legado.exists():
+        return
+    backup_dir = pasta_dna / BACKUP_DIR_NAME
+    backup_dir.mkdir(parents=True, exist_ok=True)
+    timestamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
+    destino = backup_dir / f"{LEGACY_FLAT_NAME.replace('.html', '')}-legado-{timestamp}.html"
+    shutil.move(str(legado), str(destino))
+    print(f"Arquivo legado migrado: {legado} -> {destino}")
+
+
 def main():
     ap = argparse.ArgumentParser(description="Gerador do relatório DNA do megabrain")
     ap.add_argument("--central", default=None, help="pasta central do megabrain (default: detecta)")
-    ap.add_argument("--saida", default=None, help="caminho do HTML de saída (default: MEGABRAIN-RELATORIO-DNA.html na central)")
+    ap.add_argument("--saida", default=None, help="caminho do HTML de saída (default: dna/RELATORIO-DNA.html na central)")
     args = ap.parse_args()
 
     central = Path(args.central).resolve() if args.central else detectar_central()
@@ -546,7 +588,12 @@ def main():
         print(f"ERRO: central não encontrada: {central}")
         sys.exit(1)
 
-    saida = Path(args.saida).resolve() if args.saida else central / DEFAULT_OUT_NAME
+    pasta_dna = central / DNA_DIR_NAME
+    pasta_dna.mkdir(parents=True, exist_ok=True)
+
+    migrar_arquivo_legado(central, pasta_dna)
+
+    saida = Path(args.saida).resolve() if args.saida else pasta_dna / DEFAULT_OUT_FILENAME
 
     versao = ler_versao(central)
     data_iso = dt.datetime.now().isoformat()
@@ -558,15 +605,36 @@ def main():
 
     # Backup do relatório anterior
     if saida.exists():
-        backup_base = central / BACKUP_DIR_NAME
+        backup_base = pasta_dna / BACKUP_DIR_NAME
         backup_base.mkdir(parents=True, exist_ok=True)
         timestamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
-        backup_path = backup_base / f"MEGABRAIN-RELATORIO-DNA-{timestamp}.html"
+        backup_path = backup_base / f"RELATORIO-DNA-{timestamp}.html"
         shutil.copy2(saida, backup_path)
         print(f"Backup do DNA anterior: {backup_path}")
 
     saida.write_text(html_out, encoding="utf-8")
     print(f"Relatório DNA gerado: {saida}")
+
+    # JSON estruturado (mesmos dados do JSON-LD embutido), sidecar pra script/IA
+    json_path = pasta_dna / "dna.json"
+    json_path.write_text(
+        json.dumps(gerar_json_ld(versao, data_iso), ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    print(f"DNA estruturado gerado: {json_path}")
+
+    # README de uma linha pra quem abrir a pasta sem contexto
+    readme_path = pasta_dna / "README.md"
+    readme_path.write_text(
+        "# dna/\n\n"
+        f"`{DEFAULT_OUT_FILENAME}` — relatório DNA do megabrain (protocolo, genérico). "
+        f"`dna.json` — os mesmos dados em JSON puro. `.dna-backup/` — versões anteriores.\n\n"
+        "Gerado por `bin/mb-relatorio-dna.py` — nunca editar os arquivos desta pasta na mão; "
+        "edite a fonte (`MEGABRAIN.md`, `SKILL.md`) e rode o script de novo.\n\n"
+        "Procurando o relatório de UM projeto (não o protocolo)? É outro artefato: "
+        "`RELATORIO.html` na raiz do projeto, gerado por `bin/mb-relatorio-projeto.py`.\n",
+        encoding="utf-8",
+    )
 
 
 if __name__ == "__main__":

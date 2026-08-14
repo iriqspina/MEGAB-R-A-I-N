@@ -48,7 +48,7 @@ MAPEAMENTO = [
     ("referencias", "referencias"),
     ("VERSAO.txt", "VERSAO.txt"),
     ("bin", "bin"),
-    ("MEGABRAIN-RELATORIO-DNA.html", "MEGABRAIN-RELATORIO-DNA.html"),
+    ("dna", "dna"),  # pasta DNA (RELATORIO-DNA.html + dna.json + README.md) — desde 260814
 ]
 
 

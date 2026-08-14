@@ -66,10 +66,10 @@ estado → grelhar → spec → tickets → implementar → validar → publicar
 | `.scratch/<feature>/` | tracker vivo: spec, plano, grelha, issues |
 | `docs/` | planos e handoffs, `YYMMDD` quando datado |
 | `Atalhos\*.cmd` + `LEIAME` | dia a dia num clique, numerados |
-| relatório vivo (`RELATORIO.html`) | retrato auto-atualizante — edita-se o gerador, nunca o HTML |
+| relatório de projeto (`RELATORIO.html`) | instância aplicada — contexto, estado/handoff, situação e pendências concentrados num HTML só; gerado por `bin/mb-relatorio-projeto.py` (ver seção 5b) — edita-se o gerador/fonte, nunca o HTML |
 | `CHANGELOG.md` | o que subiu, mais novo primeiro |
 | `_arquivo\_tmp\` | sondas e scripts de uma vez só |
-| `MEGABRAIN\` | esta pipeline sincronizada — não editar a cópia |
+| `MEGABRAIN\` | esta pipeline sincronizada (inclui `dna\` — relatório DNA do protocolo) — não editar a cópia |
 
 ## 4 · Regras de ouro (valem em todo projeto)
 
@@ -114,6 +114,57 @@ assumir/enquadrar/orçar/gerar/auditar/reparar/verificar/bastão/aprender,
 divisão Claude↔Kimi, roteamento de arquitetura (skill vs subagente vs hook
 vs script), Duplo Diamante pra projeto de design. Não duplicado aqui —
 edite lá.
+
+## 5b · Relatório de projeto — template de consolidação
+
+Desde 260814. Todo projeto pode gerar um **relatório de projeto**: o irmão
+do relatório DNA (`MEGABRAIN\dna\`). O DNA descreve o **protocolo**
+(genérico, estável); o relatório de projeto descreve a **instância** — um
+único HTML, direcionado a usuário E IA, que concentra o que antes exigia
+abrir vários `.md` soltos:
+
+- **contexto específico** (`CONTEXT.md` do projeto) + **contexto geral**
+  (resumo do `MEGABRAIN.md` central, quando acessível);
+- **estado e handoff** — lê `ESTADO.md`/`HANDOFF.md`/`DECISOES.md` do
+  projeto **como referência, sem mover os arquivos**; projeto nível 1-2 sem
+  esses três arquivos usa o próprio arquivo vivo (`--plano`) como fonte de
+  estado + decisões, e o relatório diz isso explicitamente em vez de fingir
+  seção vazia;
+- **situação viva** — o arquivo indicado em `--plano` (ex.: `PLANO.md`,
+  `ESTADO.md`), renderizado por inteiro;
+- **arquivos extra de domínio** — `--extra` (repetível): cada um vira sua
+  própria seção;
+- **resolução — alternativas pra resolver a situação** (desde 260814; nome
+  antigo era "caminhos", trocado porque ficava ambíguo com caminho de
+  arquivo) — varre `--plano` + `--extra` por headings `##`/`###` cujo texto
+  bate com palavras-chave (`plano de ação`, `estratégia`, `alternativas`,
+  `resolução`, `o que fazer`...) e destaca esses trechos numa seção própria,
+  em cima da "situação viva" — sem duplicar o arquivo fonte, só recorta o
+  que já existe. `--sem-resolucao` desliga; `--resolucao-titulo PALAVRA`
+  (repetível) adiciona palavra-chave própria do domínio;
+- **próximas ações** — lidas do `SKILL.md` router do projeto, se passado em
+  `--skill`;
+- **dados pendentes** — toda linha `- [ ]` / `- [x]` de qualquer arquivo
+  lido entra automaticamente numa lista única "Dados pendentes", com a
+  fonte de cada item — não precisa marcar pendência duas vezes;
+- **fontes** (antes "caminhos") — tabela com o caminho absoluto de cada
+  arquivo lido, com botão de copiar; é só a lista de arquivo/pasta, não
+  confundir com a seção "resolução" acima.
+
+Gerador: `bin/mb-relatorio-projeto.py --projeto PATH --titulo NOME --plano
+ARQUIVO [--extra ARQUIVO]... [--skill ARQUIVO] [--tldr "frase"]
+[--megabrain-central PATH] [--sem-resolucao] [--resolucao-titulo PALAVRA]...`.
+`--saida` default é `RELATORIO.html` na raiz do projeto. Referência de uso
+completo (todos os argumentos preenchidos):
+`Financeiro da Silva/05_scripts/gerar_relatorio.py`.
+
+Regra de ouro 4 vale igual aqui: **gerado nunca se edita**. O HTML de saída
+não se toca na mão — edita-se o(s) `.md` fonte e roda-se o gerador de novo.
+
+Não confundir com o relatório DNA nem tentar fundir os dois num arquivo só:
+o DNA precisa ficar estável e genérico (é o que se copia pra replicar o
+protocolo em outro lugar); o relatório de projeto carrega o que é
+específico daquele projeto e poluiria o template se misturado.
 
 ## 6 · Biblioteca visual pessoal (âncoras concretas)
 

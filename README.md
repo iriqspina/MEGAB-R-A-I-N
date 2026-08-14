@@ -19,10 +19,21 @@ para impedir que entregas de IA saiam genéricas.
   Diamante completo, roteamento quando o design vira código, sincronização
   de identidade entre agentes, e um prompt portátil pra colar em qualquer
   IA sem instalar nada.
-- `bin/` — dois scripts testados: `mb-sync.py` (trava de handoff
-  multi-agente em `HANDOFF.md`) e `mb-sync-memoria.py` (sincroniza um
-  arquivo de identidade local para `CLAUDE.md`/`GEMINI.md`/`AGENTS.md`,
-  idempotente).
+- `bin/` — scripts testados do protocolo:
+  - `mb-sync.py` — trava de handoff multi-agente em `HANDOFF.md`.
+  - `mb-sync-memoria.py` — sincroniza um arquivo de identidade local para
+    `CLAUDE.md`/`GEMINI.md`/`AGENTS.md`, idempotente.
+  - `mb-check-version.py` — compara a versão do megabrain de um projeto com
+    a central e sincroniza quando necessário.
+  - `mb-generate-template.py` — gera o pacote público sanitizado
+    (`260810_github-export/`).
+  - `mb-aspirador.py` — limpeza mecânica e não destrutiva de código
+    (dry-run por padrão, backup obrigatório).
+  - `mb-relatorio-dna.py` — gera o relatório DNA do protocolo em `dna/`.
+  - `mb-relatorio-projeto.py` — gera o relatório de instância de um
+    projeto específico (`RELATORIO.html`).
+  - `mb-sync-projeto-para-central.py` — sobe alterações de um projeto para
+    a central do megabrain quando o projeto ficou mais novo.
 
 ## Como usar
 

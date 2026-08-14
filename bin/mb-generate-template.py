@@ -39,6 +39,8 @@ EXCLUIR = {
     "260811_prompt-claude-handoff.txt",
     "260810_github-export",
     "_github-repo-local",
+    "_to_delete",
+    "alteracoes-pendentes",
     "referencias visuais",
     ".git",
     ".mb-aspirador",
