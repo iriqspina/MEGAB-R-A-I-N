@@ -2,12 +2,10 @@
 
 - Versão ativa: 4.2
 - Fase: concluída / entregue no GitHub e propagada para projetos derivados
-- Última ação: implementado modo offline para o megabrain. Criado
-  `OFFLINE.md` explicando como usar o protocolo sem internet/GitHub;
-  `mb-check-version.py` ganhou flag `--offline`; seções de uso offline
-  adicionadas a `MEGABRAIN.md`, `260810_MEGABRAIN.md` e `README.md`.
-  Bump para v4.2. Próximo passo: propagar v4.2 para os projetos derivados.
-- Próximo passo: propagar v4.2 para Financeiro da Silva, Jarvis, Rodada e
-  TLOU; configurar remote do TLOU se o <USUARIO> quiser push; adotar
-  bibliotecas do `requirements.txt` quando o ambiente permitir.
+- Última ação: modo offline implementado e propagado. Criado `OFFLINE.md`,
+  `mb-check-version.py` ganhou `--offline`, documentação atualizada e todos
+  os projetos derivados (Financeiro da Silva, Jarvis, Rodada, TLOU) estão
+  na v4.2. Rodada pushada para GitHub; TLOU commitado localmente.
+- Próximo passo: configurar remote do TLOU se o <USUARIO> quiser push;
+  adotar bibliotecas do `requirements.txt` quando o ambiente permitir.
 - Alerta: nenhum

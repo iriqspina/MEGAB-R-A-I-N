@@ -59,7 +59,8 @@ ESCOPO: -
 
 ## Próximo passo concreto
 Configurar remote do TLOU e fazer push, ou deixar o commit local até que
-o <USUARIO> defina onde o repo deve morar.
+o <USUARIO> defina onde o repo deve morar. Fora isso, a entrega v4.2 está
+finalizada.
 
 ## Arquivos tocados
 - `bin/mb_utils.py`
