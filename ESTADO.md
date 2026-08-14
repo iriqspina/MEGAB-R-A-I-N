@@ -1,13 +1,13 @@
 # ESTADO — megabrain core
 
 - Versão ativa: 4.3
-- Fase: concluída / entregue no GitHub e propagada para projetos derivados
-- Última ação: redundância contra pontos únicos de falha implementada,
-  testada e propagada. Scripts `mb-backup-central.py` e
-  `mb-recuperar-megabrain.py` estão em todos os projetos derivados.
-  Central pushada para `https://github.com/iriqspina/MEGAB-R-A-I-N.git`
-  (commit `4e09808`). Rodada pushada para GitHub; TLOU commitado
-  localmente.
+- Fase: concluída / relatórios finais gerados e prontos para consulta
+- Última ação: gerados relatórios atualizados da central:
+  - `dna/RELATORIO-DNA.html` — relatório DNA do protocolo (v4.3).
+  - `RELATORIO.html` — relatório de projeto "MEGABRAIN v4.3 — Guia de uso
+    e mudanças", com contexto, estado, situação e próximas ações.
+  Ambos sincronizados com `_github-repo-local/` e pushados para
+  `https://github.com/iriqspina/MEGAB-R-A-I-N.git`.
 - Próximo passo: configurar remote do TLOU se o <USUARIO> quiser push;
   adotar bibliotecas do `requirements.txt` quando o ambiente permitir.
 - Alerta: nenhum

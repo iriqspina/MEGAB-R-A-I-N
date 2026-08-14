@@ -30,6 +30,10 @@ ESCOPO: -
 - Testes manuais: backup da central criado com sucesso; recuperação de
   projeto a partir do backup zip funcionou; recuperação a partir de outro
   projeto funcionou.
+- Relatórios finais gerados e publicados:
+  - `dna/RELATORIO-DNA.html` — relatório DNA do protocolo (v4.3).
+  - `RELATORIO.html` — relatório de projeto "MEGABRAIN v4.3 — Guia de uso
+    e mudanças", com resumo executivo, estado, situação e próximas ações.
 
 ## O que ficou aberto
 - Propagar v4.3 para Financeiro da Silva, Jarvis, Rodada e TLOU.
