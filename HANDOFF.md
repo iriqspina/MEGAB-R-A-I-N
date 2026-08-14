@@ -25,25 +25,30 @@ ESCOPO: -
     perfis.
   - `README.md`: seção "Migração v4.0 — diferenciação de usuário" com
     passos rápidos.
-- `VERSAO.txt` atualizado para v4.1 (bump para disparar sincronização da
-  documentação de migração v4.0 nos projetos derivados).
+- Modo offline implementado (v4.2):
+  - Criado `OFFLINE.md` explicando como usar o megabrain sem
+    internet/GitHub.
+  - `mb-check-version.py` ganhou flag `--offline` que desativa consultas
+    de rede e usa só a central local.
+  - Mensagens de falha de remote agora indicam que a cópia local
+    `MEGABRAIN/` continua funcionando.
+  - Seção "Uso offline" adicionada a `MEGABRAIN.md`,
+    `260810_MEGABRAIN.md` e `README.md`.
+- `VERSAO.txt` atualizado para v4.2.
 - Template público `260810_github-export/` regenerado e sincronizado com
   `_github-repo-local/` via robocopy.
-- Push da central para `https://github.com/iriqspina/MEGAB-R-A-I-N.git`
-  (commits `3e0a888`, `ac34a29`, `db386a0`, `0786a5d` e o da v4.1).
-- Projetos derivados sincronizados com v4.0:
+- Push da central para `https://github.com/iriqspina/MEGAB-R-A-I-N.git`.
+- Projetos derivados sincronizados:
   - Financeiro da Silva (não é repo git; atualizado localmente).
   - Jarvis (não é repo git; atualizado localmente).
   - Rodada: sincronizado e push para
-    `https://github.com/iriqspina/rodada.git` (commit `91a24e4`).
-    Removido `MEGABRAIN/bin/__pycache__/` e `.mb-aspirador/` do commit;
-    adicionadas essas pastas ao `.gitignore` do projeto.
-  - TLOU (`Portfolio/The Last of Us - Part II`): sincronizado e commitado
-    localmente (commit `60dcdc8`); não tem remote configurado, então push
-    não foi feito. Criado `.gitignore` básico excluindo `__pycache__/` e
-    `.mb-aspirador/` do megabrain.
+    `https://github.com/iriqspina/rodada.git`.
+  - TLOU (`Portfolio/The Last of Us - Part II`): sincronizado e
+    commitado localmente; não tem remote configurado, então push não foi
+    feito.
 - Testes manuais: lock/release com detecção automática de usuário;
-  sincronização de identidade com injeção de `USUARIO:` nos três destinos.
+  sincronização de identidade; `mb-check-version.py --offline` sem
+  consulta de rede.
 
 ## O que ficou aberto
 - Configurar remote do repo TLOU se o <USUARIO> quiser push.
@@ -60,6 +65,7 @@ o <USUARIO> defina onde o repo deve morar.
 - `bin/mb_utils.py`
 - `bin/mb-sync.py`
 - `bin/mb-sync-memoria.py`
+- `bin/mb-check-version.py`
 - `260810_memoria-pessoal.md`
 - `260810_backup-raiz-perfil/260810_AGENTS.md`
 - `260810_backup-raiz-perfil/260810_CLAUDE.md`
@@ -68,6 +74,7 @@ o <USUARIO> defina onde o repo deve morar.
 - `MEGABRAIN.md`
 - `260810_MEGABRAIN.md`
 - `README.md`
+- `OFFLINE.md` (novo)
 - `VERSAO.txt`
 - `ESTADO.md`, `HANDOFF.md`, `DECISOES.md`
 - `260810_github-export/` (regenerado)

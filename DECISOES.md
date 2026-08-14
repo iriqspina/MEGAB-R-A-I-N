@@ -164,6 +164,21 @@
   `mb-sync.py`. Motivo: vazaria nome pessoal no código e quebraria a
   premissa de que o template público é genérico.
 
+## 260814 — modo offline do megabrain
+- Decisão: garantir que a cópia `MEGABRAIN/` dentro de cada projeto derivado
+  seja auto-suficiente quando o GitHub ou a internet estiverem
+  indisponíveis. Criar `OFFLINE.md` na central, adicioná-lo ao mapeamento
+  de sincronização, e implementar `--offline` em `mb-check-version.py`
+  (desativa consultas de rede e deixa claro que a cópia local continua
+  funcionando).
+- Alternativa descartada: deixar o protocolo dependendo do git remoto para
+  qualquer operação. Motivo: o <USUARIO> pediu explicitamente uma versão
+  local funcional; projetos reais não podem parar quando o remoto cai.
+- Decisão: manter a sincronização central -> projeto como mecanismo
+  principal de atualização, mas documentar que, uma vez sincronizado, o
+  projeto vive sozinho. O modo offline é opt-in por flag, não padrão,
+  para não esconder falhas de rede de quem quer saber.
+
 
 
 ## 260814 — card "Ação imediata" + 2 bugs corrigidos no conversor markdown

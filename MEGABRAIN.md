@@ -84,6 +84,18 @@ o campo aparece como `<USUARIO>` e o script indica que é preciso configurar.
   separados (ex.: `260810_memoria-pessoal-fulano.md`) e passe `--source` e
   `--usuario` explicitamente.
 
+### Uso offline
+
+A pasta `MEGABRAIN/` dentro de cada projeto é uma cópia local completa do
+protocolo. Se o GitHub ou a internet caírem, os scripts continuam
+funcionando direto de lá. Para sincronizar sem consultar a rede:
+
+```
+python MEGABRAIN/bin/mb-check-version.py --projeto "caminho/do/projeto" --offline
+```
+
+Mais detalhes: `MEGABRAIN/OFFLINE.md`.
+
 ---
 
 ## 2 · Fases do projeto (macro — herdado do PIPELINE.md v2)

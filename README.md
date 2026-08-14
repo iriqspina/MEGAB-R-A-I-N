@@ -70,3 +70,15 @@ repositório ou sincronizou um projeto derivado, configure seu perfil:
 
 Detalhes completos: `MEGABRAIN.md` seção 1b ou
 `referencias/260810_sync-memoria.md`.
+
+## Uso offline
+
+A pasta `MEGABRAIN/` dentro de cada projeto é uma cópia local completa do
+protocolo. Se o GitHub ou a internet caírem, os scripts continuam
+funcionando. Use:
+
+```
+python MEGABRAIN/bin/mb-check-version.py --projeto "caminho/do/projeto" --offline
+```
+
+Mais detalhes: `MEGABRAIN/OFFLINE.md`.

@@ -14,6 +14,7 @@ variável de ambiente MEGABRAIN_CENTRAL. Isso torna o script portátil.
 Uso:
     python bin/mb-check-version.py --projeto "./meu-projeto"
     python bin/mb-check-version.py --projeto "./meu-projeto" --verificar-git
+    python bin/mb-check-version.py --projeto "./meu-projeto" --offline
 
 Opções:
     --projeto PATH     Pasta do projeto
@@ -22,6 +23,8 @@ Opções:
     --force            Força sincronização mesmo se versões baterem
     --auto             Não pergunta; se projeto for mais novo, só reporta e sai com 2
     --verificar-git    Consulta o repositório remoto e avisa se há versão mais recente
+    --offline          Não consulta rede; usa apenas a central local. Equivalente a
+                       desligar --verificar-git e aceitar fallback local
 """
 
 import argparse
@@ -54,6 +57,7 @@ MAPEAMENTO = [
     ("VERSAO.txt", "VERSAO.txt"),
     ("bin", "bin"),
     ("dna", "dna"),  # pasta DNA (RELATORIO-DNA.html + dna.json + README.md) — desde 260814
+    ("OFFLINE.md", "OFFLINE.md"),
 ]
 
 
@@ -204,6 +208,8 @@ def main():
     p.add_argument("--auto", action="store_true")
     p.add_argument("--verificar-git", action="store_true",
                    help="consulta o remote do GitHub e avisa se há commit mais recente")
+    p.add_argument("--offline", action="store_true",
+                   help="não consulta rede; usa apenas a central local")
     p.add_argument("--remote", default="https://github.com/iriqspina/MEGAB-R-A-I-N.git",
                    help="URL do repositório remoto (default: GitHub público)")
     args = p.parse_args()
@@ -242,12 +248,17 @@ def main():
     print(f"central: {v_central}")
     print(f"projeto: {v_projeto if tem_mb else 'sem MEGABRAIN/'}")
 
-    if args.verificar_git:
+    if args.offline:
+        print("modo offline ativado: não vou consultar rede.")
+        print("Use MEGABRAIN/ do projeto diretamente ou a central local.")
+        print("Para mais detalhes, leia MEGABRAIN/OFFLINE.md.\n")
+    elif args.verificar_git:
         print(f"\nconsultando remote: {args.remote}")
         hash_remoto, erro = verificar_git(args.remote)
         if erro:
             print(f"Não foi possível consultar o git: {erro}")
-            print("Verifique sua conexão ou se o repositório ainda existe.")
+            print("A cópia local em MEGABRAIN/ continua funcionando normalmente.")
+            print("Veja MEGABRAIN/OFFLINE.md para uso sem internet.")
         else:
             print(f"último commit remoto: {hash_remoto[:12]}")
             # Se a central local for um repo git, compara
