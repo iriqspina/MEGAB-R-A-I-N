@@ -191,7 +191,14 @@ def main():
         print("Dica: defina MEGABRAIN_CENTRAL ou passe --central")
         sys.exit(1)
 
-    mb_projeto = os.path.join(os.path.abspath(args.projeto), "MEGABRAIN")
+    projeto_abs = os.path.abspath(args.projeto)
+    if os.path.samefile(projeto_abs, central) or projeto_abs == central:
+        print("ERRO: --projeto aponta para a própria central do megabrain.")
+        print("Este script sincroniza a central -> DENTRO de um projeto, não na central.")
+        print("Para atualizar a central, edite os arquivos diretamente e use mb-generate-template.py + git.")
+        sys.exit(1)
+
+    mb_projeto = os.path.join(projeto_abs, "MEGABRAIN")
     tem_mb = os.path.isdir(mb_projeto)
 
     v_central = ler_versao(central)
