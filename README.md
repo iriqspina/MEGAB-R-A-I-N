@@ -52,3 +52,21 @@ O arquivo de identidade que `mb-sync-memoria.py` sincroniza (seu perfil,
 preferências, formato de resposta) também não vem aqui — é pessoal, fica
 no seu computador ou num repo privado, nunca neste pacote público. Ver
 `referencias/260810_sync-memoria.md` para o protocolo.
+
+## Migração v4.0 — diferenciação de usuário
+
+A v4.0 introduziu o campo `USUARIO:` no `HANDOFF.md` e nos arquivos de
+identidade (`CLAUDE.md`/`GEMINI.md`/`AGENTS.md`). Se você forkou/clonou o
+repositório ou sincronizou um projeto derivado, configure seu perfil:
+
+1. Crie `260810_memoria-pessoal.md` na raiz do projeto/central.
+2. Adicione `USUARIO: Seu Nome` no início.
+3. Rode:
+   ```
+   python MEGABRAIN/bin/mb-sync-memoria.py --source 260810_memoria-pessoal.md --target all --dir .
+   ```
+4. Use `python MEGABRAIN/bin/mb-sync.py lock --agente Kimi --escopo ...` —
+   o `HANDOFF.md` vai registrar seu nome automaticamente.
+
+Detalhes completos: `MEGABRAIN.md` seção 1b ou
+`referencias/260810_sync-memoria.md`.

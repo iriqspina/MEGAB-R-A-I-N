@@ -26,6 +26,66 @@ com um aviso de descontinuação no topo apontando pra cá.
 
 ---
 
+## 1b · Migração v4.0: diferenciação de usuário
+
+Desde a v4.0 o megabrain carrega um campo `USUARIO:` em dois lugares:
+
+1. No `HANDOFF.md` de cada projeto — a trava de handoff agora registra para
+   qual pessoa o agente está trabalhando.
+2. Nos arquivos de identidade sincronizados — `CLAUDE.md`, `GEMINI.md` e
+   `AGENTS.md` passam a declarar o perfil logo no início.
+
+### Por que isso importa
+
+Antes da v4.0 o protocolo assumia implicitamente um único operador. Se outra
+pessoa usar o pacote (fork, clone ou máquina compartilhada), o `HANDOFF.md`
+não dizia para quem a trava estava ativa e os agentes não sabiam qual perfil
+carregar. A v4.0 torna isso explícito sem quebrar projetos antigos.
+
+### O que acontece quando um projeto derivado sincroniza automaticamente
+
+Quando `mb-check-version.py` copia a central para dentro do `MEGABRAIN/` do
+projeto, os scripts novos passam a:
+
+- Detectar `USUARIO:` do arquivo de identidade do projeto
+  (`260810_memoria-pessoal.md` na raiz do projeto ou da central).
+- Gravar `USUARIO:` no `HANDOFF.md` toda vez que alguém rodar
+  `mb-sync.py lock`.
+- Injetar `USUARIO:` nos arquivos de identidade quando alguém rodar
+  `mb-sync-memoria.py`.
+
+Projetos antigos continuam funcionando: se não houver arquivo de identidade,
+o campo aparece como `<USUARIO>` e o script indica que é preciso configurar.
+
+### Como configurar no seu projeto derivado (ou depois de um fork/clone)
+
+1. Crie um arquivo de identidade na raiz do seu projeto ou da central com o
+   nome `260810_memoria-pessoal.md`.
+2. No início dele, coloque:
+   ```
+   USUARIO: Seu Nome
+   ```
+3. Rode a sincronização de identidade:
+   ```
+   python MEGABRAIN/bin/mb-sync-memoria.py --source 260810_memoria-pessoal.md --target all --dir .
+   ```
+4. A partir daí, toda trava de handoff vai registrar o nome automaticamente:
+   ```
+   python MEGABRAIN/bin/mb-sync.py lock --agente Kimi --escopo pasta/arquivo
+   ```
+
+### Como trocar de perfil ou adicionar outro usuário
+
+- Para forçar um nome só na trava atual: use `--usuario` no `mb-sync.py` ou
+  `mb-sync-memoria.py`.
+- Para mudar o padrão do projeto: edite `USUARIO:` no
+  `260810_memoria-pessoal.md` e rode `mb-sync-memoria.py` de novo.
+- Para múltiplos perfis no mesmo computador: mantenha arquivos de identidade
+  separados (ex.: `260810_memoria-pessoal-fulano.md`) e passe `--source` e
+  `--usuario` explicitamente.
+
+---
+
 ## 2 · Fases do projeto (macro — herdado do PIPELINE.md v2)
 
 ```

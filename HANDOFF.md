@@ -63,7 +63,3 @@ o <USUARIO> defina onde o repo deve morar.
 - `_github-repo-local/` (sincronizado, commit/push)
 - Projetos derivados: `Financeiro da Silva/`, `Jarvis/`, `Rodada/`,
   `Portfolio/The Last of Us - Part II/`
-
-<!-- mb-sync:lock:start -->
-TRAVADO_POR: livre
-<!-- mb-sync:lock:end -->
