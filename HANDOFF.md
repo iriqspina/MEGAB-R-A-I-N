@@ -21,12 +21,23 @@ ESCOPO: -
 - `VERSAO.txt` atualizado para v4.0.
 - Template público `260810_github-export/` regenerado e sincronizado com
   `_github-repo-local/` via robocopy.
+- Push da central para `https://github.com/iriqspina/MEGAB-R-A-I-N.git`
+  (commit `3e0a888`).
+- Projetos derivados sincronizados com v4.0:
+  - Financeiro da Silva (não é repo git; atualizado localmente).
+  - Jarvis (não é repo git; atualizado localmente).
+  - Rodada: sincronizado e push para
+    `https://github.com/iriqspina/rodada.git` (commit `91a24e4`).
+    Removido `MEGABRAIN/bin/__pycache__/` e `.mb-aspirador/` do commit;
+    adicionadas essas pastas ao `.gitignore` do projeto.
+  - TLOU (`Portfolio/The Last of Us - Part II`): sincronizado e commitado
+    localmente (commit `60dcdc8`); não tem remote configurado, então push
+    não foi feito. Criado `.gitignore` básico excluindo `__pycache__/` e
+    `.mb-aspirador/` do megabrain.
 - Testes manuais: lock/release com detecção automática de usuário;
   sincronização de identidade com injeção de `USUARIO:` nos três destinos.
 
 ## O que ficou aberto
-- Propagar megabrain v4.0 para projetos derivados (Rodada, TLOU, Jarvis,
-  Financeiro da Silva).
 - Configurar remote do repo TLOU se o <USUARIO> quiser push.
 - Adotar bibliotecas de `requirements.txt` quando o ambiente permitir.
 - Melhorias visuais na árvore de desenvolvimento do DNA — item antigo.
@@ -34,9 +45,8 @@ ESCOPO: -
   item antigo.
 
 ## Próximo passo concreto
-Rodar `python "bin/mb-check-version.py" --projeto <pasta> --auto` nos
-quatro projetos derivados para propagar v4.0. Para o TLOU, decidir se
-configura um remote ou faz push manual.
+Configurar remote do TLOU e fazer push, ou deixar o commit local até que
+o <USUARIO> defina onde o repo deve morar.
 
 ## Arquivos tocados
 - `bin/mb_utils.py`
@@ -51,6 +61,8 @@ configura um remote ou faz push manual.
 - `ESTADO.md`, `HANDOFF.md`, `DECISOES.md`
 - `260810_github-export/` (regenerado)
 - `_github-repo-local/` (sincronizado, commit/push)
+- Projetos derivados: `Financeiro da Silva/`, `Jarvis/`, `Rodada/`,
+  `Portfolio/The Last of Us - Part II/`
 
 <!-- mb-sync:lock:start -->
 TRAVADO_POR: livre
