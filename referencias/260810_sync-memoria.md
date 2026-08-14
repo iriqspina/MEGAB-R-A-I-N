@@ -41,6 +41,28 @@ Identidade (nome, preferências, formato obrigatório de resposta) é a
 mesma em todo lugar → use o **global**. Regra que só vale num projeto
 específico → arquivo por projeto (ele tem prioridade sobre o global).
 
+## Campo `USUARIO:` — diferenciação de perfil
+
+O arquivo de identidade pode começar com uma linha `USUARIO: Nome` logo
+após o aviso de arquivo local. Exemplo:
+
+```
+USUARIO: <USUARIO> (Iriq)
+
+## <USUARIO> (Iriq) — perfil operacional
+...
+```
+
+Esse valor é propagado automaticamente para `CLAUDE.md`, `GEMINI.md` e
+`AGENTS.md` quando você usa `mb-sync-memoria.py`. Se quiser forçar outro
+nome (útil para testar outro perfil ou quando o arquivo fonte ainda não
+tem o campo), use `--usuario "Nome"`.
+
+No `HANDOFF.md` do projeto, `mb-sync.py lock` também grava o campo
+`USUARIO:` — detectado do arquivo de identidade ou passado via
+`--usuario`. Isso deixa claro para qual pessoa a trava está ativa,
+ajudando em ambientes onde mais de uma pessoa pode operar o megabrain.
+
 ## O que você precisa fazer, dependendo de quem você é
 
 Os três agentes resolvem import com a mesma sintaxe — `@caminho/arquivo.md`

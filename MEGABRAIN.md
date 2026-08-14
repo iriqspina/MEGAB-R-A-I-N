@@ -134,6 +134,13 @@ abrir vários `.md` soltos:
   `ESTADO.md`), renderizado por inteiro;
 - **arquivos extra de domínio** — `--extra` (repetível): cada um vira sua
   própria seção;
+- **ação imediata** (desde 260814) — card em destaque logo abaixo do TL;DR,
+  visualmente separado (fundo escuro, checklist numerado grande) — extrai UM
+  heading do `--plano` (palavra-chave "ação imediata"/"o que fazer agora"/
+  "faça isto"...) e mostra como sequência óbvia "faça isto, depois isto".
+  Diferente de "resolução" (que pode ter várias alternativas concorrentes)
+  — aqui é o caminho único recomendado. `--sem-acao-imediata` desliga;
+  `--acao-imediata-titulo PALAVRA` adiciona palavra-chave própria;
 - **resolução — alternativas pra resolver a situação** (desde 260814; nome
   antigo era "caminhos", trocado porque ficava ambíguo com caminho de
   arquivo) — varre `--plano` + `--extra` por headings `##`/`###` cujo texto
@@ -153,10 +160,20 @@ abrir vários `.md` soltos:
 
 Gerador: `bin/mb-relatorio-projeto.py --projeto PATH --titulo NOME --plano
 ARQUIVO [--extra ARQUIVO]... [--skill ARQUIVO] [--tldr "frase"]
-[--megabrain-central PATH] [--sem-resolucao] [--resolucao-titulo PALAVRA]...`.
-`--saida` default é `RELATORIO.html` na raiz do projeto. Referência de uso
-completo (todos os argumentos preenchidos):
+[--megabrain-central PATH] [--sem-resolucao] [--resolucao-titulo PALAVRA]...
+[--sem-acao-imediata] [--acao-imediata-titulo PALAVRA]...`. `--saida`
+default é `RELATORIO.html` na raiz do projeto. Referência de uso completo
+(todos os argumentos preenchidos):
 `Financeiro da Silva/05_scripts/gerar_relatorio.py`.
+
+Conversor markdown→HTML (`markdown_para_html`) junta linhas indentadas de
+continuação dentro de um item de lista (`- texto` ou `N. texto` que quebra em
+mais de uma linha por largura) — sem isso, cada linha de continuação virava
+parágrafo solto fora da lista. Também nunca casa o `#` (H1, título do
+documento) ao procurar heading de "resolução"/"ação imediata" — só `##`/`###`/
+`####` — pra não confundir o título do arquivo com uma seção de conteúdo (já
+aconteceu: um H1 com a frase "ação imediata" no meio do texto virou match
+falso e engoliu o arquivo inteiro pra dentro do card).
 
 Regra de ouro 4 vale igual aqui: **gerado nunca se edita**. O HTML de saída
 não se toca na mão — edita-se o(s) `.md` fonte e roda-se o gerador de novo.

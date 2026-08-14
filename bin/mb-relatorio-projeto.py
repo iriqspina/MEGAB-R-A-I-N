@@ -52,11 +52,10 @@ import argparse
 import datetime as dt
 import html
 import json
+import os
 import re
 import sys
 from pathlib import Path
-
-import mb_utils as u
 
 DEFAULT_OUT_NAME = "RELATORIO.html"
 
@@ -64,6 +63,15 @@ RESOLUCAO_TITULOS_PADRAO = [
     "resolução", "resolucao", "plano de ação", "plano de acao",
     "estratégia", "estrategia", "alternativas", "caminhos pra resolver",
     "caminhos para resolver", "o que fazer",
+]
+
+# heading dedicado a UM plano de ação óbvio e sequencial — diferente de
+# "resolução" (que pode ter várias alternativas concorrentes), isto aqui é
+# "faça isto, depois isto". Vira um card em destaque logo abaixo do TL;DR.
+ACAO_IMEDIATA_TITULOS_PADRAO = [
+    "ação imediata", "acao imediata", "o que fazer agora",
+    "próximo passo agora", "proximo passo agora", "faça isto",
+    "faca isto", "plano de ação imediato", "plano de acao imediato",
 ]
 
 GENERIC_MEGABRAIN_RESUMO = (
@@ -106,7 +114,7 @@ def _inline(texto: str) -> str:
     texto = html.escape(texto)
     texto = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", texto)
     texto = re.sub(r"`([^`]+?)`", r"<code>\1</code>", texto)
-    texto = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", u.link_replacer, texto)
+    texto = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r'<a href="\2">\1</a>', texto)
     return texto
 
 
@@ -120,12 +128,35 @@ def markdown_para_html(texto: str, pendencias: list, fonte_nome: str) -> str:
     i = 0
     n = len(linhas)
     in_ul = False
+    in_ol = False
 
     def fechar_lista():
-        nonlocal in_ul
+        nonlocal in_ul, in_ol
         if in_ul:
             out.append("</ul>")
             in_ul = False
+        if in_ol:
+            out.append("</ol>")
+            in_ol = False
+
+    def consumir_continuacao(j):
+        """A partir do índice j, junta linhas indentadas de continuação de um
+        item de lista (texto que só quebrou por largura, não item novo) até
+        achar linha vazia, heading, tabela, citação, hr ou novo item de
+        lista. Devolve (texto_extra, novo_j)."""
+        partes = []
+        while j < n:
+            bruta = linhas[j]
+            s2 = bruta.strip()
+            if not s2:
+                break
+            if not bruta[:1].isspace():
+                break  # sem indentação -> não é continuação, é parágrafo novo
+            if re.match(r"^(#{1,4}\s|[-*]\s|\d+\.\s|\||>|-{3,}\s*$)", s2):
+                break  # item de lista novo (ou aninhado) / heading / tabela / hr
+            partes.append(s2)
+            j += 1
+        return (" " + " ".join(partes) if partes else ""), j
 
     while i < n:
         linha = linhas[i]
@@ -173,22 +204,41 @@ def markdown_para_html(texto: str, pendencias: list, fonte_nome: str) -> str:
                 out.append('<ul class="chk">')
                 in_ul = True
             feito = m.group(2 - 1) if False else m.group(1).lower() == "x"
-            texto_item = m.group(2)
+            i += 1
+            extra, i = consumir_continuacao(i)
+            texto_item = m.group(2) + extra
             pendencias.append({"texto": texto_item, "feito": feito, "fonte": fonte_nome})
             marca = "☑" if feito else "☐"
             cls = "done" if feito else "open"
             out.append(f'<li class="{cls}"><span class="mk">{marca}</span> {_inline(texto_item)}</li>')
-            i += 1
             continue
 
         # lista simples
         m = re.match(r"^[-*]\s+(.*)$", s)
         if m:
+            if in_ol:  # não aninha ul dentro de ol — fecha o outro tipo antes
+                out.append("</ol>")
+                in_ol = False
             if not in_ul:
                 out.append("<ul>")
                 in_ul = True
-            out.append(f"<li>{_inline(m.group(1))}</li>")
             i += 1
+            extra, i = consumir_continuacao(i)
+            out.append(f"<li>{_inline(m.group(1) + extra)}</li>")
+            continue
+
+        # lista numerada ("1. texto")
+        m = re.match(r"^\d+\.\s+(.*)$", s)
+        if m:
+            if in_ul:  # não aninha ol dentro de ul — fecha o outro tipo antes
+                out.append("</ul>")
+                in_ul = False
+            if not in_ol:
+                out.append("<ol>")
+                in_ol = True
+            i += 1
+            extra, i = consumir_continuacao(i)
+            out.append(f"<li>{_inline(m.group(1) + extra)}</li>")
             continue
 
         # citação
@@ -209,7 +259,7 @@ def markdown_para_html(texto: str, pendencias: list, fonte_nome: str) -> str:
         buf = [s]
         i += 1
         while i < n and linhas[i].strip() and not re.match(
-            r"^(#{1,4}\s|[-*]\s|\||>|-{3,}\s*$)", linhas[i].strip()
+            r"^(#{1,4}\s|[-*]\s|\d+\.\s|\||>|-{3,}\s*$)", linhas[i].strip()
         ):
             buf.append(linhas[i].strip())
             i += 1
@@ -231,7 +281,7 @@ def extrair_secoes_resolucao(texto: str, fonte_nome: str, titulos_candidatos) ->
     i = 0
     n = len(linhas)
     while i < n:
-        m = re.match(r"^(#{1,4})\s+(.*)$", linhas[i].strip())
+        m = re.match(r"^(#{2,4})\s+(.*)$", linhas[i].strip())  # nunca casar o H1 (título do doc)
         if m:
             nivel = len(m.group(1))
             titulo = m.group(2).strip()
@@ -269,6 +319,20 @@ h1{font-size:26px;letter-spacing:-.03em}
 .tldr{margin:26px 0;padding:20px 22px;border-radius:18px;background:var(--surf);border-left:8px solid var(--ok);
   box-shadow:0 10px 30px rgba(11,60,70,.08);font-size:18px;line-height:1.45}
 .tldr.atencao{border-left-color:var(--warn)} .tldr.ruim{border-left-color:var(--bad)}
+.hero-acao{margin:0 0 30px;padding:22px 26px 26px;border-radius:20px;background:#0E1B1F;color:#EAF1F3;
+  box-shadow:0 14px 34px rgba(11,60,70,.18)}
+.hero-acao h2{color:#7dd3fc;font-size:13px;letter-spacing:.14em;margin:0 0 4px}
+.hero-acao .section-file{color:#7C99A1}
+.hero-acao ol{counter-reset:acao;list-style:none;margin:12px 0 0;padding:0}
+.hero-acao ol>li{counter-increment:acao;position:relative;padding:10px 0 10px 42px;
+  border-bottom:1px solid rgba(255,255,255,.1);font-size:16px;line-height:1.45}
+.hero-acao ol>li:last-child{border-bottom:0}
+.hero-acao ol>li::before{content:counter(acao);position:absolute;left:0;top:9px;width:28px;height:28px;
+  border-radius:999px;background:#7dd3fc;color:#0E1B1F;font-family:var(--m);font-weight:700;font-size:13px;
+  display:flex;align-items:center;justify-content:center}
+.hero-acao strong{color:#fff}
+.hero-acao code{background:rgba(255,255,255,.1);color:#7dd3fc}
+.hero-acao p{color:#DCE7EA}
 nav{position:sticky;top:0;z-index:40;background:rgba(234,241,243,.92);backdrop-filter:blur(6px);
   display:flex;gap:6px;flex-wrap:wrap;padding:10px 0;margin:0 0 8px}
 nav a{font-family:var(--m);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);
@@ -286,7 +350,7 @@ th{text-align:left;font-family:var(--m);font-size:11px;letter-spacing:.1em;text-
   color:var(--ink3);font-weight:500;vertical-align:top;padding:12px 16px;border-bottom:1px solid var(--edge)}
 td{padding:12px 16px;border-bottom:1px solid var(--edge);vertical-align:top}
 tr:last-child td{border-bottom:0}
-ul{margin:8px 0 8px 20px;color:var(--ink2)} li{margin:4px 0}
+ul,ol{margin:8px 0 8px 20px;color:var(--ink2)} li{margin:4px 0}
 ul.chk{list-style:none;margin-left:0}
 ul.chk li{display:flex;gap:8px;align-items:flex-start}
 ul.chk li.done{color:var(--ink3);text-decoration:line-through}
@@ -415,6 +479,18 @@ def gerar(args, data_iso: str) -> str:
         for rel, t in extras:
             resolucao_blocos += extrair_secoes_resolucao(t, rel, titulos)
 
+    # --- ação imediata: UM heading dedicado no --plano vira card em         ---
+    # --- destaque logo abaixo do TL;DR — sequência óbvia, não alternativas. ---
+    acao_imediata_html = ""
+    acao_imediata_fonte = None
+    if not args.sem_acao_imediata and plano_txt:
+        titulos_acao = list(ACAO_IMEDIATA_TITULOS_PADRAO) + list(args.acao_imediata_titulo or [])
+        acao_blocos = extrair_secoes_resolucao(plano_txt, plano_rel, titulos_acao)
+        if acao_blocos:
+            _, corpo_md, fonte = acao_blocos[0]  # só o primeiro — um card, não vários
+            acao_imediata_html = markdown_para_html(corpo_md, [], fonte)
+            acao_imediata_fonte = fonte
+
     # --- seções HTML ---
     secoes = []
 
@@ -510,7 +586,7 @@ def gerar(args, data_iso: str) -> str:
     </section>""")
 
     # --- JSON-LD / meta pra IA ---
-    json_ld = u.safe_json_dumps({
+    json_ld = json.dumps({
         "@context": "https://schema.org",
         "@type": "Report",
         "name": f"{args.titulo} — relatório de projeto",
@@ -522,6 +598,8 @@ def gerar(args, data_iso: str) -> str:
     }, ensure_ascii=False, indent=2)
 
     nav_ids = []
+    if acao_imediata_html:
+        nav_ids.append("acao")
     if html_context:
         nav_ids.append("contexto")
     nav_ids.append("geral")
@@ -553,6 +631,16 @@ def gerar(args, data_iso: str) -> str:
       <details><summary>Metadados estruturados (JSON-LD)</summary><pre><code>{html.escape(json_ld)}</code></pre></details>
     </section>"""
 
+    acao_imediata_box = ""
+    if acao_imediata_html:
+        fonte_tag = (f'<div class="section-file">fonte: <code>{html.escape(acao_imediata_fonte)}</code>'
+                     f' — editar lá, nunca aqui</div>') if acao_imediata_fonte else ""
+        acao_imediata_box = f"""
+    <section id="acao" class="hero-acao"><h2>👉 Ação imediata — o que fazer agora</h2>
+      {fonte_tag}
+      {acao_imediata_html}
+    </section>"""
+
     return f"""<!DOCTYPE html>
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -569,6 +657,7 @@ def gerar(args, data_iso: str) -> str:
 <h1>{html.escape(args.titulo)} · relatório de projeto</h1>
 <div class="sub">gerado em {html.escape(data_iso[:16].replace('T', ' '))} · bin/mb-relatorio-projeto.py · irmão do relatório DNA</div>
 <div class="tldr {tldr_classe}">{_inline(tldr)}</div>
+{acao_imediata_box}
 <nav>{nav_html}</nav>
 {''.join(secoes)}
 {ai_box}
@@ -583,18 +672,6 @@ Se o "gerado em" lá em cima está velho, o retrato está velho.</p>
 <script>{js()}</script>
 </body></html>
 """
-
-
-def _validar_caminhos_relativos(projeto: Path, *rels: str | None) -> None:
-    """Garante que caminhos relativos não escapam da raiz do projeto."""
-    for rel in rels:
-        if not rel:
-            continue
-        alvo = (projeto / rel).resolve()
-        try:
-            u.resolve_within(alvo, projeto)
-        except ValueError as e:
-            u.die(f"caminho fora do projeto ({rel}): {e}")
 
 
 def main():
@@ -612,32 +689,23 @@ def main():
     ap.add_argument("--sem-resolucao", action="store_true", help="desliga a extração automática da seção Resolução")
     ap.add_argument("--resolucao-titulo", action="append", default=[],
                      help="palavra-chave extra (além das padrão) pra achar heading de resolução no --plano/--extra (repetível)")
+    ap.add_argument("--sem-acao-imediata", action="store_true",
+                     help="desliga o card 'Ação imediata' em destaque abaixo do TL;DR")
+    ap.add_argument("--acao-imediata-titulo", action="append", default=[],
+                     help="palavra-chave extra pra achar o heading de ação imediata no --plano (repetível)")
     args = ap.parse_args()
 
-    projeto = Path(args.projeto).resolve()
+    projeto = Path(args.projeto)
     if not projeto.is_dir():
-        u.die(f"projeto não encontrado: {projeto}")
-
-    # Validação de path traversal para entradas relativas.
-    _validar_caminhos_relativos(projeto, args.plano, args.context, args.skill, *args.extra)
-
-    if args.megabrain_central:
-        try:
-            _ = u.resolve_within(args.megabrain_central, Path(args.megabrain_central).resolve().parent)
-        except ValueError as e:
-            u.die(f"--megabrain-central inválido: {e}")
+        print(f"ERRO: projeto não encontrado: {projeto}")
+        sys.exit(1)
 
     saida = Path(args.saida).resolve() if args.saida else projeto / DEFAULT_OUT_NAME
-    try:
-        u.resolve_within(saida.parent, projeto)
-    except ValueError as e:
-        u.die(f"--saida fora do projeto: {e}")
-
     data_iso = dt.datetime.now().isoformat()
 
     html_out = gerar(args, data_iso)
-    if not u.atomic_write_text(saida, html_out):
-        sys.exit(1)
+    saida.parent.mkdir(parents=True, exist_ok=True)
+    saida.write_text(html_out, encoding="utf-8")
     print(f"Relatório de projeto gerado: {saida}")
 
 

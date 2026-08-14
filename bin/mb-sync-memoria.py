@@ -8,8 +8,8 @@ HANDOFF.md). Ver referencias/260810_sync-memoria.md para o protocolo
 completo.
 
 Uso:
-  mb-sync-memoria.py --source CAMINHO --target claude|gemini|kimi [--dir CAMINHO] [--modo import|conteudo]
-  mb-sync-memoria.py --source CAMINHO --target all [--dir CAMINHO] [--modo import|conteudo]
+  mb-sync-memoria.py --source CAMINHO --target claude|gemini|kimi [--dir CAMINHO] [--modo import|conteudo] [--usuario NOME]
+  mb-sync-memoria.py --source CAMINHO --target all [--dir CAMINHO] [--modo import|conteudo] [--usuario NOME]
 
 --modo import (default pra claude/gemini): garante a linha "@<source>" em
 CLAUDE.md/GEMINI.md/AGENTS.md - nao duplica texto, mas o caminho do source
@@ -20,14 +20,17 @@ parseado igual por todo agente/versao).
 espaco): injeta o CONTEUDO do source dentro do arquivo de destino, entre
 marcadores - idempotente, roda de novo sem duplicar, sem depender de path
 parsing nenhum.
+--usuario forca um nome; se omitido, tenta detectar do campo `USUARIO:` no
+arquivo fonte. O campo e propagado pros destinos pra diferenciar perfis.
 """
+
+from __future__ import annotations
 
 import argparse
 import sys
 from pathlib import Path
 
-MARK_START = "<!-- MEGABRAIN:AUTO-SYNC:START -->"
-MARK_END = "<!-- MEGABRAIN:AUTO-SYNC:END -->"
+import mb_utils as u
 
 TARGET_FILE = {
     "claude": "CLAUDE.md",
@@ -36,22 +39,48 @@ TARGET_FILE = {
 }
 
 
-def ensure_import_line(path: Path, import_linha: str) -> str:
-    texto = path.read_text(encoding="utf-8") if path.exists() else ""
-    if import_linha in texto:
+def _com_usuario_prefixo(conteudo: str, usuario: str | None) -> str:
+    """Garante que o bloco sincronizado comece com `USUARIO:` quando disponivel.
+
+    Remove linhas `USUARIO:` duplicadas do conteudo original para evitar
+    repeticao. Se usuario for None, retorna o conteudo sem alterar a secao.
+    """
+    if not usuario:
+        return conteudo
+    linhas_limpas = [
+        linha
+        for linha in conteudo.splitlines()
+        if not linha.strip().upper().startswith("USUARIO:")
+    ]
+    return f"USUARIO: {usuario}\n\n" + "\n".join(linhas_limpas)
+
+
+def ensure_import_line(path: Path, import_linha: str, usuario: str | None) -> str:
+    texto = u.safe_read_text(path) or ""
+    prefixo = f"<!-- USUARIO: {usuario} -->\n" if usuario else ""
+    bloco = prefixo + import_linha
+    if bloco in texto:
         return "ja_sincronizado"
+    # Se soh a linha de import existe sem prefixo, atualiza suavemente.
+    if import_linha in texto and prefixo:
+        novo = texto.replace(import_linha, bloco, 1)
+        if u.atomic_write_text(path, novo):
+            return "atualizado"
+        return "erro_escrita"
     novo = texto.rstrip()
-    novo = (novo + "\n\n" if novo else "") + import_linha + "\n"
-    path.write_text(novo, encoding="utf-8")
-    return "sincronizado"
+    novo = (novo + "\n\n" if novo else "") + bloco + "\n"
+    if u.atomic_write_text(path, novo):
+        return "sincronizado"
+    return "erro_escrita"
 
 
-def inject_content(path: Path, conteudo_fonte: str) -> str:
-    bloco = f"{MARK_START}\n{conteudo_fonte.rstrip()}\n{MARK_END}\n"
-    texto = path.read_text(encoding="utf-8") if path.exists() else ""
-    if MARK_START in texto and MARK_END in texto:
-        antes = texto.split(MARK_START, 1)[0]
-        depois = texto.split(MARK_END, 1)[1]
+def inject_content(path: Path, conteudo_fonte: str, usuario: str | None) -> str:
+    conteudo = _com_usuario_prefixo(conteudo_fonte, usuario)
+    bloco = f"{u.MARK_START}\n{conteudo.rstrip()}\n{u.MARK_END}\n"
+    texto = u.safe_read_text(path) or ""
+    if u.MARK_START in texto and u.MARK_END in texto:
+        antes = texto.split(u.MARK_START, 1)[0]
+        depois = texto.split(u.MARK_END, 1)[1]
         novo = antes + bloco + depois
         acao = "atualizado"
     else:
@@ -59,18 +88,19 @@ def inject_content(path: Path, conteudo_fonte: str) -> str:
         cabeca = texto.rstrip() + "\n\n" if texto.strip() else titulo
         novo = cabeca + bloco
         acao = "criado"
-    path.write_text(novo, encoding="utf-8")
-    return acao
+    if u.atomic_write_text(path, novo):
+        return acao
+    return "erro_escrita"
 
 
-def sync_um(target: str, source: Path, diretorio: Path, modo: str) -> str:
+def sync_um(target: str, source: Path, diretorio: Path, modo: str, usuario: str | None) -> str:
     destino = diretorio / TARGET_FILE[target]
     modo_efetivo = modo or ("conteudo" if target == "kimi" else "import")
     if modo_efetivo == "conteudo":
-        conteudo = source.read_text(encoding="utf-8")
-        return f"{target} ({destino.name}, conteúdo): {inject_content(destino, conteudo)}"
+        conteudo = u.safe_read_text(source) or ""
+        return f"{target} ({destino.name}, conteudo): {inject_content(destino, conteudo, usuario)}"
     linha = f"@{source.as_posix()}"
-    return f"{target} ({destino.name}, import): {ensure_import_line(destino, linha)}"
+    return f"{target} ({destino.name}, import): {ensure_import_line(destino, linha, usuario)}"
 
 
 def main():
@@ -80,17 +110,23 @@ def main():
     ap.add_argument("--dir", default=".", help="raiz do projeto (default: .)")
     ap.add_argument("--modo", choices=["import", "conteudo"], default=None,
                      help="default: conteudo pra kimi, import pra claude/gemini")
+    ap.add_argument("--usuario", default=None,
+                     help="nome do usuario (se omitido, detecta do campo USUARIO: do source)")
     args = ap.parse_args()
 
     source = Path(args.source)
     diretorio = Path(args.dir)
     if not source.exists():
-        print(f"erro: fonte não encontrada: {source}")
+        print(f"erro: fonte nao encontrada: {source}")
         sys.exit(1)
+
+    usuario = args.usuario
+    if usuario is None:
+        usuario = u.extract_usuario(u.safe_read_text(source) or "")
 
     alvos = ["claude", "gemini", "kimi"] if args.target == "all" else [args.target]
     for t in alvos:
-        print(sync_um(t, source, diretorio, args.modo))
+        print(sync_um(t, source, diretorio, args.modo, usuario))
 
 
 if __name__ == "__main__":

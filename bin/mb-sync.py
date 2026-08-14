@@ -2,14 +2,15 @@
 """
 mb-sync.py — utilitario de handoff multi-agente do MEGABRAIN (Gate 0 / Gate 6).
 
-Le e escreve a trava em HANDOFF.md (TRAVADO_POR / ATE / ESCOPO) para que
-Claude e Kimi nao pisem no mesmo arquivo ao mesmo tempo. Nao substitui os
-gates - so torna a trava uma garantia de script em vez de disciplina de
-markdown (regra de ouro 21: garantia real e script, nao markdown).
+Le e escreve a trava em HANDOFF.md (USUARIO / TRAVADO_POR / ATE / ESCOPO)
+para que Claude e Kimi nao pisem no mesmo arquivo ao mesmo tempo. Nao
+substitui os gates - so torna a trava uma garantia de script em vez de
+disciplina de markdown (regra de ouro 21: garantia real e script, nao
+markdown).
 
 Uso:
   mb-sync.py status  [--dir CAMINHO]
-  mb-sync.py lock    --agente NOME --escopo CAMINHO [CAMINHO ...] [--horas N] [--dir CAMINHO]
+  mb-sync.py lock    --agente NOME --escopo CAMINHO [CAMINHO ...] [--horas N] [--usuario NOME] [--dir CAMINHO]
   mb-sync.py release --agente NOME [--force] [--dir CAMINHO]
 
 Sem argumentos: roda "status" no diretorio atual.
@@ -36,6 +37,7 @@ MARK_END = "<!-- mb-sync:lock:end -->"
 
 @dataclass
 class LockInfo:
+    usuario: str | None = None
     agente: str | None = None
     ate: dt.datetime | None = None
     escopo: list[str] | None = None
@@ -54,11 +56,13 @@ def sanitizar_campo(valor: str) -> str:
     return " ".join(valor.replace("\r", " ").replace("\n", " ").split())
 
 
-def lock_block(agente: str, ate: dt.datetime, escopo: list[str]) -> str:
+def lock_block(usuario: str, agente: str, ate: dt.datetime, escopo: list[str]) -> str:
     agente = sanitizar_campo(agente)
+    usuario = sanitizar_campo(usuario)
     escopo = [sanitizar_campo(e) for e in escopo]
     linhas = [
         MARK_START,
+        f"USUARIO: {usuario}",
         f"TRAVADO_POR: {agente}",
         f"ATE: {ate.strftime(FMT)}",
         "ESCOPO:",
@@ -78,7 +82,9 @@ def parse_lock(texto: str) -> LockInfo | None:
     info = LockInfo(escopo=[])
     for linha in bloco.splitlines():
         linha = linha.strip()
-        if linha.startswith("TRAVADO_POR:"):
+        if linha.startswith("USUARIO:"):
+            info.usuario = linha.split(":", 1)[1].strip() or None
+        elif linha.startswith("TRAVADO_POR:"):
             info.agente = linha.split(":", 1)[1].strip() or None
         elif linha.startswith("ATE:"):
             try:
@@ -149,13 +155,15 @@ def cmd_status(args) -> int:
     agora = dt.datetime.now()
     ate_str = lock.ate.strftime(FMT) if lock.ate else "(sem prazo)"
     escopo_str = ", ".join(lock.escopo) if lock.escopo else "(nao declarado)"
+    usuario_str = lock.usuario if lock.usuario else "(nao declarado)"
 
     if lock.ate and lock.esta_vencido(agora):
         print(f"status: TRAVA VENCIDA - {lock.agente} ate {ate_str} (pode assumir)")
+        print(f"  usuario: {usuario_str}")
         print(f"  escopo antigo: {escopo_str}")
         return 0
 
-    print(f"status: TRAVADO por {lock.agente} ate {ate_str}")
+    print(f"status: TRAVADO por {lock.agente} ate {ate_str} (usuario: {usuario_str})")
     print(f"  escopo: {escopo_str}")
     return 1
 
@@ -178,18 +186,26 @@ def cmd_lock(args) -> int:
             if not lock_existente.esta_vencido(agora):
                 ate_str = lock_existente.ate.strftime(FMT) if lock_existente.ate else "sem prazo"
                 escopo_str = ", ".join(lock_existente.escopo) if lock_existente.escopo else "nao declarado"
+                usuario_str = lock_existente.usuario if lock_existente.usuario else "nao declarado"
                 print(
                     f"recusado: travado por {lock_existente.agente} ate "
-                    f"{ate_str} - escopo {escopo_str}"
+                    f"{ate_str} - usuario {usuario_str} - escopo {escopo_str}"
                 )
                 return 1
 
+        usuario = args.usuario
+        if usuario is None:
+            # Tenta detectar do arquivo de identidade na pasta central/projeto.
+            usuario = u.detectar_usuario(base / u.IDENTIDADE_DEFAULT)
         ate = agora + dt.timedelta(hours=args.horas)
-        bloco = lock_block(args.agente, ate, args.escopo)
+        bloco = lock_block(usuario, args.agente, ate, args.escopo)
         if not write_handoff(caminho, bloco, texto):
             return 1
 
-        print(f"travado: {args.agente} ate {ate.strftime(FMT)} - escopo: {', '.join(args.escopo)}")
+        print(
+            f"travado: {args.agente} (usuario: {usuario}) ate {ate.strftime(FMT)} "
+            f"- escopo: {', '.join(args.escopo)}"
+        )
         return 0
     finally:
         u.release_lock(lock_path)
@@ -241,6 +257,11 @@ def main() -> None:
     p_lock.add_argument("--agente", required=True)
     p_lock.add_argument("--escopo", nargs="+", required=True)
     p_lock.add_argument("--horas", type=float, default=2.0)
+    p_lock.add_argument(
+        "--usuario",
+        default=None,
+        help="nome do usuario (default: detecta de 260810_memoria-pessoal.md)",
+    )
 
     p_rel = sub.add_parser("release", help="libera a trava do projeto")
     p_rel.add_argument("--agente", required=True)

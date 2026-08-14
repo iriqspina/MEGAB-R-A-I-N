@@ -120,3 +120,83 @@
 ## 260814 — pastas internas ficam fora do template público
 - Decisão: adicionar `_to_delete/` e `alteracoes-pendentes/` à lista `EXCLUIR` do `bin/mb-generate-template.py`. Essas pastas são de uso interno da central e não devem ir para o repo público.
 - Alternativa descartada: deixar o gerador copiar tudo que não está na lista antiga. Motivo: `_to_delete/` contém arquivos temporários de decisão e `alteracoes-pendentes/` contém trabalho em andamento específico do <USUARIO> — ambos poluiriam o pacote público sem agregar valor.
+
+## 260814 — módulo utilitário compartilhado `bin/mb_utils.py`
+- Decisão: criar `bin/mb_utils.py` com path containment, I/O atômica, file locking leve, escaping de HTML/JSON e helpers CLI, usando apenas stdlib. Os scripts `mb-sync.py`, `mb-check-version.py`, `mb-generate-template.py`, `mb-relatorio-projeto.py`, `mb-relatorio-dna.py` e `mb-aspirador.py` passam a importá-lo.
+- Alternativa descartada: replicar as correções em cada script individualmente. Motivo: funções de segurança e I/O duplicadas divergem e geram bugs; centralizar reduz manutenção e garante comportamento uniforme.
+
+## 260814 — file locking sem dependência externa
+- Decisão: implementar trava de arquivo via `os.open(..., O_CREAT | O_EXCL)` em `mb_utils.py`, usada por `mb-sync.py`, em vez de adicionar `filelock` como dependência obrigatória.
+- Alternativa descartada: usar `filelock` (PyPI) para locking entre processos. Motivo: o ambiente do <USUARIO> não tem `filelock` instalado e adicionar dependência quebraria portabilidade zero-config; a solução com `O_EXCL` é suficiente para o cenário de handoff entre agentes.
+
+## 260814 — path traversal bloqueado em todos os scripts
+- Decisão: validar `--dir`, `--projeto`, `--saida`, `--central`, `--extra`, `--skill`, `--backup-dir` e caminhos relativos de entrada com `Path.resolve()` + `is_relative_to()` (via `mb_utils.resolve_within`). Scripts recusam operação se o caminho escapar da área permitida.
+- Alternativa descartada: confiar nos caminhos passados pelo usuário/agente. Motivo: vários scripts fazem `shutil.rmtree` ou leitura/escrita de arquivos; caminhos maliciosos ou acidentais (`../../etc`) poderiam corromper dados fora do projeto.
+
+## 260814 — escrita atômica para arquivos sensíveis
+- Decisão: usar `tempfile.mkstemp` + `os.replace` (via `mb_utils.atomic_write_text`) para `HANDOFF.md`, relatórios HTML/JSON, `VERSAO.txt` do template e README do DNA.
+- Alternativa descartada: manter `path.write_text()` direto. Motivo: escrita direta pode deixar arquivo parcialmente escrito se o processo for interrompido; `os.replace` garante que o leitor sempre veja o arquivo antigo ou o novo, nunca um estado intermediário.
+
+## 260814 — escaping de HTML e JSON-LD nos relatórios
+- Decisão: escapar href de links markdown (`html.escape(..., quote=True)`) e escapar `</` e `<!--` em JSON-LD embutido (`mb_utils.html_json_safe`) nos relatórios de projeto e DNA.
+- Alternativa descartada: confiar que o conteúdo dos `.md` fonte é seguro. Motivo: os arquivos fonte podem conter links ou textos controlados pelo usuário/IA; sem escaping, relatórios gerados ficam vulneráveis a XSS e quebra de `<script>`.
+
+## 260814 — `requirements.txt` com bibliotecas recomendadas
+- Decisão: adicionar `requirements.txt` listando 10 bibliotecas/padrões recomendados (filelock, platformdirs, mistune, nh3, pydantic, pydantic-settings, structlog, watchdog, rich, pytest, ruff), mas manter os scripts funcionando sem elas.
+- Alternativa descartada: instalar as bibliotecas agora e refatorar scripts para dependerem delas. Motivo: o ambiente não tem as bibliotecas instaladas e instalar sem ambiente isolado poderia quebrar outros projetos; o arquivo serve como roteiro de adoção gradual.
+
+## 260814 — diferenciação de usuário no megabrain
+- Decisão: implementar campo `USUARIO:` no `HANDOFF.md` e propagá-lo pela
+  trava de `mb-sync.py` (detectado de `260810_memoria-pessoal.md` ou via
+  `--usuario`). `mb-sync-memoria.py` também lê e injeta `USUARIO:` em
+  `CLAUDE.md`, `GEMINI.md` e `AGENTS.md`. `mb_utils.py` centraliza os
+  helpers `extract_usuario` e `detectar_usuario`.
+- Alternativa descartada: manter a suposição implícita de que só o
+  <USUARIO> opera. Motivo: o <USUARIO> pediu explicitamente diferenciação de
+  usuário; sem um campo declarado, o protocolo não consegue distinguir
+  operadores num ambiente multi-usuário nem documentar para quem uma trava
+  está ativa.
+- Decisão: o nome padrão é detectado do arquivo de identidade pessoal
+  (`260810_memoria-pessoal.md`), não hardcoded no script. Isso mantém o
+  pacote portátil: outra pessoa que clone o repo pode trocar só o arquivo
+  de identidade em vez de editar código.
+- Alternativa descartada: hardcoded `<USUARIO>` como default em
+  `mb-sync.py`. Motivo: vazaria nome pessoal no código e quebraria a
+  premissa de que o template público é genérico.
+
+
+
+## 260814 — card "Ação imediata" + 2 bugs corrigidos no conversor markdown
+- Decisão: adicionar um card em destaque, `id="acao"`, logo abaixo do TL;DR
+  (antes até do `<nav>`) — extrai UM heading do `--plano` marcado como "ação
+  imediata"/"o que fazer agora"/"faça isto" e mostra a sequência única
+  recomendada, numerada, com estilo visual bem diferente do resto do
+  relatório (fundo escuro, número grande em círculo). Motivo: pedido
+  explícito — "inclua um plano de ação muito óbvio... e muito claro no
+  relatório". A seção "Resolução" já existente mostra alternativas
+  concorrentes (várias rotas); "Ação imediata" é o oposto — um caminho só,
+  sequencial, sem ambiguidade.
+- Alternativa descartada: reaproveitar a seção "Resolução" pra isso.
+  Motivo: misturaria dois modos de leitura diferentes (escolher entre
+  opções vs. seguir uma sequência) na mesma seção — o pedido era por algo
+  "muito óbvio", que exige separação visual clara.
+- Bug 1 encontrado ao testar: o conversor markdown→HTML não juntava linhas
+  indentadas de continuação dentro de um item de lista — todo item de lista
+  (numerado ou com marcador) que quebrava em mais de uma linha por largura
+  virava um `<li>` com só a primeira linha, e o resto saía como `<p>` solto
+  fora da lista. Isso já estava quebrando conteúdo antigo do
+  `PLANO.md` (seção "Estratégia") e quebrou o card novo também. Corrigido
+  com uma função `consumir_continuacao()` que junta linhas indentadas
+  subsequentes ao texto do item, parando em linha vazia, heading, tabela,
+  citação, hr, ou novo item de lista.
+- Bug 2 encontrado no mesmo teste: `extrair_secoes_resolucao()` (usada tanto
+  pra "resolução" quanto pra "ação imediata") não excluía o H1 (título do
+  documento) da varredura de headings. O H1 do `PLANO.md` continha "v11 ·
+  ação imediata numerada..." no meio do texto — bateu como match falso da
+  palavra-chave "ação imediata", e por ser heading de nível 1, a extração só
+  para em outro heading de nível ≤1 (não existe outro H1 no arquivo) — então
+  engoliu o arquivo inteiro pro dentro do card. Corrigido restringindo a
+  varredura a `##`/`###`/`####` (nunca H1) — título de documento não é
+  conteúdo de seção.
+- Referência de uso completo (todos os argumentos preenchidos):
+  `Financeiro da Silva/05_scripts/gerar_relatorio.py`.

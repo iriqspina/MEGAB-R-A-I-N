@@ -223,6 +223,51 @@ def safe_json_dumps(obj, **kwargs) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Marcadores de sincronização
+# ---------------------------------------------------------------------------
+
+MARK_START = "<!-- MEGABRAIN:AUTO-SYNC:START -->"
+MARK_END = "<!-- MEGABRAIN:AUTO-SYNC:END -->"
+
+# ---------------------------------------------------------------------------
+# Identidade / usuário
+# ---------------------------------------------------------------------------
+
+IDENTIDADE_DEFAULT = "260810_memoria-pessoal.md"
+
+
+def extract_usuario(texto: str) -> str | None:
+    """Extrai o valor da linha `USUARIO:` do arquivo de identidade.
+
+    Aceita `USUARIO: Nome` ou `USUARIO:` seguido de conteúdo na mesma linha.
+    Ignora espaços, comentários HTML e linhas vazias. Retorna None se não
+    encontrar.
+    """
+    for linha in texto.splitlines():
+        limpa = linha.strip()
+        if not limpa or limpa.startswith(("<!--", "#")):
+            continue
+        if limpa.upper().startswith("USUARIO:"):
+            valor = limpa.split(":", 1)[1].strip()
+            return " ".join(valor.split()) or None
+    return None
+
+
+def detectar_usuario(identidade_path: Path | None = None) -> str:
+    """Tenta ler o nome do usuário no arquivo de identidade padrão.
+
+    Se `identidade_path` for None, procura `260810_memoria-pessoal.md` no
+    diretório atual. Retorna "<USUARIO>" se não conseguir detectar.
+    """
+    if identidade_path is None:
+        identidade_path = Path(IDENTIDADE_DEFAULT)
+    texto = safe_read_text(identidade_path)
+    if texto is None:
+        return "<USUARIO>"
+    return extract_usuario(texto) or "<USUARIO>"
+
+
+# ---------------------------------------------------------------------------
 # Markdown helpers leves
 # ---------------------------------------------------------------------------
 

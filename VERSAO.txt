@@ -1,3 +1,3 @@
-2026-08-14 · v3.9 — `mb-relatorio-projeto.py`: seção "caminhos" renomeada pra
+2026-08-14 · v4.0 — diferenciação de usuário no megabrain: campo `USUARIO:`
 
 Histórico completo: ver repositório privado da pasta central.
