@@ -1,0 +1,272 @@
+#!/usr/bin/env python3
+"""
+mb_utils.py — utilitários compartilhados dos scripts do MEGABRAIN.
+
+Concentra funções que aparecem em vários scripts e que, se duplicadas,
+tendem a divergir e gerar bugs (path traversal, I/O não atômico,
+escaping de HTML/JSON, leitura eficiente).
+
+Regras deste módulo:
+- Só depende da stdlib (portabilidade zero-dependência).
+- Toda função de I/O retorna de forma controlada (nunca quebra com traceback).
+- Toda função de segurança falha fechada (falha = recusa, não permissão).
+"""
+
+from __future__ import annotations
+
+import datetime as dt
+import html
+import json
+import os
+import sys
+import tempfile
+from pathlib import Path
+from typing import Iterable
+
+
+# ---------------------------------------------------------------------------
+# Path containment — evita path traversal em --dir, --projeto, --saida etc.
+# ---------------------------------------------------------------------------
+
+def resolve_within(caminho: str | os.PathLike[str], base: str | os.PathLike[str]) -> Path:
+    """Resolve `caminho` e exige que ele fique dentro de `base`.
+
+    Aceita caminhos relativos, absolutos e symlinks, desde que o destino
+    canonizado esteja contido em `base`. Se não estiver, levanta ValueError.
+    """
+    base_resolvida = Path(base).resolve()
+    alvo = Path(caminho).resolve()
+
+    # Verifica contenção: alvo == base ou alvo está abaixo de base.
+    if alvo != base_resolvida and base_resolvida not in alvo.parents:
+        raise ValueError(f"caminho fora da área permitida: {alvo} (base: {base_resolvida})")
+
+    return alvo
+
+
+def ensure_parent_dir(path: Path) -> bool:
+    """Garante que o diretório pai de `path` exista. Retorna False se falhar."""
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        return True
+    except OSError as e:
+        print(f"ERRO: não foi possível criar diretório {path.parent}: {e}", file=sys.stderr)
+        return False
+
+
+# ---------------------------------------------------------------------------
+# I/O segura e atômica
+# ---------------------------------------------------------------------------
+
+def safe_read_text(path: Path, encoding: str = "utf-8", fallback: str = "latin-1") -> str | None:
+    """Lê texto de `path`, tentando `encoding` e depois `fallback`.
+
+    Retorna None em caso de erro de I/O (arquivo inexistente, permissão, etc.)
+    em vez de propagar exceção.
+    """
+    try:
+        return path.read_text(encoding=encoding)
+    except UnicodeDecodeError:
+        try:
+            return path.read_text(encoding=fallback)
+        except OSError:
+            return None
+    except OSError:
+        return None
+
+
+def safe_read_lines(path: Path, encoding: str = "utf-8") -> list[str] | None:
+    """Lê linhas de `path`. Retorna None em erro de I/O."""
+    try:
+        return path.read_text(encoding=encoding).splitlines()
+    except OSError:
+        return None
+
+
+def read_first_non_empty_line(path: Path, encoding: str = "utf-8") -> str | None:
+    """Lê apenas a primeira linha não vazia de `path` — evita carregar arquivo inteiro."""
+    try:
+        with path.open("r", encoding=encoding) as f:
+            for linha in f:
+                linha = linha.strip()
+                if linha:
+                    return linha
+        return None
+    except OSError:
+        return None
+
+
+def atomic_write_text(path: Path, conteudo: str, encoding: str = "utf-8") -> bool:
+    """Escreve `conteudo` em `path` de forma atômica (temp + os.replace).
+
+    Em Windows, os.replace não sobrescreve se o destino estiver aberto,
+    mas é atômico o suficiente para evitar leitura de arquivo parcial.
+    Retorna True em caso de sucesso, False em caso de erro.
+    """
+    if not ensure_parent_dir(path):
+        return False
+
+    try:
+        fd, tmp_name = tempfile.mkstemp(
+            dir=path.parent,
+            prefix=f".{path.name}.",
+            suffix=".tmp",
+        )
+        try:
+            with os.fdopen(fd, "w", encoding=encoding, newline="") as f:
+                f.write(conteudo)
+            os.replace(tmp_name, path)
+            return True
+        except Exception:
+            # Limpa o temporário se algo deu errado antes do replace.
+            try:
+                os.unlink(tmp_name)
+            except OSError:
+                pass
+            raise
+    except OSError as e:
+        print(f"ERRO: falha ao escrever {path}: {e}", file=sys.stderr)
+        return False
+
+
+def safe_rmtree(path: Path, base: Path | None = None) -> bool:
+    """Remove árvore de diretórios apenas se estiver contida em `base`.
+
+    Se `base` for None, não faz verificação de segurança (use com cuidado).
+    Retorna True se removeu, False se recusou ou falhou.
+    """
+    try:
+        alvo = path.resolve()
+    except OSError as e:
+        print(f"ERRO: não foi possível resolver {path}: {e}", file=sys.stderr)
+        return False
+
+    if base is not None:
+        try:
+            resolve_within(alvo, base)
+        except ValueError as e:
+            print(f"ERRO: recusado — {e}", file=sys.stderr)
+            return False
+
+    try:
+        import shutil
+        shutil.rmtree(alvo)
+        return True
+    except OSError as e:
+        print(f"ERRO: falha ao remover {alvo}: {e}", file=sys.stderr)
+        return False
+
+
+# ---------------------------------------------------------------------------
+# File locking leve (sem dependências externas)
+# ---------------------------------------------------------------------------
+
+def acquire_lock(lock_path: Path, timeout: float = 10.0, retry: float = 0.05) -> bool:
+    """Tenta criar um lockfile exclusivo usando O_CREAT | O_EXCL.
+
+    Funciona em Windows, Linux e macOS sem bibliotecas externas.
+    Retorna True se conseguiu a trava, False se timeout ou erro.
+    """
+    import time
+
+    if timeout < 0:
+        timeout = 0.0
+    deadline = time.monotonic() + timeout
+
+    while True:
+        try:
+            fd = os.open(str(lock_path), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            try:
+                info = f"pid={os.getpid()}\ntime={dt.datetime.now(dt.timezone.utc).isoformat()}\n"
+                os.write(fd, info.encode("utf-8"))
+            finally:
+                os.close(fd)
+            return True
+        except FileExistsError:
+            if time.monotonic() >= deadline:
+                return False
+            time.sleep(retry)
+        except OSError as e:
+            print(f"ERRO: não foi possível criar lock {lock_path}: {e}", file=sys.stderr)
+            return False
+
+
+def release_lock(lock_path: Path) -> bool:
+    """Remove lockfile. Ignora se não existir."""
+    try:
+        lock_path.unlink()
+        return True
+    except FileNotFoundError:
+        return True
+    except OSError as e:
+        print(f"AVISO: não foi possível remover lock {lock_path}: {e}", file=sys.stderr)
+        return False
+
+
+# ---------------------------------------------------------------------------
+# HTML / JSON escaping
+# ---------------------------------------------------------------------------
+
+def escape_href(href: str) -> str:
+    """Escapa atributo href para evitar XSS via markdown links."""
+    return html.escape(href, quote=True).replace("\n", "").replace("\r", "")
+
+
+def html_json_safe(json_str: str) -> str:
+    """Torna JSON embutido em <script> seguro contra </script> e <!-- -->."""
+    return json_str.replace("</", "<\\/").replace("<!--", "<\\!--")
+
+
+def safe_json_dumps(obj, **kwargs) -> str:
+    """json.dumps com escaping seguro para uso dentro de <script>."""
+    return html_json_safe(json.dumps(obj, **kwargs))
+
+
+# ---------------------------------------------------------------------------
+# Markdown helpers leves
+# ---------------------------------------------------------------------------
+
+def link_replacer(match) -> str:
+    """Substituição segura para [texto](url)."""
+    texto = html.escape(match.group(1))
+    href = escape_href(match.group(2))
+    return f'<a href="{href}">{texto}</a>'
+
+
+# ---------------------------------------------------------------------------
+# CLI helpers
+# ---------------------------------------------------------------------------
+
+def die(mensagem: str, code: int = 1) -> None:
+    """Imprime mensagem de erro e encerra o processo."""
+    print(f"ERRO: {mensagem}", file=sys.stderr)
+    sys.exit(code)
+
+
+def parse_csv_extensoes(texto: str) -> set[str]:
+    """Converte string de extensões separadas por vírgula em conjunto limpo."""
+    return {e.strip().lstrip(".").lower() for e in texto.split(",") if e.strip()}
+
+
+# ---------------------------------------------------------------------------
+# Iteração segura de diretórios
+# ---------------------------------------------------------------------------
+
+def walk_files(
+    raiz: Path,
+    exts: set[str] | None = None,
+    ignorar: set[str] | None = None,
+) -> Iterable[Path]:
+    """Yields arquivos dentro de `raiz`, opcionalmente filtrando extensões.
+
+    `ignorar` é um conjunto de nomes de diretório a pular.
+    """
+    if ignorar is None:
+        ignorar = {".git", ".venv", "node_modules", "__pycache__"}
+
+    for dirpath, dirnames, filenames in os.walk(raiz):
+        dirnames[:] = [d for d in dirnames if d not in ignorar]
+        for nome in filenames:
+            caminho = Path(dirpath) / nome
+            if exts is None or caminho.suffix.lstrip(".").lower() in exts:
+                yield caminho

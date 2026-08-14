@@ -29,6 +29,10 @@ import os
 import re
 import shutil
 import sys
+from pathlib import Path
+
+import mb_utils as u
+
 
 def detectar_central():
     """Retorna a pasta central do megabrain via env var ou diretório do script."""
@@ -40,6 +44,7 @@ def detectar_central():
 
 
 CENTRAL_DEFAULT = detectar_central()
+CENTRAL_DEFAULT_PATH = Path(CENTRAL_DEFAULT).resolve()
 
 MAPEAMENTO = [
     ("MEGABRAIN.md", "MEGABRAIN.md"),
@@ -63,12 +68,8 @@ def parse_versao(linha):
 
 
 def ler_versao(pasta):
-    path = os.path.join(pasta, "VERSAO.txt")
-    if not os.path.isfile(path):
-        return None
-    with open(path, "r", encoding="utf-8") as f:
-        linhas = [l.strip() for l in f if l.strip()]
-    return linhas[0] if linhas else None
+    path = Path(pasta) / "VERSAO.txt"
+    return u.read_first_non_empty_line(path)
 
 
 def comparar_versoes(v_central, v_projeto):
@@ -89,19 +90,35 @@ def comparar_versoes(v_central, v_projeto):
     return "indefinido"
 
 
-def copiar(src, dst, dry_run=False):
+def copiar(src, dst, dry_run=False, base=None):
+    src_path = Path(src).resolve()
+    dst_path = Path(dst).resolve()
+
+    if base is not None:
+        try:
+            u.resolve_within(dst_path, Path(base).resolve())
+        except ValueError as e:
+            print(f"  ERRO (recusado): {e}")
+            return False
+
     if dry_run:
-        print(f"  [dry-run] copiaria {src} -> {dst}")
+        print(f"  [dry-run] copiaria {src_path} -> {dst_path}")
         return True
-    os.makedirs(os.path.dirname(dst), exist_ok=True)
-    if os.path.isdir(src):
-        if os.path.exists(dst):
-            shutil.rmtree(dst)
-        shutil.copytree(src, dst)
-    else:
-        shutil.copy2(src, dst)
-    print(f"  copiado {os.path.basename(src)} -> {dst}")
-    return True
+
+    try:
+        dst_path.parent.mkdir(parents=True, exist_ok=True)
+        if src_path.is_dir():
+            if dst_path.exists():
+                if not u.safe_rmtree(dst_path, base=base):
+                    return False
+            shutil.copytree(src_path, dst_path)
+        else:
+            shutil.copy2(src_path, dst_path)
+        print(f"  copiado {src_path.name} -> {dst_path}")
+        return True
+    except OSError as e:
+        print(f"  ERRO ao copiar {src_path} -> {dst_path}: {e}")
+        return False
 
 
 def verificar_git(remote_url="https://github.com/iriqspina/MEGAB-R-A-I-N.git"):
@@ -140,32 +157,38 @@ def hash_commit_local(pasta):
 
 def sincronizar_central_para_projeto(central, mb_projeto, dry_run=False):
     print("sincronizando central -> projeto...")
+    central_path = Path(central).resolve()
+    mb_projeto_path = Path(mb_projeto).resolve()
+    falhas = []
+
     for src_rel, dst_rel in MAPEAMENTO:
         src = os.path.join(central, src_rel)
         dst = os.path.join(mb_projeto, dst_rel)
         if not os.path.exists(src):
             print(f"  AVISO: {src} não existe na central, pulando")
             continue
-        copiar(src, dst, dry_run)
+        if not copiar(src, dst, dry_run, base=mb_projeto_path):
+            falhas.append(dst_rel)
 
     licoes_c = os.path.join(central, "licoes-megabrain.md")
     licoes_p = os.path.join(mb_projeto, "licoes-megabrain.md")
     if os.path.exists(licoes_c) and not os.path.exists(licoes_p):
-        copiar(licoes_c, licoes_p, dry_run)
+        if not copiar(licoes_c, licoes_p, dry_run, base=mb_projeto_path):
+            falhas.append("licoes-megabrain.md")
     elif os.path.exists(licoes_p):
         print("  licoes-megabrain.md já existe no projeto, não sobrescrevendo")
 
     if dry_run:
         print("dry-run concluído (teste pós-sync pulado)")
-        return True
+        return len(falhas) == 0
 
-    faltando = []
     for _, dst_rel in MAPEAMENTO:
         dst = os.path.join(mb_projeto, dst_rel)
         if not os.path.exists(dst):
-            faltando.append(dst_rel)
-    if faltando:
-        print(f"ERRO: após sync, faltam: {faltando}")
+            falhas.append(dst_rel)
+
+    if falhas:
+        print(f"ERRO: após sync, falhas/faltando: {falhas}")
         return False
 
     print("sync concluído com sucesso")
@@ -185,14 +208,26 @@ def main():
                    help="URL do repositório remoto (default: GitHub público)")
     args = p.parse_args()
 
-    central = os.path.abspath(args.central)
-    if not os.path.isdir(central):
+    try:
+        central = u.resolve_within(args.central, CENTRAL_DEFAULT_PATH)
+    except ValueError as e:
+        print(f"ERRO: central inválida: {e}")
+        print("Dica: defina MEGABRAIN_CENTRAL ou passe --central")
+        sys.exit(1)
+
+    if not central.is_dir():
         print(f"ERRO: central não encontrada em {central}")
         print("Dica: defina MEGABRAIN_CENTRAL ou passe --central")
         sys.exit(1)
 
-    projeto_abs = os.path.abspath(args.projeto)
-    if os.path.samefile(projeto_abs, central) or projeto_abs == central:
+    projeto_abs = Path(args.projeto).resolve()
+    # Só compara samefile se ambos existirem; senão, compara caminho absoluto.
+    mesmo_caminho = projeto_abs == central
+    try:
+        mesmo_caminho = mesmo_caminho or (projeto_abs.exists() and central.exists() and os.path.samefile(projeto_abs, central))
+    except OSError:
+        pass
+    if mesmo_caminho:
         print("ERRO: --projeto aponta para a própria central do megabrain.")
         print("Este script sincroniza a central -> DENTRO de um projeto, não na central.")
         print("Para atualizar a central, edite os arquivos diretamente e use mb-generate-template.py + git.")

@@ -72,5 +72,9 @@ do domínio daquele projeto.
 - `_github-repo-local/` (sincronizado via robocopy)
 
 <!-- mb-sync:lock:start -->
-TRAVADO_POR: livre
+TRAVADO_POR: Kimi
+ATE: 2026-08-14 19:51
+ESCOPO:
+  - .
 <!-- mb-sync:lock:end -->
+

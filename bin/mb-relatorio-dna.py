@@ -32,12 +32,13 @@ ele é migrado para `dna/.dna-backup/` na primeira execução.
 import argparse
 import datetime as dt
 import html
-import json
 import os
 import re
 import shutil
 import sys
 from pathlib import Path
+
+import mb_utils as u
 
 DNA_DIR_NAME = "dna"
 BACKUP_DIR_NAME = ".dna-backup"
@@ -384,7 +385,7 @@ def gerar_html(central: Path, versao: str, data_iso: str) -> str:
         d = mapa[destino_id]
         linhas.append(f'<line x1="{o["x"]}" y1="{o["y"]}" x2="{d["x"]}" y2="{d["y"]}" />')
 
-    json_ld = json.dumps(gerar_json_ld(versao, data_iso), ensure_ascii=False, indent=2)
+    json_ld = u.safe_json_dumps(gerar_json_ld(versao, data_iso), ensure_ascii=False, indent=2)
     meta_componentes = ", ".join(n["label"] for n in NOS)
 
     return f"""<!DOCTYPE html>
@@ -583,10 +584,16 @@ def main():
     ap.add_argument("--saida", default=None, help="caminho do HTML de saída (default: dna/RELATORIO-DNA.html na central)")
     args = ap.parse_args()
 
-    central = Path(args.central).resolve() if args.central else detectar_central()
+    central_default = detectar_central()
+    central = Path(args.central).resolve() if args.central else central_default
     if not central.is_dir():
-        print(f"ERRO: central não encontrada: {central}")
-        sys.exit(1)
+        u.die(f"central não encontrada: {central}")
+
+    # A central deve ser a central default ou um subcaminho dela.
+    try:
+        u.resolve_within(central, central_default)
+    except ValueError as e:
+        u.die(f"--central fora da central conhecida: {e}")
 
     pasta_dna = central / DNA_DIR_NAME
     pasta_dna.mkdir(parents=True, exist_ok=True)
@@ -594,14 +601,15 @@ def main():
     migrar_arquivo_legado(central, pasta_dna)
 
     saida = Path(args.saida).resolve() if args.saida else pasta_dna / DEFAULT_OUT_FILENAME
+    try:
+        u.resolve_within(saida.parent, central)
+    except ValueError as e:
+        u.die(f"--saida fora da central: {e}")
 
     versao = ler_versao(central)
     data_iso = dt.datetime.now().isoformat()
 
     html_out = gerar_html(central, versao, data_iso)
-
-    # Garante que o diretório pai exista
-    saida.parent.mkdir(parents=True, exist_ok=True)
 
     # Backup do relatório anterior
     if saida.exists():
@@ -609,23 +617,29 @@ def main():
         backup_base.mkdir(parents=True, exist_ok=True)
         timestamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
         backup_path = backup_base / f"RELATORIO-DNA-{timestamp}.html"
-        shutil.copy2(saida, backup_path)
-        print(f"Backup do DNA anterior: {backup_path}")
+        try:
+            shutil.copy2(saida, backup_path)
+            print(f"Backup do DNA anterior: {backup_path}")
+        except OSError as e:
+            print(f"AVISO: falha no backup do DNA: {e}")
 
-    saida.write_text(html_out, encoding="utf-8")
+    if not u.atomic_write_text(saida, html_out):
+        sys.exit(1)
     print(f"Relatório DNA gerado: {saida}")
 
     # JSON estruturado (mesmos dados do JSON-LD embutido), sidecar pra script/IA
     json_path = pasta_dna / "dna.json"
-    json_path.write_text(
-        json.dumps(gerar_json_ld(versao, data_iso), ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
+    if not u.atomic_write_text(
+        json_path,
+        u.safe_json_dumps(gerar_json_ld(versao, data_iso), ensure_ascii=False, indent=2),
+    ):
+        sys.exit(1)
     print(f"DNA estruturado gerado: {json_path}")
 
     # README de uma linha pra quem abrir a pasta sem contexto
     readme_path = pasta_dna / "README.md"
-    readme_path.write_text(
+    if not u.atomic_write_text(
+        readme_path,
         "# dna/\n\n"
         f"`{DEFAULT_OUT_FILENAME}` — relatório DNA do megabrain (protocolo, genérico). "
         f"`dna.json` — os mesmos dados em JSON puro. `.dna-backup/` — versões anteriores.\n\n"
@@ -633,8 +647,8 @@ def main():
         "edite a fonte (`MEGABRAIN.md`, `SKILL.md`) e rode o script de novo.\n\n"
         "Procurando o relatório de UM projeto (não o protocolo)? É outro artefato: "
         "`RELATORIO.html` na raiz do projeto, gerado por `bin/mb-relatorio-projeto.py`.\n",
-        encoding="utf-8",
-    )
+    ):
+        sys.exit(1)
 
 
 if __name__ == "__main__":

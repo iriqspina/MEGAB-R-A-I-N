@@ -17,6 +17,10 @@ import os
 import re
 import shutil
 import sys
+from pathlib import Path
+
+import mb_utils as u
+
 
 def detectar_central():
     """Retorna a pasta central do megabrain via env var ou diretório do script."""
@@ -65,19 +69,27 @@ EXCLUIR_NOME_EXATO = {
     "prompt-portatil.md",
 }
 
-# Substituir caminhos absolutos por placeholders
-SUBSTITUICOES = [
-    (re.escape("<MEGABRAIN_ROOT>"), "<MEGABRAIN_ROOT>"),
-    (re.escape("S:\\projetos multi i.a\\MEGA B R A I  N"), "<MEGABRAIN_ROOT>"),
-    (re.escape("<PROJETOS_ROOT>/"), "<PROJETOS_ROOT>/"),
-    (re.escape("S:\\projetos multi i.a\\"), "<PROJETOS_ROOT>\\"),
-    (re.escape("<USER_HOME>"), "<USER_HOME>"),
-    (re.escape("C:\\Users\\<USUARIO>"), "<USER_HOME>"),
-    (re.escape("<AUTOR>"), "<AUTOR>"),
-    (re.escape("<USUARIO>"), "<USUARIO>"),
-    (re.escape("<USUARIO>raspina"), "<USUARIO>"),
-    (re.escape("<USUARIO>"), "<USUARIO>"),
+# Substituir caminhos absolutos e nomes pessoais por placeholders.
+# Ordenado do termo mais longo para o mais curto evita que "<USUARIO>" corte
+# "<USUARIO>" antes do match completo.
+_SUBSTITUICOES_BRUTAS = [
+    ("<MEGABRAIN_ROOT>", "<MEGABRAIN_ROOT>"),
+    ("S:\\projetos multi i.a\\MEGA B R A I  N", "<MEGABRAIN_ROOT>"),
+    ("<PROJETOS_ROOT>/", "<PROJETOS_ROOT>/"),
+    ("S:\\projetos multi i.a\\", "<PROJETOS_ROOT>\\"),
+    ("<USER_HOME>", "<USER_HOME>"),
+    ("C:\\Users\\<USUARIO>", "<USER_HOME>"),
+    ("<AUTOR>", "<AUTOR>"),
+    ("<USUARIO>", "<USUARIO>"),
+    ("<USUARIO>", "<USUARIO>"),
+    ("<USUARIO>", "<USUARIO>"),
 ]
+
+SUBSTITUICOES = sorted(
+    [(re.escape(p), s) for p, s in _SUBSTITUICOES_BRUTAS],
+    key=lambda item: len(item[0]),
+    reverse=True,
+)
 
 
 def sanitizar(texto):
@@ -91,54 +103,93 @@ def remover_secoes_pessoais(conteudo):
     # Remove seção 8 (roteamento de projetos pessoais) e 8b (skills derivadas)
     # Mantém a partir de "## 9 · Como esta pipeline evolui"
     padrao = re.compile(r"## 8 · Roteamento de projetos pessoais.*?(?=## 9 · Como esta pipeline evolui)", re.DOTALL)
-    conteudo = re.sub(padrao, "## 8 · Roteamento de projetos pessoais → skill dedicada\n\n(Seção removida no template público: os projetos pessoais do usuário são substituídos por exemplos genéricos.)\n\n", conteudo)
+    if padrao.search(conteudo):
+        conteudo = padrao.sub(
+            "## 8 · Roteamento de projetos pessoais → skill dedicada\n\n"
+            "(Seção removida no template público: os projetos pessoais do usuário são substituídos por exemplos genéricos.)\n\n",
+            conteudo,
+        )
 
     # Remove linha de Origem que cita projetos pessoais
-    conteudo = re.sub(
-        r"Origem: `PIPELINE\.md` v2 \(Rodada, djinn, megabrain, Financeiro da Silva\)\s*fundida com a v3 multi-agente \(Claude\+Kimi, gates de entrega, bastão\) em\s*260810\. Ver `260810_VISAO-GERAL\.md` para o que mudou nesta fusão e por quê\.",
+    padrao_origem = re.compile(
+        r"Origem: `PIPELINE\.md` v2 \(Rodada, djinn, megabrain, Financeiro da Silva\)\s*"
+        r"fundida com a v3 multi-agente \(Claude\+Kimi, gates de entrega, bastão\) em\s*"
+        r"260810\. Ver `260810_VISAO-GERAL\.md` para o que mudou nesta fusão e por quê\.",
+        re.DOTALL,
+    )
+    conteudo = padrao_origem.sub(
         "Origem: fusão entre pipeline de projeto v2 e protocolo multi-agente v3.",
         conteudo,
-        flags=re.DOTALL
     )
     return conteudo
 
 
 def copiar_sanitizando(src, dst):
-    os.makedirs(os.path.dirname(dst), exist_ok=True)
+    dst_path = Path(dst)
+    if not u.ensure_parent_dir(dst_path):
+        return False
+
     if src.endswith(".md") or src.endswith(".txt") or src.endswith(".py") or src.endswith(".cmd"):
-        with open(src, "r", encoding="utf-8") as f:
-            conteudo = f.read()
+        try:
+            with open(src, "r", encoding="utf-8") as f:
+                conteudo = f.read()
+        except OSError as e:
+            print(f"ERRO ao ler {src}: {e}")
+            return False
         conteudo = sanitizar(conteudo)
         if src.endswith("MEGABRAIN.md") or src.endswith("260810_MEGABRAIN.md"):
             conteudo = remover_secoes_pessoais(conteudo)
-        with open(dst, "w", encoding="utf-8") as f:
-            f.write(conteudo)
+        if not u.atomic_write_text(dst_path, conteudo):
+            return False
     else:
-        shutil.copy2(src, dst)
+        try:
+            shutil.copy2(src, dst)
+        except OSError as e:
+            print(f"ERRO ao copiar {src} -> {dst}: {e}")
+            return False
+    return True
 
 
 def gerar_template(central, destino):
-    if not os.path.isdir(central):
-        print(f"ERRO: central não encontrada em {central}")
+    central_path = Path(central).resolve()
+    destino_path = Path(destino).resolve()
+
+    if not central_path.is_dir():
+        print(f"ERRO: central não encontrada em {central_path}")
         return False
 
-    # Limpa destino (recreate)
-    if os.path.exists(destino):
-        shutil.rmtree(destino)
-    os.makedirs(destino)
+    # O destino deve ficar dentro da central (normalmente 260810_github-export).
+    try:
+        u.resolve_within(destino_path, central_path)
+    except ValueError as e:
+        print(f"ERRO: destino inválido: {e}")
+        return False
+
+    # Limpa destino (recreate) de forma segura.
+    if destino_path.exists():
+        if not u.safe_rmtree(destino_path, base=central_path):
+            return False
+    try:
+        destino_path.mkdir(parents=True, exist_ok=True)
+    except OSError as e:
+        print(f"ERRO: não foi possível criar {destino_path}: {e}")
+        return False
+
+    erros = False
 
     # Copia arquivos de topo
-    for nome in os.listdir(central):
+    for nome in os.listdir(central_path):
         if nome in EXCLUIR:
             continue
-        src = os.path.join(central, nome)
-        dst = os.path.join(destino, nome)
+        src = os.path.join(central_path, nome)
+        dst = destino_path / nome
         if os.path.isfile(src):
-            copiar_sanitizando(src, dst)
+            if not copiar_sanitizando(src, str(dst)):
+                erros = True
         elif os.path.isdir(src):
             # recursivo para referencias/, bin/, skills/
             for raiz, dirs, files in os.walk(src):
-                rel = os.path.relpath(raiz, central)
+                rel = os.path.relpath(raiz, central_path)
                 for f in files:
                     rel_f = os.path.join(rel, f).replace("\\", "/")
                     # pula .git e excluídos
@@ -147,29 +198,39 @@ def gerar_template(central, destino):
                     if f in EXCLUIR_NOME_EXATO:
                         continue
                     src_f = os.path.join(raiz, f)
-                    dst_f = os.path.join(destino, rel, f)
-                    copiar_sanitizando(src_f, dst_f)
+                    dst_f = destino_path / rel / f
+                    if not copiar_sanitizando(src_f, str(dst_f)):
+                        erros = True
 
     # .gitignore padrão do pacote público
-    gitignore_src = os.path.join(central, ".gitignore")
-    if os.path.isfile(gitignore_src):
-        copiar_sanitizando(gitignore_src, os.path.join(destino, ".gitignore"))
+    gitignore_src = central_path / ".gitignore"
+    if gitignore_src.is_file():
+        if not copiar_sanitizando(str(gitignore_src), str(destino_path / ".gitignore")):
+            erros = True
 
     # SKILL.md canônico também na raiz do destino (o repo público o espera lá)
-    skill_src = os.path.join(central, "skills", "megabrain", "SKILL.md")
-    if os.path.isfile(skill_src):
-        copiar_sanitizando(skill_src, os.path.join(destino, "SKILL.md"))
+    skill_src = central_path / "skills" / "megabrain" / "SKILL.md"
+    if skill_src.is_file():
+        if not copiar_sanitizando(str(skill_src), str(destino_path / "SKILL.md")):
+            erros = True
 
     # VERSAO.txt público: só a versão atual, sem histórico com nomes de projeto
-    versao_src = os.path.join(central, "VERSAO.txt")
-    if os.path.isfile(versao_src):
-        with open(versao_src, "r", encoding="utf-8") as f:
-            primeira = f.readline().strip()
+    versao_src = central_path / "VERSAO.txt"
+    if versao_src.is_file():
+        primeira = u.read_first_non_empty_line(versao_src) or ""
         primeira = sanitizar(primeira)
-        with open(os.path.join(destino, "VERSAO.txt"), "w", encoding="utf-8") as f:
-            f.write(primeira + "\n\nHistórico completo: ver repositório privado da pasta central.\n")
+        versao_dst = destino_path / "VERSAO.txt"
+        if not u.atomic_write_text(
+            versao_dst,
+            primeira + "\n\nHistórico completo: ver repositório privado da pasta central.\n",
+        ):
+            erros = True
 
-    print(f"template gerado em {destino}")
+    if erros:
+        print(f"template gerado em {destino_path} com ERROS parciais")
+        return False
+
+    print(f"template gerado em {destino_path}")
     return True
 
 
@@ -178,7 +239,19 @@ def main():
     p.add_argument("--central", default=CENTRAL_DEFAULT)
     p.add_argument("--destino", default=DESTINO_DEFAULT)
     args = p.parse_args()
-    ok = gerar_template(args.central, args.destino)
+
+    central_default_path = Path(CENTRAL_DEFAULT).resolve()
+    try:
+        central = u.resolve_within(args.central, central_default_path)
+    except ValueError as e:
+        print(f"ERRO: central inválida: {e}")
+        sys.exit(1)
+
+    # Destino default já está dentro da central; se o usuário passar outro,
+    # gerar_template valida contenção.
+    destino = Path(args.destino).resolve()
+
+    ok = gerar_template(central, destino)
     sys.exit(0 if ok else 1)
 
 

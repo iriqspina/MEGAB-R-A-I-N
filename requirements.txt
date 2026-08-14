@@ -1,0 +1,36 @@
+# requirements.txt — dependências recomendadas para o ecossistema MEGABRAIN.
+#
+# O núcleo (scripts em bin/) continua funcionando só com a stdlib;
+# estas bibliotecas são sugeridas para projetos que queiram adotar
+# padrões mais robustos de CLI, parsing, segurança e observabilidade.
+
+# 1. file locking cross-platform (alternativa robusta à trava leve de lockfile).
+filelock>=3.15
+
+# 2. Diretórios padrão do sistema (config, cache, dados) de forma portátil.
+platformdirs>=4.2
+
+# 3. Parsing de Markdown rápido e compatível (substitui parser artesanal).
+mistune>=3.0
+
+# 4. Sanitização de HTML segura (previne XSS em relatórios gerados).
+nh3>=2.4
+
+# 5. Validação de dados/configurações e serialização segura.
+pydantic>=2.7
+pydantic-settings>=2.3
+
+# 6. Logging estruturado (facilita debug e auditoria de execução).
+structlog>=24.1
+
+# 7. Monitoramento de mudanças no filesystem (propagação automática de estado).
+watchdog>=4.0
+
+# 8. Interface de terminal rica (relatórios, progresso, menus).
+rich>=13.7
+
+# 9. Testes automatizados para os scripts do megabrain.
+pytest>=8.2
+
+# 10. Linter/formatador ultra-rápido (qualidade de código).
+ruff>=0.5

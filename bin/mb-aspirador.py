@@ -18,11 +18,11 @@ import ast
 import datetime as dt
 import html
 import json
-import os
 import shutil
-import sys
 from pathlib import Path
 from typing import Iterable
+
+import mb_utils as u
 
 DEFAULT_EXTS = {"py", "js", "ts", "jsx", "tsx", "md", "txt", "yaml", "yml", "json", "css", "scss"}
 BACKUP_DIR_NAME = ".mb-aspirador"
@@ -43,12 +43,14 @@ def extensao(caminho: Path) -> str:
     return caminho.suffix.lstrip(".").lower()
 
 
-def e_texto(caminho: Path) -> bool:
+def _ler_texto(caminho: Path) -> str | None:
+    """Lê texto de `caminho` uma única vez, retornando None se não for texto."""
     try:
-        caminho.read_bytes().decode("utf-8")
-        return True
+        return caminho.read_text(encoding="utf-8")
     except UnicodeDecodeError:
-        return False
+        return None
+    except OSError:
+        return None
 
 
 def detectar_trailing_whitespace(linhas: list[str]) -> list[Problema]:
@@ -121,10 +123,10 @@ def detectar_python_morto(texto: str) -> list[Problema]:
 
 
 def analisar(caminho: Path) -> tuple[list[Problema], list[str] | None]:
-    if not e_texto(caminho):
-        return [Problema("nao-texto", None, "arquivo binario - ignorado")], None
+    texto = _ler_texto(caminho)
+    if texto is None:
+        return [Problema("nao-texto", None, "arquivo binario ou ilegivel - ignorado")], None
 
-    texto = caminho.read_text(encoding="utf-8")
     linhas = texto.splitlines(keepends=True)
     probs = []
 
@@ -187,12 +189,7 @@ def corrigir(linhas: list[str], probs: list[Problema], caminho: Path) -> list[st
 
 def arquivos_no_diretorio(raiz: Path, exts: set[str]) -> Iterable[Path]:
     ignorar = {".git", ".venv", "node_modules", "__pycache__", BACKUP_DIR_NAME}
-    for dirpath, dirnames, filenames in os.walk(raiz):
-        dirnames[:] = [d for d in dirnames if d not in ignorar]
-        for nome in filenames:
-            caminho = Path(dirpath) / nome
-            if extensao(caminho) in exts:
-                yield caminho
+    yield from u.walk_files(raiz, exts=exts, ignorar=ignorar)
 
 
 def e_informativo_seguro(caminho: Path, raiz: Path) -> bool:
@@ -200,9 +197,12 @@ def e_informativo_seguro(caminho: Path, raiz: Path) -> bool:
         return False
     if caminho.suffix.lstrip(".").lower() not in INFO_EXTS:
         return False
-    if not e_texto(caminho):
+    if _ler_texto(caminho) is None:
         return False
-    if caminho.stat().st_size > INFO_MAX_BYTES:
+    try:
+        if caminho.stat().st_size > INFO_MAX_BYTES:
+            return False
+    except OSError:
         return False
     rel = str(caminho.relative_to(raiz)).replace("\\", "/")
     # pula relatorios do proprio aspirador para nao poluir
@@ -444,7 +444,7 @@ def gerar_relatorio_html(
     for caminho, probs in com_problema:
         rel = html.escape(str(caminho.relative_to(raiz)))
         detalhes.append(f'<h3 id="{html.escape(rel)}"><code>{rel}</code></h3>')
-        texto = caminho.read_text(encoding="utf-8")
+        texto = u.safe_read_text(caminho) or ""
         linhas_arquivo = texto.splitlines(keepends=True)
         for p in probs:
             tipo_tag = f'<span class="tag {p.tipo}">{p.tipo}</span>'
@@ -546,10 +546,17 @@ def main():
 
     raiz = Path(args.dir).resolve()
     if not raiz.is_dir():
-        print(f"ERRO: diretorio nao encontrado: {raiz}")
-        sys.exit(1)
+        u.die(f"diretorio nao encontrado: {raiz}")
 
-    exts = {e.strip().lstrip(".").lower() for e in args.ext.split(",") if e.strip()}
+    # Backup opcional customizado deve ficar dentro da raiz varrida.
+    if args.backup_dir:
+        backup_custom = Path(args.backup_dir).resolve()
+        try:
+            u.resolve_within(backup_custom, raiz)
+        except ValueError as e:
+            u.die(f"--backup-dir fora da pasta varrida: {e}")
+
+    exts = u.parse_csv_extensoes(args.ext)
     timestamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
     backup_base = Path(args.backup_dir) if args.backup_dir else raiz / BACKUP_DIR_NAME / "backups" / timestamp
 

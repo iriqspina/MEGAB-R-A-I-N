@@ -52,10 +52,11 @@ import argparse
 import datetime as dt
 import html
 import json
-import os
 import re
 import sys
 from pathlib import Path
+
+import mb_utils as u
 
 DEFAULT_OUT_NAME = "RELATORIO.html"
 
@@ -105,7 +106,7 @@ def _inline(texto: str) -> str:
     texto = html.escape(texto)
     texto = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", texto)
     texto = re.sub(r"`([^`]+?)`", r"<code>\1</code>", texto)
-    texto = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r'<a href="\2">\1</a>', texto)
+    texto = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", u.link_replacer, texto)
     return texto
 
 
@@ -509,7 +510,7 @@ def gerar(args, data_iso: str) -> str:
     </section>""")
 
     # --- JSON-LD / meta pra IA ---
-    json_ld = json.dumps({
+    json_ld = u.safe_json_dumps({
         "@context": "https://schema.org",
         "@type": "Report",
         "name": f"{args.titulo} — relatório de projeto",
@@ -584,6 +585,18 @@ Se o "gerado em" lá em cima está velho, o retrato está velho.</p>
 """
 
 
+def _validar_caminhos_relativos(projeto: Path, *rels: str | None) -> None:
+    """Garante que caminhos relativos não escapam da raiz do projeto."""
+    for rel in rels:
+        if not rel:
+            continue
+        alvo = (projeto / rel).resolve()
+        try:
+            u.resolve_within(alvo, projeto)
+        except ValueError as e:
+            u.die(f"caminho fora do projeto ({rel}): {e}")
+
+
 def main():
     ap = argparse.ArgumentParser(description="Gerador do relatório de projeto (irmão do relatório DNA)")
     ap.add_argument("--projeto", required=True, help="raiz do projeto")
@@ -601,17 +614,30 @@ def main():
                      help="palavra-chave extra (além das padrão) pra achar heading de resolução no --plano/--extra (repetível)")
     args = ap.parse_args()
 
-    projeto = Path(args.projeto)
+    projeto = Path(args.projeto).resolve()
     if not projeto.is_dir():
-        print(f"ERRO: projeto não encontrado: {projeto}")
-        sys.exit(1)
+        u.die(f"projeto não encontrado: {projeto}")
+
+    # Validação de path traversal para entradas relativas.
+    _validar_caminhos_relativos(projeto, args.plano, args.context, args.skill, *args.extra)
+
+    if args.megabrain_central:
+        try:
+            _ = u.resolve_within(args.megabrain_central, Path(args.megabrain_central).resolve().parent)
+        except ValueError as e:
+            u.die(f"--megabrain-central inválido: {e}")
 
     saida = Path(args.saida).resolve() if args.saida else projeto / DEFAULT_OUT_NAME
+    try:
+        u.resolve_within(saida.parent, projeto)
+    except ValueError as e:
+        u.die(f"--saida fora do projeto: {e}")
+
     data_iso = dt.datetime.now().isoformat()
 
     html_out = gerar(args, data_iso)
-    saida.parent.mkdir(parents=True, exist_ok=True)
-    saida.write_text(html_out, encoding="utf-8")
+    if not u.atomic_write_text(saida, html_out):
+        sys.exit(1)
     print(f"Relatório de projeto gerado: {saida}")
 
 
