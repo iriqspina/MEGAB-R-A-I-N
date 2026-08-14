@@ -553,6 +553,9 @@ def main():
 
     html_out = gerar_html(central, versao, data_iso)
 
+    # Garante que o diretório pai exista
+    saida.parent.mkdir(parents=True, exist_ok=True)
+
     # Backup do relatório anterior
     if saida.exists():
         backup_base = central / BACKUP_DIR_NAME
