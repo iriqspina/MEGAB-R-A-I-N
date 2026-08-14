@@ -81,4 +81,17 @@ funcionando. Use:
 python MEGABRAIN/bin/mb-check-version.py --projeto "caminho/do/projeto" --offline
 ```
 
+Para backup da central:
+
+```
+cd <pasta-central>
+python bin/mb-backup-central.py
+```
+
+Para recuperar um projeto:
+
+```
+python MEGABRAIN/bin/mb-recuperar-megabrain.py --projeto "caminho/do/projeto" --fonte "backup.zip"
+```
+
 Mais detalhes: `MEGABRAIN/OFFLINE.md`.

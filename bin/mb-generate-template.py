@@ -48,6 +48,7 @@ EXCLUIR = {
     "referencias visuais",
     ".git",
     ".mb-aspirador",
+    ".mb-backup",
     ".dna-backup",
     "__pycache__",
     "260810_VISAO-GERAL.md",

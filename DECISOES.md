@@ -179,6 +179,20 @@
   projeto vive sozinho. O modo offline é opt-in por flag, não padrão,
   para não esconder falhas de rede de quem quer saber.
 
+## 260814 — redundância contra falha de fontes
+- Decisão: adicionar scripts de backup (`mb-backup-central.py`) e
+  recuperação (`mb-recuperar-megabrain.py`) para evitar que a perda da
+  central, do GitHub ou da pasta `MEGABRAIN/` de um projeto deixe o
+  usuário sem protocolo. O backup é um zip padrão, sem dependências
+  externas; a recuperação aceita backup zip, outro projeto ou a central
+  local, e detecta a fonte automaticamente quando possível.
+- Alternativa descartada: confiar apenas no git remoto como fonte de
+  recuperação. Motivo: o <USUARIO> deixou claro que "links" (fontes) podem
+  quebrar; ter só o GitHub é ponto único de falha.
+- Decisão: os scripts de backup e recuperação usam apenas stdlib
+  (`zipfile`, `shutil`) e `mb_utils.py`, mantendo portabilidade
+  zero-dependência.
+
 
 
 ## 260814 — card "Ação imediata" + 2 bugs corrigidos no conversor markdown

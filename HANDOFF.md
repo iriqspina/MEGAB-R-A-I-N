@@ -5,52 +5,34 @@ ATÉ: -
 ESCOPO: -
 
 ## O que foi feito
-- Implementada diferenciação de usuário no megabrain (v4.0):
-  - `bin/mb_utils.py`: helpers `extract_usuario` e `detectar_usuario`
-    leem o campo `USUARIO:` do arquivo de identidade.
-  - `bin/mb-sync.py`: a trava em `HANDOFF.md` agora grava `USUARIO:`
-    junto com `TRAVADO_POR`, `ATE` e `ESCOPO`. O nome é detectado de
-    `260810_memoria-pessoal.md` ou pode ser forçado com `--usuario`.
-  - `mb-sync-memoria.py`: sincroniza o campo `USUARIO:` para
-    `CLAUDE.md`, `GEMINI.md` e `AGENTS.md`; suporta `--usuario` para
-    sobrescrever o valor detectado.
-  - `260810_memoria-pessoal.md` e os backups em
-    `260810_backup-raiz-perfil/` atualizados com
-    `USUARIO: <USUARIO> (Iriq)`.
-  - `referencias/260810_sync-memoria.md` ganhou seção explicando o campo.
-- Documentação de migração v4.0 adicionada para projetos derivados e
-  quem forkar/clonar o repo:
-  - `MEGABRAIN.md` e `260810_MEGABRAIN.md`: nova seção 1b explicando o
-    que mudou, por que importa, como configurar e como trocar/adicionar
-    perfis.
-  - `README.md`: seção "Migração v4.0 — diferenciação de usuário" com
-    passos rápidos.
-- Modo offline implementado (v4.2):
-  - Criado `OFFLINE.md` explicando como usar o megabrain sem
-    internet/GitHub.
-  - `mb-check-version.py` ganhou flag `--offline` que desativa consultas
-    de rede e usa só a central local.
-  - Mensagens de falha de remote agora indicam que a cópia local
-    `MEGABRAIN/` continua funcionando.
-  - Seção "Uso offline" adicionada a `MEGABRAIN.md`,
-    `260810_MEGABRAIN.md` e `README.md`.
-- `VERSAO.txt` atualizado para v4.2.
+- Redundância contra pontos únicos de falha implementada no megabrain
+  (v4.3):
+  - `bin/mb-backup-central.py`: cria backup zip da pasta central do
+    megabrain (`.mb-backup/central-YYYYMMDD-HHMMSS.zip`), excluindo
+    `.git`, `__pycache__`, caches e pastas geradas.
+  - `bin/mb-recuperar-megabrain.py`: recupera a pasta `MEGABRAIN/` de um
+    projeto a partir de um backup zip, de outro projeto que ainda tenha
+    `MEGABRAIN/`, da central local, ou detecta automaticamente a melhor
+    fonte disponível.
+  - `OFFLINE.md` atualizado com instruções de backup e recuperação.
+  - `MEGABRAIN.md`, `260810_MEGABRAIN.md` e `README.md` ganharam seção
+    "Uso offline e recuperação" com exemplos de comando.
+- Modo offline implementado anteriormente (v4.2):
+  - `OFFLINE.md` e flag `--offline` em `mb-check-version.py`.
+- Diferenciação de usuário implementada anteriormente (v4.0/v4.1):
+  - Campo `USUARIO:` no `HANDOFF.md` e nos arquivos de identidade;
+  - documentação de migração v4.0.
+- `VERSAO.txt` atualizado para v4.3.
 - Template público `260810_github-export/` regenerado e sincronizado com
   `_github-repo-local/` via robocopy.
 - Push da central para `https://github.com/iriqspina/MEGAB-R-A-I-N.git`.
-- Projetos derivados sincronizados:
-  - Financeiro da Silva (não é repo git; atualizado localmente).
-  - Jarvis (não é repo git; atualizado localmente).
-  - Rodada: sincronizado e push para
-    `https://github.com/iriqspina/rodada.git`.
-  - TLOU (`Portfolio/The Last of Us - Part II`): sincronizado e
-    commitado localmente; não tem remote configurado, então push não foi
-    feito.
-- Testes manuais: lock/release com detecção automática de usuário;
-  sincronização de identidade; `mb-check-version.py --offline` sem
-  consulta de rede.
+- Projetos derivados serão sincronizados com v4.3 na sequência.
+- Testes manuais: backup da central criado com sucesso; recuperação de
+  projeto a partir do backup zip funcionou; recuperação a partir de outro
+  projeto funcionou.
 
 ## O que ficou aberto
+- Propagar v4.3 para Financeiro da Silva, Jarvis, Rodada e TLOU.
 - Configurar remote do repo TLOU se o <USUARIO> quiser push.
 - Adotar bibliotecas de `requirements.txt` quando o ambiente permitir.
 - Melhorias visuais na árvore de desenvolvimento do DNA — item antigo.
@@ -58,11 +40,13 @@ ESCOPO: -
   item antigo.
 
 ## Próximo passo concreto
-Configurar remote do TLOU e fazer push, ou deixar o commit local até que
-o <USUARIO> defina onde o repo deve morar. Fora isso, a entrega v4.2 está
-finalizada.
+Rodar `python MEGABRAIN/bin/mb-check-version.py --projeto <pasta> --auto`
+nos quatro projetos derivados para propagar v4.3. Commitar/pushar Rodada e
+TLOU. Após isso, a entrega estará totalmente concluída.
 
 ## Arquivos tocados
+- `bin/mb-backup-central.py` (novo)
+- `bin/mb-recuperar-megabrain.py` (novo)
 - `bin/mb_utils.py`
 - `bin/mb-sync.py`
 - `bin/mb-sync-memoria.py`
@@ -75,7 +59,7 @@ finalizada.
 - `MEGABRAIN.md`
 - `260810_MEGABRAIN.md`
 - `README.md`
-- `OFFLINE.md` (novo)
+- `OFFLINE.md`
 - `VERSAO.txt`
 - `ESTADO.md`, `HANDOFF.md`, `DECISOES.md`
 - `260810_github-export/` (regenerado)

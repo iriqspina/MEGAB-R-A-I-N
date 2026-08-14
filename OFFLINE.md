@@ -47,6 +47,40 @@ Nesses casos o script avisa e continua usando a cópia local.
 3. Se você só tem o projeto (sem central separada), copie a pasta
    `MEGABRAIN/` de um projeto atualizado por cima da sua.
 
+## Backup da central
+
+Para não depender só do GitHub, faça backups periódicos da pasta central:
+
+```
+cd <pasta-central-do-megabrain>
+python bin/mb-backup-central.py
+```
+
+O backup vai para `.mb-backup/central-YYYYMMDD-HHMMSS.zip`. Guarde esse
+zip em outro lugar (HD externo, nuvem, outra máquina).
+
+## Recuperar um projeto se a central sumir
+
+Se a pasta `MEGABRAIN/` do projeto foi apagada/corrompida, recrie a partir
+de outra fonte:
+
+```
+# De um backup zip:
+python MEGABRAIN/bin/mb-recuperar-megabrain.py \
+  --projeto "caminho/do/projeto" \
+  --fonte "caminho/do/backup.zip"
+
+# De outro projeto que ainda tenha MEGABRAIN/:
+python MEGABRAIN/bin/mb-recuperar-megabrain.py \
+  --projeto "caminho/do/projeto" \
+  --fonte "outro/projeto/MEGABRAIN"
+
+# Sem --fonte, ele tenta achar sozinho (central, outro projeto na mesma
+# pasta, ou backup mais recente):
+python MEGABRAIN/bin/mb-recuperar-megabrain.py \
+  --projeto "caminho/do/projeto"
+```
+
 ## Dica: mantenha o `MEGABRAIN/` do projeto atualizado
 
 Sempre que tiver internet, rode o `mb-check-version.py` nos seus projetos.

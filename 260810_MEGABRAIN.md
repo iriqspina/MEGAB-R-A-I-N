@@ -84,7 +84,7 @@ o campo aparece como `<USUARIO>` e o script indica que é preciso configurar.
   separados (ex.: `260810_memoria-pessoal-fulano.md`) e passe `--source` e
   `--usuario` explicitamente.
 
-### Uso offline
+### Uso offline e recuperação
 
 A pasta `MEGABRAIN/` dentro de cada projeto é uma cópia local completa do
 protocolo. Se o GitHub ou a internet caírem, os scripts continuam
@@ -92,6 +92,20 @@ funcionando direto de lá. Para sincronizar sem consultar a rede:
 
 ```
 python MEGABRAIN/bin/mb-check-version.py --projeto "caminho/do/projeto" --offline
+```
+
+Para não depender só do GitHub, faça backup da central:
+
+```
+cd <pasta-central>
+python bin/mb-backup-central.py
+```
+
+Se a pasta `MEGABRAIN/` de um projeto sumir, recupere de um backup zip,
+de outro projeto ou da central:
+
+```
+python MEGABRAIN/bin/mb-recuperar-megabrain.py --projeto "caminho/do/projeto" --fonte "backup.zip"
 ```
 
 Mais detalhes: `MEGABRAIN/OFFLINE.md`.
