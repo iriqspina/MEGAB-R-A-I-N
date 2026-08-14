@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MEGABRAIN — Relatório DNA</title>
+<meta name="generator" content="mb-relatorio-dna.py">
+<meta name="megabrain:versao" content="v3.7 · 2026-08-14">
+<meta name="megabrain:timestamp" content="2026-08-13T23:29:08.819032">
+<meta name="megabrain:componentes" content="MEGABRAIN, 0 · Assumir, 1 · Enquadrar, 2 · Orçar Contexto, 3 · Gerar, 4 · Auditar, 5 · Reparar, 6 · Verificar, Aspirador, mb-sync.py, mb-check-version.py, Relatório DNA, mb-sync-memoria.py, Duplo Diamante, 7 · Passar o Bastão, 8 · Aprender">
+<meta name="description" content="DNA completo do protocolo megabrain. Frontend humano, metadados para IA.">
+<script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "name": "MEGABRAIN — Relatório DNA",
+  "version": "v3.7 · 2026-08-14",
+  "dateCreated": "2026-08-13T23:29:08.819032",
+  "description": "DNA completo do protocolo megabrain: gates, ferramentas, métodos e instruções para replicação.",
+  "about": {
+    "@type": "SoftwareApplication",
+    "name": "megabrain",
+    "featureList": [
+      "MEGABRAIN",
+      "0 · Assumir",
+      "1 · Enquadrar",
+      "2 · Orçar Contexto",
+      "3 · Gerar",
+      "4 · Auditar",
+      "5 · Reparar",
+      "6 · Verificar",
+      "Aspirador",
+      "mb-sync.py",
+      "mb-check-version.py",
+      "Relatório DNA",
+      "mb-sync-memoria.py",
+      "Duplo Diamante",
+      "7 · Passar o Bastão",
+      "8 · Aprender"
+    ]
+  },
+  "hasPart": [
+    {
+      "@type": "Thing",
+      "name": "MEGABRAIN",
+      "description": "Protocolo de execução multi-agente e anti-slop."
+    },
+    {
+      "@type": "Thing",
+      "name": "0 · Assumir",
+      "description": "Checa trava, lê ESTADO/HANDOFF/DECISOES/LICOES."
+    },
+    {
+      "@type": "Thing",
+      "name": "1 · Enquadrar",
+      "description": "Define artefato, leitor, critérios e restrições."
+    },
+    {
+      "@type": "Thing",
+      "name": "2 · Orçar Contexto",
+      "description": "Contexto é orçamento compartilhado."
+    },
+    {
+      "@type": "Thing",
+      "name": "3 · Gerar",
+      "description": "Estrutura antes de prosa; uma afirmação por parágrafo."
+    },
+    {
+      "@type": "Thing",
+      "name": "4 · Auditar",
+      "description": "Anti-slop: léxico, estrutura, substância, compressão."
+    },
+    {
+      "@type": "Thing",
+      "name": "5 · Reparar",
+      "description": "Uma rodada só de autocrítica."
+    },
+    {
+      "@type": "Thing",
+      "name": "6 · Verificar",
+      "description": "Arquivo abre? Números batem? Links funcionam?"
+    },
+    {
+      "@type": "Thing",
+      "name": "Aspirador",
+      "description": "Revisão pós-implementação: limpa código mecanicamente."
+    },
+    {
+      "@type": "Thing",
+      "name": "mb-sync.py",
+      "description": "Trava de handoff multi-agente."
+    },
+    {
+      "@type": "Thing",
+      "name": "mb-check-version.py",
+      "description": "Sincroniza megabrain dos projetos com a central."
+    },
+    {
+      "@type": "Thing",
+      "name": "Relatório DNA",
+      "description": "Este HTML: DNA completo do megabrain."
+    },
+    {
+      "@type": "Thing",
+      "name": "mb-sync-memoria.py",
+      "description": "Sincroniza identidade entre agentes."
+    },
+    {
+      "@type": "Thing",
+      "name": "Duplo Diamante",
+      "description": "Pesquisa → Análise → Ideação → Design."
+    },
+    {
+      "@type": "Thing",
+      "name": "7 · Passar o Bastão",
+      "description": "Reescreve ESTADO.md, HANDOFF.md, anexa DECISOES.md."
+    },
+    {
+      "@type": "Thing",
+      "name": "8 · Aprender",
+      "description": "Registra lição no formato GATILHO/LIÇÃO/ATALHO."
+    }
+  ]
+}</script>
+<style>
+    :root {
+      --bg: #0b0f14;
+      --surface: #111820;
+      --panel: #161f2a;
+      --border: #253244;
+      --text: #dbe1e8;
+      --muted: #8b9aae;
+      --accent: #7dd3fc;
+      --accent-2: #c084fc;
+      --ok: #4ade80;
+      --warn: #facc15;
+      --danger: #f87171;
+      --radius: 10px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    header {
+      background: linear-gradient(90deg, rgba(125,211,252,.08), rgba(192,132,252,.08));
+      border-bottom: 1px solid var(--border);
+      padding: 2rem 1.5rem;
+      text-align: center;
+    }
+    header h1 { margin: 0; font-size: 2.2rem; letter-spacing: -0.02em; }
+    header p { margin: .5rem 0 0; color: var(--muted); }
+    .badge {
+      display: inline-block;
+      padding: .25rem .7rem;
+      border-radius: 999px;
+      font-size: .75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      background: rgba(125,211,252,.12);
+      color: var(--accent);
+      border: 1px solid rgba(125,211,252,.25);
+      margin-top: .8rem;
+    }
+    nav {
+      position: sticky;
+      top: 0;
+      background: rgba(11,15,20,.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: .5rem;
+      padding: .75rem 1.5rem;
+      flex-wrap: wrap;
+      z-index: 50;
+    }
+    nav button {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: .45rem .9rem;
+      cursor: pointer;
+      font-size: .85rem;
+    }
+    nav button:hover, nav button.active { border-color: var(--accent); color: var(--accent); }
+    main { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+    section { display: none; animation: fade .25s ease; }
+    section.active { display: block; }
+    @keyframes fade { from { opacity: 0; transform: translateY(6px);} to { opacity: 1; transform: translateY(0);} }
+    h2 { font-size: 1.35rem; border-bottom: 1px solid var(--border); padding-bottom: .5rem; margin-top: 0; }
+    h3 { color: var(--accent); font-size: 1.05rem; margin-top: 1.5rem; }
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+    .card h4 { margin: 0 0 .4rem; color: var(--accent-2); }
+    .card p { margin: 0; color: var(--muted); font-size: .92rem; }
+
+    /* Árvore de desenvolvimento */
+    .tree-wrap { position: relative; overflow-x: auto; padding: 1rem 0; }
+    .tree {
+      position: relative;
+      width: 1040px;
+      height: 620px;
+      margin: 0 auto;
+      user-select: none;
+    }
+    .tree svg {
+      position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none;
+    }
+    .tree svg line {
+      stroke: #334155; stroke-width: 2; stroke-linecap: round;
+    }
+    .node {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      padding: .55rem .9rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: .82rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(0,0,0,.25);
+      transition: transform .15s, box-shadow .15s, border-color .15s;
+      z-index: 10;
+    }
+    .node:hover { transform: translate(-50%, -52%); box-shadow: 0 8px 22px rgba(0,0,0,.35); }
+    .node.raiz { background: linear-gradient(135deg, rgba(125,211,252,.18), rgba(192,132,252,.18)); border-color: var(--accent); color: #fff; font-size: 1rem; }
+    .node.gate { border-color: rgba(125,211,252,.45); color: var(--accent); }
+    .node.ferramenta { border-color: rgba(74,222,128,.45); color: var(--ok); }
+    .node.metodo { border-color: rgba(192,132,252,.45); color: var(--accent-2); }
+    .node.selected { box-shadow: 0 0 0 2px var(--warn); border-color: var(--warn); }
+
+    .detail-panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin-top: 1.5rem;
+      min-height: 120px;
+    }
+    .detail-panel h3 { margin: 0 0 .5rem; color: var(--accent); }
+    .detail-panel p { margin: .4rem 0; }
+    .detail-panel .hint { color: var(--muted); font-size: .9rem; }
+
+    details { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); margin: 1rem 0; }
+    summary { padding: .9rem 1.1rem; cursor: pointer; font-weight: 600; }
+    details > div { padding: 0 1.1rem 1rem; }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .9em; }
+    pre { background: var(--bg); padding: .75rem; border-radius: 6px; overflow-x: auto; }
+    .ai-box { background: rgba(125,211,252,.08); border-left: 4px solid var(--accent); padding: 1rem 1.25rem; border-radius: 0 var(--radius) var(--radius) 0; }
+    footer { text-align: center; color: var(--muted); font-size: .85rem; padding: 2rem 1rem; border-top: 1px solid var(--border); margin-top: 2rem; }
+    @media (max-width: 760px) {
+      .tree { width: 100%; height: auto; min-height: 620px; }
+      .node { font-size: .72rem; padding: .4rem .6rem; }
+    }
+    </style>
+</head>
+<body>
+<header>
+  <h1>MEGABRAIN</h1>
+  <p>Relatório DNA · v3.7 · 2026-08-14 · gerado em 2026-08-13</p>
+  <span class="badge">Protocolo multi-agente + anti-slop</span>
+</header>
+
+<nav>
+  <button data-target="arvore" class="active">Árvore de desenvolvimento</button>
+  <button data-target="sobre">Sobre</button>
+  <button data-target="componentes">Componentes</button>
+  <button data-target="uso">Como usar</button>
+  <button data-target="ia">Para a IA</button>
+</nav>
+
+<main>
+  <section id="arvore" class="active">
+    <h2>Árvore de desenvolvimento</h2>
+    <p class="hint">Clique nos nós para ver detalhes. Cores: <span style="color:var(--accent)">gates</span>, <span style="color:var(--ok)">ferramentas</span>, <span style="color:var(--accent-2)">métodos</span>.</p>
+    <div class="tree-wrap">
+      <div class="tree">
+        <svg><line x1="500" y1="40" x2="80" y2="180" /><line x1="500" y1="40" x2="220" y2="180" /><line x1="500" y1="40" x2="360" y2="180" /><line x1="500" y1="40" x2="500" y2="180" /><line x1="500" y1="40" x2="640" y2="180" /><line x1="500" y1="40" x2="780" y2="180" /><line x1="500" y1="40" x2="920" y2="180" /><line x1="80" y1="180" x2="300" y2="340" /><line x1="360" y1="180" x2="460" y2="340" /><line x1="640" y1="180" x2="140" y2="340" /><line x1="920" y1="180" x2="620" y2="340" /><line x1="80" y1="180" x2="780" y2="340" /><line x1="220" y1="180" x2="940" y2="340" /><line x1="500" y1="180" x2="620" y2="340" /><line x1="920" y1="180" x2="320" y2="500" /><line x1="320" y1="500" x2="680" y2="500" /></svg>
+        <div class="node raiz" style="left:500px;top:40px" data-id="raiz" data-label="MEGABRAIN" data-desc="Protocolo de execução multi-agente e anti-slop." data-detalhe="O megabrain é um protocolo operacional para agentes de IA trabalharem juntos sem pisar um no outro e para evitar entregas genéricas.">MEGABRAIN</div><div class="node gate" style="left:80px;top:180px" data-id="g0" data-label="0 · Assumir" data-desc="Checa trava, lê ESTADO/HANDOFF/DECISOES/LICOES." data-detalhe="Gate 0 garante que apenas um agente escreva por vez. Usa HANDOFF.md e o script mb-sync.py para travar/liberar o projeto.">0 · Assumir</div><div class="node gate" style="left:220px;top:180px" data-id="g1" data-label="1 · Enquadrar" data-desc="Define artefato, leitor, critérios e restrições." data-detalhe="Antes de gerar qualquer output, responde: artefato, leitor, 3 critérios verificáveis, restrição dura e a versão genérica a evitar.">1 · Enquadrar</div><div class="node gate" style="left:360px;top:180px" data-id="g2" data-label="2 · Orçar Contexto" data-desc="Contexto é orçamento compartilhado." data-detalhe="Leia sob demanda (Glob → Grep → Read), checkpoint em arquivo e delegue varredura a subagentes. Acima de ~85%, handoff e recomece.">2 · Orçar Contexto</div><div class="node gate" style="left:500px;top:180px" data-id="g3" data-label="3 · Gerar" data-desc="Estrutura antes de prosa; uma afirmação por parágrafo." data-detalhe="Fatos sobre o mundo atual são buscados antes; números têm fonte ou rótulo [ESTIMATIVA].">3 · Gerar</div><div class="node gate" style="left:640px;top:180px" data-id="g4" data-label="4 · Auditar" data-desc="Anti-slop: léxico, estrutura, substância, compressão." data-detalhe="Releia e reescreva. Corte léxico banido, teste &#x27;e daí?&#x27;, declare trade-offs e comprima 30% sem perda.">4 · Auditar</div><div class="node gate" style="left:780px;top:180px" data-id="g5" data-label="5 · Reparar" data-desc="Uma rodada só de autocrítica." data-detalhe="Loop infinito de autocrítica homogeneiza o texto. Se uma rodada não resolver, volte ao enquadramento.">5 · Reparar</div><div class="node gate" style="left:920px;top:180px" data-id="g6" data-label="6 · Verificar" data-desc="Arquivo abre? Números batem? Links funcionam?" data-detalhe="Alto risco: delegue a um subagente ou outro modelo sem histórico.">6 · Verificar</div><div class="node ferramenta" style="left:140px;top:340px" data-id="aspirador" data-label="Aspirador" data-desc="Revisão pós-implementação: limpa código mecanicamente." data-detalhe="Default dry-run. Detecta trailing whitespace, linhas em branco, tabs misturados, imports não usados. Só aplica correções mecânicas seguras com backup.">Aspirador</div><div class="node ferramenta" style="left:300px;top:340px" data-id="sync" data-label="mb-sync.py" data-desc="Trava de handoff multi-agente." data-detalhe="Escreve TRAVADO_POR/ATÉ/ESCOPO em HANDOFF.md. status/lock/release. Garantia executável para que dois agentes não escrevam ao mesmo tempo.">mb-sync.py</div><div class="node ferramenta" style="left:460px;top:340px" data-id="version" data-label="mb-check-version.py" data-desc="Sincroniza megabrain dos projetos com a central." data-detalhe="Compara VERSAO.txt. Central mais nova → sync. Projeto mais novo → avisa. Modo --verificar-git consulta o repositório público.">mb-check-version.py</div><div class="node ferramenta" style="left:620px;top:340px" data-id="relatorio" data-label="Relatório DNA" data-desc="Este HTML: DNA completo do megabrain." data-detalhe="Gera um relatório autocontido, interativo, com árvore de desenvolvimento visual, para humano e IA replicarem o protocolo.">Relatório DNA</div><div class="node ferramenta" style="left:780px;top:340px" data-id="memoria" data-label="mb-sync-memoria.py" data-desc="Sincroniza identidade entre agentes." data-detalhe="Copia perfil pessoal para CLAUDE.md/GEMINI.md/AGENTS.md de forma idempotente.">mb-sync-memoria.py</div><div class="node metodo" style="left:940px;top:340px" data-id="duplo" data-label="Duplo Diamante" data-desc="Pesquisa → Análise → Ideação → Design." data-detalhe="Para projetos de design. Não misture modos divergente/convergente. Trave grade, tipografia, paleta e espaçamento antes de compor.">Duplo Diamante</div><div class="node gate" style="left:320px;top:500px" data-id="g7" data-label="7 · Passar o Bastão" data-desc="Reescreve ESTADO.md, HANDOFF.md, anexa DECISOES.md." data-detalhe="Handoff com verbo e objeto. Próximo agente não começa do zero.">7 · Passar o Bastão</div><div class="node gate" style="left:680px;top:500px" data-id="g8" data-label="8 · Aprender" data-desc="Registra lição no formato GATILHO/LIÇÃO/ATALHO." data-detalhe="Lição 3× vira regra em MEGABRAIN.md ou skill própria.">8 · Aprender</div>
+      </div>
+    </div>
+    <div class="detail-panel">
+      <h3 id="detail-title">Selecione um nó</h3>
+      <p id="detail-desc" class="hint">Clique em qualquer nó da árvore para ver a descrição completa.</p>
+      <p id="detail-detalhe"></p>
+    </div>
+  </section>
+
+  <section id="sobre">
+    <h2>Sobre o megabrain</h2>
+    <div class="ai-box">
+      <p><strong>TL;DR:</strong> protocolo operacional para agentes de IA trabalharem no mesmo projeto sem pisar um no outro e para evitar entregas genéricas.</p>
+    </div>
+    <p># MEGABRAIN v3 · pipeline local completa (com camada pessoal) **TL;DR:** este arquivo é o canônico local — substitui `PIPELINE.md` como documento-mestre. Junta a camada macro (fases de projeto, artefatos, regras</p>
+    <p>--- name: megabrain description: Protocolo de execução multi-agente — gates de entrega anti-slop, Duplo Diamante para projetos de design, roteamento de arquitetura (skill vs script vs subagente), e camada de projeto (fases macro, regras de ouro). Use ao iniciar entrega complexa, passar trabalho de u</p>
+
+    <h3>O que é o Relatório DNA</h3>
+    <p>Este arquivo é o <strong>DNA</strong> do megabrain: tendo ele, uma pessoa ou IA pode entender o protocolo completo, replicar a estrutura e adaptá-la a outros projetos. Ele substitui a necessidade de vasculhar vários arquivos <code>.md</code> separados.</p>
+
+    <h3>Relatório DNA vs Relatório de Projeto</h3>
+    <div class="card-grid">
+      <div class="card">
+        <h4>Relatório DNA</h4>
+        <p>Canônico, genérico, vem do template do megabrain. Descreve o protocolo, gates, ferramentas e métodos.</p>
+      </div>
+      <div class="card">
+        <h4>Relatório de Projeto</h4>
+        <p>Instância aplicada a um projeto específico (ex.: TLOU). Inclui estado, decisões, lições e contexto particular.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="componentes">
+    <h2>Componentes</h2>
+    <div class="card-grid">
+      <div class="card">
+        <h4>Gates de entrega</h4>
+        <p>Assumir → Enquadrar → Orçar → Gerar → Auditar → Reparar → Verificar → Passar o Bastão → Aprender.</p>
+      </div>
+      <div class="card">
+        <h4>mb-aspirador.py</h4>
+        <p>Revisão pós-implementação: limpa código mecanicamente sem alterar lógica. Dry-run, backup, correções seguras.</p>
+      </div>
+      <div class="card">
+        <h4>mb-sync.py</h4>
+        <p>Trava multi-agente em HANDOFF.md. Garante que só um agente escreva por vez.</p>
+      </div>
+      <div class="card">
+        <h4>mb-check-version.py</h4>
+        <p>Sincroniza a cópia do megabrain dentro de cada projeto com a central. Pode consultar o git remote.</p>
+      </div>
+      <div class="card">
+        <h4>mb-relatorio-dna.py</h4>
+        <p>Gera este HTML. Backup automático em <code>.dna-backup/</code>.</p>
+      </div>
+      <div class="card">
+        <h4>mb-sync-memoria.py</h4>
+        <p>Sincroniza identidade do usuário entre CLAUDE.md, GEMINI.md e AGENTS.md.</p>
+      </div>
+    </div>
+
+    <details>
+      <summary>Referências sob demanda</summary>
+      <div>
+        <p>Todas em <code>referencias/</code>:</p>
+        <ul>
+          <li><code>260810_anti-slop.md</code> — léxico e estrutura banidos</li>
+          <li><code>260810_context-engineering.md</code> — orçamento de contexto</li>
+          <li><code>260810_design-projects.md</code> — Duplo Diamante</li>
+          <li><code>260810_evaluation-gates.md</code> — rubricas</li>
+          <li><code>260810_galerias-referencia.md</code> — direção visual</li>
+          <li><code>260810_impeccable-routing.md</code> — design vira código</li>
+          <li><code>260810_metaprompt-patterns.md</code> — padrões de prompt</li>
+          <li><code>260810_metaprompt-templates.md</code> — templates T1–T8</li>
+          <li><code>260810_PROMPT-PORTATIL.md</code> — colar em qualquer IA</li>
+          <li><code>260810_sync-memoria.md</code> — sincronização de identidade</li>
+          <li><code>260810_workflow-architecture.md</code> — skill vs subagente vs hook</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <section id="uso">
+    <h2>Como usar</h2>
+    <h3>1. Instalar o megabrain num projeto</h3>
+    <pre><code>python MEGABRAIN/bin/mb-check-version.py --projeto "./meu-projeto"</code></pre>
+    <p>Isso cria a pasta <code>MEGABRAIN/</code> dentro do projeto com o protocolo, referências e este relatório DNA.</p>
+
+    <h3>2. Verificar se há atualização</h3>
+    <pre><code>python MEGABRAIN/bin/mb-check-version.py --projeto "./meu-projeto" --verificar-git</code></pre>
+    <p>Consulta o repositório público e avisa se existe versão mais recente.</p>
+
+    <h3>3. Rodar o aspirador</h3>
+    <pre><code>python MEGABRAIN/bin/mb-aspirador.py --dir "./meu-projeto"
+python MEGABRAIN/bin/mb-aspirador.py --dir "./meu-projeto" --aplicar</code></pre>
+
+    <h3>4. Gerar/atualizar este relatório DNA</h3>
+    <pre><code>python bin/mb-relatorio-dna.py --central "./MEGABRAIN" --saida "./MEGABRAIN/MEGABRAIN-RELATORIO-DNA.html"</code></pre>
+  </section>
+
+  <section id="ia">
+    <h2>Para a IA</h2>
+    <div class="ai-box">
+      <p>Este HTML é o <strong>DNA canônico</strong> do megabrain. Se você está lendo isso como IA, use as informações abaixo para replicar ou adaptar o protocolo:</p>
+      <ul>
+        <li><strong>Versão:</strong> v3.7 · 2026-08-14</li>
+        <li><strong>Gerado em:</strong> 2026-08-13T23:29:08.819032</li>
+        <li><strong>Componentes principais:</strong> MEGABRAIN, 0 · Assumir, 1 · Enquadrar, 2 · Orçar Contexto, 3 · Gerar, 4 · Auditar, 5 · Reparar, 6 · Verificar, Aspirador, mb-sync.py, mb-check-version.py, Relatório DNA, mb-sync-memoria.py, Duplo Diamante, 7 · Passar o Bastão, 8 · Aprender</li>
+        <li><strong>Regra de ouro:</strong> garantia real é script, não markdown. Use <code>mb-sync.py</code> para travar, <code>mb-check-version.py</code> para sincronizar.</li>
+      </ul>
+      <p>Para replicar: copie a estrutura de <code>MEGABRAIN.md</code>, <code>SKILL.md</code>, <code>referencias/</code> e <code>bin/</code>. Mantenha <code>ESTADO.md</code>, <code>HANDOFF.md</code>, <code>DECISOES.md</code> e <code>LICOES.md</code> por projeto.</p>
+    </div>
+    <h3>Metadados estruturados</h3>
+    <pre><code>{
+  &quot;@context&quot;: &quot;https://schema.org&quot;,
+  &quot;@type&quot;: &quot;TechArticle&quot;,
+  &quot;name&quot;: &quot;MEGABRAIN — Relatório DNA&quot;,
+  &quot;version&quot;: &quot;v3.7 · 2026-08-14&quot;,
+  &quot;dateCreated&quot;: &quot;2026-08-13T23:29:08.819032&quot;,
+  &quot;description&quot;: &quot;DNA completo do protocolo megabrain: gates, ferramentas, métodos e instruções para replicação.&quot;,
+  &quot;about&quot;: {
+    &quot;@type&quot;: &quot;SoftwareApplication&quot;,
+    &quot;name&quot;: &quot;megabrain&quot;,
+    &quot;featureList&quot;: [
+      &quot;MEGABRAIN&quot;,
+      &quot;0 · Assumir&quot;,
+      &quot;1 · Enquadrar&quot;,
+      &quot;2 · Orçar Contexto&quot;,
+      &quot;3 · Gerar&quot;,
+      &quot;4 · Auditar&quot;,
+      &quot;5 · Reparar&quot;,
+      &quot;6 · Verificar&quot;,
+      &quot;Aspirador&quot;,
+      &quot;mb-sync.py&quot;,
+      &quot;mb-check-version.py&quot;,
+      &quot;Relatório DNA&quot;,
+      &quot;mb-sync-memoria.py&quot;,
+      &quot;Duplo Diamante&quot;,
+      &quot;7 · Passar o Bastão&quot;,
+      &quot;8 · Aprender&quot;
+    ]
+  },
+  &quot;hasPart&quot;: [
+    {
+      &quot;@type&quot;: &quot;Thing&quot;,
+      &quot;name&quot;: &quot;MEGABRAIN&quot;,
+      &quot;description&quot;: &quot;Protocolo de execução multi-agente e anti-slop.&quot;
+    },
+    {
+      &quot;@type&quot;: &quot;Thing&quot;,
+      &quot;name&quot;: &quot;0 · Assumir&quot;,
+      &quot;description&quot;: &quot;Checa trava, lê ESTADO/HANDOFF/DECISOES/LICOES.&quot;
+    },
+    {
+      &quot;@type&quot;: &quot;Thing&quot;,
+      &quot;name&quot;: &quot;1 · Enquadrar&quot;,
+      &quot;description&quot;: &quot;Define artefato, leitor, critérios e restrições.&quot;
+    },
+    {
+      &quot;@type&quot;: &quot;Thing&quot;,
+      &quot;name&quot;: &quot;2 · Orçar Contexto&quot;,
+      &quot;description&quot;: &quot;Contexto é orçamento compartilhado.&quot;
+    },
+    {
+      &quot;@type&quot;: &quot;Thing&quot;,
+      &quot;name&quot;: &quot;3 · Gerar&quot;,
+      &quot;description&quot;: &quot;Estrutura antes de prosa; uma afirmação por parágrafo.&quot;
+    },
+    {
+      &quot;@type&quot;: &quot;Thing&quot;,
+      &quot;name&quot;: &quot;4 · Auditar&quot;,
+      &quot;description&quot;: &quot;Anti-slop: léxico, estrutura, substância, compressão.&quot;
+    },
+    {
+      &quot;@type&quot;: &quot;Thing&quot;,
+      &quot;name&quot;: &quot;5 · Reparar&quot;,
+      &quot;description&quot;: &quot;Uma rodada só de autocrítica.&quot;
+    },
+    {
+      &quot;@type&quot;: &quot;Thing&quot;,
+      &quot;name&quot;: &quot;6 · Verificar&quot;,
+      &quot;description&quot;: &quot;Arquivo abre? Números batem? Links funcionam?&quot;
+    },
+    {
+      &quot;@type&quot;: &quot;Thing&quot;,
+      &quot;name&quot;: &quot;Aspirador&quot;,
+      &quot;description&quot;: &quot;Revisão pós-implementação: limpa código mecanicamente.&quot;
+    },
+    {
+      &quot;@type&quot;: &quot;Thing&quot;,
+      &quot;name&quot;: &quot;mb-sync.py&quot;,
+      &quot;description&quot;: &quot;Trava de handoff multi-agente.&quot;
+    },
+    {
+      &quot;@type&quot;: &quot;Thing&quot;,
+      &quot;name&quot;: &quot;mb-check-version.py&quot;,
+      &quot;description&quot;: &quot;Sincroniza megabrain dos projetos com a central.&quot;
+    },
+    {
+      &quot;@type&quot;: &quot;Thing&quot;,
+      &quot;name&quot;: &quot;Relatório DNA&quot;,
+      &quot;description&quot;: &quot;Este HTML: DNA completo do megabrain.&quot;
+    },
+    {
+      &quot;@type&quot;: &quot;Thing&quot;,
+      &quot;name&quot;: &quot;mb-sync-memoria.py&quot;,
+      &quot;description&quot;: &quot;Sincroniza identidade entre agentes.&quot;
+    },
+    {
+      &quot;@type&quot;: &quot;Thing&quot;,
+      &quot;name&quot;: &quot;Duplo Diamante&quot;,
+      &quot;description&quot;: &quot;Pesquisa → Análise → Ideação → Design.&quot;
+    },
+    {
+      &quot;@type&quot;: &quot;Thing&quot;,
+      &quot;name&quot;: &quot;7 · Passar o Bastão&quot;,
+      &quot;description&quot;: &quot;Reescreve ESTADO.md, HANDOFF.md, anexa DECISOES.md.&quot;
+    },
+    {
+      &quot;@type&quot;: &quot;Thing&quot;,
+      &quot;name&quot;: &quot;8 · Aprender&quot;,
+      &quot;description&quot;: &quot;Registra lição no formato GATILHO/LIÇÃO/ATALHO.&quot;
+    }
+  ]
+}</code></pre>
+  </section>
+</main>
+
+<footer>
+  <p>MEGABRAIN · Relatório DNA · gerado por <code>mb-relatorio-dna.py</code></p>
+  <p>Backup automático em <code>.dna-backup/</code></p>
+</footer>
+
+<script>
+    const nodes = document.querySelectorAll('.node');
+    const panelTitle = document.getElementById('detail-title');
+    const panelDesc = document.getElementById('detail-desc');
+    const panelDetalhe = document.getElementById('detail-detalhe');
+
+    nodes.forEach(n => {
+      n.addEventListener('click', () => {
+        nodes.forEach(x => x.classList.remove('selected'));
+        n.classList.add('selected');
+        panelTitle.textContent = n.dataset.label;
+        panelDesc.textContent = n.dataset.desc || '';
+        panelDetalhe.textContent = n.dataset.detalhe || '';
+      });
+    });
+
+    const navButtons = document.querySelectorAll('nav button');
+    const sections = document.querySelectorAll('main section');
+    navButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        navButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        sections.forEach(s => s.classList.remove('active'));
+        document.getElementById(btn.dataset.target).classList.add('active');
+      });
+    });
+    </script>
+</body>
+</html>

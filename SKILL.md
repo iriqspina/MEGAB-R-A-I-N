@@ -39,7 +39,15 @@ Antes de tocar em qualquer arquivo de `projetos/<nome>/`:
      caminhos em `ESCOPO:`. Trabalhe em outro lugar ou avise quem opera.
    - Trava vencida ou `livre` → assuma: escreva seu nome, `ATÉ:` agora+2h,
      `ESCOPO:` com os caminhos que você vai tocar.
-4. Só então planeje.
+4. **Verifique a versão do megabrain** do projeto contra a central:
+   - Rode `python "<MEGABRAIN_ROOT>/bin/mb-check-version.py" --projeto <pasta-do-projeto>`.
+   - Se o projeto não tiver `MEGABRAIN/`, o script cria da central — use a central.
+   - Se a central for mais nova: o script sincroniza automaticamente para o projeto.
+   - Se o projeto for mais novo: o script avisa e sai com código 2. **Pare e pergunte ao usuário** se deve subir as mudanças para a central (`mb-sync-projeto-para-central.py`) ou manter o projeto local.
+   - Se indefinido: pergunte antes de sobrescrever.
+   - **Nunca use um megabrain de projeto desatualizado sem sincronizar primeiro.**
+5. **Confirme caminhos relevantes no início do projeto.** Antes de criar repos, subir arquivos ou pedir credenciais, valide com o usuário onde cada artefato deve morar (local, pasta compartilhada, GitHub privado/público, etc.). Não suba nada para Git sem confirmação explícita, a menos que ele já tenha autorizado permanentemente para aquele repo.
+6. Só então planeje.
 
 Script que torna a trava garantia, e nao disciplina de markdown:
 
@@ -159,6 +167,21 @@ Detalhe: `referencias/260810_context-engineering.md`
 - Específico > geral. "Reduz 40% do tempo de export" > "melhora a
   eficiência".
 
+### 3b. WordPress / builders: preserve o que o usuário tocou
+
+Se o usuário editou algo no editor visual (WordPress, Figma, Webflow, etc.),
+esse estado é a versão final dele — não um rascunho para ser refeito.
+
+- **Nunca use `resetBlocks`, re-criar do zero ou sobrescrever o arquivo**
+  sem avisar o que vai perder.
+- Preservar: nomes de blocos, classes custom, content width/container,
+  estilos inline do painel, ordem manual, metadados de layout.
+- Mudanças devem ser cirúrgicas: atualizar só os atributos que precisam
+  mudar (`updateBlockAttributes`), manipular `post_content` preservando o
+  resto, ou usar hooks/filtros.
+- Se for inevitável reconstruir, liste ao usuário o que será perdido e
+  peça confirmação. Depois, restaure metadados e configurações de layout.
+
 ---
 
 ## 4. Gate AUDITAR — anti-slop (obrigatório)
@@ -260,13 +283,24 @@ Rubricas prontas: `referencias/260810_evaluation-gates.md`
 Antes de encerrar a sessão, sempre. Não é opcional e não é resumo bonito —
 é o insumo do próximo agente.
 
-1. Reescreva `ESTADO.md` (5 linhas, sobrescreve).
-2. Reescreva `HANDOFF.md`: o que fez, o que ficou aberto, o próximo passo
+1. **Esgote execução autônoma antes de qualquer pedido ao usuário.** Rode
+   `/conclusao-megabrain` e tente resolver sozinho o que falta (automação local,
+   ferramentas já logadas, documentação segura de acesso). Só peça ao usuário
+   o que realmente depender dele — e peça agrupado, de uma vez só.
+2. Reescreva `ESTADO.md` (5 linhas, sobrescreve).
+3. Reescreva `HANDOFF.md`: o que fez, o que ficou aberto, o próximo passo
    concreto, arquivos tocados, e `TRAVADO_POR: livre`.
-3. Anexe a `DECISOES.md` toda decisão tomada **com a alternativa
+4. Anexe a `DECISOES.md` toda decisão tomada **com a alternativa
    descartada**. Decisão sem alternativa registrada volta a ser
    rediscutida daqui a duas semanas.
-4. `git add -A && git commit -m "<agente>: <o que mudou>" && git push`
+5. Git:
+   - `git add -A && git commit -m "<agente>: <o que mudou>"` (commit local pode ser automático).
+   - **Antes de `git push`, confirme com o usuário.** Não suba prioritariamente; só empurre se ele aprovar ou se já tiver autorização explícita permanente para este repo.
+   - Se este trabalho alterou arquivos em `<MEGABRAIN_ROOT>/`, rode `python "<MEGABRAIN_ROOT>/bin/mb-sync-projeto-para-central.py" --projeto <pasta-do-projeto>` para subir a versão do projeto para a central, ou deixe claro no `HANDOFF.md` que a central ficou mais nova e os projetos devem sincronizar no próximo `Gate 0`.
+6. **Propagação do megabrain core:**
+   - Se você alterou `<MEGABRAIN_ROOT>/skills/megabrain/SKILL.md`, `MEGABRAIN.md`, `260810_MEGABRAIN.md`, `referencias/` ou `VERSAO.txt`, a central ficou mais nova que os projetos.
+   - Antes de encerrar, rode `mb-check-version.py` nos projetos ativos para propagar a versão central. Se um projeto estiver mais novo, pare e pergunte ao usuário antes de sobrescrever.
+   - Se não puder rodar nos projetos, anote no `HANDOFF.md` que a sincronização é obrigatória na próxima sessão.
 
 Um handoff que diz "continuar o projeto" não é handoff. Próximo passo tem
 verbo e objeto.

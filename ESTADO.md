@@ -1,7 +1,7 @@
 # ESTADO — megabrain core
 
-- Versão ativa: 3.5
-- Fase: manutenção / retroalimentação
-- Última ação: sincronização da pasta central com `_github-repo-local/` e plugin managed do Kimi
-- Próximo passo: nenhum — aguardar próxima alteração na central
+- Versão ativa: 3.6
+- Fase: implementação — relatório DNA + versionamento portátil
+- Última ação: redefine aspirador como componente de revisão de código; separa relatório DNA (template canônico) de relatório de projeto
+- Próximo passo: gerar `MEGABRAIN-RELATORIO-DNA.html`, tornar scripts portáteis e sincronizar para o repo público
 - Alerta: nenhum

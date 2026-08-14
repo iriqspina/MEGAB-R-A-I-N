@@ -1,0 +1,10 @@
+# Arquivos gerados por ferramentas do megabrain
+.mb-aspirador/
+.dna-backup/
+__pycache__/
+*.pyc
+*.pyo
+
+# Dados pessoais nunca sobem
+260810_memoria-pessoal.md
+licoes-megabrain.md
