@@ -46,8 +46,6 @@ ESCOPO: -
   sincronização de identidade com injeção de `USUARIO:` nos três destinos.
 
 ## O que ficou aberto
-- Re-sincronizar os quatro projetos derivados para receber a documentação
-  de migração v4.0 recém-adicionada.
 - Configurar remote do repo TLOU se o <USUARIO> quiser push.
 - Adotar bibliotecas de `requirements.txt` quando o ambiente permitir.
 - Melhorias visuais na árvore de desenvolvimento do DNA — item antigo.
@@ -55,9 +53,8 @@ ESCOPO: -
   item antigo.
 
 ## Próximo passo concreto
-Rodar `python MEGABRAIN/bin/mb-check-version.py --projeto <pasta> --auto` nos
-quatro projetos derivados para propagar a documentação v4.0. Depois,
-configurar remote do TLOU se desejado.
+Configurar remote do TLOU e fazer push, ou deixar o commit local até que
+o <USUARIO> defina onde o repo deve morar.
 
 ## Arquivos tocados
 - `bin/mb_utils.py`
