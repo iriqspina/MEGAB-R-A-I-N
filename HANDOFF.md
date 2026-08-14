@@ -25,11 +25,12 @@ ESCOPO: -
     perfis.
   - `README.md`: seção "Migração v4.0 — diferenciação de usuário" com
     passos rápidos.
-- `VERSAO.txt` atualizado para v4.0.
+- `VERSAO.txt` atualizado para v4.1 (bump para disparar sincronização da
+  documentação de migração v4.0 nos projetos derivados).
 - Template público `260810_github-export/` regenerado e sincronizado com
   `_github-repo-local/` via robocopy.
 - Push da central para `https://github.com/iriqspina/MEGAB-R-A-I-N.git`
-  (commits `3e0a888`, `ac34a29` e `db386a0`).
+  (commits `3e0a888`, `ac34a29`, `db386a0`, `0786a5d` e o da v4.1).
 - Projetos derivados sincronizados com v4.0:
   - Financeiro da Silva (não é repo git; atualizado localmente).
   - Jarvis (não é repo git; atualizado localmente).
