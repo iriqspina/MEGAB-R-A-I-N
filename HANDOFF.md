@@ -19,7 +19,9 @@ ESCOPO: -
     `mb-relatorio-projeto.py`, `mb-sync-projeto-para-central.py`).
   - Removida pasta `MEGABRAIN/` criada acidentalmente na raiz da central por
     uso errado de `mb-check-version.py --projeto` apontando para a própria
-    central. A central não deve ter uma cópia de si mesma dentro dela.
+    central. Adicionada proteção no script para detectar esse caso e recusar
+    com mensagem clara; a central não deve ter uma cópia de si mesma dentro
+    dela.
   - Regenerado `260810_github-export/` com `mb-generate-template.py`:
     - inclui `dna/` (RELATORIO-DNA.html + dna.json + README.md);
     - inclui `bin/mb-relatorio-projeto.py`;
