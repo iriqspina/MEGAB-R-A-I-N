@@ -18,6 +18,30 @@ Rode os gates abaixo em **entrega**: arquivo, peça, proposta, deck, código,
 análise. Em pergunta rápida ou conversa casual, **não rode** — aqui o
 protocolo é o próprio slop.
 
+## Localizar a instalação do usuário
+
+Antes de usar scripts, referências ou caminhos do MEGABRAIN, defina
+`<MEGABRAIN_ROOT>` para **a instalação deste usuário**, nunca para a pasta de
+quem criou o protocolo.
+
+1. Procure, nesta ordem: `MEGABRAIN/` dentro do projeto atual; a variável de
+   ambiente `MEGABRAIN_CENTRAL`; e uma pasta ancestral ou do workspace que
+   contenha `VERSAO.txt`, `MEGABRAIN.md`, `bin/mb-check-version.py` e
+   `referencias/`.
+2. Se encontrar uma única pasta válida, diga o caminho encontrado e use-o em
+   todos os comandos desta sessão.
+3. Se houver mais de uma pasta válida, mostre as opções e peça para o usuário
+   escolher. Não presuma qual cópia é a central.
+4. Se não encontrar nenhuma, faça uma pergunta objetiva antes de continuar:
+   **“Em qual pasta deste computador você salvou o MEGABRAIN? Cole o caminho
+   da pasta raiz.”** Depois valide os quatro itens acima. Se ele ainda não o
+   instalou, pergunte onde quer salvá-lo e oriente somente os passos de
+   instalação compatíveis com o ambiente dele.
+
+Nunca escreva uma letra de unidade, caminho absoluto pessoal ou pasta de outro
+usuário no protocolo. Depois de resolvido, substitua exemplos como
+`<MEGABRAIN_ROOT>/bin/mb-sync.py` pelo caminho local confirmado.
+
 ## TL;DR
 
 `assumir → enquadrar → orçar contexto → gerar → auditar → reparar (1×) → verificar → passar o bastão → registrar`

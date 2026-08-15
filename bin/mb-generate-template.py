@@ -43,6 +43,9 @@ EXCLUIR = {
     "260811_prompt-claude-handoff.txt",
     "260810_github-export",
     "_github-repo-local",
+    # Cópia derivada usada localmente por sincronização de projetos. O pacote
+    # público já é a raiz portátil e não deve carregar esta árvore duplicada.
+    "MEGABRAIN",
     "_to_delete",
     "alteracoes-pendentes",
     "referencias visuais",
@@ -233,6 +236,20 @@ def gerar_template(central, destino):
     except OSError as e:
         print(f"ERRO: não foi possível criar {destino_path}: {e}")
         return False
+
+    # Versões antigas do gerador podiam deixar uma cópia derivada MEGABRAIN/
+    # dentro do export. Ela é obsoleta, pode carregar estado local e impede a
+    # validação de privacidade. O destino já foi validado como filho da central.
+    legado = destino_path / "MEGABRAIN"
+    if legado.exists():
+        try:
+            if legado.is_dir():
+                shutil.rmtree(legado)
+            else:
+                legado.unlink()
+        except OSError as e:
+            print(f"ERRO: não foi possível remover cópia legada {legado}: {e}")
+            return False
 
     erros = False
 

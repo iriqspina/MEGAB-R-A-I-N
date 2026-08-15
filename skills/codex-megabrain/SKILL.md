@@ -17,9 +17,16 @@ Localizar `<MEGABRAIN_ROOT>` nesta ordem:
 3. ancestral ou workspace que contenha `VERSAO.txt`, `MEGABRAIN.md`,
    `bin/mb-check-version.py` e `referencias/`.
 
-Não gravar caminho pessoal absoluto em `SKILL.md`. Se houver mais de uma fonte
-plausível ou se o projeto estiver mais novo que a central, parar antes de
-sobrescrever e pedir direção.
+Se houver uma única fonte válida, informe o caminho e use-o como
+`<MEGABRAIN_ROOT>` na sessão. Se houver mais de uma, liste as opções e peça
+para o usuário escolher. Se não encontrar nenhuma, pergunte: **“Em qual pasta
+deste computador você salvou o MEGABRAIN? Cole o caminho da pasta raiz.”**
+Valide os quatro itens antes de prosseguir. Se o usuário ainda não o instalou,
+pergunte onde quer salvá-lo e conduza a instalação com caminhos relativos ao
+local escolhido.
+
+Não gravar caminho pessoal absoluto em `SKILL.md`. Se o projeto estiver mais
+novo que a central, parar antes de sobrescrever e pedir direção.
 
 ## Calibrar a execução
 

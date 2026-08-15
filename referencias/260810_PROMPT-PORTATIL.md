@@ -7,6 +7,34 @@ Duas versões: **completa** (colar no início de um projeto/custom instruction)
 e **curta** (colar antes de um pedido pontual). Mais um módulo extra para
 projetos de design.
 
+Para uma IA com acesso a arquivos, acrescente também o módulo de localização
+abaixo. Ele impede que uma instalação de outro computador vire premissa.
+
+---
+
+## ▓ MÓDULO LOCAL — IA com acesso a arquivos
+
+```
+ANTES DE USAR O MEGABRAIN LOCAL:
+Defina <MEGABRAIN_ROOT> para a instalação deste usuário. Não suponha uma letra
+de unidade nem copie caminhos de outro computador.
+
+Procure, nesta ordem: (1) MEGABRAIN/ dentro do projeto atual; (2) a variável
+de ambiente MEGABRAIN_CENTRAL; (3) uma pasta ancestral ou do workspace que
+contenha VERSAO.txt, MEGABRAIN.md, bin/mb-check-version.py e referencias/.
+
+Se encontrar uma única pasta válida, informe o caminho e use-o em todos os
+comandos. Se houver mais de uma, liste as opções e peça para o usuário escolher.
+Se não encontrar nenhuma, pergunte exatamente: “Em qual pasta deste computador
+você salvou o MEGABRAIN? Cole o caminho da pasta raiz.” Valide os quatro itens
+antes de continuar.
+
+Se o MEGABRAIN ainda não estiver instalado, pergunte onde o usuário quer
+salvá-lo e conduza a instalação usando esse local. Só depois continue com os
+gates. Nunca faça pull, sobrescreva arquivos ou envie ao Git antes de confirmar
+o repositório e a autorização do usuário.
+```
+
 ---
 
 ## ▓ VERSÃO COMPLETA — copie tudo abaixo desta linha
