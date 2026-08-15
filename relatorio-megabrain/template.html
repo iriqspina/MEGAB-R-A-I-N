@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="O que é o MEGABRAIN, como funciona e onde entra num projeto feito com agentes de IA.">
+  <meta name="generator" content="relatorio-megabrain/gerar.py">
+  <title>MEGABRAIN — visão geral</title>
+  <script type="application/ld+json">{{JSON_LD}}</script>
+  <style>{{CSS}}</style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="rail" aria-label="Navegação principal">
+      <div class="brand">
+        <span class="brand__name">MEGABRAIN</span>
+        <span class="brand__sub">protocolo operacional</span>
+      </div>
+      <div class="status">visão geral · {{VERSAO}}</div>
+      <nav class="nav" role="tablist" aria-label="Áreas do relatório">
+        <button class="nav-btn" type="button" role="tab" data-panel-target="comecar" aria-selected="true"><span>01</span><span>Começar</span></button>
+        <button class="nav-btn" type="button" role="tab" data-panel-target="entender" aria-selected="false"><span>02</span><span>Entender</span></button>
+        <button class="nav-btn" type="button" role="tab" data-panel-target="usar" aria-selected="false"><span>03</span><span>Usar</span></button>
+        <button class="nav-btn" type="button" role="tab" data-panel-target="pratica" aria-selected="false"><span>04</span><span>Na prática</span></button>
+        <button class="nav-btn" type="button" role="tab" data-panel-target="limites" aria-selected="false"><span>05</span><span>Limites</span></button>
+        <button class="nav-btn" type="button" role="tab" data-panel-target="fontes" aria-selected="false"><span>06</span><span>Fontes</span></button>
+      </nav>
+      <div class="rail__foot">Local e portátil<br>Humano continua aprovando</div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <span class="meta">gerado em {{GENERATED_AT}} · fontes locais · {{VERSAO}}</span>
+        <a class="topbar__action" href="#/comecar">Voltar ao começo →</a>
+      </header>
+
+      <section class="panel" data-panel="comecar" aria-labelledby="titulo-comecar">
+        <div class="hero">
+          <div class="hero__main">
+            <span class="eyebrow">o essencial em 30 segundos</span>
+            <h1 id="titulo-comecar">IA com método, memória e freio.</h1>
+            <p class="lede">MEGABRAIN é um protocolo de trabalho para projetos feitos com agentes de IA. Ele organiza o que precisa ser decidido, impede que contexto se perca entre sessões, audita a qualidade da entrega e registra o que deve melhorar no próximo ciclo.</p>
+            <div class="action-row">
+              <button class="btn" type="button" data-panel-target="entender">Ver como funciona</button>
+              <button class="btn btn--ghost" type="button" data-panel-target="pratica">Ver exemplos reais</button>
+            </div>
+          </div>
+          <aside class="hero__side">
+            <div class="hero__definition"><strong>Não é uma IA nova.</strong>É o sistema de operação em volta das IAs que você já usa.</div>
+            <span class="tag">protocolo + arquivos + scripts</span>
+          </aside>
+        </div>
+
+        <div class="section-head">
+          <div><span class="kicker">por que existe</span><h2>O problema não é gerar. É continuar bem.</h2></div>
+          <p>Agentes produzem rápido, mas podem esquecer decisões, repetir discussões, escrever de forma genérica ou dois agentes podem alterar o mesmo arquivo. O MEGABRAIN transforma esses riscos em etapas verificáveis.</p>
+        </div>
+        <div class="metric-grid">
+          <article class="metric"><span class="label">continuidade</span><strong class="metric__value">Estado</strong><p>O próximo agente sabe onde o trabalho parou e qual é a próxima ação.</p></article>
+          <article class="metric"><span class="label">qualidade</span><strong class="metric__value">Gates</strong><p>A entrega passa por enquadramento, auditoria, reparo e verificação.</p></article>
+          <article class="metric"><span class="label">aprendizado</span><strong class="metric__value">Registro</strong><p>Decisões e lições ficam disponíveis para o ciclo seguinte.</p></article>
+        </div>
+        <div class="notice"><strong>RESULTADO</strong><span>Menos recomeço, menos resposta genérica e mais clareza sobre quem decide, o que está pronto e o que ainda precisa de prova.</span></div>
+      </section>
+
+      <section class="panel" data-panel="entender" aria-labelledby="titulo-entender" hidden>
+        <div class="hero">
+          <div class="hero__main">
+            <span class="eyebrow">arquitetura · quatro camadas</span>
+            <h1 id="titulo-entender">Um sistema pequeno em volta do trabalho.</h1>
+            <p class="lede">O MEGABRAIN separa processo, instrução, memória e garantia. Assim, uma conversa não precisa carregar o projeto inteiro e uma regra importante não depende apenas de o agente lembrar dela.</p>
+          </div>
+          <aside class="hero__side">
+            <div class="hero__definition"><strong>Legível por humanos.</strong>Executável por agentes. Verificável por scripts.</div>
+            <span class="footnote">Cada camada resolve um tipo diferente de falha.</span>
+          </aside>
+        </div>
+
+        <div class="section-head">
+          <div><span class="kicker">as peças</span><h2>O que existe dentro dele.</h2></div>
+          <p>Não é um arquivo mágico. É um conjunto coordenado, carregado conforme a necessidade.</p>
+        </div>
+        <div class="layer-grid">
+          <article class="layer layer--dark"><span class="layer__n">01 · PROJETO</span><h3>Fases macro</h3><p>Estado, problema, especificação, execução, validação, publicação e aprendizado.</p></article>
+          <article class="layer"><span class="layer__n">02 · ENTREGA</span><h3>Gates</h3><p>Enquadrar, gerar, auditar, reparar, verificar e passar o bastão.</p></article>
+          <article class="layer"><span class="layer__n">03 · MEMÓRIA</span><h3>Quatro registros</h3><p><code>ESTADO</code>, <code>HANDOFF</code>, <code>DECISOES</code> e <code>LICOES</code> preservam o que importa.</p></article>
+          <article class="layer"><span class="layer__n">04 · GARANTIA</span><h3>Skills e scripts</h3><p>Skills orientam; scripts travam arquivos, sincronizam versões, geram relatórios e verificam operações.</p></article>
+        </div>
+
+        <div class="section-head">
+          <div><span class="kicker">memória operacional</span><h2>Cada arquivo responde a uma pergunta.</h2></div>
+          <p>O objetivo é permitir que uma pessoa ou outro agente entenda a situação sem reconstruir toda a conversa anterior.</p>
+        </div>
+        <div class="compare">
+          <div class="box"><h3>Agora</h3><ul class="plain-list"><li><strong>ESTADO:</strong> em que fase estamos?</li><li><strong>HANDOFF:</strong> o que foi feito e qual é o próximo passo?</li></ul></div>
+          <div class="box box--dark"><h3>Histórico que importa</h3><ul class="plain-list"><li><strong>DECISOES:</strong> o que foi escolhido e qual alternativa perdeu?</li><li><strong>LICOES:</strong> o que fazer direto quando a situação reaparecer?</li></ul></div>
+        </div>
+      </section>
+
+      <section class="panel" data-panel="usar" aria-labelledby="titulo-usar" hidden>
+        <div class="hero">
+          <div class="hero__main">
+            <span class="eyebrow">fluxo de trabalho</span>
+            <h1 id="titulo-usar">Antes, durante e depois.</h1>
+            <p class="lede">O protocolo entra no momento em que um agente assume o projeto e só sai depois de validar a entrega e deixar um bastão utilizável para o próximo ciclo.</p>
+          </div>
+          <aside class="hero__side">
+            <div class="hero__definition"><strong>Regra central</strong>O formato pedido pelo usuário vence o protocolo; o MEGABRAIN governa a qualidade dentro desse formato.</div>
+          </aside>
+        </div>
+
+        <div class="section-head">
+          <div><span class="kicker">um ciclo completo</span><h2>Oito passos, dois pontos que não se pulam.</h2></div>
+          <p>Auditar separa uma primeira passada de uma entrega. Passar o bastão impede que a próxima sessão volte ao zero.</p>
+        </div>
+        <div class="flow" aria-label="Fluxo do MEGABRAIN em oito etapas">
+          <article class="flow-step flow-step--info"><span class="flow-step__n">01</span><h3>Assumir</h3><p>Ler o estado, conferir a trava e verificar a versão do protocolo.</p></article>
+          <article class="flow-step"><span class="flow-step__n">02</span><h3>Enquadrar</h3><p>Definir artefato, leitor, critério de aprovação e restrições.</p></article>
+          <article class="flow-step"><span class="flow-step__n">03</span><h3>Orçar contexto</h3><p>Ler só o necessário e guardar checkpoints em arquivo.</p></article>
+          <article class="flow-step"><span class="flow-step__n">04</span><h3>Gerar</h3><p>Montar a estrutura primeiro e preencher com evidência.</p></article>
+          <article class="flow-step flow-step--signal"><span class="flow-step__n">05 · GATE</span><h3>Auditar</h3><p>Remover clichê, testar substância e declarar o custo das recomendações.</p></article>
+          <article class="flow-step"><span class="flow-step__n">06</span><h3>Reparar</h3><p>Fazer uma rodada de correção, sem autocrítica infinita.</p></article>
+          <article class="flow-step flow-step--ok"><span class="flow-step__n">07 · GATE</span><h3>Verificar</h3><p>Abrir o arquivo, conferir links, números, datas e contradições.</p></article>
+          <article class="flow-step flow-step--signal"><span class="flow-step__n">08 · BASTÃO</span><h3>Registrar</h3><p>Atualizar estado, handoff, decisões e lições antes de encerrar.</p></article>
+        </div>
+        <div class="notice"><strong>HUMANO NO COMANDO</strong><span>O sistema organiza e cobra evidência. Aprovação de preço, mensagem, publicação, entrega e mudança destrutiva continua humana.</span></div>
+      </section>
+
+      <section class="panel" data-panel="pratica" aria-labelledby="titulo-pratica" hidden>
+        <div class="hero">
+          <div class="hero__main">
+            <span class="eyebrow">aplicação prática</span>
+            <h1 id="titulo-pratica">O protocolo muda conforme o projeto.</h1>
+            <p class="lede">O núcleo é o mesmo, mas cada projeto pode ter um roteiro próprio, fontes diferentes e pontos de aprovação específicos. O MEGABRAIN coordena essas especializações sem transformar tudo numa regra global.</p>
+          </div>
+          <aside class="hero__side">
+            <div class="hero__definition"><strong>Do genérico ao específico</strong>MEGABRAIN decide o método; o projeto decide a fase e os artefatos.</div>
+          </aside>
+        </div>
+
+        <div class="section-head">
+          <div><span class="kicker">três usos</span><h2>Onde ele pode entrar.</h2></div>
+          <p>Os exemplos abaixo mostram papéis diferentes: operação de serviços, definição de projeto e aprovação de materiais.</p>
+        </div>
+        <div class="example-grid">
+          <article class="example"><span class="example__code">SERVIÇOS</span><h3>Opera trabalho e caixa</h3><p>Concentra oferta, aquisição, preço, aprovações humanas, tracker e aprendizado numa console de decisão.</p></article>
+          <article class="example"><span class="example__code">DESIGN</span><h3>Define problema e escopo</h3><p>Usa descoberta e convergência para impedir que alta fidelidade esconda uma hipótese ainda fraca.</p></article>
+          <article class="example"><span class="example__code">APROVAÇÃO</span><h3>Registra revisão e aceite</h3><p>Mantém materiais, versões, comentários e histórico de decisões do cliente.</p></article>
+        </div>
+
+        <div class="section-head">
+          <div><span class="kicker">maturidade</span><h2>Não precisa adotar tudo de uma vez.</h2></div>
+          <p>O protocolo cresce com o risco e a duração do trabalho.</p>
+        </div>
+        <div class="metric-grid">
+          <article class="metric"><span class="label">nível 1</span><strong class="metric__value">Essencial</strong><p>Estado, próximo passo e uma entrega verificada.</p></article>
+          <article class="metric"><span class="label">nível 2</span><strong class="metric__value">Repetível</strong><p>Decisões, lições, skill do projeto e automação pontual.</p></article>
+          <article class="metric"><span class="label">nível 3</span><strong class="metric__value">Completo</strong><p>Travas, relatório vivo, testes, publicação e portões de aprovação.</p></article>
+        </div>
+      </section>
+
+      <section class="panel" data-panel="limites" aria-labelledby="titulo-limites" hidden>
+        <div class="hero">
+          <div class="hero__main">
+            <span class="eyebrow">limites e responsabilidade</span>
+            <h1 id="titulo-limites">Método reduz risco. Não elimina julgamento.</h1>
+            <p class="lede">O MEGABRAIN ajuda a tornar o trabalho observável e corrigível. Ele não prova que uma ideia é boa, não autoriza a IA a agir em nome de alguém e não substitui testes no mundo real.</p>
+          </div>
+          <aside class="hero__side">
+            <div class="hero__definition"><strong>O freio faz parte do produto.</strong>Autonomia sem escopo e sem aprovação não é maturidade.</div>
+          </aside>
+        </div>
+
+        <div class="section-head">
+          <div><span class="kicker">o que ele não é</span><h2>Quatro confusões comuns.</h2></div>
+          <p>Esses limites deixam claro o que ainda depende de pessoa, ferramenta e evidência externa.</p>
+        </div>
+        <div class="limit-grid">
+          <article class="limit"><h3>Não é um modelo de IA</h3><p>Ele trabalha com diferentes modelos e pode trocar o recurso conforme custo, privacidade e dificuldade.</p></article>
+          <article class="limit"><h3>Não é piloto automático</h3><p>Ações externas, compromissos, preços e publicações mantêm portões humanos.</p></article>
+          <article class="limit"><h3>Não é memória infinita</h3><p>Só o que foi registrado nas fontes do projeto atravessa sessões com confiabilidade.</p></article>
+          <article class="limit"><h3>Não garante uma boa entrega</h3><p>Critérios ruins produzem verificação ruim. O protocolo torna a falha rastreável; não torna qualquer premissa verdadeira.</p></article>
+        </div>
+        <div class="notice"><strong>TRADE-OFF</strong><span>Registrar estado, decisões e verificações custa alguns minutos. Esse custo compra continuidade e reduz retrabalho em projetos que atravessam dias, pessoas ou agentes.</span></div>
+      </section>
+
+      <section class="panel" data-panel="fontes" aria-labelledby="titulo-fontes" hidden>
+        <div class="hero">
+          <div class="hero__main">
+            <span class="eyebrow">rastreabilidade</span>
+            <h1 id="titulo-fontes">Onde aprofundar.</h1>
+            <p class="lede">Este relatório é a porta de entrada. As fontes abaixo contêm o protocolo operacional, a arquitetura de projeto e as referências carregadas sob demanda.</p>
+          </div>
+          <aside class="hero__side">
+            <div class="hero__definition"><strong>Edite a fonte.</strong>Depois rode <code>python relatorio-megabrain/gerar.py</code>. O HTML final nunca é editado à mão.</div>
+          </aside>
+        </div>
+
+        <div class="section-head">
+          <div><span class="kicker">documentação</span><h2>Uma fonte para cada profundidade.</h2></div>
+          <p>A ordem abaixo vai da leitura mais curta para a operação mais detalhada.</p>
+        </div>
+        <ul class="source-list">
+          <li><code>README.md</code><span>Visão curta da pasta, das ferramentas e das duas formas de uso.</span></li>
+          <li><code>skills/megabrain/SKILL.md</code><span>Gates de entrega, passagem de bastão, auditoria e roteamento operacional.</span></li>
+          <li><code>MEGABRAIN.md</code><span>Fases macro, artefatos, regras de ouro e níveis de adoção.</span></li>
+          <li><code>referencias/</code><span>Auditoria de escrita, engenharia de contexto, metaprompts, avaliação, design e governança.</span></li>
+          <li><code>bin/</code><span>Travas, sincronização, backup, relatórios e outras garantias determinísticas.</span></li>
+          <li><code>VERSAO.txt</code><span>Histórico do que mudou no protocolo.</span></li>
+        </ul>
+        <p class="footnote">Relatório gerado por <code>relatorio-megabrain/gerar.py</code>. Versão exibida: {{VERSAO}}.</p>
+      </section>
+    </main>
+  </div>
+  <script>{{JS}}</script>
+</body>
+</html>

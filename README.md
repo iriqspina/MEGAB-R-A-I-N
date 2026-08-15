@@ -5,6 +5,11 @@ como fallback opcional, ou colado direto em qualquer chat) — pensado para
 dois ou mais agentes trabalhando no mesmo projeto sem pisar um no outro, e
 para impedir que entregas de IA saiam genéricas.
 
+Para uma explicação visual e curta, abra `RELATORIO.html`. Ele apresenta o
+MEGABRAIN para quem ainda não conhece o protocolo, com uma tela por assunto.
+O arquivo é gerado por `relatorio-megabrain/gerar.py`; edite a fonte e
+regenere, nunca o HTML final.
+
 ## O que tem aqui
 
 - `SKILL.md` — o protocolo: gates de entrega (enquadrar → gerar → auditar →
@@ -56,9 +61,10 @@ preferências, formato de resposta) também não vem aqui — é pessoal, fica
 no seu computador ou num repo privado, nunca neste pacote público. Ver
 `referencias/260810_sync-memoria.md` para o protocolo.
 
-O gerador público também exclui `ESTADO.md`, `HANDOFF.md`, `DECISOES.md` e
-`RELATORIO.html` da central. Esses arquivos descrevem a operação privada e
-devem ser criados por cada projeto, não distribuídos como parte do protocolo.
+O gerador público exclui `ESTADO.md`, `HANDOFF.md` e `DECISOES.md` da central,
+porque esses arquivos descrevem a operação privada. O `RELATORIO.html`
+institucional é sanitizado e distribuído; cada projeto cria o próprio estado e
+seu relatório de instância.
 
 ## Migração v4.0 — diferenciação de usuário
 

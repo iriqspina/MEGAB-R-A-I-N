@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="O que é o MEGABRAIN, como funciona e onde entra num projeto feito com agentes de IA.">
+  <meta name="generator" content="relatorio-megabrain/gerar.py">
+  <title>MEGABRAIN — visão geral</title>
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "TechArticle", "name": "MEGABRAIN — visão geral", "abstract": "Protocolo operacional para organizar projetos feitos com agentes de IA, preservar contexto, auditar entregas e registrar aprendizado.", "dateModified": "2026-08-15T20:44:10.115718-03:00", "version": "v4.12"}</script>
+  <style>:root {
+  --paper: #f1eee7;
+  --paper-high: #fbfaf7;
+  --ink: #171714;
+  --ink-soft: #55524c;
+  --ink-faint: #817c72;
+  --line: #d5d0c6;
+  --line-strong: #aaa398;
+  --signal: #ff542e;
+  --signal-soft: #ffe3da;
+  --info: #236b75;
+  --info-soft: #dcecef;
+  --ok: #28704c;
+  --ok-soft: #dcece2;
+  --sans: Arial, Helvetica, sans-serif;
+  --mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.5 var(--sans); }
+button, a { font: inherit; }
+button { color: inherit; }
+.shell { display: grid; grid-template-columns: 17rem minmax(0, 1fr); min-height: 100vh; }
+
+.rail {
+  position: sticky;
+  inset-block-start: 0;
+  display: flex;
+  flex-direction: column;
+  min-block-size: 100vh;
+  padding: 1.4rem 1rem;
+  border-inline-end: 1px solid #000;
+  background: var(--ink);
+  color: #fff;
+}
+.brand { padding: .4rem .6rem 1.5rem; border-block-end: 1px solid #3c3a35; }
+.brand__name { display: block; font-weight: 900; font-size: 1.5rem; letter-spacing: -.06em; }
+.brand__sub { display: block; color: #aaa69e; font: .65rem/1.4 var(--mono); letter-spacing: .11em; text-transform: uppercase; }
+.status { margin: 1rem .55rem; color: #ffc2b2; font: .65rem/1.4 var(--mono); letter-spacing: .06em; text-transform: uppercase; }
+.nav { display: grid; gap: .35rem; }
+.nav-btn {
+  display: grid;
+  grid-template-columns: 2rem 1fr;
+  gap: .55rem;
+  align-items: center;
+  width: 100%;
+  min-height: 3rem;
+  padding: .65rem;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #b9b5ad;
+  text-align: left;
+  cursor: pointer;
+}
+.nav-btn span:first-child { color: #6f6b65; font: .66rem/1 var(--mono); }
+.nav-btn:hover { color: #fff; border-color: #494640; }
+.nav-btn[aria-selected="true"] { border-color: var(--signal); background: var(--signal); color: #fff; }
+.nav-btn[aria-selected="true"] span:first-child { color: #ffe0d8; }
+.rail__foot { margin-block-start: auto; padding: 1rem .6rem .3rem; color: #85817a; font: .62rem/1.55 var(--mono); }
+
+.main { min-width: 0; }
+.topbar { display: flex; justify-content: space-between; gap: 1rem; padding: .85rem 2.2rem; border-block-end: 1px solid var(--line); }
+.meta { color: var(--ink-faint); font: .64rem/1.4 var(--mono); text-transform: uppercase; letter-spacing: .07em; }
+.topbar__action { color: var(--signal); font-weight: 800; font-size: .78rem; text-decoration: none; }
+.panel { max-width: 92rem; min-height: calc(100vh - 3rem); padding: clamp(1rem, 4vw, 4rem); }
+.panel[hidden] { display: none; }
+
+.hero { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(18rem, .75fr); min-width: 0; border: 1px solid var(--line-strong); background: var(--paper-high); }
+.hero__main { min-width: 0; padding: clamp(1.4rem, 4vw, 4.5rem); }
+.hero__side { display: flex; min-width: 0; flex-direction: column; justify-content: space-between; gap: 1.2rem; padding: clamp(1.4rem, 3vw, 2.5rem); border-inline-start: 1px solid var(--line-strong); background: var(--info-soft); }
+.eyebrow, .kicker, .label { color: var(--signal); font: 800 .66rem/1.3 var(--mono); letter-spacing: .1em; text-transform: uppercase; }
+h1 { max-width: 13ch; margin: .8rem 0 1.2rem; font-size: clamp(3.2rem, 7.2vw, 7.4rem); line-height: .88; letter-spacing: -.075em; }
+h2 { margin: .2rem 0 0; font-size: clamp(1.6rem, 3vw, 2.8rem); line-height: 1; letter-spacing: -.055em; }
+h3 { margin: .35rem 0 .6rem; font-size: 1rem; }
+p { margin: .45rem 0; }
+.lede { max-width: 52rem; color: var(--ink-soft); font-size: clamp(1.05rem, 1.5vw, 1.35rem); }
+.hero__definition { color: var(--ink); font-size: 1.15rem; }
+.hero__definition strong { display: block; margin-block-end: .35rem; font-size: 1.75rem; line-height: 1; }
+.action-row { display: flex; flex-wrap: wrap; gap: .6rem; margin-block-start: 1.7rem; }
+.btn { min-height: 2.8rem; padding: .7rem 1rem; border: 1px solid var(--ink); background: var(--ink); color: #fff; font-weight: 800; cursor: pointer; }
+.btn--ghost { background: transparent; color: var(--ink); }
+
+.section-head { display: grid; grid-template-columns: minmax(15rem, .8fr) minmax(18rem, 1.2fr); gap: 2rem; align-items: end; margin: clamp(2.8rem, 6vw, 6rem) 0 1.25rem; }
+.section-head > p { max-width: 42rem; color: var(--ink-soft); }
+.metric-grid, .layer-grid, .example-grid, .limit-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; border: 1px solid var(--line); background: var(--line); }
+.metric, .layer, .example, .limit { min-height: 12rem; padding: 1.2rem; background: var(--paper-high); }
+.metric__value { display: block; margin: 1rem 0 .5rem; font-size: 2rem; line-height: 1; letter-spacing: -.05em; }
+.metric p, .layer p, .example p, .limit p { color: var(--ink-soft); font-size: .88rem; }
+.layer__n, .example__code { color: var(--signal); font: 800 .68rem/1 var(--mono); }
+.layer--dark { background: var(--ink); color: #fff; }
+.layer--dark p { color: #cfcbc2; }
+
+.flow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; border: 1px solid var(--line); background: var(--line); }
+.flow-step { position: relative; min-height: 10.5rem; padding: 1rem; background: var(--paper-high); }
+.flow-step__n { color: var(--ink-faint); font: .68rem/1 var(--mono); }
+.flow-step p { color: var(--ink-soft); font-size: .82rem; }
+.flow-step--signal { background: var(--signal-soft); outline: 2px dashed var(--signal); outline-offset: -7px; }
+.flow-step--info { background: var(--info-soft); }
+.flow-step--ok { background: var(--ok-soft); }
+
+.notice { display: grid; grid-template-columns: auto 1fr; gap: 1rem; margin-block: 1rem; padding: 1rem; border-inline-start: .4rem solid var(--signal); background: var(--signal-soft); }
+.notice strong { font-family: var(--mono); font-size: .8rem; }
+.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.box { padding: 1.25rem; border: 1px solid var(--line); background: var(--paper-high); }
+.box--dark { background: var(--ink); color: #fff; }
+.box--dark p, .box--dark li { color: #d1cdc4; }
+.plain-list, .source-list { margin: 0; padding: 0; list-style: none; }
+.plain-list li { padding: .7rem 0; border-block-end: 1px solid var(--line); color: var(--ink-soft); }
+.box--dark .plain-list li { border-color: #44413c; }
+.tag { display: inline-flex; padding: .35rem .55rem; border: 1px solid currentColor; background: var(--ok-soft); color: var(--ok); font: 800 .6rem/1.2 var(--mono); text-transform: uppercase; }
+.source-list li { display: grid; grid-template-columns: minmax(12rem, .65fr) minmax(0, 1.35fr); gap: 1rem; padding: 1rem 0; border-block-end: 1px solid var(--line); }
+.source-list code { overflow-wrap: anywhere; color: var(--ink-soft); }
+.footnote { color: var(--ink-faint); font-size: .78rem; }
+
+@media (max-width: 62rem) {
+  .shell { display: block; }
+  .rail { position: sticky; z-index: 10; min-height: auto; padding: .7rem; border-inline-end: 0; border-block-end: 1px solid #000; }
+  .brand, .status, .rail__foot, .topbar { display: none; }
+  .nav { display: flex; gap: .35rem; overflow-x: auto; }
+  .nav-btn { flex: 0 0 auto; width: auto; min-height: 2.5rem; grid-template-columns: auto 1fr; }
+  .hero { grid-template-columns: 1fr; }
+  .hero__side { border-inline-start: 0; border-block-start: 1px solid var(--line-strong); }
+  .metric-grid, .layer-grid, .example-grid, .limit-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .flow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 40rem) {
+  body, .shell, .main { max-width: 100vw; overflow-x: hidden; }
+  .panel { padding: 1rem; }
+  .hero, .hero__main, .hero__side { width: 100%; max-width: 100%; }
+  .hero__definition, .lede { overflow-wrap: anywhere; }
+  .section-head, .compare { grid-template-columns: 1fr; gap: .7rem; }
+  .metric-grid, .layer-grid, .example-grid, .limit-grid, .flow { grid-template-columns: 1fr; }
+  .source-list li { grid-template-columns: 1fr; gap: .25rem; }
+  .action-row { display: grid; }
+  .btn { width: 100%; }
+  h1 { font-size: clamp(2.8rem, 15vw, 4.8rem); }
+}
+
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+@media print {
+  .rail, .topbar, .btn { display: none !important; }
+  .shell { display: block; }
+  .panel[hidden] { display: block; }
+  .panel { min-height: 0; padding: 1rem 0; break-after: page; }
+  body { background: #fff; }
+}
+</style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="rail" aria-label="Navegação principal">
+      <div class="brand">
+        <span class="brand__name">MEGABRAIN</span>
+        <span class="brand__sub">protocolo operacional</span>
+      </div>
+      <div class="status">visão geral · v4.12</div>
+      <nav class="nav" role="tablist" aria-label="Áreas do relatório">
+        <button class="nav-btn" type="button" role="tab" data-panel-target="comecar" aria-selected="true"><span>01</span><span>Começar</span></button>
+        <button class="nav-btn" type="button" role="tab" data-panel-target="entender" aria-selected="false"><span>02</span><span>Entender</span></button>
+        <button class="nav-btn" type="button" role="tab" data-panel-target="usar" aria-selected="false"><span>03</span><span>Usar</span></button>
+        <button class="nav-btn" type="button" role="tab" data-panel-target="pratica" aria-selected="false"><span>04</span><span>Na prática</span></button>
+        <button class="nav-btn" type="button" role="tab" data-panel-target="limites" aria-selected="false"><span>05</span><span>Limites</span></button>
+        <button class="nav-btn" type="button" role="tab" data-panel-target="fontes" aria-selected="false"><span>06</span><span>Fontes</span></button>
+      </nav>
+      <div class="rail__foot">Local e portátil<br>Humano continua aprovando</div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <span class="meta">gerado em 15/08/2026 20:44 · fontes locais · v4.12</span>
+        <a class="topbar__action" href="#/comecar">Voltar ao começo →</a>
+      </header>
+
+      <section class="panel" data-panel="comecar" aria-labelledby="titulo-comecar">
+        <div class="hero">
+          <div class="hero__main">
+            <span class="eyebrow">o essencial em 30 segundos</span>
+            <h1 id="titulo-comecar">IA com método, memória e freio.</h1>
+            <p class="lede">MEGABRAIN é um protocolo de trabalho para projetos feitos com agentes de IA. Ele organiza o que precisa ser decidido, impede que contexto se perca entre sessões, audita a qualidade da entrega e registra o que deve melhorar no próximo ciclo.</p>
+            <div class="action-row">
+              <button class="btn" type="button" data-panel-target="entender">Ver como funciona</button>
+              <button class="btn btn--ghost" type="button" data-panel-target="pratica">Ver exemplos reais</button>
+            </div>
+          </div>
+          <aside class="hero__side">
+            <div class="hero__definition"><strong>Não é uma IA nova.</strong>É o sistema de operação em volta das IAs que você já usa.</div>
+            <span class="tag">protocolo + arquivos + scripts</span>
+          </aside>
+        </div>
+
+        <div class="section-head">
+          <div><span class="kicker">por que existe</span><h2>O problema não é gerar. É continuar bem.</h2></div>
+          <p>Agentes produzem rápido, mas podem esquecer decisões, repetir discussões, escrever de forma genérica ou dois agentes podem alterar o mesmo arquivo. O MEGABRAIN transforma esses riscos em etapas verificáveis.</p>
+        </div>
+        <div class="metric-grid">
+          <article class="metric"><span class="label">continuidade</span><strong class="metric__value">Estado</strong><p>O próximo agente sabe onde o trabalho parou e qual é a próxima ação.</p></article>
+          <article class="metric"><span class="label">qualidade</span><strong class="metric__value">Gates</strong><p>A entrega passa por enquadramento, auditoria, reparo e verificação.</p></article>
+          <article class="metric"><span class="label">aprendizado</span><strong class="metric__value">Registro</strong><p>Decisões e lições ficam disponíveis para o ciclo seguinte.</p></article>
+        </div>
+        <div class="notice"><strong>RESULTADO</strong><span>Menos recomeço, menos resposta genérica e mais clareza sobre quem decide, o que está pronto e o que ainda precisa de prova.</span></div>
+      </section>
+
+      <section class="panel" data-panel="entender" aria-labelledby="titulo-entender" hidden>
+        <div class="hero">
+          <div class="hero__main">
+            <span class="eyebrow">arquitetura · quatro camadas</span>
+            <h1 id="titulo-entender">Um sistema pequeno em volta do trabalho.</h1>
+            <p class="lede">O MEGABRAIN separa processo, instrução, memória e garantia. Assim, uma conversa não precisa carregar o projeto inteiro e uma regra importante não depende apenas de o agente lembrar dela.</p>
+          </div>
+          <aside class="hero__side">
+            <div class="hero__definition"><strong>Legível por humanos.</strong>Executável por agentes. Verificável por scripts.</div>
+            <span class="footnote">Cada camada resolve um tipo diferente de falha.</span>
+          </aside>
+        </div>
+
+        <div class="section-head">
+          <div><span class="kicker">as peças</span><h2>O que existe dentro dele.</h2></div>
+          <p>Não é um arquivo mágico. É um conjunto coordenado, carregado conforme a necessidade.</p>
+        </div>
+        <div class="layer-grid">
+          <article class="layer layer--dark"><span class="layer__n">01 · PROJETO</span><h3>Fases macro</h3><p>Estado, problema, especificação, execução, validação, publicação e aprendizado.</p></article>
+          <article class="layer"><span class="layer__n">02 · ENTREGA</span><h3>Gates</h3><p>Enquadrar, gerar, auditar, reparar, verificar e passar o bastão.</p></article>
+          <article class="layer"><span class="layer__n">03 · MEMÓRIA</span><h3>Quatro registros</h3><p><code>ESTADO</code>, <code>HANDOFF</code>, <code>DECISOES</code> e <code>LICOES</code> preservam o que importa.</p></article>
+          <article class="layer"><span class="layer__n">04 · GARANTIA</span><h3>Skills e scripts</h3><p>Skills orientam; scripts travam arquivos, sincronizam versões, geram relatórios e verificam operações.</p></article>
+        </div>
+
+        <div class="section-head">
+          <div><span class="kicker">memória operacional</span><h2>Cada arquivo responde a uma pergunta.</h2></div>
+          <p>O objetivo é permitir que uma pessoa ou outro agente entenda a situação sem reconstruir toda a conversa anterior.</p>
+        </div>
+        <div class="compare">
+          <div class="box"><h3>Agora</h3><ul class="plain-list"><li><strong>ESTADO:</strong> em que fase estamos?</li><li><strong>HANDOFF:</strong> o que foi feito e qual é o próximo passo?</li></ul></div>
+          <div class="box box--dark"><h3>Histórico que importa</h3><ul class="plain-list"><li><strong>DECISOES:</strong> o que foi escolhido e qual alternativa perdeu?</li><li><strong>LICOES:</strong> o que fazer direto quando a situação reaparecer?</li></ul></div>
+        </div>
+      </section>
+
+      <section class="panel" data-panel="usar" aria-labelledby="titulo-usar" hidden>
+        <div class="hero">
+          <div class="hero__main">
+            <span class="eyebrow">fluxo de trabalho</span>
+            <h1 id="titulo-usar">Antes, durante e depois.</h1>
+            <p class="lede">O protocolo entra no momento em que um agente assume o projeto e só sai depois de validar a entrega e deixar um bastão utilizável para o próximo ciclo.</p>
+          </div>
+          <aside class="hero__side">
+            <div class="hero__definition"><strong>Regra central</strong>O formato pedido pelo usuário vence o protocolo; o MEGABRAIN governa a qualidade dentro desse formato.</div>
+          </aside>
+        </div>
+
+        <div class="section-head">
+          <div><span class="kicker">um ciclo completo</span><h2>Oito passos, dois pontos que não se pulam.</h2></div>
+          <p>Auditar separa uma primeira passada de uma entrega. Passar o bastão impede que a próxima sessão volte ao zero.</p>
+        </div>
+        <div class="flow" aria-label="Fluxo do MEGABRAIN em oito etapas">
+          <article class="flow-step flow-step--info"><span class="flow-step__n">01</span><h3>Assumir</h3><p>Ler o estado, conferir a trava e verificar a versão do protocolo.</p></article>
+          <article class="flow-step"><span class="flow-step__n">02</span><h3>Enquadrar</h3><p>Definir artefato, leitor, critério de aprovação e restrições.</p></article>
+          <article class="flow-step"><span class="flow-step__n">03</span><h3>Orçar contexto</h3><p>Ler só o necessário e guardar checkpoints em arquivo.</p></article>
+          <article class="flow-step"><span class="flow-step__n">04</span><h3>Gerar</h3><p>Montar a estrutura primeiro e preencher com evidência.</p></article>
+          <article class="flow-step flow-step--signal"><span class="flow-step__n">05 · GATE</span><h3>Auditar</h3><p>Remover clichê, testar substância e declarar o custo das recomendações.</p></article>
+          <article class="flow-step"><span class="flow-step__n">06</span><h3>Reparar</h3><p>Fazer uma rodada de correção, sem autocrítica infinita.</p></article>
+          <article class="flow-step flow-step--ok"><span class="flow-step__n">07 · GATE</span><h3>Verificar</h3><p>Abrir o arquivo, conferir links, números, datas e contradições.</p></article>
+          <article class="flow-step flow-step--signal"><span class="flow-step__n">08 · BASTÃO</span><h3>Registrar</h3><p>Atualizar estado, handoff, decisões e lições antes de encerrar.</p></article>
+        </div>
+        <div class="notice"><strong>HUMANO NO COMANDO</strong><span>O sistema organiza e cobra evidência. Aprovação de preço, mensagem, publicação, entrega e mudança destrutiva continua humana.</span></div>
+      </section>
+
+      <section class="panel" data-panel="pratica" aria-labelledby="titulo-pratica" hidden>
+        <div class="hero">
+          <div class="hero__main">
+            <span class="eyebrow">aplicação prática</span>
+            <h1 id="titulo-pratica">O protocolo muda conforme o projeto.</h1>
+            <p class="lede">O núcleo é o mesmo, mas cada projeto pode ter um roteiro próprio, fontes diferentes e pontos de aprovação específicos. O MEGABRAIN coordena essas especializações sem transformar tudo numa regra global.</p>
+          </div>
+          <aside class="hero__side">
+            <div class="hero__definition"><strong>Do genérico ao específico</strong>MEGABRAIN decide o método; o projeto decide a fase e os artefatos.</div>
+          </aside>
+        </div>
+
+        <div class="section-head">
+          <div><span class="kicker">três usos</span><h2>Onde ele pode entrar.</h2></div>
+          <p>Os exemplos abaixo mostram papéis diferentes: operação de serviços, definição de projeto e aprovação de materiais.</p>
+        </div>
+        <div class="example-grid">
+          <article class="example"><span class="example__code">SERVIÇOS</span><h3>Opera trabalho e caixa</h3><p>Concentra oferta, aquisição, preço, aprovações humanas, tracker e aprendizado numa console de decisão.</p></article>
+          <article class="example"><span class="example__code">DESIGN</span><h3>Define problema e escopo</h3><p>Usa descoberta e convergência para impedir que alta fidelidade esconda uma hipótese ainda fraca.</p></article>
+          <article class="example"><span class="example__code">APROVAÇÃO</span><h3>Registra revisão e aceite</h3><p>Mantém materiais, versões, comentários e histórico de decisões do cliente.</p></article>
+        </div>
+
+        <div class="section-head">
+          <div><span class="kicker">maturidade</span><h2>Não precisa adotar tudo de uma vez.</h2></div>
+          <p>O protocolo cresce com o risco e a duração do trabalho.</p>
+        </div>
+        <div class="metric-grid">
+          <article class="metric"><span class="label">nível 1</span><strong class="metric__value">Essencial</strong><p>Estado, próximo passo e uma entrega verificada.</p></article>
+          <article class="metric"><span class="label">nível 2</span><strong class="metric__value">Repetível</strong><p>Decisões, lições, skill do projeto e automação pontual.</p></article>
+          <article class="metric"><span class="label">nível 3</span><strong class="metric__value">Completo</strong><p>Travas, relatório vivo, testes, publicação e portões de aprovação.</p></article>
+        </div>
+      </section>
+
+      <section class="panel" data-panel="limites" aria-labelledby="titulo-limites" hidden>
+        <div class="hero">
+          <div class="hero__main">
+            <span class="eyebrow">limites e responsabilidade</span>
+            <h1 id="titulo-limites">Método reduz risco. Não elimina julgamento.</h1>
+            <p class="lede">O MEGABRAIN ajuda a tornar o trabalho observável e corrigível. Ele não prova que uma ideia é boa, não autoriza a IA a agir em nome de alguém e não substitui testes no mundo real.</p>
+          </div>
+          <aside class="hero__side">
+            <div class="hero__definition"><strong>O freio faz parte do produto.</strong>Autonomia sem escopo e sem aprovação não é maturidade.</div>
+          </aside>
+        </div>
+
+        <div class="section-head">
+          <div><span class="kicker">o que ele não é</span><h2>Quatro confusões comuns.</h2></div>
+          <p>Esses limites deixam claro o que ainda depende de pessoa, ferramenta e evidência externa.</p>
+        </div>
+        <div class="limit-grid">
+          <article class="limit"><h3>Não é um modelo de IA</h3><p>Ele trabalha com diferentes modelos e pode trocar o recurso conforme custo, privacidade e dificuldade.</p></article>
+          <article class="limit"><h3>Não é piloto automático</h3><p>Ações externas, compromissos, preços e publicações mantêm portões humanos.</p></article>
+          <article class="limit"><h3>Não é memória infinita</h3><p>Só o que foi registrado nas fontes do projeto atravessa sessões com confiabilidade.</p></article>
+          <article class="limit"><h3>Não garante uma boa entrega</h3><p>Critérios ruins produzem verificação ruim. O protocolo torna a falha rastreável; não torna qualquer premissa verdadeira.</p></article>
+        </div>
+        <div class="notice"><strong>TRADE-OFF</strong><span>Registrar estado, decisões e verificações custa alguns minutos. Esse custo compra continuidade e reduz retrabalho em projetos que atravessam dias, pessoas ou agentes.</span></div>
+      </section>
+
+      <section class="panel" data-panel="fontes" aria-labelledby="titulo-fontes" hidden>
+        <div class="hero">
+          <div class="hero__main">
+            <span class="eyebrow">rastreabilidade</span>
+            <h1 id="titulo-fontes">Onde aprofundar.</h1>
+            <p class="lede">Este relatório é a porta de entrada. As fontes abaixo contêm o protocolo operacional, a arquitetura de projeto e as referências carregadas sob demanda.</p>
+          </div>
+          <aside class="hero__side">
+            <div class="hero__definition"><strong>Edite a fonte.</strong>Depois rode <code>python relatorio-megabrain/gerar.py</code>. O HTML final nunca é editado à mão.</div>
+          </aside>
+        </div>
+
+        <div class="section-head">
+          <div><span class="kicker">documentação</span><h2>Uma fonte para cada profundidade.</h2></div>
+          <p>A ordem abaixo vai da leitura mais curta para a operação mais detalhada.</p>
+        </div>
+        <ul class="source-list">
+          <li><code>README.md</code><span>Visão curta da pasta, das ferramentas e das duas formas de uso.</span></li>
+          <li><code>skills/megabrain/SKILL.md</code><span>Gates de entrega, passagem de bastão, auditoria e roteamento operacional.</span></li>
+          <li><code>MEGABRAIN.md</code><span>Fases macro, artefatos, regras de ouro e níveis de adoção.</span></li>
+          <li><code>referencias/</code><span>Auditoria de escrita, engenharia de contexto, metaprompts, avaliação, design e governança.</span></li>
+          <li><code>bin/</code><span>Travas, sincronização, backup, relatórios e outras garantias determinísticas.</span></li>
+          <li><code>VERSAO.txt</code><span>Histórico do que mudou no protocolo.</span></li>
+        </ul>
+        <p class="footnote">Relatório gerado por <code>relatorio-megabrain/gerar.py</code>. Versão exibida: v4.12.</p>
+      </section>
+    </main>
+  </div>
+  <script>(function () {
+  "use strict";
+
+  var buttons = Array.prototype.slice.call(document.querySelectorAll("[data-panel-target]"));
+  var panels = Array.prototype.slice.call(document.querySelectorAll("[data-panel]"));
+
+  function panelName() {
+    var requested = window.location.hash.replace(/^#\/?/, "");
+    return panels.some(function (panel) { return panel.dataset.panel === requested; }) ? requested : "comecar";
+  }
+
+  function show(name, updateHash) {
+    panels.forEach(function (panel) { panel.hidden = panel.dataset.panel !== name; });
+    buttons.forEach(function (button) {
+      button.setAttribute("aria-selected", String(button.dataset.panelTarget === name));
+    });
+    if (updateHash) window.history.replaceState(null, "", "#/" + name);
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }
+
+  buttons.forEach(function (button) {
+    button.addEventListener("click", function () { show(button.dataset.panelTarget, true); });
+  });
+  window.addEventListener("hashchange", function () { show(panelName(), false); });
+  show(panelName(), false);
+}());
+</script>
+</body>
+</html>

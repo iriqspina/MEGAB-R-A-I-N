@@ -26,6 +26,7 @@ design e documentação. Não prende a um projeto específico.
 | GPT-5.5 | Compatibilidade com fluxos já calibrados; segunda opinião em tarefa profissional complexa | Escolha nova por padrão quando a família 5.6 estiver disponível e testada |
 | GPT-5.4 | Trabalho cotidiano com custo menor e comportamento já conhecido | Arquitetura ou auditoria mais difícil se 5.6 estiver disponível |
 | GPT-5.4 Mini | Subtarefas focadas, agentes auxiliares, triagem e transformação simples em volume | Síntese final, ambiguidade alta ou mudanças amplas no repositório |
+| Qwen3.8-27B Q4_K_M local (Ollama) | Texto privado: classificação, extração, primeira passada e transformação mecânica | Trabalho interativo ou síntese crítica na RTX 4070 de 12 GB: a quantização de 17,1 GB usa também RAM e fica lenta |
 | Gemini | Fallback opcional, multimodal | Não é membro fixo; usar só quando os outros falham |
 
 ### Esforço de raciocínio na família GPT-5.6
