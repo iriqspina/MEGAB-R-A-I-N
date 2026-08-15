@@ -47,9 +47,9 @@ O arquivo de identidade pode começar com uma linha `USUARIO: Nome` logo
 após o aviso de arquivo local. Exemplo:
 
 ```
-USUARIO: <USUARIO> (Iriq)
+USUARIO: <USUARIO> (<USUARIO>)
 
-## <USUARIO> (Iriq) — perfil operacional
+## <USUARIO> (<USUARIO>) — perfil operacional
 ...
 ```
 

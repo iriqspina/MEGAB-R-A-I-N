@@ -1,3 +1,3 @@
-2026-08-14 · v4.3 — redundância contra pontos únicos de falha: cria
+2026-08-15 · v4.8 — fecha vazamento no gerador do pacote público:
 
 Histórico completo: ver repositório privado da pasta central.

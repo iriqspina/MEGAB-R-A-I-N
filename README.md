@@ -17,8 +17,9 @@ para impedir que entregas de IA saiam genéricas.
   (léxico e estrutura banidos com teste), metaprompts (padrões e templates
   colecionáveis), engenharia de contexto, avaliação/rubricas, Duplo
   Diamante completo, roteamento quando o design vira código, sincronização
-  de identidade entre agentes, e um prompt portátil pra colar em qualquer
-  IA sem instalar nada.
+  de identidade entre agentes, governança comercial, Amarrador de Pontas,
+  Contraditor, teammates econômicos e um prompt portátil pra colar em
+  qualquer IA sem instalar nada.
 - `bin/` — scripts testados do protocolo:
   - `mb-sync.py` — trava de handoff multi-agente em `HANDOFF.md`.
   - `mb-sync-memoria.py` — sincroniza um arquivo de identidade local para
@@ -31,14 +32,16 @@ para impedir que entregas de IA saiam genéricas.
     (dry-run por padrão, backup obrigatório).
   - `mb-relatorio-dna.py` — gera o relatório DNA do protocolo em `dna/`.
   - `mb-relatorio-projeto.py` — gera o relatório de instância de um
-    projeto específico (`RELATORIO.html`).
+    projeto específico (`RELATORIO.html`), com materiais consolidados e
+    botões de ação HTTPS/âncora passados por `--acao "Rótulo|URL"`.
   - `mb-sync-projeto-para-central.py` — sobe alterações de um projeto para
     a central do megabrain quando o projeto ficou mais novo.
 
 ## Como usar
 
-1. Instale como skill no seu agente (Claude Code, Kimi CLI) apontando pra
-   este diretório, **ou**
+1. Instale como skill no seu agente apontando pra este diretório. No Codex,
+   use `skills/codex-megabrain/`; nos agentes que consomem o protocolo
+   agnóstico, use `skills/megabrain/`. **Ou:**
 2. Cole `referencias/260810_PROMPT-PORTATIL.md` no início de uma conversa
    com qualquer IA — não depende de arquivo nem de plataforma.
 
@@ -52,6 +55,10 @@ O arquivo de identidade que `mb-sync-memoria.py` sincroniza (seu perfil,
 preferências, formato de resposta) também não vem aqui — é pessoal, fica
 no seu computador ou num repo privado, nunca neste pacote público. Ver
 `referencias/260810_sync-memoria.md` para o protocolo.
+
+O gerador público também exclui `ESTADO.md`, `HANDOFF.md`, `DECISOES.md` e
+`RELATORIO.html` da central. Esses arquivos descrevem a operação privada e
+devem ser criados por cada projeto, não distribuídos como parte do protocolo.
 
 ## Migração v4.0 — diferenciação de usuário
 

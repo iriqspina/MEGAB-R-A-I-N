@@ -2,8 +2,8 @@
   "@context": "https://schema.org",
   "@type": "TechArticle",
   "name": "MEGABRAIN — Relatório DNA",
-  "version": "v4.3 · 2026-08-14",
-  "dateCreated": "2026-08-14T17:29:50.232053",
+  "version": "v4.5 · 2026-08-14",
+  "dateCreated": "2026-08-14T23:17:58.553056",
   "description": "DNA completo do protocolo megabrain: gates, ferramentas, métodos e instruções para replicação.",
   "about": {
     "@type": "SoftwareApplication",

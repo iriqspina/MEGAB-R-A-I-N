@@ -60,6 +60,15 @@ EXCLUIR = {
     "skills/conclusao-megabrain",
 }
 
+# Estado operacional da central privada. Projetos clonados criam os próprios
+# arquivos; publicar estes documentos vaza contexto, nomes e decisões locais.
+EXCLUIR_TOPO = {
+    "ESTADO.md",
+    "HANDOFF.md",
+    "DECISOES.md",
+    "RELATORIO.html",
+}
+
 # Duplicatas legadas sem prefixo de data: match EXATO de nome de arquivo
 EXCLUIR_NOME_EXATO = {
     "anti-slop.md",
@@ -92,10 +101,36 @@ SUBSTITUICOES = sorted(
     reverse=True,
 )
 
+EXTENSOES_TEXTO = {
+    ".md",
+    ".txt",
+    ".py",
+    ".cmd",
+    ".html",
+    ".json",
+    ".yaml",
+    ".yml",
+    ".css",
+    ".js",
+}
+
+PADROES_PRIVADOS = {
+    "caminho de projetos local": re.compile(r"S:[\\/]projetos multi i\.a", re.IGNORECASE),
+    "home local": re.compile(
+        r"[A-Z]:[\\/]Users[\\/](?!<USER_HOME>)[^\\/\s<>]+", re.IGNORECASE
+    ),
+    # Construção em partes impede que o próprio gerador reescreva estes
+    # detectores ao sanitizar sua cópia pública.
+    "nome pessoal": re.compile(r"\b" + "Hen" + "rique" + r"\b", re.IGNORECASE),
+    "apelido pessoal": re.compile(r"\b" + "Ir" + "iq" + r"\b", re.IGNORECASE),
+}
+
 
 def sanitizar(texto):
     for padrao, substituicao in SUBSTITUICOES:
         texto = re.sub(padrao, lambda m: substituicao, texto, flags=re.IGNORECASE)
+    # Não alterar o username público "iriqspina" usado nas URLs do projeto.
+    texto = re.sub(r"\bIriq\b", "<USUARIO>", texto, flags=re.IGNORECASE)
     return texto
 
 
@@ -130,7 +165,7 @@ def copiar_sanitizando(src, dst):
     if not u.ensure_parent_dir(dst_path):
         return False
 
-    if src.endswith(".md") or src.endswith(".txt") or src.endswith(".py") or src.endswith(".cmd"):
+    if Path(src).suffix.lower() in EXTENSOES_TEXTO:
         try:
             with open(src, "r", encoding="utf-8") as f:
                 conteudo = f.read()
@@ -148,6 +183,29 @@ def copiar_sanitizando(src, dst):
         except OSError as e:
             print(f"ERRO ao copiar {src} -> {dst}: {e}")
             return False
+    return True
+
+
+def validar_privacidade(destino_path):
+    """Recusa o pacote se algum texto ainda carregar identificadores privados."""
+    achados = []
+    for arquivo in destino_path.rglob("*"):
+        if not arquivo.is_file() or arquivo.suffix.lower() not in EXTENSOES_TEXTO:
+            continue
+        try:
+            conteudo = arquivo.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as e:
+            achados.append(f"{arquivo.relative_to(destino_path)}: leitura falhou ({e})")
+            continue
+        for rotulo, padrao in PADROES_PRIVADOS.items():
+            if padrao.search(conteudo):
+                achados.append(f"{arquivo.relative_to(destino_path)}: {rotulo}")
+
+    if achados:
+        print("ERRO: validação de privacidade recusou o template:")
+        for achado in achados:
+            print(f"  - {achado}")
+        return False
     return True
 
 
@@ -180,7 +238,7 @@ def gerar_template(central, destino):
 
     # Copia arquivos de topo
     for nome in os.listdir(central_path):
-        if nome in EXCLUIR:
+        if nome in EXCLUIR or nome in EXCLUIR_TOPO:
             continue
         src = os.path.join(central_path, nome)
         dst = destino_path / nome
@@ -229,6 +287,9 @@ def gerar_template(central, destino):
 
     if erros:
         print(f"template gerado em {destino_path} com ERROS parciais")
+        return False
+
+    if not validar_privacidade(destino_path):
         return False
 
     print(f"template gerado em {destino_path}")

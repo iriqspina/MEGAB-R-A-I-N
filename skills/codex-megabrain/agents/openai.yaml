@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex MEGABRAIN"
+  short_description: "Executa o MEGABRAIN com o fluxo nativo do Codex"
+  default_prompt: "Use $codex-megabrain para conduzir esta entrega com estado, auditoria e verificação."

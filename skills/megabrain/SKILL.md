@@ -278,6 +278,20 @@ Rubricas prontas: `referencias/260810_evaluation-gates.md`
 
 ---
 
+## 5b. Gate AMARRAR PONTAS
+
+Antes de uma aprovação humana, envio externo, fechamento semanal ou handoff,
+varra estado, tracker, decisões e fontes por dúvida aberta, número velho,
+prazo, dependência e decisão sem dono. Descubra sozinho o que for leitura
+segura; leve ao usuário no máximo cinco perguntas prioritárias, cada uma com
+evidência, impacto e recomendação.
+
+Se houver cliente, dinheiro, multi-IA, Contraditor, Teammates ou dogfooding,
+carregue `referencias/260815_pipeline-governanca-aprendizado.md`. O recurso
+mais barato capaz vem primeiro; escalar exige falha observada ou alto custo
+do erro. Toda comunicação, proposta, preço e entrega continua sob aprovação
+humana.
+
 ## 6. Gate PASSAR O BASTÃO
 
 Antes de encerrar a sessão, sempre. Não é opcional e não é resumo bonito —
@@ -325,6 +339,10 @@ Dois destinos: **global** (vale pra qualquer projeto) ou **do projeto**
 projeto. Sempre **append**, nunca reescreva.
 
 Lição 3× vira skill própria ou regra em `MEGABRAIN.md`.
+
+Se o usuário declarou que uma classe de mecânica deve sempre alimentar o
+MEGABRAIN, promova a versão sanitizada para a fonte central no mesmo ciclo;
+não deixe apenas como nota do projeto.
 
 ---
 
@@ -376,6 +394,7 @@ Todas em `referencias/`.
 | `260810_PROMPT-PORTATIL.md` | Levar o protocolo pra uma IA sem skills |
 | `260810_sync-memoria.md` | Configurar agente novo num projeto — sincronizar identidade em CLAUDE.md/GEMINI.md/AGENTS.md |
 | `260811_kimi-handoff.md` | Tarefa bateu numa parede do sandbox (pasta home, caminho não conectado, delete/rename bloqueado) — empacotar pro Kimi |
+| `260815_pipeline-governanca-aprendizado.md` | Cliente, dinheiro, aprovações, Amarrador, Contraditor, Teammates, momentum ou aprendizado entre projetos |
 
 Camada de projeto (fases macro, artefatos, regras de ouro, níveis de
 adoção): `MEGABRAIN.md`. O arquivo de identidade que essa sincronização

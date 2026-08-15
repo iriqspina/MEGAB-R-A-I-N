@@ -55,6 +55,7 @@ import json
 import os
 import re
 import sys
+from urllib.parse import urlparse
 from pathlib import Path
 
 DEFAULT_OUT_NAME = "RELATORIO.html"
@@ -333,6 +334,11 @@ h1{font-size:26px;letter-spacing:-.03em}
 .hero-acao strong{color:#fff}
 .hero-acao code{background:rgba(255,255,255,.1);color:#7dd3fc}
 .hero-acao p{color:#DCE7EA}
+.acoes-rapidas{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+.acao-btn{display:inline-flex;align-items:center;min-height:38px;padding:8px 14px;border-radius:999px;
+  background:#7dd3fc;color:#0E1B1F;font-family:var(--m);font-size:11px;font-weight:700;
+  letter-spacing:.05em;text-transform:uppercase;text-decoration:none}
+.acao-btn:hover{background:#fff;color:#0E1B1F}
 nav{position:sticky;top:0;z-index:40;background:rgba(234,241,243,.92);backdrop-filter:blur(6px);
   display:flex;gap:6px;flex-wrap:wrap;padding:10px 0;margin:0 0 8px}
 nav a{font-family:var(--m);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);
@@ -402,9 +408,35 @@ def secao(id_, titulo, corpo_html, arquivo_fonte=None):
     return f'<section id="{id_}"><h2>{html.escape(titulo)}</h2>{tag}{corpo_html}</section>'
 
 
+def parse_acoes(acoes_brutas: list[str]) -> list[tuple[str, str, bool]]:
+    """Valida ações passadas como ``Rótulo|URL``.
+
+    Só aceita links HTTPS externos ou âncoras internas do próprio relatório.
+    Assim, o relatório pode ter botões úteis sem virar um vetor de javascript,
+    data URL ou execução local do sistema operacional.
+    """
+    acoes = []
+    for bruta in acoes_brutas:
+        rotulo, separador, href = bruta.partition("|")
+        rotulo = rotulo.strip()
+        href = href.strip()
+        if not separador or not rotulo or not href:
+            print(f"AVISO: --acao ignorada (use Rótulo|URL): {bruta}")
+            continue
+        interna = href.startswith("#") and re.fullmatch(r"#[A-Za-z0-9_-]+", href)
+        destino = urlparse(href)
+        externa = destino.scheme == "https" and bool(destino.netloc)
+        if not (interna or externa):
+            print(f"AVISO: --acao ignorada (use HTTPS ou #ancora): {bruta}")
+            continue
+        acoes.append((rotulo, href, externa))
+    return acoes
+
+
 def gerar(args, data_iso: str) -> str:
     projeto = Path(args.projeto).resolve()
     pendencias = []
+    acoes = parse_acoes(args.acao or [])
 
     # --- contexto específico ---
     context_path = projeto / (args.context or "CONTEXT.md")
@@ -595,10 +627,11 @@ def gerar(args, data_iso: str) -> str:
         "about": {"@type": "Thing", "name": args.titulo},
         "isPartOf": {"@type": "SoftwareApplication", "name": "megabrain"},
         "pendencias_abertas": [p["texto"] for p in pendentes],
+        "acoes_rapidas": [{"nome": rotulo, "url": href} for rotulo, href, _ in acoes],
     }, ensure_ascii=False, indent=2)
 
     nav_ids = []
-    if acao_imediata_html:
+    if acao_imediata_html or acoes:
         nav_ids.append("acao")
     if html_context:
         nav_ids.append("contexto")
@@ -631,14 +664,24 @@ def gerar(args, data_iso: str) -> str:
       <details><summary>Metadados estruturados (JSON-LD)</summary><pre><code>{html.escape(json_ld)}</code></pre></details>
     </section>"""
 
+    botoes_acao = []
+    for rotulo, href, externa in acoes:
+        destino = ' target="_blank" rel="noopener noreferrer"' if externa else ''
+        botoes_acao.append(
+            f'<a class="acao-btn" href="{html.escape(href, quote=True)}"{destino}>'
+            f'{html.escape(rotulo)}</a>'
+        )
+    acoes_html = "".join(botoes_acao)
+
     acao_imediata_box = ""
-    if acao_imediata_html:
+    if acao_imediata_html or acoes_html:
         fonte_tag = (f'<div class="section-file">fonte: <code>{html.escape(acao_imediata_fonte)}</code>'
                      f' — editar lá, nunca aqui</div>') if acao_imediata_fonte else ""
         acao_imediata_box = f"""
     <section id="acao" class="hero-acao"><h2>👉 Ação imediata — o que fazer agora</h2>
       {fonte_tag}
       {acao_imediata_html}
+      {'<div class="acoes-rapidas">' + acoes_html + '</div>' if acoes_html else ''}
     </section>"""
 
     return f"""<!DOCTYPE html>
@@ -693,6 +736,8 @@ def main():
                      help="desliga o card 'Ação imediata' em destaque abaixo do TL;DR")
     ap.add_argument("--acao-imediata-titulo", action="append", default=[],
                      help="palavra-chave extra pra achar o heading de ação imediata no --plano (repetível)")
+    ap.add_argument("--acao", action="append", default=[], metavar="ROTULO|URL",
+                    help="botão HTTPS ou âncora interna (repetível; ex.: 'Abrir LinkedIn|https://linkedin.com')")
     args = ap.parse_args()
 
     projeto = Path(args.projeto)

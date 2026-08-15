@@ -227,6 +227,11 @@ abrir vários `.md` soltos:
   Diferente de "resolução" (que pode ter várias alternativas concorrentes)
   — aqui é o caminho único recomendado. `--sem-acao-imediata` desliga;
   `--acao-imediata-titulo PALAVRA` adiciona palavra-chave própria;
+- **ações rápidas** (desde 260814) — `--acao "Rótulo|URL"` (repetível)
+  coloca botões no card de ação para abrir uma URL HTTPS ou pular para uma
+  âncora do próprio relatório. O gerador recusa `javascript:`, `file:` e
+  outros esquemas; botão serve para ação que o usuário realmente precisa
+  executar, não para abrir scripts locais;
 - **resolução — alternativas pra resolver a situação** (desde 260814; nome
   antigo era "caminhos", trocado porque ficava ambíguo com caminho de
   arquivo) — varre `--plano` + `--extra` por headings `##`/`###` cujo texto
@@ -247,7 +252,7 @@ abrir vários `.md` soltos:
 Gerador: `bin/mb-relatorio-projeto.py --projeto PATH --titulo NOME --plano
 ARQUIVO [--extra ARQUIVO]... [--skill ARQUIVO] [--tldr "frase"]
 [--megabrain-central PATH] [--sem-resolucao] [--resolucao-titulo PALAVRA]...
-[--sem-acao-imediata] [--acao-imediata-titulo PALAVRA]...`. `--saida`
+[--sem-acao-imediata] [--acao-imediata-titulo PALAVRA] [--acao "Rótulo|URL"]...`. `--saida`
 default é `RELATORIO.html` na raiz do projeto. Referência de uso completo
 (todos os argumentos preenchidos):
 `Financeiro da Silva/05_scripts/gerar_relatorio.py`.
@@ -304,10 +309,12 @@ explícita, com spec — nunca por acidente.
 ## 9 · Como esta pipeline evolui
 
 1. Lição nova → arquivo de lições (GATILHO/LIÇÃO/ATALHO, data `YYMMDD`).
-2. Lição 3× → entra neste arquivo ou na `SKILL.md`.
-3. Editou a fonte → bump em `VERSAO.txt` (data + uma linha do que mudou).
-4. Espalhar → `sincronizar-pipeline.cmd`.
-5. A cópia dentro de cada projeto não se edita — a fonte manda.
+2. Lição reutilizável → versão sanitizada na fonte central; se o usuário
+   declarou promoção obrigatória, isso acontece no mesmo ciclo.
+3. Lição 3× → entra neste arquivo, na `SKILL.md`, num template ou script.
+4. Editou a fonte → bump em `VERSAO.txt` (data + uma linha do que mudou).
+5. Espalhar → `sincronizar-pipeline.cmd`.
+6. A cópia dentro de cada projeto não se edita — a fonte manda.
 
 ## 10 · Versão multi-IA (opcional)
 
