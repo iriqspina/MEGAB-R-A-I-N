@@ -24,7 +24,8 @@
       "mb-sync-memoria.py",
       "Duplo Diamante",
       "6 · Passar o Bastão",
-      "7 · Aprender"
+      "7 · Aprender",
+      "GerenteNeuron"
     ]
   },
   "hasPart": [
@@ -107,6 +108,11 @@
       "@type": "Thing",
       "name": "7 · Aprender",
       "description": "Registra lição no formato GATILHO/LIÇÃO/ATALHO."
+    },
+    {
+      "@type": "Thing",
+      "name": "GerenteNeuron",
+      "description": "App local de chat multi-IA com roteamento por custo/capacidade."
     }
   ]
 }

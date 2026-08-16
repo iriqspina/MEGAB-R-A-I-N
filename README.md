@@ -16,6 +16,9 @@ regenere, nunca o HTML final.
   verificar → passar o bastão → aprender), o gate de assumir trabalho
   multi-agente, Duplo Diamante para projetos de design, roteamento de
   arquitetura.
+- `gerenteneuron/` — app local de chat unificado multi-IA. Roda no navegador,
+  sem dependências externas, e escolhe o modelo mais barato capaz de responder
+  bem (ou deixa o usuário escolher manualmente).
 - `MEGABRAIN.md` — a camada de projeto: fases macro (estado → spec →
   implementar → publicar), artefatos, regras de ouro, níveis de adoção.
 - `referencias/` — a camada de execução, carregada sob demanda: anti-slop
@@ -46,7 +49,8 @@ regenere, nunca o HTML final.
 
 1. Instale como skill no seu agente apontando pra este diretório. No Codex,
    use `skills/codex-megabrain/`; nos agentes que consomem o protocolo
-   agnóstico, use `skills/megabrain/`. **Ou:**
+   agnóstico, use `skills/megabrain/`. Para abrir o chat multi-IA local,
+   use `skills/gerenteneuron/`. **Ou:**
 2. Cole `referencias/260810_PROMPT-PORTATIL.md` no início de uma conversa
    com qualquer IA — não depende de arquivo nem de plataforma.
 

@@ -5,7 +5,7 @@ class MockProvider:
     nome = "Mock (validação local)"
 
     @staticmethod
-    def send(mensagem: str, historico: list | None = None):
+    def send(mensagem: str, config: dict | None = None, historico: list | None = None, modelo: str = "mock/validacao-local"):
         resposta = (
             f"GerenteNeuron ativo. Você disse: \"{mensagem}\".\n\n"
             "No momento estou no modo de validação local — nenhuma API externa foi chamada. "

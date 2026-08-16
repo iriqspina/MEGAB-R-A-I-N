@@ -17,6 +17,7 @@ Referências de execução: `referencias/260810_*.md`.
 | Arquivo | Escopo | Editar aqui? |
 |---|---|---|
 | `skills/megabrain/SKILL.md` | Router do `/megabrain` — gates de entrega, multi-agente (Claude+Kimi), roteamento de arquitetura | Sim — é o que dispara |
+| `skills/gerenteneuron/SKILL.md` | Roteador unificado de chat multi-IA local (`/gerenteneuron`) — escolhe modelo por custo/capacidade | Sim |
 | `260810_MEGABRAIN.md` (este) | Camada de projeto: fases macro, artefatos, regras de ouro, níveis de adoção, biblioteca visual pessoal | Sim |
 | `260810_memoria-pessoal.md` | Perfil de identidade (nome, TDAH, formato de resposta obrigatório) — fonte da sincronização entre agentes, nunca sai desta pasta | Sim |
 | `PIPELINE.md` | v2, congelado — mantido por histórico, não recebe mudança nova | Não |

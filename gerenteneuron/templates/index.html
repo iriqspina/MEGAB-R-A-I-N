@@ -25,7 +25,14 @@
     <main class="chat">
       <header class="topbar">
         <div class="topbar-left">
-          <span class="modo-label">Modo</span>
+          <span class="modo-label">Aba</span>
+          <div class="segmented" id="aba-seletor">
+            <button type="button" data-aba="chat" class="active">Chat IA</button>
+            <button type="button" data-aba="gerente">Gerente</button>
+          </div>
+        </div>
+        <div class="topbar-mid" id="chat-controls">
+          <span class="modo-label">Modelo</span>
           <div class="segmented" id="modo-seletor">
             <button type="button" data-modo="auto" class="active">Auto</button>
             <button type="button" data-modo="manual">Manual</button>
@@ -62,23 +69,25 @@
       <h2>Configurar chaves de API</h2>
       <p>As chaves ficam salvas em <code>gerenteneuron/.env</code>, fora do Git.</p>
       <div class="field">
-        <label for="cfg-openai">OpenAI API Key</label>
+        <label for="cfg-openai">OpenAI API Key (ChatGPT)</label>
         <input type="password" id="cfg-openai" data-env="OPENAI_API_KEY" autocomplete="off">
       </div>
       <div class="field">
-        <label for="cfg-anthropic">Anthropic API Key</label>
+        <label for="cfg-anthropic">Anthropic API Key (Claude)</label>
         <input type="password" id="cfg-anthropic" data-env="ANTHROPIC_API_KEY" autocomplete="off">
       </div>
       <div class="field">
-        <label for="cfg-gemini">Gemini API Key</label>
+        <label for="cfg-gemini">Gemini API Key (Google)</label>
         <input type="password" id="cfg-gemini" data-env="GEMINI_API_KEY" autocomplete="off">
       </div>
       <div class="field">
-        <label for="cfg-moonshot">Moonshot (Kimi) API Key</label>
+        <label for="cfg-moonshot">Moonshot API Key (Kimi)</label>
         <input type="password" id="cfg-moonshot" data-env="MOONSHOT_API_KEY" autocomplete="off">
       </div>
+      <div class="testes-status" id="testes-status"></div>
       <div class="dialog-actions">
-        <button type="submit" value="save">Salvar</button>
+        <button type="submit" value="save">Salvar e testar</button>
+        <button type="button" id="btn-testar" type="button">Testar agora</button>
         <button type="submit" value="cancel">Cancelar</button>
       </div>
     </form>

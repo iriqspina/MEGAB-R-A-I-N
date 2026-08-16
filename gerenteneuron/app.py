@@ -8,16 +8,17 @@ Uso:
 """
 
 import json
-import os
 import socketserver
-import sys
 import webbrowser
 from datetime import datetime, timezone
-from http.server import BaseHTTPRequestHandler, SimpleHTTPRequestHandler
+from http.server import BaseHTTPRequestHandler
 from pathlib import Path
 
 from config import carregar_config, raiz_app, caminho_env
-from providers.mock import MockProvider
+from router import route
+from gerente import responder_como_gerente, carregar_projetos
+from connectors import testar_todos
+from eval import registrar_interacao, resumo_feedback, sugerir_melhorias
 
 
 class APIHandler(BaseHTTPRequestHandler):
@@ -40,7 +41,11 @@ class APIHandler(BaseHTTPRequestHandler):
         length = int(self.headers.get("Content-Length", "0"))
         if length == 0:
             return {}
-        raw = self.rfile.read(length).decode("utf-8")
+        raw_bytes = self.rfile.read(length)
+        try:
+            raw = raw_bytes.decode("utf-8")
+        except UnicodeDecodeError:
+            raw = raw_bytes.decode("latin-1")
         return json.loads(raw)
 
     def do_OPTIONS(self):
@@ -70,6 +75,22 @@ class APIHandler(BaseHTTPRequestHandler):
             self._responder_json(200, {"modo": cfg.get("modo", "auto"), "providers": provedores})
             return
 
+        if caminho == "/api/projetos":
+            self._responder_json(200, {"projetos": carregar_projetos()})
+            return
+
+        if caminho == "/api/testar":
+            cfg = carregar_config()
+            self._responder_json(200, {"resultados": testar_todos(cfg)})
+            return
+
+        if caminho == "/api/eval":
+            self._responder_json(200, {
+                "resumo": resumo_feedback(),
+                "sugestoes": sugerir_melhorias(),
+            })
+            return
+
         # Qualquer outro GET é estático: serve templates/index.html ou arquivos de static/.
         if caminho == "/" or caminho == "/index.html":
             self._servir_arquivo(raiz_app / "templates" / "index.html", "text/html; charset=utf-8")
@@ -97,10 +118,46 @@ class APIHandler(BaseHTTPRequestHandler):
                 self._responder_json(400, {"erro": "mensagem vazia"})
                 return
 
-            # Fase 1: provedor mock. Responde sem API key para validação.
-            resultado = MockProvider.send(mensagem, historico)
-            resultado["modo"] = "auto"
+            # Roteamento por custo/capacidade.
+            cfg = carregar_config()
+            modo = body.get("modo", cfg.get("modo", "auto"))
+            if modo not in ("auto", "manual"):
+                modo = "auto"
+            boost = bool(body.get("boost", False))
+            resultado = route(mensagem, modo=modo, modelo_forcado=modelo_forcado, historico=historico, boost=boost)
+            registrar_interacao(mensagem, resultado, aba="chat")
             self._responder_json(200, resultado)
+            return
+
+        if caminho == "/api/gerente":
+            body = self._ler_corpo()
+            mensagem = body.get("mensagem", "").strip()
+            historico = body.get("historico", [])
+            if not mensagem:
+                self._responder_json(400, {"erro": "mensagem vazia"})
+                return
+            resultado = responder_como_gerente(mensagem, historico)
+            registrar_interacao(mensagem, resultado, aba="gerente")
+            self._responder_json(200, resultado)
+            return
+
+        if caminho == "/api/feedback":
+            body = self._ler_corpo()
+            from eval import FEEDBACK_FILE
+            try:
+                registro = {
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "mensagem": body.get("mensagem", ""),
+                    "modelo_usado": body.get("modelo_usado", ""),
+                    "estrategia": body.get("estrategia", ""),
+                    "feedback": body.get("feedback"),
+                }
+                FEEDBACK_FILE.parent.mkdir(parents=True, exist_ok=True)
+                with FEEDBACK_FILE.open("a", encoding="utf-8") as f:
+                    f.write(json.dumps(registro, ensure_ascii=False) + "\n")
+                self._responder_json(200, {"ok": True})
+            except Exception as e:
+                self._responder_json(500, {"erro": str(e)})
             return
 
         if caminho == "/api/config":
@@ -137,7 +194,8 @@ class APIHandler(BaseHTTPRequestHandler):
                 for chave in sorted(novo):
                     saida.append(f'{chave}="{novo[chave]}"')
                 caminho_env.write_text("\n".join(saida) + "\n", encoding="utf-8")
-                self._responder_json(200, {"ok": True})
+                cfg = carregar_config()
+                self._responder_json(200, {"ok": True, "testes": testar_todos(cfg)})
             except Exception as e:
                 self._responder_json(500, {"erro": str(e)})
             return

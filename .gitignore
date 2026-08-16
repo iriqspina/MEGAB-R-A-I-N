@@ -8,3 +8,10 @@ __pycache__/
 # Dados pessoais nunca sobem
 260810_memoria-pessoal.md
 licoes-megabrain.md
+
+# GerenteNeuron: dados locais e credenciais
+gerenteneuron/.env
+gerenteneuron/projetos.json
+gerenteneuron/data/
+gerenteneuron/__pycache__/
+gerenteneuron/**/*.pyc

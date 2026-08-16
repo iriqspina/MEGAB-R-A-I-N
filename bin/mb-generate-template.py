@@ -53,6 +53,7 @@ EXCLUIR = {
     ".mb-aspirador",
     ".mb-backup",
     ".dna-backup",
+    ".claude",
     "__pycache__",
     "260810_VISAO-GERAL.md",
     "PIPELINE.md",
