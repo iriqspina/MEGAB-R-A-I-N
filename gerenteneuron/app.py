@@ -8,6 +8,7 @@ Uso:
 """
 
 import json
+import os
 import socketserver
 import webbrowser
 from datetime import datetime, timezone
@@ -19,6 +20,33 @@ from router import route
 from gerente import responder_como_gerente, carregar_projetos
 from connectors import testar_todos
 from eval import registrar_interacao, resumo_feedback, sugerir_melhorias
+from vault import Vault
+
+
+_vault = Vault()
+
+
+def _aplicar_credenciais_do_vault():
+    """Exporta credenciais do cofre desbloqueado para variáveis de ambiente."""
+    if _vault.is_desbloqueado:
+        for chave, valor in _vault.exportar_env().items():
+            os.environ[chave] = valor
+
+
+def _limpar_credenciais_do_vault():
+    """Remove credenciais do cofre das variáveis de ambiente."""
+    if _vault.existe():
+        try:
+            v = Vault()
+            # Não sabemos a senha; apenas removemos as keys conhecidas do .env example.
+            for chave in [
+                "OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GEMINI_API_KEY", "MOONSHOT_API_KEY",
+                "OPENAI_BASE_URL", "ANTHROPIC_BASE_URL", "GEMINI_BASE_URL", "MOONSHOT_BASE_URL",
+                "OLLAMA_BASE_URL", "GERENTENEURON_MODO",
+            ]:
+                os.environ.pop(chave, None)
+        except Exception:
+            pass
 
 
 class APIHandler(BaseHTTPRequestHandler):
@@ -91,6 +119,13 @@ class APIHandler(BaseHTTPRequestHandler):
             })
             return
 
+        if caminho == "/api/vault/status":
+            self._responder_json(200, {
+                "existe": _vault.existe(),
+                "desbloqueado": _vault.is_desbloqueado,
+            })
+            return
+
         # Qualquer outro GET é estático: serve templates/index.html ou arquivos de static/.
         if caminho == "/" or caminho == "/index.html":
             self._servir_arquivo(raiz_app / "templates" / "index.html", "text/html; charset=utf-8")
@@ -106,6 +141,7 @@ class APIHandler(BaseHTTPRequestHandler):
         self._responder_json(404, {"erro": "rota não encontrada"})
 
     def do_POST(self):
+        global _vault
         caminho = self.path.split("?", 1)[0]
 
         if caminho == "/api/chat":
@@ -139,6 +175,42 @@ class APIHandler(BaseHTTPRequestHandler):
             resultado = responder_como_gerente(mensagem, historico)
             registrar_interacao(mensagem, resultado, aba="gerente")
             self._responder_json(200, resultado)
+            return
+
+        if caminho == "/api/vault/unlock":
+            body = self._ler_corpo()
+            senha = body.get("senha", "")
+            try:
+                _vault.desbloquear(senha)
+                _aplicar_credenciais_do_vault()
+                self._responder_json(200, {"ok": True, "desbloqueado": True})
+            except ValueError:
+                self._responder_json(401, {"ok": False, "erro": "senha incorreta"})
+            except Exception as e:
+                self._responder_json(500, {"ok": False, "erro": str(e)})
+            return
+
+        if caminho == "/api/vault/lock":
+            _vault = Vault()
+            _limpar_credenciais_do_vault()
+            self._responder_json(200, {"ok": True, "desbloqueado": False})
+            return
+
+        if caminho == "/api/vault/forgot":
+            body = self._ler_corpo()
+            recovery = body.get("recovery", "")
+            nova = body.get("nova_senha", "")
+            if len(nova) < 6:
+                self._responder_json(400, {"ok": False, "erro": "nova senha muito curta"})
+                return
+            try:
+                new_key = _vault.redefinir_senha_com_recuperacao(recovery, nova)
+                _aplicar_credenciais_do_vault()
+                self._responder_json(200, {"ok": True, "recovery_novo": new_key[:8] + "..."})
+            except ValueError as e:
+                self._responder_json(401, {"ok": False, "erro": str(e)})
+            except Exception as e:
+                self._responder_json(500, {"ok": False, "erro": str(e)})
             return
 
         if caminho == "/api/feedback":

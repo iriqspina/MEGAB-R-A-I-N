@@ -71,6 +71,7 @@ EXCLUIR_TOPO = {
     "HANDOFF.md",
     "DECISOES.md",
     "RELATORIO.html",
+    "PAINEL-MEGABRAIN.html",
 }
 
 # Duplicatas legadas sem prefixo de data: match EXATO de nome de arquivo

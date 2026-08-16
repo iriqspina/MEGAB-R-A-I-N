@@ -1,5 +1,9 @@
 @echo off
 chcp 65001 >nul
 cd /d "%~dp0"
-python app.py
+if exist ".venv\Scripts\python.exe" (
+  .venv\Scripts\python app.py
+) else (
+  python app.py
+)
 pause
