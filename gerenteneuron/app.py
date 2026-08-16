@@ -1,0 +1,190 @@
+#!/usr/bin/env python3
+"""GerenteNeuron — app local unificado de chat multi-IA.
+
+Roda só com stdlib. Não depende de Flask, Node ou runtime externo.
+Uso:
+    python gerenteneuron/app.py
+    python gerenteneuron/app.py --port 8787
+"""
+
+import json
+import os
+import socketserver
+import sys
+import webbrowser
+from datetime import datetime, timezone
+from http.server import BaseHTTPRequestHandler, SimpleHTTPRequestHandler
+from pathlib import Path
+
+from config import carregar_config, raiz_app, caminho_env
+from providers.mock import MockProvider
+
+
+class APIHandler(BaseHTTPRequestHandler):
+    """Roteia chamadas de API e serve arquivos estáticos."""
+
+    def log_message(self, fmt, *args):
+        # Log silencioso no terminal; o app é para o usuário, não para debug.
+        print(f"[{datetime.now(timezone.utc).isoformat()}] {args[0]} {args[1]}")
+
+    def _responder_json(self, status: int, payload: dict):
+        body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _ler_corpo(self) -> dict:
+        length = int(self.headers.get("Content-Length", "0"))
+        if length == 0:
+            return {}
+        raw = self.rfile.read(length).decode("utf-8")
+        return json.loads(raw)
+
+    def do_OPTIONS(self):
+        self.send_response(204)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.end_headers()
+
+    def do_GET(self):
+        caminho = self.path.split("?", 1)[0]
+
+        if caminho == "/api/health":
+            self._responder_json(200, {"ok": True, "hora": datetime.now(timezone.utc).isoformat()})
+            return
+
+        if caminho == "/api/models":
+            cfg = carregar_config()
+            provedores = []
+            for nome, info in cfg["providers"].items():
+                provedores.append({
+                    "id": nome,
+                    "nome": info["nome"],
+                    "disponivel": info.get("key") is not None or info.get("local", False),
+                    "modelos": info["modelos"],
+                })
+            self._responder_json(200, {"modo": cfg.get("modo", "auto"), "providers": provedores})
+            return
+
+        # Qualquer outro GET é estático: serve templates/index.html ou arquivos de static/.
+        if caminho == "/" or caminho == "/index.html":
+            self._servir_arquivo(raiz_app / "templates" / "index.html", "text/html; charset=utf-8")
+            return
+
+        if caminho.startswith("/static/"):
+            relativo = caminho[len("/static/"):]
+            alvo = raiz_app / "static" / relativo
+            ctype = "text/css; charset=utf-8" if relativo.endswith(".css") else "application/javascript; charset=utf-8"
+            self._servir_arquivo(alvo, ctype)
+            return
+
+        self._responder_json(404, {"erro": "rota não encontrada"})
+
+    def do_POST(self):
+        caminho = self.path.split("?", 1)[0]
+
+        if caminho == "/api/chat":
+            body = self._ler_corpo()
+            mensagem = body.get("mensagem", "").strip()
+            modelo_forcado = body.get("modelo", "auto")
+            historico = body.get("historico", [])
+
+            if not mensagem:
+                self._responder_json(400, {"erro": "mensagem vazia"})
+                return
+
+            # Fase 1: provedor mock. Responde sem API key para validação.
+            resultado = MockProvider.send(mensagem, historico)
+            resultado["modo"] = "auto"
+            self._responder_json(200, resultado)
+            return
+
+        if caminho == "/api/config":
+            body = self._ler_corpo()
+            try:
+                linhas_existentes = []
+                if caminho_env.exists():
+                    linhas_existentes = caminho_env.read_text(encoding="utf-8").splitlines()
+
+                chaves_permitidas = {
+                    "OPENAI_API_KEY", "OPENAI_BASE_URL",
+                    "ANTHROPIC_API_KEY", "ANTHROPIC_BASE_URL",
+                    "GEMINI_API_KEY", "GEMINI_BASE_URL",
+                    "MOONSHOT_API_KEY", "MOONSHOT_BASE_URL",
+                    "OLLAMA_BASE_URL", "GERENTENEURON_MODO",
+                }
+
+                novo = {}
+                for linha in linhas_existentes:
+                    if "=" in linha:
+                        chave, valor = linha.split("=", 1)
+                        chave = chave.strip()
+                        if chave in chaves_permitidas:
+                            novo[chave] = valor.strip()
+
+                for chave, valor in body.items():
+                    if chave in chaves_permitidas:
+                        if valor:
+                            novo[chave] = valor
+                        elif chave in novo:
+                            del novo[chave]
+
+                saida = ["# GerenteNeuron — configuração local (não versionar)"]
+                for chave in sorted(novo):
+                    saida.append(f'{chave}="{novo[chave]}"')
+                caminho_env.write_text("\n".join(saida) + "\n", encoding="utf-8")
+                self._responder_json(200, {"ok": True})
+            except Exception as e:
+                self._responder_json(500, {"erro": str(e)})
+            return
+
+        self._responder_json(404, {"erro": "rota não encontrada"})
+
+    def _servir_arquivo(self, caminho: Path, ctype: str):
+        try:
+            # path containment simples: recusa sair de raiz_app
+            caminho = caminho.resolve()
+            if not str(caminho).startswith(str(raiz_app.resolve())):
+                raise FileNotFoundError()
+            data = caminho.read_bytes()
+            self.send_response(200)
+            self.send_header("Content-Type", ctype)
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+        except FileNotFoundError:
+            self._responder_json(404, {"erro": "arquivo não encontrado"})
+
+
+class ThreadedHTTPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
+    allow_reuse_address = True
+    daemon_threads = True
+
+
+def main():
+    import argparse
+    parser = argparse.ArgumentParser(description="GerenteNeuron — chat multi-IA local")
+    parser.add_argument("--port", type=int, default=8787, help="porta do servidor (padrão: 8787)")
+    parser.add_argument("--no-open", action="store_true", help="não abrir o navegador automaticamente")
+    args = parser.parse_args()
+
+    endereco = ("127.0.0.1", args.port)
+    url = f"http://{endereco[0]}:{endereco[1]}/"
+
+    with ThreadedHTTPServer(endereco, APIHandler) as servidor:
+        print(f"GerenteNeuron rodando em {url}")
+        print("Pressione Ctrl+C para parar.")
+        if not args.no_open:
+            webbrowser.open(url)
+        try:
+            servidor.serve_forever()
+        except KeyboardInterrupt:
+            print("\nGerenteNeuron encerrado.")
+
+
+if __name__ == "__main__":
+    main()

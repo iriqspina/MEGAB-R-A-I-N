@@ -1,9 +1,13 @@
 ---
 name: megabrain
-description: Protocolo de execução multi-agente — gates de entrega anti-slop, Duplo Diamante para projetos de design, roteamento de arquitetura (skill vs script vs subagente), e camada de projeto (fases macro, regras de ouro). Use ao iniciar entrega complexa, passar trabalho de um agente para o outro, ou definir como dois agentes de IA colaboram no mesmo projeto sem pisar um no outro.
+description: Protocolo de execução multi-agente — gates de entrega anti-slop, Duplo Diamante para projetos de design, roteamento de arquitetura (skill vs script vs subagente) e camada de projeto (fases macro, regras de ouro). Use quando o usuário digitar /megabrain ou /metaprotocolo, escrever "megabrain" ou "metaclaude", pedir para "rodar no modo completo" ou "caprichar", abrir ou retomar um projeto com ESTADO.md/HANDOFF.md, passar trabalho de um agente para o outro, iniciar entrega complexa (proposta, deck, peça de cliente, relatório, código), pedir para revisar um prompt/brief/workflow, ou perguntar como evitar respostas genéricas de IA.
 ---
 
 # megabrain — protocolo operacional
+
+**v5.0 · 2026-08-16.** Base: v4.9 do repositório. Mudou: numeração de gates
+consistente com o TL;DR, modo leve/completo explícito, Gate 5 confere a cópia
+que rodou, Gate 7 grava sob autorização permanente, `5b` virou `5.1`.
 
 Protocolo multi-agente e agnóstico de modelo — roda igual em qualquer CLI ou
 chat de IA com acesso a arquivo (Claude Code, Kimi CLI, ou colado direto
@@ -44,10 +48,24 @@ usuário no protocolo. Depois de resolvido, substitua exemplos como
 
 ## TL;DR
 
-`assumir → enquadrar → orçar contexto → gerar → auditar → reparar (1×) → verificar → passar o bastão → registrar`
+`0 assumir → 1 enquadrar → 2 orçar contexto → 3 gerar → 4 auditar (+1 reparo) → 5 verificar e amarrar pontas → 6 passar o bastão → 7 registrar`
 
-Os dois gates que ninguém pula: **4 (auditar)** separa entrega de slop. **7
-(bastão)** é o que impede o outro agente de começar do zero.
+Os dois que ninguém pula: **4 (auditar)** separa entrega de slop; **6
+(bastão)** impede o outro agente de começar do zero.
+
+## Modo leve × modo completo
+
+Escolha antes de começar e diga qual escolheu — protocolo rodado por reflexo
+custa contexto e não melhora nada.
+
+| | Quando | Gates |
+|---|---|---|
+| **Leve** | resposta única, rascunho interno, exploração, nada sai da conversa | 1 · 4 · 5 |
+| **Completo** | vai para cliente, para produção, para o repo, ou outro agente continua | 0 a 7 |
+| **Nenhum** | pergunta rápida, papo, dúvida factual | — |
+
+Subir de leve para completo no meio é permitido e barato. Descer não: se o
+material já saiu, ele já saiu.
 
 ---
 
@@ -288,11 +306,17 @@ redação.
 ## 5. Gate VERIFICAR
 
 - Arquivo abre no app de destino? Formato correto? Convenção de nome
-  consistente?
-- Links/caminhos existem?
+  consistente com o resto do projeto?
+- Links e caminhos existem? **Teste o caminho, não confie na citação.**
 - Números conferem (recalcule, não copie)?
 - Datas conferidas contra hoje?
 - Contradiz algo já registrado em `DECISOES.md`?
+
+**Se o que você auditou é um protocolo, skill, plugin ou script versionado:**
+confira o arquivo que o agente **realmente carregou** — tamanho, data e hash —
+contra a fonte no repositório. Repo limpo não prova protocolo funcionando; a
+cópia instalada pode ter meses de deriva. Este gate existe porque essa falha
+já aconteceu com o próprio megabrain.
 
 Alto risco (cliente, dinheiro, prazo público): delegue a verificação a um
 subagente — ou **ao outro modelo** — passando **só o artefato e a rubrica**,
@@ -300,9 +324,7 @@ sem o histórico. Contexto zero é a característica útil, não a limitação.
 
 Rubricas prontas: `referencias/260810_evaluation-gates.md`
 
----
-
-## 5b. Gate AMARRAR PONTAS
+### 5.1 Amarrar pontas — antes de qualquer coisa sair
 
 Antes de uma aprovação humana, envio externo, fechamento semanal ou handoff,
 varra estado, tracker, decisões e fontes por dúvida aberta, número velho,
@@ -321,10 +343,12 @@ humana.
 Antes de encerrar a sessão, sempre. Não é opcional e não é resumo bonito —
 é o insumo do próximo agente.
 
-1. **Esgote execução autônoma antes de qualquer pedido ao usuário.** Rode
-   `/conclusao-megabrain` e tente resolver sozinho o que falta (automação local,
-   ferramentas já logadas, documentação segura de acesso). Só peça ao usuário
-   o que realmente depender dele — e peça agrupado, de uma vez só.
+1. **Esgote execução autônoma antes de qualquer pedido ao usuário.** Se a
+   skill `/conclusao-megabrain` estiver instalada nesta máquina, rode. Se não
+   estiver — ela não faz parte deste pacote —, faça o equivalente na mão:
+   liste o que falta, resolva sozinho tudo que for automação local ou
+   ferramenta já logada, e leve ao usuário só o que depende dele, agrupado
+   numa pergunta só.
 2. Reescreva `ESTADO.md` (5 linhas, sobrescreve).
 3. Reescreva `HANDOFF.md`: o que fez, o que ficou aberto, o próximo passo
    concreto, arquivos tocados, e `TRAVADO_POR: livre`.
@@ -336,7 +360,7 @@ Antes de encerrar a sessão, sempre. Não é opcional e não é resumo bonito �
    - **Antes de `git push`, confirme com o usuário.** Não suba prioritariamente; só empurre se ele aprovar ou se já tiver autorização explícita permanente para este repo.
    - Se este trabalho alterou arquivos em `<MEGABRAIN_ROOT>/`, rode `python "<MEGABRAIN_ROOT>/bin/mb-sync-projeto-para-central.py" --projeto <pasta-do-projeto>` para subir a versão do projeto para a central, ou deixe claro no `HANDOFF.md` que a central ficou mais nova e os projetos devem sincronizar no próximo `Gate 0`.
 6. **Propagação do megabrain core:**
-   - Se você alterou `<MEGABRAIN_ROOT>/skills/megabrain/SKILL.md`, `MEGABRAIN.md`, `260810_MEGABRAIN.md`, `referencias/` ou `VERSAO.txt`, a central ficou mais nova que os projetos.
+   - Se você alterou `<MEGABRAIN_ROOT>/skills/megabrain/SKILL.md`, `MEGABRAIN.md`, `referencias/` ou `VERSAO.txt`, a central ficou mais nova que os projetos.
    - Antes de encerrar, rode `mb-check-version.py` nos projetos ativos para propagar a versão central. Se um projeto estiver mais novo, pare e pergunte ao usuário antes de sobrescrever.
    - Se não puder rodar nos projetos, anote no `HANDOFF.md` que a sincronização é obrigatória na próxima sessão.
 
@@ -347,8 +371,10 @@ verbo e objeto.
 
 ## 7. Gate APRENDER
 
-Ao fim de tarefa não-trivial, **proponha a entrada já escrita** e peça só
-confirmação.
+Ao fim de tarefa não-trivial, escreva a entrada. Se o dono desta instalação
+já deu autorização permanente para registrar lições, **grave direto** — não
+pergunte "quer que eu registre?", porque a pergunta custa mais que a linha.
+Sem autorização declarada, apresente a entrada pronta e peça só o "ok".
 
 ```
 ## YYMMDD — <contexto em até 5 palavras>
@@ -420,6 +446,10 @@ Todas em `referencias/`.
 | `260811_kimi-handoff.md` | Tarefa bateu numa parede do sandbox (pasta home, caminho não conectado, delete/rename bloqueado) — empacotar pro Kimi |
 | `260815_pipeline-governanca-aprendizado.md` | Cliente, dinheiro, aprovações, Amarrador, Contraditor, Teammates, momentum ou aprendizado entre projetos |
 
+Painel de leitura e atalhos (todos os arquivos acima, com hash e botões de
+comando): `PAINEL-MEGABRAIN.html`, gerado por `bin/mb-painel.py`. Serve o
+humano, não o agente — o agente continua lendo os `.md` sob demanda.
+
 Camada de projeto (fases macro, artefatos, regras de ouro, níveis de
 adoção): `MEGABRAIN.md`. O arquivo de identidade que essa sincronização
 usa como fonte é local ao seu projeto — nunca faz parte deste pacote.
@@ -447,3 +477,9 @@ usa como fonte é local ao seu projeto — nunca faz parte deste pacote.
    chato; em arquivo binário, é perda de trabalho. Respeite `TRAVADO_POR`.
 10. **`DECISOES.md` reescrito.** É append-only. Reescrever apaga o registro
     de por que a alternativa foi descartada.
+11. **Auditar o repo e achar que auditou o protocolo.** A cópia que o agente
+    carregou pode ser outra, mais velha, com caminhos mortos. Confira hash e
+    data antes de julgar — ver Gate 5.
+12. **Duas cópias do mesmo arquivo tratadas como duas fontes.** Duplicata
+    byte a byte hoje é fork silencioso na primeira edição. Uma fonte, o
+    resto é cópia gerada.

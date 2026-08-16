@@ -21,7 +21,6 @@ CENTRAL_DEFAULT = "<MEGABRAIN_ROOT>"
 
 MAPEAMENTO = [
     ("MEGABRAIN/MEGABRAIN.md", "MEGABRAIN.md"),
-    ("MEGABRAIN/260810_MEGABRAIN.md", "260810_MEGABRAIN.md"),
     ("MEGABRAIN/skills/megabrain/SKILL.md", "skills/megabrain/SKILL.md"),
     ("MEGABRAIN/referencias", "referencias"),
     ("MEGABRAIN/VERSAO.txt", "VERSAO.txt"),

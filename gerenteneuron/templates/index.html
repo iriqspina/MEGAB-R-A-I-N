@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GerenteNeuron — chat multi-IA</title>
+  <link rel="stylesheet" href="/static/gerenteneuron.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand__name">GerenteNeuron</span>
+        <span class="brand__sub">roteador multi-IA</span>
+      </div>
+      <button class="new-chat" id="btn-nova" type="button">+ Nova conversa</button>
+      <nav class="history" id="history" aria-label="Histórico de conversas">
+        <div class="history-empty">Nenhuma conversa ainda</div>
+      </nav>
+      <div class="sidebar-foot">
+        <button class="settings-btn" id="btn-config" type="button">Configurar chaves</button>
+      </div>
+    </aside>
+
+    <main class="chat">
+      <header class="topbar">
+        <div class="topbar-left">
+          <span class="modo-label">Modo</span>
+          <div class="segmented" id="modo-seletor">
+            <button type="button" data-modo="auto" class="active">Auto</button>
+            <button type="button" data-modo="manual">Manual</button>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <label class="modelo-label" for="modelo-select">Modelo</label>
+          <select id="modelo-select" disabled>
+            <option value="auto">Automático</option>
+          </select>
+          <span class="status-dot" id="status-dot" title="Desconhecido"></span>
+        </div>
+      </header>
+
+      <section class="messages" id="messages" aria-live="polite">
+        <div class="empty-state">
+          <h1>Um chat para todas as IAs.</h1>
+          <p>O GerenteNeuron escolhe o modelo mais barato capaz de responder bem. Você pode trocar quando quiser.</p>
+        </div>
+      </section>
+
+      <footer class="composer">
+        <div class="composer-inner">
+          <textarea id="input" rows="1" placeholder="Escreva sua mensagem..." aria-label="Mensagem"></textarea>
+          <button id="btn-send" type="button" aria-label="Enviar">→</button>
+        </div>
+        <div class="composer-meta" id="composer-meta">Modo automático · escolha o modelo pelo custo/capacidade</div>
+      </footer>
+    </main>
+  </div>
+
+  <dialog class="config-dialog" id="config-dialog">
+    <form method="dialog">
+      <h2>Configurar chaves de API</h2>
+      <p>As chaves ficam salvas em <code>gerenteneuron/.env</code>, fora do Git.</p>
+      <div class="field">
+        <label for="cfg-openai">OpenAI API Key</label>
+        <input type="password" id="cfg-openai" data-env="OPENAI_API_KEY" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="cfg-anthropic">Anthropic API Key</label>
+        <input type="password" id="cfg-anthropic" data-env="ANTHROPIC_API_KEY" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="cfg-gemini">Gemini API Key</label>
+        <input type="password" id="cfg-gemini" data-env="GEMINI_API_KEY" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="cfg-moonshot">Moonshot (Kimi) API Key</label>
+        <input type="password" id="cfg-moonshot" data-env="MOONSHOT_API_KEY" autocomplete="off">
+      </div>
+      <div class="dialog-actions">
+        <button type="submit" value="save">Salvar</button>
+        <button type="submit" value="cancel">Cancelar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="/static/gerenteneuron.js"></script>
+</body>
+</html>

@@ -51,7 +51,6 @@ CENTRAL_DEFAULT_PATH = Path(CENTRAL_DEFAULT).resolve()
 
 MAPEAMENTO = [
     ("MEGABRAIN.md", "MEGABRAIN.md"),
-    ("260810_MEGABRAIN.md", "260810_MEGABRAIN.md"),
     ("skills/megabrain/SKILL.md", "skills/megabrain/SKILL.md"),
     ("referencias", "referencias"),
     ("VERSAO.txt", "VERSAO.txt"),

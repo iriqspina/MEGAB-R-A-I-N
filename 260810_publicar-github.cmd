@@ -1,74 +1,54 @@
 @echo off
 setlocal
 chcp 65001 >nul
+rem Regenera o pacote publico e publica no clone local do repositorio GitHub.
+
 set "FONTE=%~dp0260810_github-export"
 set "CLONE=%~dp0_github-repo-local"
-set "REPO=https://github.com/iriqspina/MEGAB-R-A-I-N.git"
 
-echo.
-echo  ================================================================
-echo   MEGABRAIN - publicar pacote sanitizado no GitHub
-echo  ================================================================
-echo.
-echo  Isto vai:
-echo   1. Clonar (ou atualizar) %REPO%
-echo   2. REMOVER .megabrain\memoria-global.md do repo (dado pessoal)
-echo   3. Copiar o conteudo de 260810_github-export\ por cima
-echo   4. Mostrar o que vai ser commitado e PARAR antes de enviar
-echo.
-echo  O commit antigo com dado pessoal continua no HISTORICO do git
-echo  (nao apagado por padrao). Se quiser limpar o historico tambem,
-echo  isso e um passo separado (reescreve hash de commit) - nao roda
-echo  aqui sem voce pedir explicitamente.
-echo.
-pause
-
-if not exist "%CLONE%" (
-  echo Clonando pela primeira vez...
-  git clone "%REPO%" "%CLONE%"
-) else (
-  echo Atualizando clone existente...
-  pushd "%CLONE%"
-  git pull
-  popd
+set "PY=python"
+where python >nul 2>nul || (
+  echo.
+  echo  Python nao esta no PATH deste computador.
+  set /p "PY=Cole o caminho do python.exe (ou deixe vazio para cancelar): "
 )
+if "%PY%"=="" (echo  Cancelado. & pause & exit /b 1)
 
-if not exist "%CLONE%\.git" (
-  echo FALHOU: nao consegui clonar/atualizar. Confira se voce esta logado
-  echo no git deste computador ^(git credential manager^) e tente de novo.
+echo.
+echo == Gerando pacote publico (mb-generate-template.py)...
+"%PY%" "%~dp0bin\mb-generate-template.py"
+if errorlevel 1 (
+  echo  ERRO ao gerar o pacote publico. Abortando.
   pause
   exit /b 1
 )
 
-pushd "%CLONE%"
-
-if exist ".megabrain\memoria-global.md" (
-  echo Removendo arquivo pessoal do repo...
-  git rm -r --cached .megabrain >nul 2>&1
-  rmdir /s /q .megabrain 2>nul
+if not exist "%CLONE%\.git" (
+  echo.
+  echo  Clone local do repositorio nao encontrado em:
+  echo    %CLONE%
+  echo  Rode "git clone" manualmente antes de usar este script.
+  pause
+  exit /b 1
 )
 
-echo Copiando pacote sanitizado...
-robocopy "%FONTE%" "%CLONE%" /MIR /XD .git /R:1 /W:1 >nul
+echo.
+echo == Sincronizando %FONTE% -^> %CLONE%
+robocopy "%FONTE%" "%CLONE%" /MIR /XD .git /NFL /NDL /NJH /NJS >nul
 
+cd /d "%CLONE%"
 git add -A
 
-echo.
-echo  ----------------------------------------------------------------
-echo   Isto sera commitado (confira antes de continuar):
-echo  ----------------------------------------------------------------
-git status
-echo.
-echo  Proximo passo ENVIA pro GitHub PUBLICO. Confira a lista acima -
-echo  nao deve aparecer nenhum arquivo com nome pessoal ou memoria-global.
-echo.
-pause
-
-git commit -m "megabrain v3.1: pacote sanitizado (gates, multi-agente, sync de identidade sem dado pessoal); remove memoria-global.md do HEAD"
-git push origin main
+for /f "usebackq delims=" %%V in ("%CLONE%\VERSAO.txt") do (set "MBVER=%%V" & goto :temversao)
+:temversao
+git commit -m "megabrain: %MBVER%"
+if errorlevel 1 (
+  echo.
+  echo  Nada para commitar ou commit falhou. Verifique "git status".
+  pause
+  exit /b 1
+)
 
 echo.
-echo  Pronto. Confira em %REPO%
-echo.
-popd
+echo Commit criado. Push continua manual: "git push" quando decidir publicar.
 pause

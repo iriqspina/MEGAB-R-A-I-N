@@ -108,12 +108,9 @@ NOS = [
     {"id": "g4", "label": "4 · Auditar", "grupo": "gate", "x": 640, "y": 180,
      "desc": "Anti-slop: léxico, estrutura, substância, compressão.",
      "detalhe": "Releia e reescreva. Corte léxico banido, teste 'e daí?', declare trade-offs e comprima 30% sem perda."},
-    {"id": "g5", "label": "5 · Reparar", "grupo": "gate", "x": 780, "y": 180,
-     "desc": "Uma rodada só de autocrítica.",
-     "detalhe": "Loop infinito de autocrítica homogeneiza o texto. Se uma rodada não resolver, volte ao enquadramento."},
-    {"id": "g6", "label": "6 · Verificar", "grupo": "gate", "x": 920, "y": 180,
-     "desc": "Arquivo abre? Números batem? Links funcionam?",
-     "detalhe": "Alto risco: delegue a um subagente ou outro modelo sem histórico."},
+    {"id": "g5", "label": "5 · Verificar", "grupo": "gate", "x": 780, "y": 180,
+     "desc": "Arquivo abre? Números batem? Links existem?",
+     "detalhe": "Teste o caminho, não confie na citação. Se o alvo é protocolo ou script versionado, compare hash e data da cópia que rodou com a fonte. Depois amarre as pontas: no máximo 5 perguntas, cada uma com evidência, impacto e recomendação. Alto risco: delegue a um subagente ou outro modelo, sem histórico."},
 
     # Ferramentas/métodos conectados
     {"id": "aspirador", "label": "Aspirador", "grupo": "ferramenta", "x": 120, "y": 340,
@@ -139,10 +136,10 @@ NOS = [
      "detalhe": "Para projetos de design. Não misture modos divergente/convergente. Trave grade, tipografia, paleta e espaçamento antes de compor."},
 
     # Bastão e aprender ficam abaixo dos gates
-    {"id": "g7", "label": "7 · Passar o Bastão", "grupo": "gate", "x": 320, "y": 500,
+    {"id": "g6", "label": "6 · Passar o Bastão", "grupo": "gate", "x": 320, "y": 500,
      "desc": "Reescreve ESTADO.md, HANDOFF.md, anexa DECISOES.md.",
      "detalhe": "Handoff com verbo e objeto. Próximo agente não começa do zero."},
-    {"id": "g8", "label": "8 · Aprender", "grupo": "gate", "x": 680, "y": 500,
+    {"id": "g7", "label": "7 · Aprender", "grupo": "gate", "x": 680, "y": 500,
      "desc": "Registra lição no formato GATILHO/LIÇÃO/ATALHO.",
      "detalhe": "Lição 3× vira regra em MEGABRAIN.md ou skill própria."},
 ]
@@ -159,7 +156,6 @@ CONEXOES = [
     ("g1", "duplo"),
     ("g3", "relatorio"),
     ("g6", "g7"),
-    ("g7", "g8"),
 ]
 
 
@@ -463,7 +459,7 @@ def gerar_html(central: Path, versao: str, data_iso: str) -> str:
     <div class="card-grid">
       <div class="card">
         <h4>Gates de entrega</h4>
-        <p>Assumir → Enquadrar → Orçar → Gerar → Auditar → Reparar → Verificar → Passar o Bastão → Aprender.</p>
+        <p>0 Assumir → 1 Enquadrar → 2 Orçar contexto → 3 Gerar → 4 Auditar (+1 reparo) → 5 Verificar e amarrar pontas → 6 Passar o bastão → 7 Registrar.</p>
       </div>
       <div class="card">
         <h4>mb-aspirador.py</h4>

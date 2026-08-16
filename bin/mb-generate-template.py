@@ -69,6 +69,7 @@ EXCLUIR_TOPO = {
     "ESTADO.md",
     "HANDOFF.md",
     "DECISOES.md",
+    "RELATORIO.html",
 }
 
 # Duplicatas legadas sem prefixo de data: match EXATO de nome de arquivo
@@ -136,18 +137,6 @@ def sanitizar(texto):
     return texto
 
 
-def remover_blocos_locais(conteudo):
-    """Remove blocos explicitamente locais antes de montar o pacote público."""
-    inicio = "<!-- MEGABRAIN:" + "LOCAL-ONLY:START -->"
-    fim = "<!-- MEGABRAIN:" + "LOCAL-ONLY:END -->"
-    return re.sub(
-        re.escape(inicio) + r".*?" + re.escape(fim) + r"\s*",
-        "",
-        conteudo,
-        flags=re.DOTALL,
-    )
-
-
 def remover_secoes_pessoais(conteudo):
     """Remove seções que citam projetos pessoais do usuário."""
     # Remove seção 8 (roteamento de projetos pessoais) e 8b (skills derivadas)
@@ -187,7 +176,6 @@ def copiar_sanitizando(src, dst):
             print(f"ERRO ao ler {src}: {e}")
             return False
         conteudo = sanitizar(conteudo)
-        conteudo = remover_blocos_locais(conteudo)
         if src.endswith("MEGABRAIN.md") or src.endswith("260810_MEGABRAIN.md"):
             conteudo = remover_secoes_pessoais(conteudo)
         if not u.atomic_write_text(dst_path, conteudo):

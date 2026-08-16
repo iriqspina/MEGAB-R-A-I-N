@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import getpass
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -131,11 +132,22 @@ def write_handoff(path: Path, novo_bloco: str | None, texto_atual: str) -> bool:
 
 
 def base_dir_validada(args_dir: str) -> Path:
-    """Resolve e valida --dir, impedindo path traversal acidental."""
-    try:
-        return u.resolve_within(args_dir, Path(".").resolve())
-    except ValueError as e:
-        u.die(str(e))
+    """Resolve --dir e exige que seja uma pasta existente.
+
+    O projeto quase nunca fica dentro da pasta do megabrain: o comando
+    documentado e `python <MEGABRAIN_ROOT>/bin/mb-sync.py --dir <projeto>`,
+    rodado de qualquer lugar. Exigir contencao no diretorio atual (v4.9)
+    quebrava exatamente esse uso.
+
+    A trava so escreve HANDOFF.md dentro da pasta que o usuario apontou,
+    entao nao ha superficie de traversal a proteger aqui.
+    """
+    alvo = Path(args_dir).expanduser().resolve()
+    if not alvo.exists():
+        u.die(f"pasta nao encontrada: {alvo}")
+    if not alvo.is_dir():
+        u.die(f"--dir precisa ser uma pasta, nao arquivo: {alvo}")
+    return alvo
 
 
 def cmd_status(args) -> int:
@@ -195,8 +207,12 @@ def cmd_lock(args) -> int:
 
         usuario = args.usuario
         if usuario is None:
-            # Tenta detectar do arquivo de identidade na pasta central/projeto.
+            # 1) arquivo de identidade na pasta do projeto/central.
             usuario = u.detectar_usuario(base / u.IDENTIDADE_DEFAULT)
+            # 2) sem identidade: usa o login do SO. Gravar "<USUARIO>" no
+            #    HANDOFF nao identifica ninguem e quebra a trava entre pessoas.
+            if usuario == "<USUARIO>":
+                usuario = getpass.getuser() or "desconhecido"
         ate = agora + dt.timedelta(hours=args.horas)
         bloco = lock_block(usuario, args.agente, ate, args.escopo)
         if not write_handoff(caminho, bloco, texto):

@@ -1,6 +1,6 @@
 @echo off
 REM mb-check-version.cmd — checa e sincroniza o megabrain de um projeto
-REM Uso: mb-check-version.cmd "<PROJETOS_ROOT>/<Projeto>" [--dry-run] [--force]
+REM Uso: mb-check-version.cmd "caminho\do\projeto" [--dry-run] [--force]
 
 if "%~1"=="" (
     echo Uso: %~nx0 "caminho\do\projeto" [--dry-run] [--force]
@@ -19,5 +19,5 @@ shift
 goto loop
 
 :run
-python "<MEGABRAIN_ROOT>\bin\mb-check-version.py" --projeto "%PROJETO%" %ARGS%
+python "%~dp0mb-check-version.py" --projeto "%PROJETO%" %ARGS%
 exit /b %ERRORLEVEL%

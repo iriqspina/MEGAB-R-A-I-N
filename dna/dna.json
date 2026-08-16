@@ -2,8 +2,8 @@
   "@context": "https://schema.org",
   "@type": "TechArticle",
   "name": "MEGABRAIN — Relatório DNA",
-  "version": "v4.5 · 2026-08-14",
-  "dateCreated": "2026-08-14T23:17:58.553056",
+  "version": "v5.1 · 2026-08-16",
+  "dateCreated": "2026-08-16T16:17:03.569460",
   "description": "DNA completo do protocolo megabrain: gates, ferramentas, métodos e instruções para replicação.",
   "about": {
     "@type": "SoftwareApplication",
@@ -15,8 +15,7 @@
       "2 · Orçar Contexto",
       "3 · Gerar",
       "4 · Auditar",
-      "5 · Reparar",
-      "6 · Verificar",
+      "5 · Verificar",
       "Aspirador",
       "mb-sync.py",
       "mb-check-version.py",
@@ -24,8 +23,8 @@
       "Relatório de projeto",
       "mb-sync-memoria.py",
       "Duplo Diamante",
-      "7 · Passar o Bastão",
-      "8 · Aprender"
+      "6 · Passar o Bastão",
+      "7 · Aprender"
     ]
   },
   "hasPart": [
@@ -61,13 +60,8 @@
     },
     {
       "@type": "Thing",
-      "name": "5 · Reparar",
-      "description": "Uma rodada só de autocrítica."
-    },
-    {
-      "@type": "Thing",
-      "name": "6 · Verificar",
-      "description": "Arquivo abre? Números batem? Links funcionam?"
+      "name": "5 · Verificar",
+      "description": "Arquivo abre? Números batem? Links existem?"
     },
     {
       "@type": "Thing",
@@ -106,12 +100,12 @@
     },
     {
       "@type": "Thing",
-      "name": "7 · Passar o Bastão",
+      "name": "6 · Passar o Bastão",
       "description": "Reescreve ESTADO.md, HANDOFF.md, anexa DECISOES.md."
     },
     {
       "@type": "Thing",
-      "name": "8 · Aprender",
+      "name": "7 · Aprender",
       "description": "Registra lição no formato GATILHO/LIÇÃO/ATALHO."
     }
   ]

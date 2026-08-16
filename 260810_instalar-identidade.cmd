@@ -1,36 +1,34 @@
 @echo off
 setlocal
 chcp 65001 >nul
+rem Instala/copia o arquivo de identidade pessoal nos 4 destinos (Claude/Gemini/Kimi/Kimi Code).
+rem Edite SO a fonte. Nunca edite as copias.
+
 set "FONTE=%~dp0260810_memoria-pessoal.md"
 set "SCRIPT=%~dp0bin\mb-sync-memoria.py"
 
-echo.
-echo  ================================================================
-echo   MEGABRAIN - instalar identidade global (Claude, Kimi, Gemini)
-echo  ================================================================
-echo.
-echo  Isto escreve seu perfil (nome, formato de resposta, preferencias)
-echo  dentro de:
-echo    %%USERPROFILE%%\.claude\CLAUDE.md
-echo    %%USERPROFILE%%\.kimi\AGENTS.md
-echo    %%USERPROFILE%%\.gemini\GEMINI.md
-echo  entre marcadores proprios - nao apaga o que ja existir nesses
-echo  arquivos, so acrescenta/atualiza o bloco do MEGABRAIN. Roda de
-echo  novo sempre que voce editar 260810_memoria-pessoal.md.
-echo.
-pause
+set "PY=python"
+where python >nul 2>nul || (
+  echo.
+  echo  Python nao esta no PATH deste computador.
+  set /p "PY=Cole o caminho do python.exe (ou deixe vazio para cancelar): "
+)
+if "%PY%"=="" (echo  Cancelado. & pause & exit /b 1)
 
-where python >nul 2>nul
-if errorlevel 1 (
-  echo Python nao encontrado no PATH. Instale python ou rode o comando
-  echo abaixo manualmente trocando "python" pelo caminho do seu python.exe.
+if not exist "%FONTE%" (
+  echo.
+  echo  Arquivo de identidade nao encontrado:
+  echo    %FONTE%
+  echo  Crie-o na raiz do megabrain antes de instalar.
   pause
   exit /b 1
 )
 
-python "%SCRIPT%" --source "%FONTE%" --target all --modo conteudo --dir "%USERPROFILE%"
+"%PY%" "%SCRIPT%" --source "%FONTE%" --target claude --modo conteudo --dir "%USERPROFILE%\.claude"
+"%PY%" "%SCRIPT%" --source "%FONTE%" --target gemini --modo conteudo --dir "%USERPROFILE%\.gemini"
+"%PY%" "%SCRIPT%" --source "%FONTE%" --target kimi   --modo conteudo --dir "%USERPROFILE%\.kimi"
+"%PY%" "%SCRIPT%" --source "%FONTE%" --target kimi   --modo conteudo --dir "%USERPROFILE%\.kimi-code"
 
 echo.
-echo  Pronto. Confira os 3 arquivos acima se quiser ver o resultado.
-echo.
+echo Pronto. Feche e reabra Claude Code / Kimi para recarregar.
 pause
