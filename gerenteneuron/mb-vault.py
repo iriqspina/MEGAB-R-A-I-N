@@ -13,7 +13,7 @@ import argparse
 import getpass
 import sys
 
-from vault import Vault
+from vault import Vault, destino_padrao_recuperacao, aviso_recuperacao_exposta
 
 
 def main():
@@ -37,6 +37,10 @@ def main():
 
     args = parser.parse_args()
 
+    aviso = aviso_recuperacao_exposta()
+    if aviso:
+        print(aviso, "\n")
+
     v = Vault()
     if not v.existe() and args.cmd != "setup":
         print("Cofre não existe. Rode setup-vault.py primeiro.")
@@ -50,9 +54,9 @@ def main():
             return 1
         try:
             new_key = v.redefinir_senha_com_recuperacao(args.recovery, nova)
-            print("Senha redefinida. Nova chave de recuperação gerada.")
-            print(f"Salva em vault/recovery.key")
-            print(new_key[:8] + "...")
+            print("Senha redefinida. A chave antiga foi queimada e outra foi gerada.")
+            print(f"Salva em: {getattr(v, 'destino_recuperacao', destino_padrao_recuperacao())}")
+            print("Conferência:", new_key[:8] + "...")
         except ValueError as e:
             print(f"Erro: {e}")
             return 1

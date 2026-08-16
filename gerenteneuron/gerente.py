@@ -1,7 +1,28 @@
 """Gerente geral — roteia pedidos do usuário para projetos/skills ativas."""
 
 import json
+import re
+import unicodedata
 from pathlib import Path
+
+
+def _normalizar(texto: str) -> str:
+    """Minúsculas, sem acento, com espaço nas bordas para casar palavra inteira."""
+    texto = unicodedata.normalize("NFD", (texto or "").lower())
+    texto = "".join(c for c in texto if unicodedata.category(c) != "Mn")
+    texto = re.sub(r"[^a-z0-9\-\s]", " ", texto)
+    return " " + re.sub(r"\s+", " ", texto).strip() + " "
+
+
+def _casa(termo: str, texto_norm: str) -> bool:
+    """Casa palavra inteira.
+
+    Com `termo in texto` cru, um projeto chamado 'A' casava com 'bom dia' e a
+    keyword 'api' casava dentro de 'rapidez'. O gerente apontava a skill errada
+    com cara de certeza.
+    """
+    termo = _normalizar(termo).strip()
+    return bool(termo) and f" {termo} " in texto_norm
 
 
 raiz_app = Path(__file__).resolve().parent
@@ -20,17 +41,17 @@ def carregar_projetos() -> list[dict]:
 
 def identificar_projeto(mensagem: str, projetos: list[dict]) -> dict | None:
     """Escolhe o projeto mais provável com base em palavras-chave."""
-    texto = mensagem.lower()
+    texto = _normalizar(mensagem)
     melhor = None
     melhor_score = 0
 
     for p in projetos:
         score = 0
         for kw in p.get("keywords", []):
-            if kw.lower() in texto:
+            if _casa(kw, texto):
                 score += 1
         # Bônus se o nome do projeto aparece literalmente.
-        if p["nome"].lower() in texto or p["id"].lower() in texto:
+        if _casa(p.get("nome", ""), texto) or _casa(p.get("id", ""), texto):
             score += 3
         if score > melhor_score:
             melhor_score = score
@@ -44,12 +65,12 @@ def identificar_projeto(mensagem: str, projetos: list[dict]) -> dict | None:
 
 def identificar_intencao(mensagem: str) -> str:
     """Classifica o que o usuário quer fazer."""
-    texto = mensagem.lower()
-    if any(w in texto for w in ["onde estamos", "status", "estado", "resumo", "como ta", "como está"]):
+    texto = _normalizar(mensagem)
+    if any(w in texto for w in ["onde estamos", "status", "estado", "resumo", "como ta", "como esta"]):
         return "status"
-    if any(w in texto for w in ["faz", "fazer", "atualiza", "atualizar", "muda", "mudar", "implementa", "cria", "criar", "ajusta", "ajustar"]):
+    if any(f" {w} " in texto for w in ["faz", "fazer", "atualiza", "atualizar", "muda", "mudar", "implementa", "cria", "criar", "ajusta", "ajustar"]):
         return "acao"
-    if any(w in texto for w in ["qual", "quais", "como", "por que", "explica", "explique"]):
+    if any(f" {w} " in texto for w in ["qual", "quais", "como", "por que", "explica", "explique"]):
         return "pergunta"
     return "geral"
 

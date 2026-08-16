@@ -4,6 +4,14 @@ import json
 import urllib.error
 import urllib.request
 
+import precos
+
+
+# Heurística de token para português. Tokenizadores BPE quebram palavra
+# acentuada e sufixo longo em mais de um token; medições em PT ficam em torno
+# de 1,5–1,8 token por palavra. Usada só quando a API não devolve 'usage'.
+TOKENS_POR_PALAVRA_PT = 1.6
+
 
 def http_post_json(url: str, headers: dict, payload: dict, timeout: int = 60) -> dict:
     """Faz POST JSON e retorna dict; em erro, retorna dict com campo 'erro'."""
@@ -22,7 +30,7 @@ def http_post_json(url: str, headers: dict, payload: dict, timeout: int = 60) ->
         try:
             detail = json.loads(body)
             return {"erro": f"HTTP {e.code}: {detail}"}
-        except Exception:
+        except ValueError:
             return {"erro": f"HTTP {e.code}: {body[:400]}"}
     except Exception as e:
         return {"erro": str(e)}
@@ -33,13 +41,21 @@ def http_get_json(url: str, headers: dict | None = None, timeout: int = 10) -> d
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             return json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        body = e.read().decode("utf-8", errors="replace")
+        return {"erro": f"HTTP {e.code}: {body[:400]}"}
     except Exception as e:
         return {"erro": str(e)}
 
 
 def estimar_tokens_por_palavras(texto: str) -> int:
-    """Heurística simples: ~0.75 tokens por palavra em português."""
-    return max(1, int(len(texto.split()) * 1.0))
+    """Estimativa de tokens a partir da contagem de palavras (fallback)."""
+    return max(1, int(len(texto.split()) * TOKENS_POR_PALAVRA_PT))
+
+
+def estimar_custo(provider: str, modelo: str, tok_in: int, tok_out: int) -> float:
+    """Custo em USD via pricing.json — tabela única para todos os provedores."""
+    return precos.custo(provider, modelo, tok_in, tok_out)
 
 
 def resposta_padrao(
@@ -68,7 +84,7 @@ def historico_para_openai(historico: list[dict] | None, mensagem: str) -> list[d
         for h in historico:
             role = h.get("role", "user")
             content = h.get("content", "")
-            if role in ("user", "assistant", "system"):
+            if role in ("user", "assistant", "system") and content:
                 msgs.append({"role": role, "content": content})
     msgs.append({"role": "user", "content": mensagem})
     return msgs

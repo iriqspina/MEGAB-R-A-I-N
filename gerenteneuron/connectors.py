@@ -1,6 +1,20 @@
 """Testes de conectividade para cada provedor de IA."""
 
+import precos
 from providers.base import http_get_json, http_post_json
+
+
+def _modelo_mais_barato(provider: str, padrao: str) -> str:
+    """Usa o modelo mais barato do provedor para o ping de conectividade.
+
+    Antes o teste da Anthropic carregava um ID fixo que divergia da tabela — o
+    teste passava a falhar sozinho quando o modelo saía de linha, e o usuário
+    lia isso como 'minha key está errada'.
+    """
+    candidatos = [m for m in precos.modelos() if m["provider"] == provider]
+    if not candidatos:
+        return padrao
+    return min(candidatos, key=precos.custo_ponderado)["api_id"]
 
 
 def testar_openai(config: dict) -> dict:
@@ -24,7 +38,7 @@ def testar_anthropic(config: dict) -> dict:
         return {"ok": False, "erro": "API key não configurada"}
     url = f"{base_url}/v1/messages"
     payload = {
-        "model": "claude-sonnet-4-20250514",
+        "model": _modelo_mais_barato("anthropic", "claude-haiku-4.5"),
         "messages": [{"role": "user", "content": "diga 'ok'"}],
         "max_tokens": 10,
     }
@@ -42,7 +56,7 @@ def testar_gemini(config: dict) -> dict:
     base_url = config.get("base_url", "https://generativelanguage.googleapis.com").rstrip("/")
     if not key:
         return {"ok": False, "erro": "API key não configurada"}
-    modelo = "gemini-2.5-flash"
+    modelo = _modelo_mais_barato("gemini", "gemini-3.1-flash-lite")
     url = f"{base_url}/v1beta/models/{modelo}:generateContent?key={key}"
     payload = {"contents": [{"role": "user", "parts": [{"text": "diga ok"}]}]}
     data = http_post_json(url, {}, payload, timeout=15)
@@ -55,7 +69,7 @@ def testar_gemini(config: dict) -> dict:
 
 def testar_moonshot(config: dict) -> dict:
     key = config.get("key")
-    base_url = config.get("base_url", "https://api.moonshot.cn/v1").rstrip("/")
+    base_url = config.get("base_url", "https://api.moonshot.ai/v1").rstrip("/")
     if not key:
         return {"ok": False, "erro": "API key não configurada"}
     url = f"{base_url}/models"

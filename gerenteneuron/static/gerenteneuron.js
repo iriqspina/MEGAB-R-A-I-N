@@ -128,6 +128,20 @@
     if (t) t.remove();
   }
 
+
+  function mostrarAvisoPrecos(aviso, verificadoEm) {
+    var el = document.getElementById("aviso-precos");
+    if (!el) return;
+    if (!aviso) {
+      el.classList.add("hidden");
+      el.textContent = "";
+      el.title = "Tabela de preços verificada em " + (verificadoEm || "?");
+      return;
+    }
+    el.textContent = aviso;
+    el.classList.remove("hidden");
+  }
+
   async function carregarModelos() {
     try {
       const res = await fetch("/api/models");
@@ -135,6 +149,7 @@
       state.providers = data.providers || [];
       state.modo = data.modo || "auto";
       atualizarSeletorModelo();
+      mostrarAvisoPrecos(data.precos_aviso, data.precos_verificado_em);
       statusDot.className = "status-dot online";
       statusDot.title = "Online";
     } catch (e) {
@@ -338,6 +353,10 @@
         let meta = null;
         if (state.aba === "chat") {
           meta = data.modelo_usado + " · $" + (data.custo_estimado_usd || 0).toFixed(6) + " · " + (data.estrategia || "auto");
+          if (data.tentativas && data.tentativas.length) {
+            meta += " · pulou " + data.tentativas.length + " (" +
+              data.tentativas.map(function (t) { return t.modelo; }).join(", ") + ")";
+          }
         } else if (data.projeto) {
           meta = data.intencao + " · " + data.projeto.skill;
         } else {

@@ -1,0 +1,156 @@
+{
+  "_leia": "Fonte única de verdade de modelos e preços. USD por 1M de tokens. Ordem da fila do roteador é DERIVADA daqui, não hardcoded. Rode 'python mb-modelos.py --conferir' para checar contra a lista viva de cada provedor.",
+  "verificado_em": "2026-08-16",
+  "revalidar_em_dias": 60,
+  "fontes": {
+    "anthropic": "https://platform.claude.com/docs/en/about-claude/pricing (oficial)",
+    "gemini": "https://ai.google.dev/gemini-api/docs/pricing (oficial)",
+    "openai": "https://www.aipricing.guru/openai-pricing/ (agregador, 2026-08-15)",
+    "moonshot": "https://benchlm.ai/moonshot/api-pricing (agregador, 2026-08-15)"
+  },
+  "notas": [
+    "Claude 4.7+ usa tokenizer novo que gera ~30% mais tokens para o mesmo texto; o custo estimado aplica esse fator.",
+    "gemini-3.x flash tem preço promocional até 2026-12-31; dobra em 2027-01-01.",
+    "Preços de gemini-3.1-pro e gemini-2.5-pro sobem acima de 200k tokens de prompt; a tabela usa a faixa baixa."
+  ],
+  "modelos": [
+    {
+      "provider": "anthropic",
+      "api_id": "claude-opus-5",
+      "nome": "Claude Opus 5",
+      "classe": "deep",
+      "in": 5.0,
+      "out": 25.0,
+      "fonte": "oficial",
+      "fator_token": 1.3
+    },
+    {
+      "provider": "anthropic",
+      "api_id": "claude-sonnet-5",
+      "nome": "Claude Sonnet 5",
+      "classe": "standard",
+      "in": 2.0,
+      "out": 10.0,
+      "fonte": "oficial",
+      "fator_token": 1.3
+    },
+    {
+      "provider": "anthropic",
+      "api_id": "claude-haiku-4.5",
+      "nome": "Claude Haiku 4.5",
+      "classe": "quick",
+      "in": 1.0,
+      "out": 5.0,
+      "fonte": "oficial",
+      "fator_token": 1.0
+    },
+    {
+      "provider": "openai",
+      "api_id": "gpt-5.6-sol",
+      "nome": "GPT-5.6 Sol",
+      "classe": "deep",
+      "in": 5.0,
+      "out": 30.0,
+      "fonte": "agregador"
+    },
+    {
+      "provider": "openai",
+      "api_id": "gpt-5.6-terra",
+      "nome": "GPT-5.6 Terra",
+      "classe": "standard",
+      "in": 2.0,
+      "out": 12.0,
+      "fonte": "agregador"
+    },
+    {
+      "provider": "openai",
+      "api_id": "gpt-5.6-luna",
+      "nome": "GPT-5.6 Luna",
+      "classe": "quick",
+      "in": 0.2,
+      "out": 1.2,
+      "fonte": "agregador"
+    },
+    {
+      "provider": "gemini",
+      "api_id": "gemini-3.1-pro-preview",
+      "nome": "Gemini 3.1 Pro",
+      "classe": "deep",
+      "in": 2.0,
+      "out": 12.0,
+      "fonte": "oficial"
+    },
+    {
+      "provider": "gemini",
+      "api_id": "gemini-3.5-flash",
+      "nome": "Gemini 3.5 Flash",
+      "classe": "standard",
+      "in": 1.5,
+      "out": 9.0,
+      "fonte": "oficial"
+    },
+    {
+      "provider": "gemini",
+      "api_id": "gemini-3.1-flash-lite",
+      "nome": "Gemini 3.1 Flash Lite",
+      "classe": "quick",
+      "in": 0.25,
+      "out": 1.5,
+      "fonte": "oficial"
+    },
+    {
+      "provider": "moonshot",
+      "api_id": "kimi-k3",
+      "nome": "Kimi K3",
+      "classe": "deep",
+      "in": 3.0,
+      "out": 15.0,
+      "fonte": "agregador"
+    },
+    {
+      "provider": "moonshot",
+      "api_id": "kimi-k2.6",
+      "nome": "Kimi K2.6",
+      "classe": "standard",
+      "in": 0.95,
+      "out": 4.0,
+      "fonte": "agregador"
+    },
+    {
+      "provider": "moonshot",
+      "api_id": "kimi-k2.5",
+      "nome": "Kimi K2.5",
+      "classe": "quick",
+      "in": 0.6,
+      "out": 3.0,
+      "fonte": "agregador"
+    },
+    {
+      "provider": "ollama",
+      "api_id": "qwen3:8b",
+      "nome": "Qwen 3 8B (local)",
+      "classe": "quick",
+      "in": 0.0,
+      "out": 0.0,
+      "fonte": "local"
+    },
+    {
+      "provider": "ollama",
+      "api_id": "qwen3:14b",
+      "nome": "Qwen 3 14B (local)",
+      "classe": "standard",
+      "in": 0.0,
+      "out": 0.0,
+      "fonte": "local"
+    },
+    {
+      "provider": "mock",
+      "api_id": "mock/validacao-local",
+      "nome": "Mock local",
+      "classe": "quick",
+      "in": 0.0,
+      "out": 0.0,
+      "fonte": "local"
+    }
+  ]
+}

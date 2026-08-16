@@ -7,7 +7,6 @@ protegida pela senha do usuário e por uma chave de recuperação.
 
 import base64
 import json
-import os
 import secrets
 from pathlib import Path
 
@@ -26,8 +25,68 @@ SALT_FILE = VAULT_DIR / "salt"
 RECOVERY_FILE = VAULT_DIR / "recovery.key"
 
 
+CABECALHO_RECUPERACAO = (
+    "CHAVE DE RECUPERACAO DO COFRE DO GERENTENEURON\n"
+    "Sem ela, esquecer a senha mestre significa perder as credenciais.\n"
+    "NUNCA guarde este arquivo na pasta do cofre: quem tem os dois nao precisa\n"
+    "da senha. Lugar certo: pendrive, gerenciador de senhas ou drive pessoal.\n\n"
+)
+
+
+def destino_padrao_recuperacao() -> Path:
+    """Fora da pasta do app, por padrão.
+
+    Gravar a chave de recuperação ao lado do cofre anula a senha mestre para
+    quem tem acesso ao disco. O padrão precisa ser o seguro, porque ninguém
+    move arquivo depois — o default é o que fica.
+    """
+    return Path.home() / "gerenteneuron-chave-de-recuperacao.txt"
+
+
+def _restringir(caminho: Path):
+    """Permissão só para o dono. Diretório precisa do bit de execução.
+
+    0600 numa pasta tira o bit de travessia e impede criar arquivo lá dentro —
+    o cofre não nascia. Passou despercebido porque root ignora a checagem.
+    """
+    try:
+        caminho.chmod(0o700 if caminho.is_dir() else 0o600)
+    except OSError:
+        pass
+
+
 def _garantir_vault_dir():
     VAULT_DIR.mkdir(parents=True, exist_ok=True)
+    _restringir(VAULT_DIR)
+
+
+def extrair_chave_recuperacao(bruto: str) -> str:
+    """Aceita a chave crua ou o conteúdo inteiro do recovery.key.
+
+    O arquivo é gravado com um cabeçalho de aviso; quem colava o arquivo todo
+    recebia 'chave inválida' sem entender por quê.
+    """
+    linhas = [l.strip() for l in (bruto or "").splitlines() if l.strip()]
+    return linhas[-1] if linhas else ""
+
+
+def recuperacao_esta_exposta() -> bool:
+    """True quando existe chave de recuperação dentro da pasta do cofre.
+
+    Instalação antiga gravava ali. Quem tem a pasta tem cofre e chave juntos —
+    a senha mestre vira decoração.
+    """
+    return RECOVERY_FILE.exists()
+
+
+def aviso_recuperacao_exposta() -> str | None:
+    if not recuperacao_esta_exposta():
+        return None
+    return (
+        f"RISCO: {RECOVERY_FILE} está dentro da pasta do cofre. Quem tem acesso "
+        f"ao disco abre o cofre sem a senha. Mova para {destino_padrao_recuperacao()} "
+        f"ou para um pendrive e apague o original."
+    )
 
 
 def _derivar_chave(senha: str, salt: bytes) -> bytes:
@@ -54,8 +113,12 @@ class Vault:
     def existe() -> bool:
         return VAULT_FILE.exists() and SALT_FILE.exists()
 
-    def criar(self, senha: str) -> str:
-        """Cria cofre vazio. Retorna chave de recuperação (deve ser guardada pelo usuário)."""
+    def criar(self, senha: str, destino_recuperacao: Path | None = None) -> tuple[str, Path]:
+        """Cria cofre vazio.
+
+        Retorna (chave_de_recuperacao, caminho_onde_foi_gravada). O padrão é a
+        pasta pessoal do usuário, nunca `vault/`.
+        """
         if self.existe():
             raise RuntimeError("Cofre já existe. Use reset ou desbloqueie.")
 
@@ -76,17 +139,17 @@ class Vault:
 
         VAULT_FILE.write_text(json.dumps(envelope), encoding="utf-8")
         SALT_FILE.write_bytes(salt)
-        RECOVERY_FILE.write_text(
-            "GUARDE ESTA CHAVE EM LOCAL SEGURO. SEM ELA, NÃO É POSSÍVEL RECUPERAR A SENHA.\n\n"
-            + chave_recuperacao
-            + "\n",
-            encoding="utf-8",
-        )
+        _restringir(VAULT_FILE)
+        _restringir(SALT_FILE)
+        destino = Path(destino_recuperacao) if destino_recuperacao else destino_padrao_recuperacao()
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(CABECALHO_RECUPERACAO + chave_recuperacao + "\n", encoding="utf-8")
+        _restringir(destino)
 
         self._chave_dados = chave_dados
         self._dados = {}
         self._salvar_dados()
-        return chave_recuperacao
+        return chave_recuperacao, destino
 
     def desbloquear(self, senha: str) -> dict:
         if not self.existe():
@@ -102,6 +165,7 @@ class Vault:
         return self._dados
 
     def desbloquear_com_recuperacao(self, chave_recuperacao: str) -> dict:
+        chave_recuperacao = extrair_chave_recuperacao(chave_recuperacao)
         if not self.existe():
             raise RuntimeError("Cofre não existe.")
         envelope = json.loads(VAULT_FILE.read_text(encoding="utf-8"))
@@ -129,9 +193,11 @@ class Vault:
         if self._chave_dados is None:
             raise RuntimeError("Cofre não desbloqueado")
         fernet = Fernet(self._chave_dados)
-        (VAULT_DIR / "dados.enc").write_bytes(
+        alvo = VAULT_DIR / "dados.enc"
+        alvo.write_bytes(
             fernet.encrypt(json.dumps(self._dados, ensure_ascii=False).encode("utf-8")),
         )
+        _restringir(alvo)
 
     def get(self, chave: str, padrao=None):
         if self._dados is None:
@@ -176,16 +242,14 @@ class Vault:
         salt = base64.b64decode(envelope["salt"])
         fernet_nova = Fernet(_derivar_chave(nova_senha, salt))
         envelope["dados_cifrados"] = fernet_nova.encrypt(self._chave_dados).decode("ascii")
-        VAULT_FILE.write_text(json.dumps(envelope), encoding="utf-8")
-        # Gera nova chave de recuperação também, pois a antiga foi usada.
+        # A chave de recuperação antiga foi consumida; gera outra no mesmo passo.
         nova_chave_recuperacao = secrets.token_urlsafe(32)
         fernet_recuperacao = Fernet(_derivar_chave(nova_chave_recuperacao, salt))
         envelope["recuperacao_cifrada"] = fernet_recuperacao.encrypt(self._chave_dados).decode("ascii")
         VAULT_FILE.write_text(json.dumps(envelope), encoding="utf-8")
-        RECOVERY_FILE.write_text(
-            "GUARDE ESTA CHAVE EM LOCAL SEGURO. SEM ELA, NÃO É POSSÍVEL RECUPERAR A SENHA.\n\n"
-            + nova_chave_recuperacao
-            + "\n",
-            encoding="utf-8",
-        )
+        destino = destino_padrao_recuperacao()
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        destino.write_text(CABECALHO_RECUPERACAO + nova_chave_recuperacao + "\n", encoding="utf-8")
+        _restringir(destino)
+        self.destino_recuperacao = destino
         return nova_chave_recuperacao

@@ -1,6 +1,6 @@
 """Provedor OpenAI e compatíveis (OpenAI, Moonshot)."""
 
-from .base import http_post_json, estimar_tokens_por_palavras, resposta_padrao, historico_para_openai
+from .base import http_post_json, estimar_tokens_por_palavras, estimar_custo, resposta_padrao, historico_para_openai
 
 
 class OpenAIProvider:
@@ -28,18 +28,7 @@ class OpenAIProvider:
             usage = data.get("usage", {})
             tok_in = usage.get("prompt_tokens", estimar_tokens_por_palavras(mensagem))
             tok_out = usage.get("completion_tokens", estimar_tokens_por_palavras(texto))
-            custo = estimar_custo(modelo, tok_in, tok_out)
+            custo = estimar_custo("openai", modelo, tok_in, tok_out)
             return resposta_padrao(texto, "openai", modelo, tok_in, tok_out, custo)
         except Exception as e:
             return resposta_padrao("", "openai", modelo, erro=f"parse: {e}")
-
-
-def estimar_custo(modelo: str, tok_in: int, tok_out: int) -> float:
-    # Preços de referência [ESTIMATIVA] — atualizar em pricing.json
-    tabela = {
-        "gpt-5.6-sol": (3.0, 15.0),
-        "gpt-5.6-terra": (0.8, 4.0),
-        "gpt-5.6-luna": (0.2, 0.8),
-    }
-    pin, pout = tabela.get(modelo, (0.8, 4.0))
-    return (tok_in * pin + tok_out * pout) / 1_000_000

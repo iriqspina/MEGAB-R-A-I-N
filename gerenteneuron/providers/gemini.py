@@ -1,13 +1,13 @@
 """Provedor Google Gemini."""
 
-from .base import http_post_json, estimar_tokens_por_palavras, resposta_padrao
+from .base import http_post_json, estimar_tokens_por_palavras, estimar_custo, resposta_padrao
 
 
 class GeminiProvider:
     nome = "Google Gemini"
 
     @staticmethod
-    def send(mensagem: str, config: dict, historico: list | None = None, modelo: str = "gemini-2.5-flash"):
+    def send(mensagem: str, config: dict, historico: list | None = None, modelo: str = "gemini-3.5-flash"):
         key = config.get("key")
         base_url = config.get("base_url", "https://generativelanguage.googleapis.com").rstrip("/")
         if not key:
@@ -31,18 +31,10 @@ class GeminiProvider:
 
         try:
             texto = data["candidates"][0]["content"]["parts"][0]["text"]
-            tok_in = estimar_tokens_por_palavras(mensagem)
-            tok_out = estimar_tokens_por_palavras(texto)
-            custo = estimar_custo(modelo, tok_in, tok_out)
+            uso = data.get("usageMetadata", {})
+            tok_in = uso.get("promptTokenCount") or estimar_tokens_por_palavras(mensagem)
+            tok_out = uso.get("candidatesTokenCount") or estimar_tokens_por_palavras(texto)
+            custo = estimar_custo("gemini", modelo, tok_in, tok_out)
             return resposta_padrao(texto, "gemini", modelo, tok_in, tok_out, custo)
         except Exception as e:
             return resposta_padrao("", "gemini", modelo, erro=f"parse: {e}")
-
-
-def estimar_custo(modelo: str, tok_in: int, tok_out: int) -> float:
-    tabela = {
-        "gemini-2.5-pro": (1.25, 10.0),
-        "gemini-2.5-flash": (0.15, 0.6),
-    }
-    pin, pout = tabela.get(modelo, (0.15, 0.6))
-    return (tok_in * pin + tok_out * pout) / 1_000_000

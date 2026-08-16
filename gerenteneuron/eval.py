@@ -45,6 +45,22 @@ def registrar_interacao(
     return registro
 
 
+def registrar_feedback(mensagem: str, modelo_usado: str, estrategia: str, feedback) -> dict:
+    """Grava o 👍/👎 no mesmo log das interações, com o mesmo esquema.
+
+    Antes o endpoint escrevia um registro de formato próprio direto no arquivo,
+    então resumo_feedback lia linhas sem os campos que ele conta.
+    """
+    if feedback not in (1, -1, None):
+        feedback = None
+    return registrar_interacao(
+        mensagem,
+        {"modelo_usado": modelo_usado, "estrategia": estrategia, "provider": (modelo_usado or "/").split("/")[0]},
+        aba="feedback",
+        feedback=feedback,
+    )
+
+
 def resumo_feedback(limite: int = 100) -> dict:
     """Lê os últimos registros e gera estatísticas por estratégia/modelo."""
     if not FEEDBACK_FILE.exists():

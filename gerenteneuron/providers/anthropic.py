@@ -1,13 +1,13 @@
 """Provedor Anthropic Claude."""
 
-from .base import http_post_json, estimar_tokens_por_palavras, resposta_padrao, historico_para_openai
+from .base import http_post_json, estimar_tokens_por_palavras, estimar_custo, resposta_padrao, historico_para_openai
 
 
 class AnthropicProvider:
     nome = "Anthropic"
 
     @staticmethod
-    def send(mensagem: str, config: dict, historico: list | None = None, modelo: str = "claude-sonnet-4"):
+    def send(mensagem: str, config: dict, historico: list | None = None, modelo: str = "claude-sonnet-5"):
         key = config.get("key")
         base_url = config.get("base_url", "https://api.anthropic.com").rstrip("/")
         if not key:
@@ -18,14 +18,19 @@ class AnthropicProvider:
             "x-api-key": key,
             "anthropic-version": "2023-06-01",
         }
+        msgs = historico_para_openai(historico, mensagem)
+        # Claude recebe 'system' como parâmetro próprio, não dentro de messages.
+        # Descartar essas mensagens (comportamento anterior) jogava fora a
+        # instrução de sistema em vez de aplicá-la.
+        sistema = "\n\n".join(m["content"] for m in msgs if m.get("role") == "system")
         payload = {
             "model": modelo,
-            "messages": historico_para_openai(historico, mensagem),
+            "messages": [m for m in msgs if m.get("role") != "system"],
             "max_tokens": 4096,
             "temperature": 0.7,
         }
-        # Claude não aceita 'system' em messages; remove se presente.
-        payload["messages"] = [m for m in payload["messages"] if m.get("role") != "system"]
+        if sistema:
+            payload["system"] = sistema
 
         data = http_post_json(url, headers, payload)
         if "erro" in data:
@@ -36,16 +41,7 @@ class AnthropicProvider:
             usage = data.get("usage", {})
             tok_in = usage.get("input_tokens", estimar_tokens_por_palavras(mensagem))
             tok_out = usage.get("output_tokens", estimar_tokens_por_palavras(texto))
-            custo = estimar_custo(modelo, tok_in, tok_out)
+            custo = estimar_custo("anthropic", modelo, tok_in, tok_out)
             return resposta_padrao(texto, "anthropic", modelo, tok_in, tok_out, custo)
         except Exception as e:
             return resposta_padrao("", "anthropic", modelo, erro=f"parse: {e}")
-
-
-def estimar_custo(modelo: str, tok_in: int, tok_out: int) -> float:
-    tabela = {
-        "claude-opus-4": (15.0, 75.0),
-        "claude-sonnet-4": (3.0, 15.0),
-    }
-    pin, pout = tabela.get(modelo, (3.0, 15.0))
-    return (tok_in * pin + tok_out * pout) / 1_000_000
