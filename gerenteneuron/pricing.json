@@ -36,7 +36,7 @@
     },
     {
       "provider": "anthropic",
-      "api_id": "claude-haiku-4.5",
+      "api_id": "claude-haiku-4-5",
       "nome": "Claude Haiku 4.5",
       "classe": "quick",
       "in": 1.0,

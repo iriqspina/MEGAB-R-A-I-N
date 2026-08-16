@@ -38,7 +38,7 @@ def testar_anthropic(config: dict) -> dict:
         return {"ok": False, "erro": "API key não configurada"}
     url = f"{base_url}/v1/messages"
     payload = {
-        "model": _modelo_mais_barato("anthropic", "claude-haiku-4.5"),
+        "model": _modelo_mais_barato("anthropic", "claude-haiku-4-5"),
         "messages": [{"role": "user", "content": "diga 'ok'"}],
         "max_tokens": 10,
     }

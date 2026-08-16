@@ -91,7 +91,7 @@
   <dialog class="config-dialog" id="config-dialog">
     <form method="dialog">
       <h2>Configurar chaves de API</h2>
-      <p>As chaves ficam salvas no cofre criptografado (<code>gerenteneuron/vault/</code>), fora do Git.</p>
+      <p>Por padrão, essas chaves gravam <code>gerenteneuron/.env</code> em texto puro (fora do Git, mas sem criptografia). Para o cofre criptografado de verdade, use <code>mb-vault.py add CHAVE valor</code> pelo terminal.</p>
       <div class="field">
         <label for="cfg-openai">OpenAI API Key (ChatGPT)</label>
         <input type="password" id="cfg-openai" data-env="OPENAI_API_KEY" autocomplete="off">

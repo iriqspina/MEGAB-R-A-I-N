@@ -49,3 +49,34 @@ arquivo tinha cabeçalho de aviso, então colar o conteúdo inteiro no reset dav
 "chave inválida".
 ATALHO: aviso explícito no próprio arquivo mandando movê-lo para fora, permissão
 0600, e o parser aceitando tanto a chave crua quanto o arquivo colado.
+
+## 260816 — api_id do Anthropic escrito no formato de exibição, não da API
+
+GATILHO: qualquer `api_id` novo em `pricing.json` para um modelo Anthropic.
+LIÇÃO: `pricing.json` tinha `"api_id": "claude-haiku-4.5"` — copiado do nome de
+exibição ("Claude Haiku 4.5") em vez do ID real da API, que usa hífen:
+`claude-haiku-4-5`. `testar_anthropic` (connectors.py) tinha o mesmo valor
+hardcoded como fallback. O teste de conectividade no diálogo "Configurar
+chaves" mostrou HTTP 404 "model: claude-haiku-4.5" — os outros três provedores
+pagos (OpenAI, Gemini, Moonshot) e o Ollama local funcionavam; só a Anthropic
+caía. Conferido contra `platform.claude.com/docs/en/about-claude/models/overview`
+em 2026-08-16.
+ATALHO: `api_id` é ID de API, não rótulo de marketing — nunca copiar do nome
+bonito (`nome`) para o `api_id`. Ponto (`.`) em nome de modelo quase sempre
+virou hífen (`-`) na API. Depois de editar `pricing.json`, rodar
+`modelos.cmd --conferir` (bate contra a API viva) além de `testar.cmd`.
+
+## 260816 — diálogo "Configurar chaves" prometia cofre que não gravava
+
+GATILHO: qualquer texto de UI que descreve onde a credencial é salva.
+LIÇÃO: `templates/index.html` dizia "as chaves ficam salvas no cofre
+criptografado (gerenteneuron/vault/)", mas o endpoint que o formulário chama
+(`/api/config` → `_gravar_env` em `app.py`) grava `.env` em texto puro — o
+cofre (`vault.py`/`mb-vault.py`) é um caminho separado que o usuário tem que
+rodar por fora. `vault/` nem existia na pasta central quando isso foi visto.
+Usuário lendo "cofre criptografado" no diálogo tem falsa sensação de segurança
+sobre uma chave que está em texto puro no disco.
+ATALHO: texto de UI sobre segurança tem que descrever o que aquele código
+específico faz, não o que o projeto faz no geral. Se o app tem dois caminhos
+(cofre vs `.env`), o diálogo que só grava um dos dois não pode falar do outro
+como se fosse ele.
