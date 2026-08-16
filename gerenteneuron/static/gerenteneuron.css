@@ -283,6 +283,7 @@ body {
 .teste-ok { color: var(--ok); font-weight: 700; }
 .teste-erro { color: var(--signal); font-weight: 700; }
 .teste-msg { color: var(--ink-faint); font-size: .75rem; }
+.hidden { display: none !important; }
 
 .boost-btn {
   margin-top: .6rem;

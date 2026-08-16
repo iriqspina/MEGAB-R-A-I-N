@@ -16,7 +16,7 @@ venv_dir = raiz / ".venv"
 
 def main():
     try:
-        import cryptography  # noqa: F401
+        __import__("cryptography")
         print("cryptography já está disponível.")
         return 0
     except ImportError:

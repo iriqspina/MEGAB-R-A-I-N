@@ -12,6 +12,17 @@
   const statusDot = document.getElementById("status-dot");
   const btnConfig = document.getElementById("btn-config");
   const configDialog = document.getElementById("config-dialog");
+  const vaultDialog = document.getElementById("vault-dialog");
+  const vaultForm = document.getElementById("vault-form");
+  const vaultMsg = document.getElementById("vault-msg");
+  const vaultSenha = document.getElementById("vault-senha");
+  const vaultRecovery = document.getElementById("vault-recovery");
+  const vaultNova = document.getElementById("vault-nova");
+  const vaultRecoveryField = document.getElementById("vault-recovery-field");
+  const vaultNovaField = document.getElementById("vault-nova-field");
+  const btnVaultForgot = document.getElementById("btn-vault-forgot");
+
+  let vaultMode = "unlock";
 
   let state = {
     aba: "chat",
@@ -141,6 +152,85 @@
       state.projetos = [];
     }
   }
+
+  async function verificarVault() {
+    try {
+      const res = await fetch("/api/vault/status");
+      const data = await res.json();
+      if (data.existe && !data.desbloqueado) {
+        vaultDialog.showModal();
+      }
+    } catch (e) {}
+  }
+
+  function resetVaultForm() {
+    vaultMode = "unlock";
+    vaultMsg.textContent = "O cofre está protegido por senha. Digite a senha mestre para desbloquear.";
+    vaultRecoveryField.classList.add("hidden");
+    vaultNovaField.classList.add("hidden");
+    vaultForm.querySelector("button[type='submit']").textContent = "Desbloquear";
+    vaultSenha.value = "";
+    vaultRecovery.value = "";
+    vaultNova.value = "";
+  }
+
+  vaultForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const senha = vaultSenha.value;
+    if (vaultMode === "unlock") {
+      try {
+        const res = await fetch("/api/vault/unlock", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ senha: senha }),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          vaultDialog.close();
+          resetVaultForm();
+          carregarModelos();
+        } else {
+          vaultMsg.textContent = "Senha incorreta. Tente novamente.";
+        }
+      } catch (e) {
+        vaultMsg.textContent = "Erro de rede.";
+      }
+    } else {
+      const recovery = vaultRecovery.value;
+      const nova = vaultNova.value;
+      if (nova.length < 6) {
+        vaultMsg.textContent = "Nova senha muito curta (mínimo 6 caracteres).";
+        return;
+      }
+      try {
+        const res = await fetch("/api/vault/forgot", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ recovery: recovery, nova_senha: nova }),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          vaultMsg.textContent = "Senha redefinida. Nova chave de recuperação gerada em vault/recovery.key";
+          vaultMode = "unlock";
+          vaultRecoveryField.classList.add("hidden");
+          vaultNovaField.classList.add("hidden");
+          vaultForm.querySelector("button[type='submit']").textContent = "Desbloquear";
+        } else {
+          vaultMsg.textContent = "Erro: " + (data.erro || "falha");
+        }
+      } catch (e) {
+        vaultMsg.textContent = "Erro de rede.";
+      }
+    }
+  });
+
+  btnVaultForgot.addEventListener("click", function () {
+    vaultMode = "reset";
+    vaultMsg.textContent = "Digite a chave de recuperação e a nova senha mestre.";
+    vaultRecoveryField.classList.remove("hidden");
+    vaultNovaField.classList.remove("hidden");
+    vaultForm.querySelector("button[type='submit']").textContent = "Redefinir senha";
+  });
 
   function atualizarSeletorModelo() {
     modeloSelect.innerHTML = "";
@@ -350,4 +440,5 @@
   carregarModelos();
   carregarProjetos();
   atualizarAba();
+  verificarVault();
 })();

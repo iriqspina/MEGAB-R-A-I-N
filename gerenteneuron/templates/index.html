@@ -64,10 +64,33 @@
     </main>
   </div>
 
+  <dialog class="config-dialog" id="vault-dialog">
+    <form method="dialog" id="vault-form">
+      <h2>Cofre de credenciais</h2>
+      <p id="vault-msg">O cofre está protegido por senha. Digite a senha mestre para desbloquear.</p>
+      <div class="field">
+        <label for="vault-senha">Senha mestre</label>
+        <input type="password" id="vault-senha" autocomplete="off">
+      </div>
+      <div class="field hidden" id="vault-recovery-field">
+        <label for="vault-recovery">Chave de recuperação</label>
+        <input type="password" id="vault-recovery" autocomplete="off">
+      </div>
+      <div class="field hidden" id="vault-nova-field">
+        <label for="vault-nova">Nova senha</label>
+        <input type="password" id="vault-nova" autocomplete="off">
+      </div>
+      <div class="dialog-actions">
+        <button type="submit" value="unlock">Desbloquear</button>
+        <button type="button" id="btn-vault-forgot">Esqueci a senha</button>
+      </div>
+    </form>
+  </dialog>
+
   <dialog class="config-dialog" id="config-dialog">
     <form method="dialog">
       <h2>Configurar chaves de API</h2>
-      <p>As chaves ficam salvas em <code>gerenteneuron/.env</code>, fora do Git.</p>
+      <p>As chaves ficam salvas no cofre criptografado (<code>gerenteneuron/vault/</code>), fora do Git.</p>
       <div class="field">
         <label for="cfg-openai">OpenAI API Key (ChatGPT)</label>
         <input type="password" id="cfg-openai" data-env="OPENAI_API_KEY" autocomplete="off">
