@@ -40,6 +40,11 @@ EXCLUIR = {
     "260810_memoria-pessoal.md",
     "licoes-megabrain.md",
     ".mb-log",  # v6 fase 1: cobre também .mb-log/ dentro de subpastas (walk)
+    # Derivados das lições: carregam o TEXTO das lições (pessoais) e podem
+    # carregar segredo citado em lição — o push protection do GitHub barrou
+    # uma chave GCP em 260819. Lição nunca sai da central, nem derivada.
+    "indice-licoes.json",
+    "licoes-recorrencia.json",
     # Diálogos antigos do orquestrador: artefato de execução com caminhos
     # pessoais (o sanitizador acusou em 260819) — nunca sobem.
     ".orquestrador",
