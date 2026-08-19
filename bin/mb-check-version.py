@@ -111,10 +111,13 @@ def copiar(src, dst, dry_run=False, base=None):
     try:
         dst_path.parent.mkdir(parents=True, exist_ok=True)
         if src_path.is_dir():
-            if dst_path.exists():
-                if not u.safe_rmtree(dst_path, base=base):
-                    return False
-            shutil.copytree(src_path, dst_path)
+            # 260818: merge, não replace. Antes era safe_rmtree+copytree, que
+            # apagava qualquer arquivo que já existisse em dst e não viesse da
+            # central (ex.: referencias/ específico de um projeto sendo apagado
+            # ao puxar a versão central). dirs_exist_ok sobrescreve arquivos com
+            # o mesmo nome (a central ainda é a fonte da verdade pro que ela de
+            # fato tem) mas preserva o que só existe no projeto.
+            shutil.copytree(src_path, dst_path, dirs_exist_ok=True)
         else:
             shutil.copy2(src_path, dst_path)
         print(f"  copiado {src_path.name} -> {dst_path}")

@@ -326,6 +326,15 @@ Rubricas prontas: `referencias/260810_evaluation-gates.md`
 
 ### 5.1 Amarrar pontas — antes de qualquer coisa sair
 
+### Relatório único por projeto
+
+Se a instância tiver `RELATORIO.html`, trate-o como a porta de entrada de
+usuário e IA. Ao criar ou alterar informação em `.md`, regenere o relatório
+antes de entregar. O Markdown continua sendo a fonte da verdade: não crie outro
+relatório nem um Markdown duplicado para "resumir" o que já existe. Use
+`bin/mb-relatorio-projeto.py`; por padrão ele reúne todos os `.md` informacionais
+da instância e deixa só `MEGABRAIN/`, `.git/`, caches e dependências de fora.
+
 Antes de uma aprovação humana, envio externo, fechamento semanal ou handoff,
 varra estado, tracker, decisões e fontes por dúvida aberta, número velho,
 prazo, dependência e decisão sem dono. Descubra sozinho o que for leitura

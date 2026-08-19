@@ -219,8 +219,12 @@ abrir vários `.md` soltos:
   seção vazia;
 - **situação viva** — o arquivo indicado em `--plano` (ex.: `PLANO.md`,
   `ESTADO.md`), renderizado por inteiro;
-- **arquivos extra de domínio** — `--extra` (repetível): cada um vira sua
-  própria seção;
+- **documentação de domínio completa** — por padrão, todo `.md` pertencente à
+  instância entra automaticamente numa seção e nas Fontes. `--extra`
+  (repetível) continua servindo para controlar a ordem de arquivos prioritários,
+  mas não é uma lista que alguém precisa manter. Só ficam fora a infraestrutura
+  técnica (`MEGABRAIN/`, `.git/`, caches e dependências); `--sem-todos-md`
+  desliga essa descoberta quando houver motivo explícito;
 - **ação imediata** (desde 260814) — card em destaque logo abaixo do TL;DR,
   visualmente separado (fundo escuro, checklist numerado grande) — extrai UM
   heading do `--plano` (palavra-chave "ação imediata"/"o que fazer agora"/
@@ -251,7 +255,7 @@ abrir vários `.md` soltos:
   confundir com a seção "resolução" acima.
 
 Gerador: `bin/mb-relatorio-projeto.py --projeto PATH --titulo NOME --plano
-ARQUIVO [--extra ARQUIVO]... [--skill ARQUIVO] [--tldr "frase"]
+ARQUIVO [--extra ARQUIVO]... [--sem-todos-md] [--skill ARQUIVO] [--tldr "frase"]
 [--megabrain-central PATH] [--sem-resolucao] [--resolucao-titulo PALAVRA]...
 [--sem-acao-imediata] [--acao-imediata-titulo PALAVRA] [--acao "Rótulo|URL"]...`. `--saida`
 default é `RELATORIO.html` na raiz do projeto. Referência de uso completo
@@ -269,6 +273,9 @@ falso e engoliu o arquivo inteiro pra dentro do card).
 
 Regra de ouro 4 vale igual aqui: **gerado nunca se edita**. O HTML de saída
 não se toca na mão — edita-se o(s) `.md` fonte e roda-se o gerador de novo.
+Não crie um segundo relatório ou um `.md` espelho para "explicar" a mesma
+informação: o Markdown é fonte; `RELATORIO.html` é a leitura consolidada para
+usuário e IA.
 
 Não confundir com o relatório DNA nem tentar fundir os dois num arquivo só:
 o DNA precisa ficar estável e genérico (é o que se copia pra replicar o

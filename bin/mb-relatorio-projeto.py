@@ -42,6 +42,10 @@ Fontes lidas (todas opcionais, exceto --plano):
                                           projeto nível 1-2)
     --plano PATH        arquivo "vivo" principal (situação, estratégia) — obrigatório
     --extra PATH (N×)   arquivos adicionais; cada um vira uma seção própria
+    todos os .md do projeto (padrão)  descobertos e renderizados automaticamente;
+                          use --sem-todos-md só quando houver motivo para omitir
+                          documentação de domínio. MEGABRAIN/, .git/, caches e
+                          dependências nunca entram por acidente.
     --skill PATH         SKILL.md do router do projeto — extrai "Próximos passos"
     --tldr TEXTO          uma frase; se omitido, usa o 1º parágrafo do --plano
     --megabrain-central PATH  para puxar um resumo do contexto GERAL (MEGABRAIN.md
@@ -105,6 +109,33 @@ def primeiro_paragrafo(texto: str) -> str:
             linha = re.sub(r"`(.+?)`", r"\1", linha)
             return linha
     return ""
+
+
+def descobrir_markdowns(projeto: Path, ignorar_relativos: set[str]) -> list[tuple[str, str]]:
+    """Lê toda a documentação Markdown que pertence à instância do projeto.
+
+    O relatório é o ponto único de leitura para humano e IA. Portanto a
+    descoberta é padrão, não uma lista manual fácil de esquecer. A cópia do
+    protocolo e diretórios técnicos continuam fora: eles são infraestrutura,
+    não informação específica da instância que o relatório descreve.
+    """
+    diretorios_ignorados = {".git", "megabrain", "node_modules", "__pycache__", ".mb-aspirador"}
+    encontrados = []
+    for caminho in sorted(projeto.rglob("*.md"), key=lambda item: str(item).casefold()):
+        relativo = caminho.relative_to(projeto).as_posix()
+        partes = {parte.casefold() for parte in caminho.relative_to(projeto).parts}
+        if partes & diretorios_ignorados or relativo.casefold() in ignorar_relativos:
+            continue
+        texto = ler(caminho)
+        if texto:
+            encontrados.append((relativo, texto))
+    return encontrados
+
+
+def id_extra(relativo: str) -> str:
+    """Cria id estável mesmo quando duas pastas têm README.md."""
+    base = Path(relativo).with_suffix("").as_posix().casefold()
+    return "extra-" + re.sub(r"[^a-z0-9]+", "-", base).strip("-")
 
 
 # --------------------------------------------------------------------------
@@ -307,8 +338,8 @@ def extrair_secoes_resolucao(texto: str, fonte_nome: str, titulos_candidatos) ->
 # CSS / JS (mesma linguagem visual já usada nos relatórios do <USUARIO>)
 # --------------------------------------------------------------------------
 
-def css() -> str:
-    return """
+def css(tema: str = "padrao") -> str:
+    base = """
 :root{--ink:#0E1B1F;--ink2:#4A6169;--ink3:#7C99A1;--edge:#DCE7EA;--surf:#fff;--bg:#EAF1F3;
   --ok:#1F7A4C;--warn:#B8791F;--bad:#B34A31;--acc:#0B6C7A;--m:ui-monospace,"SF Mono",Consolas,monospace}
 *{box-sizing:border-box;margin:0}
@@ -380,6 +411,52 @@ footer{margin-top:40px;color:var(--ink2);font-size:14px;line-height:1.7}
 footer code{background:var(--surf);padding:3px 8px;border-radius:7px}
 details{background:var(--surf);border-radius:14px;padding:2px 18px;margin:10px 0;box-shadow:0 6px 18px rgba(11,60,70,.05)}
 summary{cursor:pointer;font-family:var(--m);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--acc);padding:12px 0}
+"""
+    return base + (css_megabrain() if tema == "megabrain" else "")
+
+
+def css_megabrain() -> str:
+    """Tema editorial do relatório institucional MEGABRAIN/MIMDE.
+
+    Mantém o HTML semântico genérico do relatório de projeto, mas aplica a
+    mesma leitura operacional: rail de navegação, sinal, hierarquia curta e
+    superfícies planas. O tema é opt-in para não mudar relatórios existentes.
+    """
+    return """
+:root{--paper:#f2efe7;--paper-high:#fffdf8;--ink:#171716;--ink2:#55544f;--ink3:#68665f;
+  --edge:#cec9bc;--acc:#a63025;--bg:#f2efe7;--ok:#23613e;--warn:#7b5111;--bad:#a63025;
+  --m:ui-monospace,"SFMono-Regular",Consolas,"Liberation Mono",monospace}
+body{padding:0;background:var(--paper);font:16px/1.55 Arial,Helvetica,sans-serif}
+.wrap{max-width:none;min-height:100svh;margin:0 0 0 15rem;padding:4.5rem clamp(1rem,4vw,3rem) 5rem;
+  background:var(--paper);border-left:1px solid #000}
+.wrap>h1{max-width:15ch;margin:0 0 .35rem;font-size:clamp(2.6rem,6vw,5.4rem);line-height:.92;letter-spacing:-.075em}
+.sub{margin:0 0 2rem;color:var(--ink3);font-size:.67rem;letter-spacing:.1em}
+.tldr{max-width:82rem;margin:0 0 1.5rem;padding:1.2rem 1.45rem;border:1px solid var(--edge);border-left:8px solid var(--warn);
+  border-radius:0;box-shadow:0 16px 34px rgb(23 23 22 / 8%);background:var(--paper-high);font-size:clamp(1rem,1.6vw,1.2rem)}
+.hero-acao{max-width:82rem;margin:0 0 2rem;padding:1.4rem;border-radius:0;background:var(--ink);box-shadow:none}
+.hero-acao h2{margin:0 0 .4rem;color:#ffb5aa;font-size:.72rem}.hero-acao .section-file{color:#bdb8ae}
+.acoes-rapidas{margin-top:1rem}.acao-btn{border-radius:0;background:var(--paper-high);color:var(--ink)}
+nav{position:fixed;z-index:40;inset:0 auto 0 0;display:flex;flex-direction:column;flex-wrap:nowrap;gap:0;
+  width:15rem;margin:0;padding:8.8rem 1rem 1.4rem;background:var(--ink);border:0;border-right:1px solid #000;
+  overflow-y:auto;backdrop-filter:none}
+nav::before{content:"CURRÍCULO\\A Acompanhamento do projeto";position:absolute;inset:1.45rem 1.5rem auto;
+  padding-bottom:1.35rem;border-bottom:1px solid rgb(255 255 255 / 18%);white-space:pre-line;color:var(--paper-high);
+  font:800 1.45rem/.98 Arial,Helvetica,sans-serif;letter-spacing:-.06em}
+nav::after{content:"Local · relatório vivo\\A Fontes Markdown consolidadas";margin-top:auto;padding-top:1.5rem;white-space:pre-line;
+  color:#8f8a82;font:.62rem/1.55 var(--m)}
+nav a{display:grid;grid-template-columns:2rem 1fr;align-items:center;min-height:2.55rem;padding:0;border:0;border-radius:0;
+  background:transparent;color:#c9c4bb;font:.68rem/1.2 var(--m);letter-spacing:.06em;text-decoration:none}
+nav a::before{content:"→";color:#77736c}nav a:hover{padding-left:.35rem;background:var(--paper-high);color:var(--ink)}
+nav a:hover::before{color:var(--acc)}
+section{max-width:82rem;margin:1px 0 0;padding:1.4rem 1.5rem;border:1px solid var(--edge);background:var(--paper-high)}
+section:first-of-type{margin-top:0}h2{margin:0 0 1rem;color:var(--ink);font:800 clamp(1.3rem,3vw,2.25rem)/1 Arial,Helvetica,sans-serif;
+  letter-spacing:-.055em;text-transform:none;scroll-margin-top:1rem}h3{color:var(--acc)}
+p{color:var(--ink2)}.section-file{margin:-.55rem 0 1rem;color:var(--ink3)}
+table,.di,details{border-radius:0;box-shadow:none;border:1px solid var(--edge)}.card-ai{border-radius:0;background:var(--ink)}
+.cp{border-radius:0;color:var(--ink);background:var(--paper);border-color:var(--edge)}code{border-radius:0;color:var(--acc);background:#f3eee5}
+footer{max-width:82rem;padding:1.4rem;border:1px solid var(--edge);border-top:0;background:var(--paper-high)}
+@media(max-width:62rem){.wrap{margin:0;padding:4.6rem 1rem 3rem;border-left:0}nav{inset:0 0 auto;display:flex;flex-direction:row;
+  width:100%;height:3.75rem;padding:.55rem .7rem;overflow-x:auto;overflow-y:hidden}nav::before,nav::after{display:none}nav a{display:flex;min-width:max-content;padding:0 .6rem;color:#c9c4bb}.wrap>h1{font-size:clamp(2.4rem,12vw,4.5rem)}}
 """
 
 
@@ -465,7 +542,7 @@ def gerar(args, data_iso: str) -> str:
     if not plano_txt:
         print(f"AVISO: --plano não encontrado ou vazio: {plano_path}")
 
-    # --- extras ---
+    # --- extras declarados ---
     extras = []
     for rel in (args.extra or []):
         p = projeto / rel
@@ -481,6 +558,19 @@ def gerar(args, data_iso: str) -> str:
     if skill_rel:
         skill_txt = ler(projeto / skill_rel)
 
+    # --- demais fontes Markdown da instância ---
+    # O padrão precisa ser abrangente: documento criado depois não pode ficar
+    # invisível só porque alguém esqueceu de acrescentar outro --extra.
+    ignorar_auto = {
+        str(args.context or "CONTEXT.md").replace("\\", "/").casefold(),
+        str(plano_rel).replace("\\", "/").casefold(),
+        "estado.md", "handoff.md", "decisoes.md",
+        *(rel.replace("\\", "/").casefold() for rel, _ in extras),
+    }
+    if skill_rel:
+        ignorar_auto.add(skill_rel.replace("\\", "/").casefold())
+    markdowns_auto = [] if args.sem_todos_md else descobrir_markdowns(projeto, ignorar_auto)
+
     # --- tldr ---
     tldr = args.tldr or primeiro_paragrafo(plano_txt) or "sem TL;DR definido — passe --tldr ou verifique o --plano"
     tldr_classe = args.tldr_classe if args.tldr_classe in ("ok", "atencao", "ruim") else "atencao"
@@ -492,6 +582,9 @@ def gerar(args, data_iso: str) -> str:
     html_handoff = markdown_para_html(handoff_txt, pendencias, "HANDOFF.md") if handoff_txt else ""
     html_decisoes = markdown_para_html(decisoes_txt, pendencias, "DECISOES.md") if decisoes_txt else ""
     html_extras = [(rel, markdown_para_html(t, pendencias, rel)) for rel, t in extras]
+    html_markdowns_auto = [
+        (rel, markdown_para_html(t, pendencias, rel)) for rel, t in markdowns_auto
+    ]
 
     # próximos passos: tenta achar a tabela "Próximos passos" dentro do skill_txt inteiro
     html_skill = ""
@@ -509,6 +602,8 @@ def gerar(args, data_iso: str) -> str:
         if plano_txt:
             resolucao_blocos += extrair_secoes_resolucao(plano_txt, plano_rel, titulos)
         for rel, t in extras:
+            resolucao_blocos += extrair_secoes_resolucao(t, rel, titulos)
+        for rel, t in markdowns_auto:
             resolucao_blocos += extrair_secoes_resolucao(t, rel, titulos)
 
     # --- ação imediata: UM heading dedicado no --plano vira card em         ---
@@ -566,7 +661,11 @@ def gerar(args, data_iso: str) -> str:
 
     for rel, h in html_extras:
         titulo = Path(rel).stem.replace("_", " ").replace("-", " ").strip().capitalize()
-        secoes.append(secao(f"extra-{Path(rel).stem}", titulo, h, rel))
+        secoes.append(secao(id_extra(rel), titulo, h, rel))
+
+    for rel, h in html_markdowns_auto:
+        titulo = Path(rel).stem.replace("_", " ").replace("-", " ").strip().capitalize()
+        secoes.append(secao(id_extra(rel), titulo, h, rel))
 
     if html_skill:
         secoes.append(secao("proximos", "Próximas ações (router)", html_skill, skill_rel))
@@ -589,24 +688,34 @@ def gerar(args, data_iso: str) -> str:
         corpo = ("".join(linhas_pend) or "<p>nenhuma pendência em aberto — bom sinal.</p>") + bloco_feitas
         secoes.append(secao("pendencias", f"Dados pendentes ({len(pendentes)} em aberto)", corpo, None))
 
-    # caminhos (todas as fontes lidas, com botão de copiar)
+    # Fontes lidas, sem duplicar entradas que já ganharam seção especializada.
     fontes = []
+    fontes_vistas = set()
+
+    def adicionar_fonte(nome, caminho):
+        chave = str(caminho).casefold()
+        if chave not in fontes_vistas:
+            fontes.append((nome, str(caminho)))
+            fontes_vistas.add(chave)
+
     if context_txt:
-        fontes.append(("CONTEXT.md", str(context_path)))
+        adicionar_fonte("CONTEXT.md", context_path)
     if plano_txt:
-        fontes.append((plano_rel, str(plano_path)))
+        adicionar_fonte(plano_rel, plano_path)
     for rel, _ in extras:
-        fontes.append((rel, str(projeto / rel)))
+        adicionar_fonte(rel, projeto / rel)
+    for rel, _ in markdowns_auto:
+        adicionar_fonte(rel, projeto / rel)
     if skill_txt:
-        fontes.append((skill_rel, str(projeto / skill_rel)))
+        adicionar_fonte(skill_rel, projeto / skill_rel)
     if estado_txt:
-        fontes.append(("ESTADO.md", str(projeto / "ESTADO.md")))
+        adicionar_fonte("ESTADO.md", projeto / "ESTADO.md")
     if handoff_txt:
-        fontes.append(("HANDOFF.md", str(projeto / "HANDOFF.md")))
+        adicionar_fonte("HANDOFF.md", projeto / "HANDOFF.md")
     if decisoes_txt:
-        fontes.append(("DECISOES.md", str(projeto / "DECISOES.md")))
+        adicionar_fonte("DECISOES.md", projeto / "DECISOES.md")
     linhas_fontes = "".join(
-        f'<tr><th>{html.escape(nome)}</th><td><button class="cp" onclick="cp(this,{json.dumps(caminho)})">copiar caminho</button>'
+        f'<tr><th>{html.escape(nome)}</th><td><button class="cp" onclick="cp(this,{html.escape(json.dumps(caminho), quote=True)})">copiar caminho</button>'
         f'<span class="section-file" style="margin:0 0 0 10px;display:inline">{html.escape(caminho)}</span></td></tr>'
         for nome, caminho in fontes
     )
@@ -628,6 +737,7 @@ def gerar(args, data_iso: str) -> str:
         "isPartOf": {"@type": "SoftwareApplication", "name": "megabrain"},
         "pendencias_abertas": [p["texto"] for p in pendentes],
         "acoes_rapidas": [{"nome": rotulo, "url": href} for rotulo, href, _ in acoes],
+        "fontes_markdown": [nome for nome, _ in fontes],
     }, ensure_ascii=False, indent=2)
 
     nav_ids = []
@@ -641,7 +751,9 @@ def gerar(args, data_iso: str) -> str:
         nav_ids.append("resolucao")
     nav_ids.append("situacao")
     for rel, _ in html_extras:
-        nav_ids.append(f"extra-{Path(rel).stem}")
+        nav_ids.append(id_extra(rel))
+    for rel, _ in html_markdowns_auto:
+        nav_ids.append(id_extra(rel))
     if html_skill:
         nav_ids.append("proximos")
     if pendencias:
@@ -655,7 +767,8 @@ def gerar(args, data_iso: str) -> str:
         <p><strong>Este HTML é o relatório de projeto</strong> — a instância aplicada de
         <code>{html.escape(args.titulo)}</code>. Leia-o inteiro antes de vasculhar os .md
         soltos: ele já concentra contexto específico, contexto geral do megabrain,
-        estado/handoff, situação viva e pendências. Se precisar do detalhe bruto de uma
+        estado/handoff, situação viva, pendências e toda documentação Markdown da
+        instância (exceto infraestrutura ignorada). Se precisar do detalhe bruto de uma
         fonte, o caminho absoluto está na seção "Fontes" acima — nunca edite este HTML,
         edite a fonte e rode <code>bin/mb-relatorio-projeto.py</code> de novo.</p>
         <p><strong>TL;DR:</strong> {html.escape(tldr)}</p>
@@ -696,7 +809,7 @@ def gerar(args, data_iso: str) -> str:
 <meta name="megabrain:pendencias-abertas" content="{len(pendentes)}">
 <meta name="description" content="Relatório de projeto — contexto, estado, situação e próximas ações concentrados num único arquivo, para humano e IA.">
 <script type="application/ld+json">{json_ld}</script>
-<style>{css()}</style></head><body><div class="wrap">
+<style>{css(args.tema)}</style></head><body><div class="wrap">
 <h1>{html.escape(args.titulo)} · relatório de projeto</h1>
 <div class="sub">gerado em {html.escape(data_iso[:16].replace('T', ' '))} · bin/mb-relatorio-projeto.py · irmão do relatório DNA</div>
 <div class="tldr {tldr_classe}">{_inline(tldr)}</div>
@@ -707,6 +820,8 @@ def gerar(args, data_iso: str) -> str:
 <footer>
 <p><b>Como este arquivo se atualiza:</b> nunca se edita o HTML. Edite as fontes listadas
 acima e rode <code>python bin/mb-relatorio-projeto.py</code> de novo (mesmos argumentos).
+Por padrão, todo <code>.md</code> da instância entra automaticamente; infraestrutura em
+<code>MEGABRAIN/</code>, <code>.git/</code>, caches e dependências fica fora.
 Se o "gerado em" lá em cima está velho, o retrato está velho.</p>
 <p>Template reaplicável a qualquer projeto megabrain — ver
 <code>MEGABRAIN.md</code> seção "Relatório de projeto".</p>
@@ -724,9 +839,13 @@ def main():
     ap.add_argument("--plano", required=True, help="caminho (relativo à raiz) do arquivo vivo principal")
     ap.add_argument("--context", default="CONTEXT.md", help="caminho relativo do glossário (default CONTEXT.md)")
     ap.add_argument("--extra", action="append", default=[], help="arquivo .md extra (repetível)")
+    ap.add_argument("--sem-todos-md", action="store_true",
+                    help="não descobre os demais .md do projeto (o padrão é incluí-los todos)")
     ap.add_argument("--skill", default=None, help="SKILL.md do router do projeto (opcional)")
     ap.add_argument("--tldr", default=None, help="uma frase; default: 1º parágrafo do --plano")
     ap.add_argument("--tldr-classe", default="atencao", choices=["ok", "atencao", "ruim"])
+    ap.add_argument("--tema", default="padrao", choices=["padrao", "megabrain"],
+                    help="linguagem visual do HTML; 'megabrain' usa o console editorial")
     ap.add_argument("--megabrain-central", default=None, help="pasta central do megabrain, para puxar o contexto geral real")
     ap.add_argument("--saida", default=None, help="caminho do HTML de saída (default: RELATORIO.html na raiz do projeto)")
     ap.add_argument("--sem-resolucao", action="store_true", help="desliga a extração automática da seção Resolução")

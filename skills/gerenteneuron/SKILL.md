@@ -1,6 +1,6 @@
 ---
 name: gerenteneuron
-description: Gerente geral dos projetos do Henrique e chat multi-IA local. Use quando ele pedir status geral ("onde estamos", "status de tudo"), mandar um pedido sem dizer o projeto, pedir para abrir/rodar/consertar o app GerenteNeuron, mexer no cofre de credenciais, conferir a tabela de preços dos modelos (pricing.json), ou ajustar o roteamento por custo entre OpenAI, Anthropic, Gemini, Moonshot e Ollama local. Também cobre "qual skill eu uso pra isso".
+description: Gerente geral dos projetos do <USUARIO> e chat multi-IA local. Use quando ele pedir status geral ("onde estamos", "status de tudo"), mandar um pedido sem dizer o projeto, pedir para abrir/rodar/consertar o app GerenteNeuron, mexer no cofre de credenciais, conferir a tabela de preços dos modelos (pricing.json), ou ajustar o roteamento por custo entre OpenAI, Anthropic, Gemini, Moonshot e Ollama local. Também cobre "qual skill eu uso pra isso".
 ---
 
 # /gerenteneuron — gerente geral + chat multi-IA local
@@ -12,7 +12,7 @@ Ponto único de entrada. Duas funções que não se confundem:
 2. **Chat multi-IA** — conversa roteada por custo/capacidade entre provedores
    pagos e o Ollama local.
 
-Raiz do app: `S:\projetos multi i.a\MEGA B R A I  N\gerenteneuron\`
+Raiz do app: `<MEGABRAIN_ROOT>\gerenteneuron\`
 
 ---
 
@@ -106,7 +106,7 @@ Fernet (AES-128-CBC + HMAC) com chave derivada por PBKDF2, 600k iterações. A
 chave real dos dados é aleatória, protegida em paralelo pela senha mestre e pela
 chave de recuperação.
 
-**Diga isto ao Henrique se `vault/recovery.key` ainda existir:** enquanto a
+**Diga isto ao <USUARIO> se `vault/recovery.key` ainda existir:** enquanto a
 chave de recuperação estiver na mesma pasta do cofre, a senha mestre não
 protege contra quem tem acesso ao disco. O lugar dela é fora — pendrive ou
 gerenciador de senhas.

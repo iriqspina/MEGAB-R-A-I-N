@@ -29,13 +29,17 @@ MAPEAMENTO = [
 
 def copiar(src, dst, dry_run=False):
     if dry_run:
-        print(f"  [dry-run] copiaria {src} -> {dst}")
+        print(f"  [dry-run] copiaria {src} -> {dst} (merge, sem apagar o que já existe)")
         return True
     os.makedirs(os.path.dirname(dst), exist_ok=True)
     if os.path.isdir(src):
-        if os.path.exists(dst):
-            shutil.rmtree(dst)
-        shutil.copytree(src, dst)
+        # 260818: merge, não replace. Antes era rmtree+copytree, que apagava
+        # qualquer arquivo que já existisse em dst e não viesse do projeto que
+        # está subindo (ex.: referencias/ genérico da central sendo apagado por
+        # um projeto que só tem referencias específicas dele). dirs_exist_ok
+        # sobrescreve arquivos com o mesmo nome (o projeto ainda é a fonte da
+        # verdade pro que ele de fato tem) mas preserva o que só existe em dst.
+        shutil.copytree(src, dst, dirs_exist_ok=True)
     else:
         shutil.copy2(src, dst)
     print(f"  copiado {os.path.basename(src)} -> {dst}")
