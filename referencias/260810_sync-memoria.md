@@ -1,4 +1,4 @@
-# Sincronizar identidade entre agentes (Claude Code, Kimi CLI, Gemini CLI)
+# Sincronizar identidade entre agentes (Claude Code, Codex CLI, Kimi CLI/Kimi Code, Gemini CLI)
 
 Extensão do Gate 0 (assumir) — não confundir com o Gate 0/6 de **estado de
 projeto** (`ESTADO.md`/`HANDOFF.md`). Isto sincroniza **quem é a pessoa e
@@ -27,15 +27,17 @@ fica local, ou num repo privado do próprio projeto.
 
 ## Global (uma vez) vs. por projeto (repetido)
 
-Os três agentes suportam um arquivo de memória **global**, no diretório do
+Os quatro agentes suportam um arquivo de memória **global**, no diretório do
 usuário, que carrega em toda sessão, de qualquer projeto — configure uma
-vez, nunca mais repita por projeto:
+vez, nunca mais repita por projeto. Além disso, o sync gera o output style do
+Claude Code em `~/.claude/output-styles/megabrain.md` (veja abaixo):
 
 | Agente | Arquivo global | Arquivo por projeto (sobrepõe o global) |
 |---|---|---|
 | Claude Code | `~/.claude/CLAUDE.md` | `CLAUDE.md` na raiz do projeto |
+| Codex CLI | `~/.codex/AGENTS.md` | `AGENTS.md` na raiz do projeto |
 | Gemini CLI | `~/.gemini/GEMINI.md` | `GEMINI.md` na raiz do projeto |
-| Kimi CLI / Kimi Code | `~/.kimi/AGENTS.md` | `AGENTS.md` (ou `./.kimi/AGENTS.md`) na raiz do projeto |
+| Kimi CLI / Kimi Code | `~/.kimi/AGENTS.md` e `~/.kimi-code/AGENTS.md` | `AGENTS.md` na raiz do projeto |
 
 Identidade (nome, preferências, formato obrigatório de resposta) é a
 mesma em todo lugar → use o **global**. Regra que só vale num projeto
@@ -65,7 +67,7 @@ ajudando em ambientes onde mais de uma pessoa pode operar o megabrain.
 
 ## O que você precisa fazer, dependendo de quem você é
 
-Os três agentes resolvem import com a mesma sintaxe — `@caminho/arquivo.md`
+Os quatro agentes resolvem import com a mesma sintaxe — `@caminho/arquivo.md`
 — seja no arquivo global ou no de projeto. Isso lê o arquivo de destino em
 tempo real, sem duplicar texto: mudou a fonte, mudou em todo lugar sem
 rodar nada de novo.
@@ -88,8 +90,12 @@ path parsing nenhum.
 conteudo --dir <pasta>` injeta o CONTEÚDO do arquivo de identidade dentro
 de `CLAUDE.md`/`GEMINI.md`/`AGENTS.md`, entre marcadores
 (`<!-- MEGABRAIN:AUTO-SYNC:START/END -->`) — idempotente, atualiza sem
-duplicar, funciona pros três agentes, sem depender de sintaxe de import.
+duplicar, funciona pros quatro agentes, sem depender de sintaxe de import.
 `--dir "%USERPROFILE%"` (Windows) ou `--dir ~` (Linux/Mac) instala global.
+
+O alvo `claude-style` gera `~/.claude/output-styles/megabrain.md` (output
+style do Claude Code, system-prompt-level, `keep-coding-instructions: true`);
+ative em `settings.json` do Claude Code com `"outputStyle": "megabrain"`.
 
 Pra instalar só num agente: troque `--target all` por `--target
 claude|gemini|kimi`.

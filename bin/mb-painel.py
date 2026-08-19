@@ -26,8 +26,12 @@ import json
 import sys
 from pathlib import Path
 
+import mb_utils as u
+
+u.utf8_console()
+
 EXTENSOES = {".md", ".txt"}
-IGNORAR = {".git", ".mb-backup", ".dna-backup", ".mb-aspirador", "__pycache__"}
+IGNORAR = {".git", ".mb-backup", ".dna-backup", ".mb-aspirador", "__pycache__", ".mb-log"}
 
 GRUPOS = [
     ("protocolo", ["skills/megabrain/SKILL.md", "MEGABRAIN.md", "skills/codex-megabrain/SKILL.md"]),
@@ -101,10 +105,18 @@ MECANICAS = [
         ("assumir a trava por 2h", 'python "{RAIZ}/bin/mb-sync.py" --dir "{PROJETO}" lock --agente claude --escopo . --horas 2'),
         ("devolver a trava", 'python "{RAIZ}/bin/mb-sync.py" --dir "{PROJETO}" release --agente claude'),
     ]),
-    ("versão do megabrain", "Compara o megabrain de um projeto com o da central e sincroniza. Rodar no Gate 0, antes de planejar.", [
+    ("versão do megabrain", "Compara o megabrain de um projeto com o da central e sincroniza. Rodar no Gate 0, antes de planejar. Desde a v6 também acusa cópia tocada localmente e drift entre os espelhos.", [
         ("conferir e sincronizar", 'python "{RAIZ}/bin/mb-check-version.py" --projeto "{PROJETO}"'),
         ("conferir sem internet", 'python "{RAIZ}/bin/mb-check-version.py" --projeto "{PROJETO}" --offline'),
-        ("subir projeto → central", 'python "{RAIZ}/bin/mb-sync-projeto-para-central.py" --projeto "{PROJETO}"'),
+        ("subir projeto → central (lições em mão dupla)", 'python "{RAIZ}/bin/mb-sync-projeto-para-central.py" --projeto "{PROJETO}"'),
+        ("gate de drift central × export × repo-local", 'python "{RAIZ}/bin/mb-check-version.py" --gate-drift'),
+    ]),
+    ("meta e memória (v6)", "Compreensão da meta + memória em escala: META.md injetado por hook, juiz local de aderência, lições por proximidade de embedding.", [
+        ("checar aderência à meta (qwen local)", 'python "{RAIZ}/bin/mb-checar-meta.py" --projeto "{PROJETO}"'),
+        ("buscar lições por relevância", 'python "{RAIZ}/bin/mb-indice-licoes.py" --buscar "descreva a situacao" --n 5'),
+        ("reindexar lições (após registrar novas)", 'python "{RAIZ}/bin/mb-indice-licoes.py" --indexar'),
+        ("recontar recorrência (candidatas a regra 3×+)", 'python "{RAIZ}/bin/mb-indice-licoes.py" --recontar'),
+        ("orquestrar diálogo entre IAs (modo do GerenteNeuron)", 'python "{RAIZ}/gerenteneuron/orquestrador.py" --prompt contexto.txt --rodadas 3'),
     ]),
     ("manutenção do pacote", "Arruma a pasta, aplica os patches de versao e regenera os artefatos. Tudo tem dry-run ou backup antes de escrever.", [
         ("ver o plano de arrumação", 'python "{RAIZ}/bin/mb-arrumar.py" --raiz "{RAIZ}"'),
@@ -119,9 +131,17 @@ MECANICAS = [
         ("relatório de um projeto", 'python "{RAIZ}/bin/mb-relatorio-projeto.py" --projeto "{PROJETO}"'),
         ("backup da central", 'python "{RAIZ}/bin/mb-backup-central.py"'),
     ]),
-    ("provar que a trava trava", "A trava e a unica garantia real do protocolo. Rode depois de qualquer mexida em bin/ — sao 7 casos e leva segundos.", [
-        ("rodar os testes", 'python "{RAIZ}/tests/test_mb_sync.py"'),
+    ("provar que a trava trava", "A trava e a unica garantia real do protocolo. Rode depois de qualquer mexida em bin/ — sao os testes de trava, sync e observabilidade em segundos.", [
+        ("rodar a suíte inteira", 'python -m unittest discover "{RAIZ}/tests"'),
         ("rodar com pytest", 'pytest "{RAIZ}/tests"'),
+    ]),
+    ("atividade dos agentes", "Observabilidade (v6): hooks gravam prompt/resposta em .mb-log/ por projeto; o relatório separa por agente e modelo. Dados locais, nunca sobem pro GitHub.", [
+        ("gerar o relatório de agentes", 'python "{RAIZ}/bin/mb-relatorio-agentes.py"'),
+        ("relatório só dos últimos 7 dias", 'python "{RAIZ}/bin/mb-relatorio-agentes.py" --dias 7'),
+        ("importar o feedback do GerenteNeuron", 'python "{RAIZ}/bin/mb-observar.py" --importar-feedback'),
+        ("regerar o relatório vivo (auto-reload)", 'python "{RAIZ}/bin/mb-relatorio-vivo.py"'),
+        ("anotar no relatório vivo", 'python "{RAIZ}/bin/mb-relatorio-vivo.py" --nota "o que aconteceu"'),
+        ("ver os eventos de hoje deste projeto (PowerShell)", 'Get-Content "{PROJETO}/.mb-log/eventos-$(Get-Date -Format yyMMdd).jsonl"'),
     ]),
     ("identidade entre agentes", "Uma fonte, três cópias: CLAUDE.md, GEMINI.md, AGENTS.md. Nunca edite a cópia.", [
         ("sincronizar nos três", 'python "{RAIZ}/bin/mb-sync-memoria.py" --source "{RAIZ}/260810_memoria-pessoal.md" --target all --modo conteudo --dir "%USERPROFILE%"'),

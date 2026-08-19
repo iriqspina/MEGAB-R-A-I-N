@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 """
 mb-sync-memoria.py - sincroniza o arquivo de IDENTIDADE (quem e a pessoa,
-formato obrigatorio de resposta) para CLAUDE.md / GEMINI.md / AGENTS.md.
+formato obrigatorio de resposta) para CLAUDE.md / GEMINI.md / AGENTS.md /
+output style do Claude Code.
 
 Nao confundir com mb-sync.py (esse gerencia a TRAVA de projeto em
 HANDOFF.md). Ver referencias/260810_sync-memoria.md para o protocolo
 completo.
 
 Uso:
-  mb-sync-memoria.py --source CAMINHO --target claude|gemini|kimi [--dir CAMINHO] [--modo import|conteudo] [--usuario NOME]
+  mb-sync-memoria.py --source CAMINHO --target claude|gemini|kimi|claude-style [--dir CAMINHO] [--modo import|conteudo] [--usuario NOME]
   mb-sync-memoria.py --source CAMINHO --target all [--dir CAMINHO] [--modo import|conteudo] [--usuario NOME]
 
 --modo import (default pra claude/gemini): garante a linha "@<source>" em
@@ -20,6 +21,9 @@ parseado igual por todo agente/versao).
 espaco): injeta o CONTEUDO do source dentro do arquivo de destino, entre
 marcadores - idempotente, roda de novo sem duplicar, sem depender de path
 parsing nenhum.
+--target claude-style gera ~/.claude/output-styles/megabrain.md (system
+prompt/output style do Claude Code, com keep-coding-instructions: true). Nao
+usa --modo; sempre grava conteudo.
 --usuario forca um nome; se omitido, tenta detectar do campo `USUARIO:` no
 arquivo fonte. O campo e propagado pros destinos pra diferenciar perfis.
 """
@@ -32,10 +36,13 @@ from pathlib import Path
 
 import mb_utils as u
 
+u.utf8_console()
+
 TARGET_FILE = {
     "claude": "CLAUDE.md",
     "gemini": "GEMINI.md",
     "kimi": "AGENTS.md",
+    "claude-style": str(Path("output-styles") / "megabrain.md"),
 }
 
 
@@ -95,6 +102,23 @@ def inject_content(path: Path, conteudo_fonte: str, usuario: str | None) -> str:
 
 def sync_um(target: str, source: Path, diretorio: Path, modo: str, usuario: str | None) -> str:
     destino = diretorio / TARGET_FILE[target]
+    if target == "claude-style":
+        conteudo = _com_usuario_prefixo(u.safe_read_text(source) or "", usuario)
+        corpo = (
+            "---\n"
+            "name: megabrain\n"
+            "description: Contrato de resposta do usuario (voz, niveis de detalhe, acoes). "
+            "Gerado por mb-sync-memoria.py a partir da fonte de identidade - nao editar aqui.\n"
+            "keep-coding-instructions: true\n"
+            "---\n\n"
+            f"{conteudo}\n"
+        )
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        texto_atual = u.safe_read_text(destino) or ""
+        acao = "atualizado" if texto_atual.strip() else "criado"
+        if u.atomic_write_text(destino, corpo):
+            return f"{target} ({destino.name}): {acao}"
+        return f"{target} ({destino.name}): erro_escrita"
     modo_efetivo = modo or ("conteudo" if target == "kimi" else "import")
     if modo_efetivo == "conteudo":
         conteudo = u.safe_read_text(source) or ""
@@ -106,7 +130,7 @@ def sync_um(target: str, source: Path, diretorio: Path, modo: str, usuario: str 
 def main():
     ap = argparse.ArgumentParser(description="Sincroniza identidade entre agentes")
     ap.add_argument("--source", required=True, help="arquivo de identidade fonte")
-    ap.add_argument("--target", required=True, choices=["claude", "gemini", "kimi", "all"])
+    ap.add_argument("--target", required=True, choices=["claude", "gemini", "kimi", "claude-style", "all"])
     ap.add_argument("--dir", default=".", help="raiz do projeto (default: .)")
     ap.add_argument("--modo", choices=["import", "conteudo"], default=None,
                      help="default: conteudo pra kimi, import pra claude/gemini")

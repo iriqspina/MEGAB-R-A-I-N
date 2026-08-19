@@ -29,6 +29,8 @@ from pathlib import Path
 
 import mb_utils as u
 
+u.utf8_console()
+
 HANDOFF_NAME = "HANDOFF.md"
 FMT = "%Y-%m-%d %H:%M"
 

@@ -25,6 +25,25 @@ from typing import Iterable
 
 
 # ---------------------------------------------------------------------------
+# Console UTF-8 — Windows abre stdout em cp1252 e quebra em "→", "·", "✓".
+# ---------------------------------------------------------------------------
+
+def utf8_console() -> None:
+    """Reconfigura stdout/stderr para UTF-8. Chamar no topo de todo script CLI.
+
+    Sem isso, `print("→")` num console Windows padrão levanta
+    UnicodeEncodeError (lição 260818). Falha silenciosa: se o stream não
+    suportar reconfigure (pipe, testes), segue como está.
+    """
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            try:
+                stream.reconfigure(encoding="utf-8")
+            except (OSError, ValueError):
+                pass
+
+
+# ---------------------------------------------------------------------------
 # Path containment — evita path traversal em --dir, --projeto, --saida etc.
 # ---------------------------------------------------------------------------
 

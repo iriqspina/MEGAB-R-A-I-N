@@ -9,13 +9,11 @@ __pycache__/
 260810_memoria-pessoal.md
 licoes-megabrain.md
 
-# GerenteNeuron: dados locais, credenciais e ambiente
-# Nunca versionar: ambiente virtual, cofre de chaves, dados de runtime,
-# configurações pessoais e caches Python.
+# GerenteNeuron: dados locais, credenciais, ambiente virtual e cofre
 gerenteneuron/.env
+gerenteneuron/.venv/
 gerenteneuron/projetos.json
 gerenteneuron/data/
 gerenteneuron/vault/
-gerenteneuron/.venv/
 gerenteneuron/__pycache__/
 gerenteneuron/**/*.pyc

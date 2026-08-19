@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>260816 — GerenteNeuron v1.0 · relatório de estado</title>
+<style>
+  :root{
+    --tinta:#0d0d0e;
+    --papel:#f4f2ed;
+    --papel-2:#e8e5dd;
+    --linha:#c9c4b8;
+    --fraco:#5c574d;
+    --alerta:#a8410f;
+    --ok:#2f5d3a;
+    --mono:ui-monospace,"SF Mono","Cascadia Mono","Roboto Mono",Menlo,Consolas,monospace;
+    --texto:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;background:var(--papel);color:var(--tinta);
+    font-family:var(--texto);font-size:16px;line-height:1.55;
+    font-feature-settings:"kern" 1;
+  }
+  .folha{max-width:62rem;margin:0 auto;padding:0 1.5rem 6rem}
+
+  /* cabeçalho: régua tipográfica, sem card, sem sombra */
+  header{padding:4rem 0 2rem;border-bottom:3px solid var(--tinta)}
+  .kicker{font-family:var(--mono);font-size:.72rem;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--fraco);margin:0 0 1rem}
+  h1{font-size:clamp(2.1rem,5.5vw,3.4rem);line-height:1.02;margin:0;
+    letter-spacing:-.03em;font-weight:800}
+  h1 em{font-style:normal;color:var(--fraco);font-weight:400}
+  .meta{display:flex;flex-wrap:wrap;gap:.4rem 2rem;margin-top:1.6rem;
+    font-family:var(--mono);font-size:.78rem;color:var(--fraco)}
+
+  h2{font-size:1.05rem;letter-spacing:.14em;text-transform:uppercase;
+    font-family:var(--mono);font-weight:600;margin:3.5rem 0 1rem;
+    padding-bottom:.5rem;border-bottom:1px solid var(--linha)}
+  h3{font-size:1.12rem;margin:2rem 0 .4rem;letter-spacing:-.01em}
+  p{margin:0 0 1rem;max-width:60ch}
+  code{font-family:var(--mono);font-size:.86em;background:var(--papel-2);
+    padding:.1em .35em;border-radius:2px}
+
+  /* TL;DR — bloco de abertura, não card */
+  .tldr{border-left:4px solid var(--tinta);padding:.2rem 0 .2rem 1.4rem;margin:2.5rem 0}
+  .tldr p{font-size:1.12rem;line-height:1.5;max-width:62ch}
+  .tldr p:last-child{margin-bottom:0}
+
+  /* placar */
+  .placar{display:grid;grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));
+    gap:1px;background:var(--linha);border:1px solid var(--linha);margin:1.5rem 0}
+  .placar div{background:var(--papel);padding:1rem 1.1rem}
+  .placar .n{font-family:var(--mono);font-size:2rem;font-weight:700;
+    line-height:1;letter-spacing:-.04em;display:block}
+  .placar .r{font-size:.74rem;color:var(--fraco);text-transform:uppercase;
+    letter-spacing:.1em;margin-top:.45rem;display:block}
+
+  table{width:100%;border-collapse:collapse;margin:1.2rem 0;font-size:.9rem}
+  th{text-align:left;font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--fraco);padding:.5rem .7rem .5rem 0;
+    border-bottom:2px solid var(--tinta);vertical-align:bottom}
+  td{padding:.72rem .7rem .72rem 0;border-bottom:1px solid var(--linha);
+    vertical-align:top}
+  td:first-child,th:first-child{padding-left:0}
+  .num{font-family:var(--mono);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .sev{font-family:var(--mono);font-size:.7rem;font-weight:700;letter-spacing:.06em;
+    white-space:nowrap}
+  .sev-a{color:var(--alerta)}
+  .sev-m{color:#8a6a12}
+  .antes{color:var(--fraco);text-decoration:line-through;
+    text-decoration-thickness:1px}
+  .depois{font-weight:600}
+
+  ul{margin:0 0 1rem;padding-left:1.15rem;max-width:62ch}
+  li{margin-bottom:.5rem}
+  li::marker{color:var(--fraco)}
+
+  pre{background:var(--tinta);color:var(--papel);font-family:var(--mono);
+    font-size:.8rem;line-height:1.6;padding:1.1rem 1.2rem;overflow-x:auto;
+    margin:1.2rem 0;border-radius:0}
+  pre .c{color:#9a958a}
+  pre .g{color:#7fb08a}
+
+  .aberto{border-left:4px solid var(--alerta);padding:.9rem 0 .9rem 1.3rem;
+    margin:1.4rem 0;background:linear-gradient(90deg,rgba(168,65,15,.055),transparent 70%)}
+  .aberto h3{margin-top:0;font-size:1rem}
+  .aberto p{margin-bottom:0;font-size:.94rem}
+
+  footer{margin-top:4rem;padding-top:1.5rem;border-top:1px solid var(--linha);
+    font-size:.82rem;color:var(--fraco)}
+  footer a{color:var(--fraco)}
+  footer li{margin-bottom:.3rem}
+
+  @media (max-width:640px){
+    .folha{padding:0 1.1rem 4rem}
+    header{padding-top:2.5rem}
+    table{font-size:.84rem}
+  }
+</style>
+</head>
+<body>
+<div class="folha">
+
+<header>
+  <p class="kicker">megabrain · relatório de estado</p>
+  <h1>GerenteNeuron v1.0<br><em>o app respondia — e estava errado</em></h1>
+  <div class="meta">
+    <span>2026-08-16</span>
+    <span>núcleo v4.13 · auditoria v5.1 fechada</span>
+    <span>32/32 testes</span>
+  </div>
+</header>
+
+<div class="tldr">
+  <p><strong>O megabrain está saudável; o GerenteNeuron é que não estava.</strong>
+  Os 14 achados da auditoria v5.1 continuam fechados. Mas o app nascido depois
+  dela repetiu o achado que ela mesma diagnosticou: zero teste. Resultado — o
+  chat não tinha memória nenhuma, o roteador "escolhia o mais barato" por uma
+  tabela de preços inventada que errava até 5×, e o CORS aberto deixava qualquer
+  aba do navegador gastar suas chaves de API.</p>
+  <p>Tudo corrigido, com teste que falha contra a versão anterior. Preço e
+  catálogo viraram dado com data de validade e script de conferência. A skill
+  <code>/gerenteneuron</code> foi reescrita como router operacional.
+  <strong>Falta você cadastrar as keys reais e tirar a chave de recuperação de
+  dentro da pasta do cofre.</strong></p>
+</div>
+
+<h2>Placar</h2>
+<div class="placar">
+  <div><span class="n">14</span><span class="r">achados v5.1 · fechados</span></div>
+  <div><span class="n">11</span><span class="r">defeitos novos · corrigidos</span></div>
+  <div><span class="n">32</span><span class="r">testes · antes: 0</span></div>
+  <div><span class="n">5</span><span class="r">itens abertos</span></div>
+</div>
+<p>Os 11 defeitos abaixo estavam todos num app que subia sem erro,
+compilava limpo em <code>py_compile</code> e respondia no navegador. Nenhum
+aparece em teste manual de uma mensagem só — é exatamente por isso que a
+auditoria v5.1 dizia que <em>script sem teste é markdown com extensão .py</em>.</p>
+
+<h2>O que estava quebrado</h2>
+<table>
+  <thead><tr><th style="width:5.5rem">Severidade</th><th>Defeito</th><th>Consequência real</th></tr></thead>
+  <tbody>
+    <tr>
+      <td class="sev sev-a">ALTA</td>
+      <td><strong>O chat não tinha memória.</strong> <code>route()</code> recebia o
+        histórico e passava <code>None</code> ao provedor.</td>
+      <td>Toda mensagem chegava ao modelo como se fosse a primeira. Conversa de
+        cinco turnos custava cinco chamadas isoladas.</td>
+    </tr>
+    <tr>
+      <td class="sev sev-a">ALTA</td>
+      <td><strong>Preço inventado.</strong> Quatro tabelas <code>estimar_custo</code>
+        divergentes, uma por provider, escritas de memória — e a fila de
+        prioridade escrita à mão, sem olhar para nenhuma delas.</td>
+      <td>O app anunciava "escolho o mais barato" e escolhia por lista
+        arbitrária. Metade dos IDs já estava fora de linha.</td>
+    </tr>
+    <tr>
+      <td class="sev sev-a">ALTA</td>
+      <td><strong>CORS aberto.</strong> <code>Access-Control-Allow-Origin: *</code>
+        num servidor que carrega API keys em memória, sem checagem de
+        <code>Host</code>.</td>
+      <td>Qualquer página aberta no navegador podia POSTar em
+        <code>/api/chat</code> e queimar crédito, ou tentar senha no cofre em
+        loop.</td>
+    </tr>
+    <tr>
+      <td class="sev sev-a">ALTA</td>
+      <td><strong>Chave de recuperação ao lado do cofre.</strong>
+        <code>recovery.key</code> em texto puro dentro de <code>vault/</code>.</td>
+      <td>Quem tem acesso ao disco tem os dois. A senha mestre vira decoração.</td>
+    </tr>
+    <tr>
+      <td class="sev sev-m">MÉDIA</td>
+      <td><strong>Classificador com regras mortas.</strong> Comparava contra
+        <code>set(texto.split())</code>.</td>
+      <td><code>auditoria?</code> não casava com <code>auditoria</code>, e nenhum
+        termo de duas palavras (<code>design system</code>, <code>o que é</code>)
+        disparava jamais.</td>
+    </tr>
+    <tr>
+      <td class="sev sev-m">MÉDIA</td>
+      <td><strong>Gerente casava projeto por substring.</strong></td>
+      <td>Nome curto casava com qualquer frase; a keyword <code>api</code> casava
+        dentro de <code>rapidez</code>. Apontava a skill errada com cara de
+        certeza. <em>Encontrado por um dos testes novos.</em></td>
+    </tr>
+    <tr>
+      <td class="sev sev-m">MÉDIA</td>
+      <td><strong>Anthropic descartava <code>system</code></strong> em vez de
+        mandar no parâmetro próprio.</td>
+      <td>Instrução de sistema jogada fora silenciosamente.</td>
+    </tr>
+    <tr>
+      <td class="sev sev-m">MÉDIA</td>
+      <td><strong>Feedback em formato órfão.</strong> <code>/api/feedback</code>
+        gravava um esquema que <code>resumo_feedback</code> não sabia ler.</td>
+      <td>Os 👍/👎 não entravam em nenhuma estatística. O aprendizado de rotas
+        não aprendia.</td>
+    </tr>
+    <tr>
+      <td class="sev sev-m">MÉDIA</td>
+      <td><strong>Ping da Anthropic com ID fixo</strong> divergente da tabela;
+        Gemini ignorava <code>usageMetadata</code>.</td>
+      <td>"Testar agora" passaria a falhar sozinho na aposentadoria do modelo, e
+        você leria isso como key errada.</td>
+    </tr>
+    <tr>
+      <td class="sev sev-m">MÉDIA</td>
+      <td><code>log_message</code> indexava <code>args[0]</code>/<code>args[1]</code>.</td>
+      <td>Derrubava o handler justamente no log de erro.</td>
+    </tr>
+    <tr>
+      <td class="sev sev-m">MÉDIA</td>
+      <td><strong>Estimativa de token contradizia a própria docstring</strong>
+        (dizia 0.75, multiplicava por 1.0).</td>
+      <td>Custo subestimado quando a API não devolve <code>usage</code>. Em
+        português o fator real fica perto de 1,6.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Preço: o erro em números</h2>
+<p>Conferido em 2026-08-16 contra as páginas oficiais da Anthropic e do Google, e
+contra agregadores para OpenAI e Moonshot. USD por 1M de tokens, saída:</p>
+<table>
+  <thead><tr><th>Modelo</th><th class="num">Estava</th><th class="num">É</th><th class="num">Erro</th></tr></thead>
+  <tbody>
+    <tr><td><code>claude-opus</code> → <code>claude-opus-5</code></td><td class="num antes">75,00</td><td class="num depois">25,00</td><td class="num">3,0×</td></tr>
+    <tr><td><code>kimi-k2</code> → <code>kimi-k2.6</code></td><td class="num antes">0,50</td><td class="num depois">4,00</td><td class="num">8,0×</td></tr>
+    <tr><td><code>gemini-2.5-flash</code> → <code>gemini-3.5-flash</code></td><td class="num antes">0,60</td><td class="num depois">9,00</td><td class="num">15,0×</td></tr>
+    <tr><td><code>gpt-5.6-terra</code></td><td class="num antes">4,00</td><td class="num depois">12,00</td><td class="num">3,0×</td></tr>
+    <tr><td><code>gpt-5.6-sol</code></td><td class="num antes">15,00</td><td class="num depois">30,00</td><td class="num">2,0×</td></tr>
+  </tbody>
+</table>
+<p><code>claude-sonnet-4</code> e <code>kimi-k1.5</code> nem existem mais na API.
+O roteador os mantinha na fila de prioridade.</p>
+
+<h2>O que mudou</h2>
+
+<h3>Preço virou dado com prazo de validade</h3>
+<p><code>pricing.json</code> é a fonte única — catálogo, classe e preço, com
+<code>verificado_em</code>, <code>revalidar_em_dias</code> e a URL de cada fonte.
+<strong>A fila do roteador é ordenada pelo custo real desse arquivo</strong>, não
+por lista escrita à mão. Trocar de modelo agora é editar um JSON.</p>
+<p>Vencido o prazo, o app mostra aviso no topo do chat e o script sai com código
+1. Isso é a regra de ouro 21 aplicada: garantia é script, não disciplina.</p>
+<pre><span class="c">&gt; modelos.cmd --listar</span>
+provider   modelo                     classe         in     out fonte
+----------------------------------------------------------------------
+ollama     qwen3:8b                   quick        0.00    0.00 local
+openai     gpt-5.6-luna               quick        0.20    1.20 agregador
+gemini     gemini-3.1-flash-lite      quick        0.25    1.50 oficial
+moonshot   kimi-k2.6                  standard     0.95    4.00 agregador
+anthropic  claude-sonnet-5            standard     2.00   10.00 oficial
+anthropic  claude-opus-5              deep         5.00   25.00 oficial
+
+<span class="c">&gt; modelos.cmd --conferir</span>   <span class="c"># bate contra a API viva; exit 1 se divergir</span></pre>
+
+<h3>Testes, que era o que não existia</h3>
+<p>32 casos em stdlib pura, sem pytest — o achado M3 da v5.1 foi justamente
+prometer dependência que ninguém usa. Cobrem integridade e ordenação do
+pricing, classificação de estratégia, montagem da fila, propagação do histórico,
+checagem de origem HTTP, casamento de projeto e leitura da chave de recuperação.
+Cada caso falha contra a versão anterior.</p>
+<pre><span class="c">&gt; testar.cmd</span>
+Ran 32 tests in 0.171s
+
+<span class="g">OK</span></pre>
+
+<h3>Superfície de ataque fechada</h3>
+<ul>
+  <li><code>Origin</code> e <code>Host</code> validados — origem externa e Host
+    forjado recebem 403. A defesa de <code>Host</code> é contra DNS rebinding:
+    bind em 127.0.0.1 sozinho não protege.</li>
+  <li><code>/api/vault/unlock</code> trava 5 minutos após 5 senhas erradas.</li>
+  <li><code>recovery.key</code> com permissão 0600 e aviso dentro do próprio
+    arquivo mandando movê-lo para fora.</li>
+  <li><code>reset --recovery</code> passa a aceitar o arquivo colado inteiro — o
+    cabeçalho de aviso fazia o paste legítimo falhar com "chave inválida".</li>
+</ul>
+
+<h3>A fila deixou de ser invisível</h3>
+<p>Cada resposta mostra no rodapé o modelo, o custo estimado e quais candidatos
+foram pulados antes, com o erro de cada um. Quando o Ollama está desligado, você
+vê que ele foi tentado — em vez de só notar a fatura maior no fim do mês.</p>
+
+<h2>Verificação</h2>
+<ul>
+  <li>32/32 verdes nas <strong>três</strong> cópias: central,
+    <code>_github-repo-local/</code> e <code>260810_github-export/</code>. Sincronizar
+    as três é o antídoto do achado A1 — a cópia instalada divergindo do repo.</li>
+  <li>App real em 127.0.0.1: <code>Origin</code> externo → 403, <code>Host</code>
+    forjado → 403, JSON inválido → 400, traversal em <code>/static/</code> → 404.</li>
+  <li>Chat real: classificou <code>local_code</code>, tentou
+    <code>ollama/qwen3:8b</code> e <code>qwen3:14b</code>, caiu no mock e devolveu
+    a trilha completa de erro.</li>
+  <li><code>mb-modelos.py --listar</code> e <code>--conferir</code> saem com
+    código 0.</li>
+</ul>
+
+<h2>Aberto — o que depende de você</h2>
+
+<div class="aberto">
+  <h3>1 · Tirar a chave de recuperação de dentro do cofre</h3>
+  <p>Enquanto <code>gerenteneuron/vault/recovery.key</code> estiver na mesma pasta
+  do <code>vault.json</code>, a senha mestre não protege nada contra quem tem
+  acesso ao disco. Pendrive ou gerenciador de senhas, e apague o original.</p>
+</div>
+
+<div class="aberto">
+  <h3>2 · Cadastrar as keys reais</h3>
+  <p><code>setup-crypto.py</code> → <code>setup-vault.py</code> →
+  <code>mb-vault.py add</code>. Sem key, <code>--conferir</code> pula todos os
+  provedores pagos e a fila cai direto no mock. Depois de cadastrar, rode
+  <code>modelos.cmd --conferir</code>: é a primeira vez que o catálogo vai ser
+  batido contra a API de verdade.</p>
+</div>
+
+<div class="aberto">
+  <h3>3 · Autorizar o commit no repo público</h3>
+  <p><code>_github-repo-local/</code> está com working tree suja e sem commit —
+  o repo é público e a decisão registrada é não commitar sem sua autorização.
+  Há dois commits anteriores também aguardando push.</p>
+</div>
+
+<div class="aberto">
+  <h3>4 · Confirmar preço de OpenAI e Moonshot</h3>
+  <p>Anthropic e Google vieram de página oficial. OpenAI e Moonshot vieram de
+  agregador — estão marcados <code>"fonte": "agregador"</code> no JSON. Confirme
+  no painel de billing de cada conta na primeira cobrança real.</p>
+</div>
+
+<div class="aberto">
+  <h3>5 · Apagar <code>projetos.json</code> do repo local</h3>
+  <p>Foi copiado junto na sincronização. Está no <code>.gitignore</code> (linha
+  16), então não vai para o commit — mas não deveria estar lá. Este ambiente não
+  consegue deletar arquivos na sua máquina.</p>
+</div>
+
+<h2>Uma nota sobre a regra de nome com data</h2>
+<p>Os módulos novos entraram sem prefixo <code>YYMMDD_</code>:
+<code>precos.py</code>, <code>pricing.json</code>, <code>mb-modelos.py</code>,
+<code>tests/</code>. Renomear módulo Python quebra todo <code>import</code> que o
+referencia, e o achado B1 da própria auditoria v5.1 já classificou prefixo de
+data em executável chamado pelo nome como ruído — a pasta
+<code>gerenteneuron/</code> inteira já seguia essa convenção. A regra continua
+valendo para documento acumulável, e este relatório saiu como
+<code>260816_RELATORIO-gerenteneuron-v1.html</code>. Decisão registrada em
+<code>DECISOES.md</code> com a alternativa descartada; se preferir o prefixo em
+tudo, é reversível.</p>
+
+<footer>
+  <p><strong>Fontes de preço consultadas em 2026-08-16</strong> — registradas
+  também dentro de <code>pricing.json</code>:</p>
+  <ul>
+    <li><a href="https://platform.claude.com/docs/en/about-claude/pricing">Anthropic — Pricing (Claude Platform Docs)</a> · oficial</li>
+    <li><a href="https://ai.google.dev/gemini-api/docs/pricing">Google — Gemini Developer API pricing</a> · oficial</li>
+    <li><a href="https://www.aipricing.guru/openai-pricing/">AI Pricing Guru — OpenAI API Pricing (agosto 2026)</a> · agregador</li>
+    <li><a href="https://benchlm.ai/moonshot/api-pricing">BenchLM — Kimi API Pricing (agosto 2026)</a> · agregador</li>
+  </ul>
+  <p>Estado e continuidade: <code>ESTADO.md</code>, <code>HANDOFF.md</code>,
+  <code>DECISOES.md</code> (4 blocos novos), <code>licoes-megabrain.md</code>
+  (3 lições novas), <code>gerenteneuron/LICOES.md</code> (4 entradas).</p>
+</footer>
+
+</div>
+</body>
+</html>

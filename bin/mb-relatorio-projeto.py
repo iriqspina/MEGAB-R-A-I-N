@@ -62,6 +62,10 @@ import sys
 from urllib.parse import urlparse
 from pathlib import Path
 
+import mb_utils as u
+
+u.utf8_console()
+
 DEFAULT_OUT_NAME = "RELATORIO.html"
 
 RESOLUCAO_TITULOS_PADRAO = [

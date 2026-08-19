@@ -1,7 +1,7 @@
 # LICOES — GerenteNeuron
 
 Append-only. Lição que serviria num projeto completamente diferente vai para o
-global (`C:\Users\henri\.metaprotocolo\licoes.md`); o que é específico daqui
+global (`<USER_HOME>\.metaprotocolo\licoes.md`); o que é específico daqui
 fica neste arquivo.
 
 ## 260816 — app entregue sem um teste sequer

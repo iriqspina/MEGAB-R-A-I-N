@@ -21,6 +21,8 @@ from pathlib import Path
 
 import mb_utils as u
 
+u.utf8_console()
+
 
 def detectar_central():
     """Retorna a pasta central do megabrain via env var ou diretório do script."""
@@ -37,6 +39,13 @@ DESTINO_DEFAULT = os.path.join(CENTRAL_DEFAULT, "260810_github-export")
 EXCLUIR = {
     "260810_memoria-pessoal.md",
     "licoes-megabrain.md",
+    ".mb-log",  # v6 fase 1: cobre também .mb-log/ dentro de subpastas (walk)
+    # Diálogos antigos do orquestrador: artefato de execução com caminhos
+    # pessoais (o sanitizador acusou em 260819) — nunca sobem.
+    ".orquestrador",
+    "PROGRESSO.json",       # estado operacional do relatório vivo
+    "RELATORIO-VIVO.html",  # idem
+    "META.md",              # meta + histórico de intenção da central (pessoal)
     "260805_licoes-backup-pre-fix.md",
     "260810_backup-raiz-perfil",
     "260810_variantes",
@@ -62,6 +71,14 @@ EXCLUIR = {
     "260810_SKILL-divergente.bak.md",
     ".bak",
     "skills/conclusao-megabrain",
+    "gerenteneuron/.venv",
+    "gerenteneuron/vault",
+    "gerenteneuron/data",
+    "gerenteneuron/.mb-aspirador",
+    "gerenteneuron/projetos.json",
+    # Fonte local do plugin Kimi (SYSTEM.md, hooks, skills internas). Publicar
+    # o wrapper do plugin é decisão pendente — até lá, fica fora do pacote.
+    "plugin-megabrain",
 }
 
 # Estado operacional da central privada. Projetos clonados criam os próprios
@@ -72,6 +89,8 @@ EXCLUIR_TOPO = {
     "DECISOES.md",
     "RELATORIO.html",
     "PAINEL-MEGABRAIN.html",
+    "RELATORIO-AGENTES.html",  # v6 fase 1: agrega dados locais de uso
+    ".mb-log",                 # v6 fase 1: logs de prompt/resposta NUNCA sobem
 }
 
 # Duplicatas legadas sem prefixo de data: match EXATO de nome de arquivo
@@ -333,7 +352,33 @@ def main():
     destino = Path(args.destino).resolve()
 
     ok = gerar_template(central, destino)
+    if ok:
+        gravar_manifesto(central, destino)
     sys.exit(0 if ok else 1)
+
+
+def gravar_manifesto(central: Path, destino: Path) -> None:
+    """v6 fase 4: grava no export os hashes DA FONTE no momento da geração.
+
+    O export é sanitizado, então hash direto central↔export não fecha nunca;
+    o gate de drift (mb-check-version.py --gate-drift) compara o hash atual
+    da central com o que está aqui — se divergir, a central mudou depois da
+    última geração e o export está velho."""
+    import datetime as dt
+    import hashlib
+    import json as _json
+
+    chaves = ["MEGABRAIN.md", "skills/megabrain/SKILL.md", "VERSAO.txt"]
+    hashes = {}
+    for rel in chaves:
+        try:
+            hashes[rel] = hashlib.sha256((central / rel).read_bytes()).hexdigest()[:12]
+        except OSError:
+            hashes[rel] = None
+    manifesto = {"gerado_em": dt.datetime.now().astimezone().isoformat(timespec="seconds"),
+                 "hash_fonte": hashes}
+    u.atomic_write_text(destino / ".mb-manifest.json",
+                        _json.dumps(manifesto, ensure_ascii=False, indent=2) + "\n")
 
 
 if __name__ == "__main__":

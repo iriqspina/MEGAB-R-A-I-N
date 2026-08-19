@@ -1,7 +1,8 @@
 """
 test_mb_sync.py — prova que a trava de handoff realmente trava.
 
-Roda sem pytest:   python tests/test_mb_sync.py
+Roda sozinho:      python tests/test_mb_sync.py
+Roda na suíte:     python -m unittest discover tests
 Roda com pytest:   pytest tests/
 
 A trava e a unica garantia do protocolo (regra de ouro 21: garantia real e
@@ -11,9 +12,11 @@ script, nao markdown). O corolario: script sem teste e markdown com extensao
 
 from __future__ import annotations
 
+import shutil
 import subprocess
 import sys
 import tempfile
+import unittest
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
@@ -25,87 +28,70 @@ def rodar(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess:
         [sys.executable, str(MB_SYNC), *args],
         capture_output=True,
         text=True,
+        encoding="utf-8",
         cwd=str(cwd) if cwd else None,
     )
 
 
-def novo_projeto() -> Path:
-    return Path(tempfile.mkdtemp(prefix="mb-teste-"))
+class TestMbSync(unittest.TestCase):
+    def novo_projeto(self) -> Path:
+        p = Path(tempfile.mkdtemp(prefix="mb-teste-"))
+        self.addCleanup(shutil.rmtree, p, ignore_errors=True)
+        return p
 
+    def test_projeto_sem_handoff_esta_livre(self):
+        p = self.novo_projeto()
+        r = rodar("--dir", str(p), "status")
+        self.assertEqual(r.returncode, 0, f"projeto novo devia estar livre: {r.stdout}{r.stderr}")
 
-def test_projeto_sem_handoff_esta_livre():
-    p = novo_projeto()
-    r = rodar("--dir", str(p), "status")
-    assert r.returncode == 0, f"projeto novo devia estar livre: {r.stdout}{r.stderr}"
+    def test_lock_grava_e_status_acusa_travado(self):
+        p = self.novo_projeto()
+        r = rodar("--dir", str(p), "lock", "--agente", "claude", "--escopo", "src/", "--horas", "2")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertTrue((p / "HANDOFF.md").exists(), "lock nao criou HANDOFF.md")
 
+        texto = (p / "HANDOFF.md").read_text(encoding="utf-8")
+        self.assertIn("TRAVADO_POR: claude", texto)
+        self.assertNotIn("<USUARIO>", texto, "placeholder literal vazou para o HANDOFF")
 
-def test_lock_grava_e_status_acusa_travado():
-    p = novo_projeto()
-    r = rodar("--dir", str(p), "lock", "--agente", "claude", "--escopo", "src/", "--horas", "2")
-    assert r.returncode == 0, r.stderr
-    assert (p / "HANDOFF.md").exists(), "lock nao criou HANDOFF.md"
+        r = rodar("--dir", str(p), "status")
+        self.assertEqual(r.returncode, 1, "status devia sair 1 quando travado")
 
-    texto = (p / "HANDOFF.md").read_text(encoding="utf-8")
-    assert "TRAVADO_POR: claude" in texto
-    assert "<USUARIO>" not in texto, "placeholder literal vazou para o HANDOFF"
+    def test_release_alheio_e_recusado(self):
+        p = self.novo_projeto()
+        rodar("--dir", str(p), "lock", "--agente", "claude", "--escopo", ".", "--horas", "2")
+        r = rodar("--dir", str(p), "release", "--agente", "kimi")
+        self.assertNotEqual(r.returncode, 0, "kimi nao pode liberar trava do claude")
+        self.assertIn("TRAVADO_POR: claude", (p / "HANDOFF.md").read_text(encoding="utf-8"))
 
-    r = rodar("--dir", str(p), "status")
-    assert r.returncode == 1, "status devia sair 1 quando travado"
+    def test_release_proprio_libera(self):
+        p = self.novo_projeto()
+        rodar("--dir", str(p), "lock", "--agente", "claude", "--escopo", ".", "--horas", "2")
+        r = rodar("--dir", str(p), "release", "--agente", "claude")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(rodar("--dir", str(p), "status").returncode, 0, "devia estar livre apos release")
 
+    def test_force_libera_trava_alheia(self):
+        p = self.novo_projeto()
+        rodar("--dir", str(p), "lock", "--agente", "claude", "--escopo", ".", "--horas", "2")
+        r = rodar("--dir", str(p), "release", "--agente", "kimi", "--force")
+        self.assertEqual(r.returncode, 0, f"--force devia liberar: {r.stderr}")
 
-def test_release_alheio_e_recusado():
-    p = novo_projeto()
-    rodar("--dir", str(p), "lock", "--agente", "claude", "--escopo", ".", "--horas", "2")
-    r = rodar("--dir", str(p), "release", "--agente", "kimi")
-    assert r.returncode != 0, "kimi nao pode liberar trava do claude"
-    assert "TRAVADO_POR: claude" in (p / "HANDOFF.md").read_text(encoding="utf-8")
+    def test_dir_fora_do_cwd_funciona(self):
+        """Regressao v4.9: --dir fora do diretorio atual era recusado.
 
+        O comando documentado roda o script pelo caminho absoluto da central,
+        apontando --dir para um projeto que vive em outro lugar do disco.
+        """
+        p = self.novo_projeto()
+        r = rodar("--dir", str(p), "lock", "--agente", "claude", "--escopo", ".", cwd=RAIZ)
+        self.assertEqual(r.returncode, 0, f"--dir externo devia funcionar: {r.stderr}")
 
-def test_release_proprio_libera():
-    p = novo_projeto()
-    rodar("--dir", str(p), "lock", "--agente", "claude", "--escopo", ".", "--horas", "2")
-    r = rodar("--dir", str(p), "release", "--agente", "claude")
-    assert r.returncode == 0, r.stderr
-    assert rodar("--dir", str(p), "status").returncode == 0, "devia estar livre apos release"
-
-
-def test_force_libera_trava_alheia():
-    p = novo_projeto()
-    rodar("--dir", str(p), "lock", "--agente", "claude", "--escopo", ".", "--horas", "2")
-    r = rodar("--dir", str(p), "release", "--agente", "kimi", "--force")
-    assert r.returncode == 0, f"--force devia liberar: {r.stderr}"
-
-
-def test_dir_fora_do_cwd_funciona():
-    """Regressao v4.9: --dir fora do diretorio atual era recusado.
-
-    O comando documentado roda o script pelo caminho absoluto da central,
-    apontando --dir para um projeto que vive em outro lugar do disco.
-    """
-    p = novo_projeto()
-    r = rodar("--dir", str(p), "lock", "--agente", "claude", "--escopo", ".", cwd=RAIZ)
-    assert r.returncode == 0, f"--dir externo devia funcionar: {r.stderr}"
-
-
-def test_dir_inexistente_falha_claro():
-    r = rodar("--dir", "/caminho/que/nao/existe/mb", "status")
-    assert r.returncode != 0
-    assert "nao encontrada" in (r.stderr + r.stdout).lower()
-
-
-def main() -> int:
-    testes = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
-    falhas = 0
-    for t in testes:
-        try:
-            t()
-            print(f"  ok    {t.__name__}")
-        except AssertionError as e:
-            falhas += 1
-            print(f"  FALHA {t.__name__}: {e}")
-    print(f"\n{len(testes) - falhas}/{len(testes)} passaram")
-    return 1 if falhas else 0
+    def test_dir_inexistente_falha_claro(self):
+        r = rodar("--dir", "/caminho/que/nao/existe/mb", "status")
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("nao encontrada", (r.stderr + r.stdout).lower())
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    unittest.main()

@@ -24,6 +24,8 @@ from pathlib import Path
 
 import mb_utils as u
 
+u.utf8_console()
+
 
 def detectar_central():
     env = os.environ.get("MEGABRAIN_CENTRAL")

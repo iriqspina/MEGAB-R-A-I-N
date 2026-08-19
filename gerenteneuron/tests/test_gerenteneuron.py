@@ -145,7 +145,7 @@ class TestHistorico(unittest.TestCase):
         original = router.PROVIDERS.get("mock")
         router.PROVIDERS["mock"] = Espiao
         try:
-            hist = [{"role": "user", "content": "meu nome é Iriq"}]
+            hist = [{"role": "user", "content": "meu nome é <USUARIO>"}]
             router._executar_fila(
                 "qual é meu nome?",
                 {"providers": {"mock": {"key": "mock", "local": True}}},
@@ -283,7 +283,10 @@ class TestCofreCriado(unittest.TestCase):
         v.set("CHAVE_NOVA", "valor")  # precisa conseguir escrever depois
         self.assertEqual(v.get("CHAVE_NOVA"), "valor")
         dados = self.vault.VAULT_DIR / "dados.enc"
-        self.assertEqual(dados.stat().st_mode & 0o077, 0, "dados.enc legível por outros")
+        # chmod não aplica ACL no Windows; proteção real no NTFS é ACL por-usuário.
+        # bits POSIX são sintéticos no Python em NTFS, então a asserção só vale em POSIX.
+        if os.name != "nt":
+            self.assertEqual(dados.stat().st_mode & 0o077, 0, "dados.enc legível por outros")
 
     def test_destino_padrao_fica_fora_do_app(self):
         padrao = self.vault.destino_padrao_recuperacao().resolve()

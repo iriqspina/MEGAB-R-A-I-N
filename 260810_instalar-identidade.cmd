@@ -1,7 +1,7 @@
 @echo off
 setlocal
 chcp 65001 >nul
-rem Instala/copia o arquivo de identidade pessoal nos 4 destinos (Claude/Gemini/Kimi/Kimi Code).
+rem Instala/copia o arquivo de identidade pessoal nos 6 destinos (Claude/Gemini/Kimi/Kimi Code/Codex/output style do Claude).
 rem Edite SO a fonte. Nunca edite as copias.
 
 set "FONTE=%~dp0260810_memoria-pessoal.md"
@@ -28,7 +28,14 @@ if not exist "%FONTE%" (
 "%PY%" "%SCRIPT%" --source "%FONTE%" --target gemini --modo conteudo --dir "%USERPROFILE%\.gemini"
 "%PY%" "%SCRIPT%" --source "%FONTE%" --target kimi   --modo conteudo --dir "%USERPROFILE%\.kimi"
 "%PY%" "%SCRIPT%" --source "%FONTE%" --target kimi   --modo conteudo --dir "%USERPROFILE%\.kimi-code"
+"%PY%" "%SCRIPT%" --source "%FONTE%" --target codex      --modo conteudo --dir "%USERPROFILE%\.codex"
+"%PY%" "%SCRIPT%" --source "%FONTE%" --target claude-style --modo conteudo --dir "%USERPROFILE%\.claude"
 
 echo.
-echo Pronto. Feche e reabra Claude Code / Kimi para recarregar.
+echo == Conferencia
+for %%F in ("%USERPROFILE%\.claude\CLAUDE.md" "%USERPROFILE%\.gemini\GEMINI.md" "%USERPROFILE%\.kimi\AGENTS.md" "%USERPROFILE%\.kimi-code\AGENTS.md" "%USERPROFILE%\.codex\AGENTS.md" "%USERPROFILE%\.claude\output-styles\megabrain.md") do (
+  if exist %%F ( echo    OK    %%~zF bytes  %%~F ) else ( echo    FALTA %%~F )
+)
+echo.
+echo Pronto. Feche e reabra Claude Code / Kimi / Codex para recarregar.
 pause

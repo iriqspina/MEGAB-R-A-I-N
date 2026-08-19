@@ -7,7 +7,7 @@ class OpenAIProvider:
     nome = "OpenAI"
 
     @staticmethod
-    def send(mensagem: str, config: dict, historico: list | None = None, modelo: str = "gpt-5.6-terra"):
+    def send(mensagem: str, config: dict, historico: list | None = None, modelo: str = "gpt-5.6-terra", timeout: int = 120, max_tokens: int = 4096):
         key = config.get("key")
         base_url = config.get("base_url", "https://api.openai.com/v1").rstrip("/")
         if not key:
@@ -18,8 +18,9 @@ class OpenAIProvider:
             "model": modelo,
             "messages": historico_para_openai(historico, mensagem),
             "temperature": 0.7,
+            "max_tokens": max_tokens,
         }
-        data = http_post_json(url, {"Authorization": f"Bearer {key}"}, payload)
+        data = http_post_json(url, {"Authorization": f"Bearer {key}"}, payload, timeout=timeout)
         if "erro" in data:
             return resposta_padrao("", "openai", modelo, erro=str(data["erro"]))
 

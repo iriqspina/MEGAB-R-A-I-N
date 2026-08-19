@@ -15,6 +15,10 @@ import argparse
 import sys
 from pathlib import Path
 
+import mb_utils as u
+
+u.utf8_console()
+
 PATCHES: list[tuple[str, str, str]] = []
 
 

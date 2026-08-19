@@ -24,6 +24,8 @@ from typing import Iterable
 
 import mb_utils as u
 
+u.utf8_console()
+
 DEFAULT_EXTS = {"py", "js", "ts", "jsx", "tsx", "md", "txt", "yaml", "yml", "json", "css", "scss"}
 BACKUP_DIR_NAME = ".mb-aspirador"
 TAB_SIZE = 4

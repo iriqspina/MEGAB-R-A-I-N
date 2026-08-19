@@ -326,6 +326,15 @@ Rubricas prontas: `referencias/260810_evaluation-gates.md`
 
 ### 5.1 Amarrar pontas — antes de qualquer coisa sair
 
+### Relatório único por projeto
+
+Se a instância tiver `RELATORIO.html`, trate-o como a porta de entrada de
+usuário e IA. Ao criar ou alterar informação em `.md`, regenere o relatório
+antes de entregar. O Markdown continua sendo a fonte da verdade: não crie outro
+relatório nem um Markdown duplicado para "resumir" o que já existe. Use
+`bin/mb-relatorio-projeto.py`; por padrão ele reúne todos os `.md` informacionais
+da instância e deixa só `MEGABRAIN/`, `.git/`, caches e dependências de fora.
+
 Antes de uma aprovação humana, envio externo, fechamento semanal ou handoff,
 varra estado, tracker, decisões e fontes por dúvida aberta, número velho,
 prazo, dependência e decisão sem dono. Descubra sozinho o que for leitura
@@ -443,6 +452,7 @@ Todas em `referencias/`.
 | `260810_evaluation-gates.md` | Definir rubrica e avaliar output |
 | `260810_PROMPT-PORTATIL.md` | Levar o protocolo pra uma IA sem skills |
 | `260810_sync-memoria.md` | Configurar agente novo num projeto — sincronizar identidade em CLAUDE.md/GEMINI.md/AGENTS.md |
+| `260818_padrao-resposta.md` | Forma de responder — voz, níveis de detalhe N0–N3, entendimento de projeto, ações; contrato único propagado a todos os agentes |
 | `260811_kimi-handoff.md` | Tarefa bateu numa parede do sandbox (pasta home, caminho não conectado, delete/rename bloqueado) — empacotar pro Kimi |
 | `260815_pipeline-governanca-aprendizado.md` | Cliente, dinheiro, aprovações, Amarrador, Contraditor, Teammates, momentum ou aprendizado entre projetos |
 

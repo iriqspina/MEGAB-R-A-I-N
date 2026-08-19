@@ -452,6 +452,7 @@ Todas em `referencias/`.
 | `260810_evaluation-gates.md` | Definir rubrica e avaliar output |
 | `260810_PROMPT-PORTATIL.md` | Levar o protocolo pra uma IA sem skills |
 | `260810_sync-memoria.md` | Configurar agente novo num projeto — sincronizar identidade em CLAUDE.md/GEMINI.md/AGENTS.md |
+| `260818_padrao-resposta.md` | Forma de responder — voz, níveis de detalhe N0–N3, entendimento de projeto, ações; contrato único propagado a todos os agentes |
 | `260811_kimi-handoff.md` | Tarefa bateu numa parede do sandbox (pasta home, caminho não conectado, delete/rename bloqueado) — empacotar pro Kimi |
 | `260815_pipeline-governanca-aprendizado.md` | Cliente, dinheiro, aprovações, Amarrador, Contraditor, Teammates, momentum ou aprendizado entre projetos |
 

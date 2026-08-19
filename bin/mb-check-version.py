@@ -36,6 +36,8 @@ from pathlib import Path
 
 import mb_utils as u
 
+u.utf8_console()
+
 
 def detectar_central():
     """Retorna a pasta central do megabrain via env var ou diretório do script."""
@@ -47,7 +49,6 @@ def detectar_central():
 
 
 CENTRAL_DEFAULT = detectar_central()
-CENTRAL_DEFAULT_PATH = Path(CENTRAL_DEFAULT).resolve()
 
 MAPEAMENTO = [
     ("MEGABRAIN.md", "MEGABRAIN.md"),
@@ -201,9 +202,74 @@ def sincronizar_central_para_projeto(central, mb_projeto, dry_run=False):
     return True
 
 
+def gate_drift(central: Path) -> int:
+    """Acusa drift entre central, 260810_github-export/ e _github-repo-local/.
+
+    O export é SANITIZADO pelo mb-generate-template.py, então hash direto
+    central↔export seria falso-positivo perpétuo. O que o gate compara:
+    (1) export ↔ repo-local: mesma derivação, hashes idênticos obrigatórios;
+    (2) central ↔ export: primeira linha de VERSAO.txt (a versão declarada).
+    Exit 0 = sem drift; 1 = drift (bloqueia bump).
+    """
+    import hashlib
+
+    export = central / "260810_github-export"
+    repo = central / "_github-repo-local"
+    chaves = ["MEGABRAIN.md", "skills/megabrain/SKILL.md", "VERSAO.txt",
+              "bin/mb_utils.py", "bin/mb-sync.py", "bin/mb-check-version.py"]
+    drift = []
+
+    def h(p: Path):
+        try:
+            return hashlib.sha256(p.read_bytes()).hexdigest()[:12]
+        except OSError:
+            return None
+
+    for lado, nome in ((export, "260810_github-export"), (repo, "_github-repo-local")):
+        if not lado.is_dir():
+            drift.append(f"{nome}/ não existe")
+    if not drift:
+        for rel in chaves:
+            he, hr = h(export / rel), h(repo / rel)
+            if he != hr:
+                drift.append(f"export ≠ repo-local: {rel} ({he or 'ausente'} vs {hr or 'ausente'})")
+        v_central = ler_versao(central)
+        v_export = ler_versao(export)
+        if v_central != v_export:
+            drift.append(f"VERSAO.txt: central diz '{v_central}' e o export diz '{v_export}' "
+                         "— export desatualizado (rode mb-generate-template.py e copie pro repo-local)")
+        # Manifesto (v6): pega edição de conteúdo SEM bump de versão — a
+        # sanitização impede hash direto, então o gerador grava o hash da
+        # fonte no momento da geração e o gate compara com a fonte de agora.
+        manifesto_txt = u.safe_read_text(export / ".mb-manifest.json")
+        if manifesto_txt:
+            try:
+                import json as _json
+                gravado = _json.loads(manifesto_txt).get("hash_fonte", {})
+                for rel, h_antigo in gravado.items():
+                    h_agora = h(central / rel)
+                    if h_antigo and h_agora and h_antigo != h_agora:
+                        drift.append(f"central editada depois da última geração do export: {rel} "
+                                     f"({h_antigo} → {h_agora}) — regenere o export")
+            except (ValueError, AttributeError):
+                drift.append(".mb-manifest.json do export ilegível — regenere o export")
+        else:
+            print("aviso: export sem .mb-manifest.json (gerado antes da v6) — o gate de "
+                  "conteúdo só arma na próxima geração do export.")
+
+    if drift:
+        print("GATE DE DRIFT: FALHOU — registrado não é o que está no disco:")
+        for d in drift:
+            print(f"  ✗ {d}")
+        print("Bump bloqueado até os três espelhos convergirem.")
+        return 1
+    print("GATE DE DRIFT: ok — central, export e repo-local convergem.")
+    return 0
+
+
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument("--projeto", required=True)
+    p.add_argument("--projeto", required=False, default=None)
     p.add_argument("--central", default=CENTRAL_DEFAULT)
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--force", action="store_true")
@@ -214,17 +280,27 @@ def main():
                    help="não consulta rede; usa apenas a central local")
     p.add_argument("--remote", default="https://github.com/iriqspina/MEGAB-R-A-I-N.git",
                    help="URL do repositório remoto (default: GitHub público)")
+    p.add_argument("--gate-drift", action="store_true",
+                   help="v6 fase 4: compara central, export e repo-local; exit 1 em drift")
     args = p.parse_args()
 
-    try:
-        central = u.resolve_within(args.central, CENTRAL_DEFAULT_PATH)
-    except ValueError as e:
-        print(f"ERRO: central inválida: {e}")
-        print("Dica: defina MEGABRAIN_CENTRAL ou passe --central")
-        sys.exit(1)
+    if args.gate_drift:
+        sys.exit(gate_drift(Path(CENTRAL_DEFAULT).resolve()))
 
+    if not args.projeto:
+        p.error("--projeto é obrigatório (exceto com --gate-drift)")
+
+    # 260819 (v6 fase 0): --central pode apontar pra qualquer central válida do
+    # disco — a exigência antiga de estar DENTRO da central detectada recusava
+    # usos legítimos (bug A5 reencarnado). A contenção que importa é a escrita
+    # no destino, garantida em copiar(base=mb_projeto).
+    central = Path(args.central).resolve()
     if not central.is_dir():
         print(f"ERRO: central não encontrada em {central}")
+        print("Dica: defina MEGABRAIN_CENTRAL ou passe --central")
+        sys.exit(1)
+    if not (central / "VERSAO.txt").is_file():
+        print(f"ERRO: {central} não parece uma central do megabrain (sem VERSAO.txt)")
         print("Dica: defina MEGABRAIN_CENTRAL ou passe --central")
         sys.exit(1)
 
@@ -289,7 +365,30 @@ def main():
     relacao = comparar_versoes(v_central, v_projeto)
 
     if relacao == "igual":
-        print("versões iguais — nada a fazer")
+        # v6 fase 4 (requisito 1 do <USUARIO>): a cópia deve ser virgem. Mesma
+        # versão declarada não prova mesmo conteúdo — compara os arquivos-chave.
+        import hashlib
+
+        def _h(p):
+            try:
+                return hashlib.sha256(Path(p).read_bytes()).hexdigest()[:12]
+            except OSError:
+                return None
+
+        tocados = []
+        for rel in ("MEGABRAIN.md", "skills/megabrain/SKILL.md", "VERSAO.txt"):
+            hc = _h(os.path.join(central, rel))
+            hp = _h(os.path.join(mb_projeto, rel))
+            if hc and hp and hc != hp:
+                tocados.append(rel)
+        if tocados:
+            print("versões iguais, mas a CÓPIA FOI TOCADA LOCALMENTE:")
+            for rel in tocados:
+                print(f"  ✗ {rel} difere da central")
+            print("A cópia não se edita (regra reforçada 260819). Ou as mudanças sobem")
+            print("pra central (mb-sync-projeto-para-central.py) ou restaure com --force.")
+            sys.exit(2)
+        print("versões iguais e cópia virgem — nada a fazer")
         sys.exit(0)
 
     if relacao == "central":

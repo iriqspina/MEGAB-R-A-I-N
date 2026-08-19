@@ -12,6 +12,44 @@ Referências de execução: `referencias/260810_*.md`.
 
 ---
 
+## 0 · O que a v6 adicionou (260819)
+
+Espinha operacional: **OBJETIVO → ENTENDER → RESOLVER → VERIFICAR →
+REGISTRAR**, com observabilidade transversal. Os 8 gates continuam como
+detalhe de execução; o que mudou é que agora existe **tubulação**, não só
+pedido em markdown:
+
+1. **Observabilidade** — hooks (Claude via `~/.claude/settings.json`, Kimi
+   via plugin) gravam prompt, arquivos tocados e fim de turno em
+   `<projeto>/.mb-log/*.jsonl` (local, retenção sem limite, poda manual).
+   `bin/mb-relatorio-agentes.py` → `RELATORIO-AGENTES.html`;
+   `bin/mb-relatorio-vivo.py` → `RELATORIO-VIVO.html` (auto-reload, o
+   usuário deixa aberto). Feedback do GerenteNeuron entra via
+   `bin/mb-observar.py --importar-feedback`.
+2. **Compreensão da meta** — `META.md` por projeto (template em
+   `modelos/META.md`): meta + **histórico de intenção** (pedido original →
+   prompt retrabalhado → intenção confirmada → resultado alinhou).
+   **Alinhamento pré-prompt vale pra TODO prompt** (decisão 260819),
+   desligável com `ALINHAMENTO: off`. O hook `bin/mb-contexto.py` injeta
+   META + instrução + lições em toda sessão dos dois agentes.
+   `bin/mb-checar-meta.py` (qwen local) emite ALINHADO/DESVIO — sinaliza,
+   não aprova; humano aprova.
+3. **Memória em escala** — `bin/mb-indice-licoes.py` indexa TODAS as lições
+   com embeddings locais (nomic-embed-text) e o hook injeta as 5 mais
+   próximas do prompt (antes: últimos 5 KB ≈ 4 lições de 126). Recorrência
+   automática: gatilho parecido 3×+ vira "candidata a regra" no relatório —
+   a régua "3× vira processo" ganhou executor.
+4. **Governança** — lição pode ser APOSENTADA (seção própria, fora do
+   índice, nunca deletada); `mb-check-version.py --gate-drift` compara
+   central × export × repo-local (com manifesto de hash da fonte no export);
+   cópia de projeto tocada localmente é acusada no Gate 0 (exit 2);
+   `alteracoes-pendentes/` tem DONO + idade no relatório vivo; o
+   orquestrador virou modo do GerenteNeuron
+   (`gerenteneuron/orquestrador.py`, modelos de `pricing.json`, nunca
+   hardcoded).
+
+---
+
 ## 1 · Relação entre os três arquivos
 
 | Arquivo | Escopo | Editar aqui? |
@@ -183,7 +221,8 @@ estado → grelhar → spec → tickets → implementar → validar → publicar
 16. Navegador não executa `.cmd` por link — copiar caminho + Win+R, ou clique
     direto na pasta.
 17. Formato de resposta padrão: TL;DR no topo; primeira frase de cada parte
-    resume a parte; tópicos numerados.
+    resume a parte; tópicos numerados. Contrato completo (níveis N0–N3, ações,
+    precedência, entrega por agente): `referencias/260818_padrao-resposta.md`.
 18. Portar entre agentes/runtimes: hooks não atravessam, skills atravessam
     sem edição. Sempre-ativo e estático vai pro system prompt, não pro hook.
 19. Memória/arquivo legado: normalizar pra UTF-8 puro antes de editar por

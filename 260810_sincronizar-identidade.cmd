@@ -1,7 +1,7 @@
 @echo off
 setlocal
 chcp 65001 >nul
-rem Sincroniza a identidade nos 4 destinos de uma vez.
+rem Sincroniza a identidade nos 6 destinos de uma vez.
 rem Edite SO a fonte. Nunca edite as copias.
 
 set "MB=%~dp0"
@@ -35,10 +35,12 @@ echo.
 "%PY%" "%SCRIPT%" --source "%FONTE%" --target gemini --modo conteudo --dir "%USERPROFILE%\.gemini"
 "%PY%" "%SCRIPT%" --source "%FONTE%" --target kimi   --modo conteudo --dir "%USERPROFILE%\.kimi"
 "%PY%" "%SCRIPT%" --source "%FONTE%" --target kimi   --modo conteudo --dir "%USERPROFILE%\.kimi-code"
+"%PY%" "%SCRIPT%" --source "%FONTE%" --target codex      --modo conteudo --dir "%USERPROFILE%\.codex"
+"%PY%" "%SCRIPT%" --source "%FONTE%" --target claude-style --modo conteudo --dir "%USERPROFILE%\.claude"
 
 echo.
 echo == Conferencia
-for %%F in ("%USERPROFILE%\.claude\CLAUDE.md" "%USERPROFILE%\.gemini\GEMINI.md" "%USERPROFILE%\.kimi\AGENTS.md" "%USERPROFILE%\.kimi-code\AGENTS.md") do (
+for %%F in ("%USERPROFILE%\.claude\CLAUDE.md" "%USERPROFILE%\.gemini\GEMINI.md" "%USERPROFILE%\.kimi\AGENTS.md" "%USERPROFILE%\.kimi-code\AGENTS.md" "%USERPROFILE%\.codex\AGENTS.md" "%USERPROFILE%\.claude\output-styles\megabrain.md") do (
   if exist %%F ( echo    OK    %%~zF bytes  %%~F ) else ( echo    FALTA %%~F )
 )
 echo.

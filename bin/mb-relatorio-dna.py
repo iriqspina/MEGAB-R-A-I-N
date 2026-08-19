@@ -40,6 +40,8 @@ from pathlib import Path
 
 import mb_utils as u
 
+u.utf8_console()
+
 DNA_DIR_NAME = "dna"
 BACKUP_DIR_NAME = ".dna-backup"
 DEFAULT_OUT_FILENAME = "RELATORIO-DNA.html"
