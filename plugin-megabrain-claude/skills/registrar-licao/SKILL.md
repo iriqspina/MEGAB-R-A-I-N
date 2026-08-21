@@ -1,11 +1,11 @@
 ---
 name: registrar-licao
-description: Grava o aprendizado de uma tarefa num arquivo de lições que o plugin megabrain lê automaticamente no início das próximas sessões. Use quando o usuário digitar /megabrain:licao, disser "registra isso", "anota essa lição", "guarda esse aprendizado", "não deixa eu esquecer disso", "aprende com isso", ou ao concluir uma tarefa não-trivial em que algo deu errado, surpreendeu, ou revelou um atalho.
+description: Grava o aprendizado de uma tarefa num arquivo de lições que o plugin megabrain lê automaticamente no início das próximas sessões. Use quando o usuário digitar /registrar-licao, disser "registra isso", "anota essa lição", "guarda esse aprendizado", "não deixa eu esquecer disso", "aprende com isso", ou ao concluir uma tarefa não-trivial em que algo deu errado, surpreendeu, ou revelou um atalho.
 ---
 
 # registrar-licao — memória que corta caminho
 
-Grava 3 linhas num arquivo de lições. O hook `SessionStart` do plugin encontra esse arquivo na pasta de trabalho e injeta o conteúdo automaticamente — o usuário nunca precisa lembrar de abrir.
+Grava 3 linhas num arquivo de lições. O hook `SessionStart` do plugin (quando o ambiente roda hooks — Claude Code/Desktop; no Cowork cloud, verificado em 260821, ele NÃO roda) encontra esse arquivo na pasta de trabalho e injeta o conteúdo automaticamente. Sem hook, leia o arquivo no Gate 0 — o caminho está abaixo.
 
 ## Onde gravar — dois destinos
 
@@ -13,7 +13,7 @@ O hook `SessionStart` do plugin carrega os dois automaticamente. Escolha pelo al
 
 ### GLOBAL (default) — `<MEGABRAIN_ROOT>/licoes-megabrain.md`
 
-No Windows, o caminho padrão é `S:\projetos multi i.a\MEGA B R A I  N\licoes-megabrain.md` (definido pela variável de ambiente `MEGABRAIN_ROOT`; sem ela, o hook usa esse fallback).
+No Windows, o caminho padrão é `<MEGABRAIN_ROOT>\licoes-megabrain.md` (definido pela variável de ambiente `MEGABRAIN_ROOT`; sem ela, o hook usa esse fallback).
 
 Use quando a lição vale **para qualquer projeto**: comportamento de ferramenta, limite de formato, armadilha de processo, padrão que se repete entre clientes. O hook cria esse arquivo na primeira execução.
 

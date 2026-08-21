@@ -1,5 +1,8 @@
 # Arquivos gerados por ferramentas do megabrain
 .mb-aspirador/
+.megabrain/
+.mb-backup/
+*.plugin
 .dna-backup/
 __pycache__/
 *.pyc

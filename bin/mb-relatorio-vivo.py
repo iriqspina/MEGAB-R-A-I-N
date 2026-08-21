@@ -9,14 +9,28 @@ arquivo sem um servidor local, então o "ao vivo" é reload em intervalo fixo
 — o usuário não aperta F5, mas há até 15s de atraso.
 
 Fontes: PROGRESSO.json (etapas + notas, atualizado via --marcar/--nota),
-ESTADO.md, HANDOFF.md (trava), DECISOES.md (últimos títulos), .mb-log/ do
-dia, VERSAO.txt.
+ESTADO.md, HANDOFF.md (trava + seção "PARA VOCÊ"), DECISOES.md (últimos
+títulos), .mb-log/ do dia, VERSAO.txt, git de _github-repo-local/ e os
+VERSAO.txt das cópias MEGABRAIN/ dos projetos irmãos.
+
+v6.1 (260821) — bloco de VERSÃO no topo:
+  · versão atual do megabrain (VERSAO.txt) + commit git local (HEAD de
+    _github-repo-local), remoto conhecido (origin/main) e quantos commits
+    locais ainda não subiram;
+  · versão ANTERIOR (a que estava no ar na última troca de versão/commit);
+  · tabela dos projetos: qual versão cada MEGABRAIN/ puxou vs a atual.
+  Toda vez que a versão ou o commit muda, o HTML anterior é guardado em
+  .mb-backup/relatorio-vivo/ (YYMMDD_HHMM_RELATORIO-VIVO_<commit>.html) e o
+  par atual/anterior fica em .mb-backup/relatorio-vivo/versao-atual.json.
+  Regeneração sem troca de versão NÃO gera snapshot (senão acumula a cada 15s
+  de --nota).
 
 Uso:
     python bin/mb-relatorio-vivo.py                        # só regenera
     python bin/mb-relatorio-vivo.py --marcar f2.1 feito "detalhe"
     python bin/mb-relatorio-vivo.py --marcar f2.2 fazendo
     python bin/mb-relatorio-vivo.py --nota "comecei a fase 2"
+    python bin/mb-relatorio-vivo.py --snapshot    # força guardar o HTML atual
 
 Status válidos: pendente | fazendo | feito | bloqueado
 """
@@ -29,6 +43,8 @@ import html
 import json
 import os
 import re
+import shutil
+import subprocess
 from pathlib import Path
 
 import mb_utils as u
@@ -38,6 +54,7 @@ u.utf8_console()
 RELOAD_SEGUNDOS = 15
 STATUS_VALIDOS = {"pendente", "fazendo", "feito", "bloqueado"}
 ICONE = {"feito": "✓", "fazendo": "●", "pendente": "○", "bloqueado": "✕"}
+SNAPSHOTS_MAX = 30  # HTMLs anteriores guardados em .mb-backup/relatorio-vivo/
 
 
 def central() -> Path:
@@ -45,6 +62,174 @@ def central() -> Path:
     if env:
         return Path(env).resolve()
     return Path(__file__).resolve().parent.parent
+
+
+# ---------------------------------------------------------------------------
+# v6.1 — versão: VERSAO.txt + git + projetos + anterior
+# ---------------------------------------------------------------------------
+
+def _git(repo: Path, *args: str) -> str | None:
+    try:
+        # --no-optional-locks: leitura não cria index.lock (relatório roda a
+        # cada 15s e em ambientes que não conseguem apagar o lock depois)
+        r = subprocess.run(["git", "--no-optional-locks", "-C", str(repo), *args],
+                           capture_output=True, text=True, timeout=8, check=False)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if r.returncode != 0:
+        return None
+    return r.stdout.strip()
+
+
+def repo_git(c: Path) -> Path | None:
+    """Onde está o git do megabrain: a central (se for repo) ou _github-repo-local/."""
+    for cand in (c, c / "_github-repo-local"):
+        if (cand / ".git").exists():
+            return cand
+    return None
+
+
+def info_git(c: Path) -> dict:
+    """HEAD local, origin/main conhecido, commits sem push, árvore suja.
+    Nunca consulta a rede — é o que o git local sabe."""
+    repo = repo_git(c)
+    info = {"repo": str(repo) if repo else None, "head": None, "head_curto": "—",
+            "assunto": "", "data": "", "origin": None, "origin_curto": "—",
+            "sem_push": None, "suja": None}
+    if not repo:
+        return info
+    head = _git(repo, "rev-parse", "HEAD")
+    if head:
+        info["head"] = head
+        info["head_curto"] = head[:7]
+        info["assunto"] = _git(repo, "log", "-1", "--format=%s") or ""
+        info["data"] = _git(repo, "log", "-1", "--format=%cd", "--date=format:%Y-%m-%d %H:%M") or ""
+    origin = _git(repo, "rev-parse", "origin/main")
+    if origin:
+        info["origin"] = origin
+        info["origin_curto"] = origin[:7]
+        n = _git(repo, "rev-list", "--count", "origin/main..HEAD")
+        info["sem_push"] = int(n) if n and n.isdigit() else None
+    st = _git(repo, "status", "--porcelain")
+    info["suja"] = bool(st) if st is not None else None
+    return info
+
+
+def versao_resumida(linha: str | None) -> str:
+    """'2026-08-19 · v6.0 — texto longo...' → 'v6.0 (2026-08-19)'."""
+    if not linha:
+        return "?"
+    m = re.match(r"(\d{4}-\d{2}-\d{2})\s*·\s*v([\d.]+)", linha.strip())
+    if m:
+        return f"v{m.group(2)} ({m.group(1)})"
+    return linha.strip()[:40]
+
+
+def raiz_projetos(c: Path) -> Path:
+    env = os.environ.get("MEGABRAIN_PROJETOS")
+    return Path(env).resolve() if env else c.parent
+
+
+def projetos_versao(c: Path, atual_linha: str | None) -> list[dict]:
+    """Cada projeto irmão com MEGABRAIN/: versão que puxou vs a atual da central."""
+    raiz = raiz_projetos(c)
+    saida = []
+    try:
+        pastas = sorted(p for p in raiz.iterdir() if p.is_dir())
+    except OSError:
+        return saida
+    for p in pastas:
+        if p.resolve() == c.resolve():
+            continue
+        mb = p / "MEGABRAIN"
+        if not mb.is_dir():
+            continue
+        puxada = u.read_first_non_empty_line(mb / "VERSAO.txt")
+        origem = {}
+        txt = u.safe_read_text(mb / ".mb-origem.json")
+        if txt:
+            try:
+                origem = json.loads(txt)
+            except (json.JSONDecodeError, ValueError):
+                origem = {}
+        if puxada and atual_linha and puxada.strip() == atual_linha.strip():
+            estado = "atual"
+        elif puxada:
+            estado = "desatualizado"
+        else:
+            estado = "sem VERSAO.txt"
+        saida.append({"projeto": p.name, "puxada": versao_resumida(puxada),
+                      "commit": (origem.get("commit_central") or "")[:7],
+                      "quando": (origem.get("sincronizado_em") or "")[:16].replace("T", " "),
+                      "estado": estado})
+    return saida
+
+
+def estado_versao(c: Path, atual: dict, forcar_snapshot: bool = False) -> dict:
+    """Guarda o par atual/anterior e o snapshot do HTML quando a versão ou o
+    commit muda. Retorna {'atual':..., 'anterior':..., 'snapshot': path|None}."""
+    pasta = c / ".mb-backup" / "relatorio-vivo"
+    arq = pasta / "versao-atual.json"
+    dados = {}
+    txt = u.safe_read_text(arq)
+    if txt:
+        try:
+            dados = json.loads(txt)
+        except (json.JSONDecodeError, ValueError):
+            dados = {}
+    anterior = dados.get("anterior") or {}
+    guardado = dados.get("atual") or {}
+    chave = ("versao", "commit")
+    mudou = any(guardado.get(k) != atual.get(k) for k in chave)
+    snapshot = None
+    html_atual = c / "RELATORIO-VIVO.html"
+    if (mudou and guardado) or forcar_snapshot:
+        if html_atual.is_file():
+            try:
+                pasta.mkdir(parents=True, exist_ok=True)
+                rotulo = (guardado.get("commit") or atual.get("commit") or "semgit")[:7]
+                nome = f"{dt.datetime.now():%y%m%d_%H%M}_RELATORIO-VIVO_{rotulo}.html"
+                snapshot = pasta / nome
+                shutil.copy2(html_atual, snapshot)
+                # poda: mantém os SNAPSHOTS_MAX mais recentes
+                antigos = sorted(pasta.glob("*_RELATORIO-VIVO_*.html"))
+                for velho in antigos[:-SNAPSHOTS_MAX]:
+                    try:
+                        velho.unlink()
+                    except OSError:
+                        pass
+            except OSError:
+                snapshot = None
+    if mudou:
+        if guardado:
+            anterior = dict(guardado)
+            anterior["saiu_em"] = dt.datetime.now().astimezone().isoformat(timespec="minutes")
+        dados = {"atual": atual, "anterior": anterior,
+                "atualizado": dt.datetime.now().astimezone().isoformat(timespec="seconds")}
+        u.atomic_write_text(arq, json.dumps(dados, ensure_ascii=False, indent=2) + "\n")
+    return {"atual": atual, "anterior": anterior, "snapshot": snapshot}
+
+
+def secao_para_voce(c: Path) -> list[str]:
+    """Linhas da seção '## PARA VOCÊ' (ou 'PARA O <nome>') do HANDOFF.md —
+    o que o humano precisa fazer agora, separado do que é pro próximo agente."""
+    texto = u.safe_read_text(c / "HANDOFF.md") or ""
+    m = re.search(r"^##+\s*PARA (?:VOC[EÊ]|O USU[AÁ]RIO|O \w+)\b[^\n]*\n(.*?)(?=^##|\Z)",
+                  texto, re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    if not m:
+        return []
+    linhas: list[str] = []
+    for bruta in m.group(1).splitlines():
+        s = bruta.strip()
+        if not s or s.startswith("<!--"):
+            continue
+        eh_item = re.match(r"^(\d+[.)]|[-*•])\s+", s)
+        s = re.sub(r"^(\d+[.)]|[-*•])\s*", "", s)
+        if eh_item or not linhas:
+            linhas.append(s)
+        else:
+            linhas[-1] += " " + s  # continuação do item anterior
+    return linhas
 
 
 def carregar_progresso(c: Path) -> dict:
@@ -133,7 +318,7 @@ def fila_pendentes(c: Path) -> list[dict]:
     return fila
 
 
-def gerar_html(c: Path) -> bool:
+def gerar_html(c: Path, forcar_snapshot: bool = False) -> bool:
     e = html.escape
     prog = carregar_progresso(c)
     etapas = prog.get("etapas", [])
@@ -148,6 +333,50 @@ def gerar_html(c: Path) -> bool:
     if m:
         tldr = " ".join(m.group(1).split())
     agora = dt.datetime.now()
+
+    # --- v6.1: versão atual × anterior × git × projetos ---
+    git = info_git(c)
+    atual = {"versao": versao_resumida(versao), "versao_linha": versao,
+             "commit": git["head_curto"], "assunto": git["assunto"], "data_commit": git["data"],
+             "visto_em": agora.astimezone().isoformat(timespec="minutes")}
+    ver = estado_versao(c, atual, forcar_snapshot)
+    anterior = ver["anterior"]
+    if git["sem_push"] is None:
+        push_txt = "remoto desconhecido (git sem origin/main)" if git["repo"] else "sem repositório git"
+        push_cls = "det"
+    elif git["sem_push"] == 0:
+        push_txt = f"origin/main = {git['origin_curto']} · nada pendente de push"
+        push_cls = "ok"
+    else:
+        push_txt = (f"origin/main conhecido = {git['origin_curto']} · "
+                    f"{git['sem_push']} commit{'s' if git['sem_push'] != 1 else ''} local"
+                    f"{'is' if git['sem_push'] != 1 else ''} SEM PUSH — rode git push")
+        push_cls = "alerta"
+    suja_txt = " · árvore com mudanças não commitadas" if git["suja"] else ""
+    anterior_txt = (f"{e(anterior.get('versao', '?'))} · commit {e(anterior.get('commit', '—'))}"
+                    f"{' · saiu ' + e(anterior.get('saiu_em', '')[:16].replace('T', ' ')) if anterior.get('saiu_em') else ''}"
+                    if anterior else "— (primeira versão registrada)")
+    snapshot_txt = (f"HTML anterior guardado: {e(ver['snapshot'].name)}" if ver["snapshot"]
+                    else "snapshot só quando a versão/commit muda (.mb-backup/relatorio-vivo/)")
+
+    projetos = projetos_versao(c, versao)
+    linhas_proj = "".join(
+        f'<tr class="proj--{e(p["estado"].split()[0])}"><td>{e(p["projeto"])}</td>'
+        f'<td>{e(p["puxada"])}</td><td>{e(p["commit"] or "—")}</td>'
+        f'<td>{e(p["quando"] or "—")}</td><td><span class="pill pill--{e(p["estado"].split()[0])}">{e(p["estado"])}</span></td></tr>'
+        for p in projetos
+    ) or '<tr><td colspan="5" class="det">nenhum projeto irmão com MEGABRAIN/ encontrado em ' \
+         f'{e(str(raiz_projetos(c)))}</td></tr>'
+    desatualizados = sum(1 for p in projetos if p["estado"] == "desatualizado")
+
+    para_voce = secao_para_voce(c)
+    bloco_para_voce = ""
+    if para_voce:
+        itens = "".join(
+            "<li>" + re.sub(r"`([^`]+)`", r"<code>\1</code>", e(x)) + "</li>" for x in para_voce)
+        bloco_para_voce = (f'<section class="voce"><span class="label">👉 para você — o que fazer agora '
+                           f'({len(para_voce)})</span><ol>{itens}</ol>'
+                           f'<p class="det">fonte: seção "PARA VOCÊ" do HANDOFF.md — edite lá, não aqui.</p></section>')
 
     linhas_etapas = []
     for et in etapas:
@@ -231,7 +460,23 @@ th {{ font:800 .62rem/1.3 var(--mono); text-transform:uppercase; letter-spacing:
 .duo {{ display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; }}
 .cartao {{ border:1px solid var(--line); background:var(--paper-high); padding: .9rem 1rem; }}
 ul.simples {{ margin:.3rem 0 0; padding-left:1.1rem; font-size:.85rem; color:var(--ink-soft); }}
-@media (max-width:44rem) {{ .duo {{ grid-template-columns:1fr; }} }}
+.versao {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(14rem,1fr)); gap:0; border:2px solid var(--ink); background:var(--paper-high); margin:1rem 0 1.25rem; }}
+.versao > div {{ padding:.7rem .9rem; border-right:1px solid var(--line); }}
+.versao > div:last-child {{ border-right:0; }}
+.versao .label {{ display:block; margin-bottom:.2rem; }}
+.versao .big {{ font:800 1.35rem/1.1 var(--mono); letter-spacing:-.03em; }}
+.versao .anterior .big {{ color:var(--ink-faint); text-decoration:line-through; text-decoration-thickness:2px; }}
+.ok {{ color:var(--ok); font-weight:700; }}
+.alerta {{ color:var(--signal); font-weight:700; }}
+.voce {{ border:2px solid var(--signal); background:var(--signal-soft); padding:.8rem 1rem 0.6rem; margin:0 0 1.5rem; }}
+.voce ol {{ margin:.4rem 0 .4rem; padding-left:1.4rem; }}
+.voce li {{ margin:.25rem 0; font-size:.95rem; }}
+.pill {{ display:inline-block; padding:.05rem .45rem; border:1px solid currentColor; font:700 .62rem/1.5 var(--mono); text-transform:uppercase; letter-spacing:.06em; }}
+.pill--atual {{ color:var(--ok); }}
+.pill--desatualizado {{ color:var(--signal); }}
+.pill--sem {{ color:var(--ink-faint); }}
+tr.proj--desatualizado td {{ background:var(--signal-soft); }}
+@media (max-width:44rem) {{ .duo {{ grid-template-columns:1fr; }} .versao > div {{ border-right:0; border-bottom:1px solid var(--line); }} }}
 </style>
 </head>
 <body>
@@ -239,9 +484,36 @@ ul.simples {{ margin:.3rem 0 0; padding-left:1.1rem; font-size:.85rem; color:var
   <header>
     <span class="eyebrow">megabrain · retrato ao vivo</span>
     <h1>{e(prog.get("projeto", "megabrain"))}</h1>
-    <p class="meta pulse">gerado {agora:%H:%M:%S} · recarrega sozinho a cada {RELOAD_SEGUNDOS}s · versão: {e(versao[:60])}</p>
+    <p class="meta pulse">gerado {agora:%d/%m %H:%M:%S} · recarrega sozinho a cada {RELOAD_SEGUNDOS}s</p>
     {f'<p class="det">{e(tldr)}</p>' if tldr else ""}
   </header>
+
+  <div class="versao">
+    <div>
+      <span class="label">megabrain ATUAL</span>
+      <span class="big">{e(atual["versao"])}</span><br>
+      <span class="det" title="{e(versao)}">{e(versao[:110])}{"…" if len(versao) > 110 else ""}</span>
+    </div>
+    <div>
+      <span class="label">git (local)</span>
+      <span class="big">{e(git["head_curto"])}</span><br>
+      <span class="det">{e(git["assunto"][:80])}{" · " + e(git["data"]) if git["data"] else ""}</span><br>
+      <span class="{push_cls}">{e(push_txt)}</span><span class="det">{e(suja_txt)}</span>
+    </div>
+    <div class="anterior">
+      <span class="label">versão ANTERIOR</span>
+      <span class="big">{e(anterior.get("versao", "—")) if anterior else "—"}</span><br>
+      <span class="det">{anterior_txt}</span><br>
+      <span class="det">{snapshot_txt}</span>
+    </div>
+  </div>
+
+  {bloco_para_voce}
+
+  <h2 style="margin-top:0">Projetos × versão do megabrain puxada {f'<span class="alerta">({desatualizados} desatualizado{"s" if desatualizados != 1 else ""})</span>' if desatualizados else '<span class="ok">(todos na atual)</span>' if projetos else ''}</h2>
+  <table><thead><tr><th>projeto</th><th>puxou</th><th>commit</th><th>quando</th><th>estado</th></tr></thead>
+  <tbody>{linhas_proj}</tbody></table>
+  <p class="det">fonte: <code>&lt;projeto&gt;/MEGABRAIN/VERSAO.txt</code> + <code>.mb-origem.json</code> (gravado pelo mb-check-version.py desde a v6.1). Desatualizado = rode <code>sincronizar-pipeline.cmd</code> ou <code>mb-check-version.py --projeto</code>.</p>
 
   <span class="label">progresso — {feitas}/{len(etapas)} etapas ({pct}%)</span>
   <div class="barra"><div></div></div>
@@ -270,7 +542,7 @@ ul.simples {{ margin:.3rem 0 0; padding-left:1.1rem; font-size:.85rem; color:var
     </div>
   </div>
 
-  <p class="meta" style="margin-top:2rem">fonte: PROGRESSO.json · ESTADO.md · HANDOFF.md · .mb-log/ · arquivo local, não sobe pro GitHub.<br>
+  <p class="meta" style="margin-top:2rem">fonte: PROGRESSO.json · ESTADO.md · HANDOFF.md · VERSAO.txt · git de {e(git["repo"] or "—")} · .mb-log/ · arquivo local, não sobe pro GitHub.<br>
   sem servidor local o navegador não detecta mudança de arquivo — por isso o reload em intervalo fixo, preservando o scroll.</p>
 </div>
 <script>
@@ -299,6 +571,8 @@ def main() -> int:
                    metavar=("ID STATUS", "DETALHE"),
                    help='ex.: --marcar f2.1 feito "template criado"')
     p.add_argument("--nota", default=None)
+    p.add_argument("--snapshot", action="store_true",
+                   help="guarda o HTML atual em .mb-backup/relatorio-vivo/ mesmo sem troca de versão")
     args = p.parse_args()
 
     c = central()
@@ -328,7 +602,7 @@ def main() -> int:
         prog.setdefault("notas", []).append({"ts": agora, "texto": args.nota})
         salvar_progresso(c, prog)
 
-    if not gerar_html(c):
+    if not gerar_html(c, forcar_snapshot=args.snapshot):
         return 1
     print(f"relatório vivo: {c / 'RELATORIO-VIVO.html'}")
     return 0

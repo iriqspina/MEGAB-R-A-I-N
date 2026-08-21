@@ -514,6 +514,133 @@ def parse_acoes(acoes_brutas: list[str]) -> list[tuple[str, str, bool]]:
     return acoes
 
 
+def localizar_central(arg_central, projeto: Path):
+    """--megabrain-central > MEGABRAIN_CENTRAL > a pasta-mãe deste script, se
+    ela for uma central de verdade (tem VERSAO.txt e bin/) e não a cópia
+    MEGABRAIN/ do próprio projeto."""
+    candidatos = []
+    if arg_central:
+        candidatos.append(Path(arg_central))
+    env = os.environ.get("MEGABRAIN_CENTRAL")
+    if env:
+        candidatos.append(Path(env))
+    candidatos.append(Path(__file__).resolve().parent.parent)
+    copia = (projeto / "MEGABRAIN").resolve()
+    for c in candidatos:
+        try:
+            c = c.resolve()
+        except OSError:
+            continue
+        if c == copia:
+            continue
+        if (c / "VERSAO.txt").is_file() and (c / "bin").is_dir():
+            return c
+    return None
+
+
+def _primeira_linha(path: Path) -> str:
+    try:
+        for linha in path.read_text(encoding="utf-8").splitlines():
+            if linha.strip():
+                return linha.strip()
+    except (OSError, UnicodeDecodeError):
+        pass
+    return ""
+
+
+def _versao_curta(linha: str) -> str:
+    m = re.match(r"(\d{4}-\d{2}-\d{2})\s*·\s*v([\d.]+)", linha)
+    return f"v{m.group(2)} ({m.group(1)})" if m else (linha[:40] or "—")
+
+
+def _git_head(pasta: Path):
+    import subprocess
+    for cand in (pasta, pasta / "_github-repo-local"):
+        if not (cand / ".git").exists():
+            continue
+        try:
+            r = subprocess.run(["git", "--no-optional-locks", "-C", str(cand), "log", "-1", "--format=%h|%cd", "--date=format:%Y-%m-%d"],
+                               capture_output=True, text=True, timeout=8, check=False)
+        except (OSError, subprocess.SubprocessError):
+            return None, None
+        if r.returncode == 0 and "|" in r.stdout:
+            h, d = r.stdout.strip().split("|", 1)
+            return h, d
+    return None, None
+
+
+def versao_megabrain(projeto: Path, central) -> dict:
+    """v6.1 (260821): o que o projeto PUXOU (MEGABRAIN/VERSAO.txt + .mb-origem.json)
+    contra o que a central TEM agora (VERSAO.txt + HEAD do git)."""
+    mb = projeto / "MEGABRAIN"
+    puxada_linha = _primeira_linha(mb / "VERSAO.txt") if mb.is_dir() else ""
+    origem = {}
+    if (mb / ".mb-origem.json").is_file():
+        try:
+            origem = json.loads((mb / ".mb-origem.json").read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            origem = {}
+    atual_linha = _primeira_linha(central / "VERSAO.txt") if central else ""
+    head, head_data = _git_head(central) if central else (None, None)
+    if not mb.is_dir():
+        estado = "sem-copia"
+    elif not central:
+        estado = "central-desconhecida"
+    elif puxada_linha == atual_linha:
+        estado = "atual"
+    else:
+        estado = "desatualizado"
+    return {
+        "puxada": _versao_curta(puxada_linha) if puxada_linha else "—",
+        "puxada_linha": puxada_linha,
+        "puxada_commit": (origem.get("commit_central") or "")[:7],
+        "puxada_em": (origem.get("sincronizado_em") or "")[:16].replace("T", " "),
+        "atual": _versao_curta(atual_linha) if atual_linha else "—",
+        "atual_linha": atual_linha,
+        "atual_commit": head or "",
+        "atual_commit_data": head_data or "",
+        "central": str(central) if central else "",
+        "estado": estado,
+    }
+
+
+def bloco_versao_html(v: dict) -> str:
+    rotulo = {
+        "atual": ("ok", "na versão atual"),
+        "desatualizado": ("ruim", "DESATUALIZADO — sincronize o MEGABRAIN/ deste projeto"),
+        "sem-copia": ("atencao", "projeto sem MEGABRAIN/ (nível 1) — nada puxado"),
+        "central-desconhecida": ("atencao", "central não localizada — passe --megabrain-central"),
+    }[v["estado"]]
+    cls, txt = rotulo
+    puxada_det = " · ".join(x for x in (
+        f"commit {v['puxada_commit']}" if v["puxada_commit"] else "",
+        f"puxado em {v['puxada_em']}" if v["puxada_em"] else "",
+    ) if x) or "sem .mb-origem.json (cópia anterior à v6.1)"
+    atual_det = " · ".join(x for x in (
+        f"git {v['atual_commit']}" if v["atual_commit"] else "",
+        v["atual_commit_data"],
+    ) if x) or (v["central"] and "central sem git") or "—"
+    return f"""
+<div class="versao-mb versao-mb--{cls}">
+  <div><span class="k">megabrain que este projeto puxou</span><span class="v">{html.escape(v['puxada'])}</span><span class="d">{html.escape(puxada_det)}</span></div>
+  <div><span class="k">megabrain atual (central)</span><span class="v">{html.escape(v['atual'])}</span><span class="d">{html.escape(atual_det)}</span></div>
+  <div><span class="k">estado</span><span class="v estado">{html.escape(txt)}</span><span class="d">{html.escape(v['central'] or '')}</span></div>
+</div>"""
+
+
+VERSAO_CSS = """
+.versao-mb{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:0;border:2px solid currentColor;margin:0 0 14px;font-size:.9rem}
+.versao-mb>div{padding:8px 12px;display:flex;flex-direction:column;gap:2px;border-right:1px solid rgba(0,0,0,.15)}
+.versao-mb>div:last-child{border-right:0}
+.versao-mb .k{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;opacity:.75}
+.versao-mb .v{font-weight:800;font-size:1.15rem;font-family:ui-monospace,Consolas,monospace}
+.versao-mb .d{font-size:.72rem;opacity:.8;word-break:break-all}
+.versao-mb--ok .estado{color:#23613e}
+.versao-mb--ruim{background:#f1d8d1}.versao-mb--ruim .estado{color:#a63025}
+.versao-mb--atencao{background:#fbefd0}.versao-mb--atencao .estado{color:#7a4d00}
+"""
+
+
 def gerar(args, data_iso: str) -> str:
     projeto = Path(args.projeto).resolve()
     pendencias = []
@@ -526,12 +653,15 @@ def gerar(args, data_iso: str) -> str:
     # --- contexto geral (MEGABRAIN central, se acessível) ---
     resumo_geral = GENERIC_MEGABRAIN_RESUMO
     central_link = None
-    if args.megabrain_central:
-        central = Path(args.megabrain_central)
+    central = localizar_central(args.megabrain_central, projeto)
+    if central:
         mb_md = ler(central / "MEGABRAIN.md")
         if mb_md:
             resumo_geral = primeiro_paragrafo(mb_md) or resumo_geral
             central_link = str(central)
+
+    # --- v6.1: versão do megabrain que ESTE projeto puxou × a atual da central ---
+    versao_info = versao_megabrain(projeto, central)
 
     # --- estado / handoff (opcional) ---
     estado_txt = ler(projeto / "ESTADO.md")
@@ -738,7 +868,12 @@ def gerar(args, data_iso: str) -> str:
         "dateCreated": data_iso,
         "abstract": tldr,
         "about": {"@type": "Thing", "name": args.titulo},
-        "isPartOf": {"@type": "SoftwareApplication", "name": "megabrain"},
+        "isPartOf": {"@type": "SoftwareApplication", "name": "megabrain",
+                     "softwareVersion": versao_info["atual"]},
+        "megabrain_puxado": {"versao": versao_info["puxada"], "commit": versao_info["puxada_commit"],
+                             "em": versao_info["puxada_em"]},
+        "megabrain_atual": {"versao": versao_info["atual"], "commit": versao_info["atual_commit"],
+                            "estado": versao_info["estado"]},
         "pendencias_abertas": [p["texto"] for p in pendentes],
         "acoes_rapidas": [{"nome": rotulo, "url": href} for rotulo, href, _ in acoes],
         "fontes_markdown": [nome for nome, _ in fontes],
@@ -811,11 +946,15 @@ def gerar(args, data_iso: str) -> str:
 <meta name="megabrain:timestamp" content="{html.escape(data_iso)}">
 <meta name="megabrain:tldr" content="{html.escape(tldr)}">
 <meta name="megabrain:pendencias-abertas" content="{len(pendentes)}">
+<meta name="megabrain:versao-puxada" content="{html.escape(versao_info['puxada'])}">
+<meta name="megabrain:versao-atual" content="{html.escape(versao_info['atual'])}">
+<meta name="megabrain:versao-estado" content="{html.escape(versao_info['estado'])}">
 <meta name="description" content="Relatório de projeto — contexto, estado, situação e próximas ações concentrados num único arquivo, para humano e IA.">
 <script type="application/ld+json">{json_ld}</script>
-<style>{css(args.tema)}</style></head><body><div class="wrap">
+<style>{css(args.tema)}{VERSAO_CSS}</style></head><body><div class="wrap">
 <h1>{html.escape(args.titulo)} · relatório de projeto</h1>
 <div class="sub">gerado em {html.escape(data_iso[:16].replace('T', ' '))} · bin/mb-relatorio-projeto.py · irmão do relatório DNA</div>
+{bloco_versao_html(versao_info)}
 <div class="tldr {tldr_classe}">{_inline(tldr)}</div>
 {acao_imediata_box}
 <nav>{nav_html}</nav>

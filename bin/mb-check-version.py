@@ -198,8 +198,34 @@ def sincronizar_central_para_projeto(central, mb_projeto, dry_run=False):
         print(f"ERRO: após sync, falhas/faltando: {falhas}")
         return False
 
+    gravar_origem(central_path, mb_projeto_path)
     print("sync concluído com sucesso")
     return True
+
+
+def gravar_origem(central: Path, mb_projeto: Path) -> None:
+    """v6.1 (260821): registra DE ONDE a cópia veio — versão declarada e commit
+    git da central no momento do pull. É o que o relatório vivo e o relatório
+    de projeto mostram como "versão que o projeto puxou". Sem isso a cópia
+    só tem VERSAO.txt, que diz a versão mas não o commit."""
+    import datetime as dt
+    import json
+
+    repo = None
+    for cand in (central, central / "_github-repo-local"):
+        if (cand / ".git").exists():
+            repo = cand
+            break
+    dados = {
+        "versao": ler_versao(central),
+        "commit_central": hash_commit_local(str(repo)) if repo else None,
+        "repo_central": str(repo) if repo else None,
+        "sincronizado_em": dt.datetime.now().astimezone().isoformat(timespec="seconds"),
+        "central": str(central),
+    }
+    if not u.atomic_write_text(mb_projeto / ".mb-origem.json",
+                               json.dumps(dados, ensure_ascii=False, indent=2) + "\n"):
+        print("  AVISO: não gravei MEGABRAIN/.mb-origem.json (versão puxada fica só no VERSAO.txt)")
 
 
 def gate_drift(central: Path) -> int:
@@ -216,7 +242,11 @@ def gate_drift(central: Path) -> int:
     export = central / "260810_github-export"
     repo = central / "_github-repo-local"
     chaves = ["MEGABRAIN.md", "skills/megabrain/SKILL.md", "VERSAO.txt",
-              "bin/mb_utils.py", "bin/mb-sync.py", "bin/mb-check-version.py"]
+              "bin/mb_utils.py", "bin/mb-sync.py", "bin/mb-check-version.py",
+              # v6.1: o plugin Cowork/Claude é versionado — a cópia do repo tem
+              # que ser a derivada do export, não edição direta no repo-local.
+              "plugin-megabrain-claude/skills/megabrain/SKILL.md",
+              "plugin-megabrain-claude/scripts/260821_session-start.js"]
     drift = []
 
     def h(p: Path):

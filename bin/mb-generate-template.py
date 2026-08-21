@@ -67,7 +67,9 @@ EXCLUIR = {
     ".mb-aspirador",
     ".mb-backup",
     ".dna-backup",
-    ".claude",
+    # 260821: com barra — ".claude" solto casava com ".claude-plugin/" do plugin
+    # Claude e deixava o plugin.json fora do pacote.
+    ".claude/",
     "__pycache__",
     "260810_VISAO-GERAL.md",
     "PIPELINE.md",
@@ -83,8 +85,14 @@ EXCLUIR = {
     "gerenteneuron/projetos.json",
     # Fonte local do plugin Kimi (SYSTEM.md, hooks, skills internas). Publicar
     # o wrapper do plugin é decisão pendente — até lá, fica fora do pacote.
-    "plugin-megabrain",
+    # 260821 (v6.1): com a barra final, pra NÃO casar com plugin-megabrain-claude/
+    # (o plugin Cowork/Claude é versionado e sai no pacote, sanitizado).
+    "plugin-megabrain/",
 }
+
+# Pacotes binários gerados (zip do plugin Claude): o validador de privacidade
+# não lê dentro do zip, então eles nunca sobem — o repo leva a pasta-fonte.
+EXCLUIR_SUFIXO = (".plugin",)
 
 # Estado operacional da central privada. Projetos clonados criam os próprios
 # arquivos; publicar estes documentos vaza contexto, nomes e decisões locais.
@@ -112,10 +120,13 @@ EXCLUIR_NOME_EXATO = {
 # Ordenado do termo mais longo para o mais curto evita que "<USUARIO>" corte
 # "<USUARIO>" antes do match completo.
 _SUBSTITUICOES_BRUTAS = [
+    # 260821: a forma com barra invertida é derivada da forma com barra — escrita
+    # literal com "\\" no código-fonte escapava da própria sanitização e o
+    # caminho pessoal vazava na cópia pública deste gerador.
     ("<MEGABRAIN_ROOT>", "<MEGABRAIN_ROOT>"),
-    ("S:\\projetos multi i.a\\MEGA B R A I  N", "<MEGABRAIN_ROOT>"),
+    ("<MEGABRAIN_ROOT>".replace("/", "\\"), "<MEGABRAIN_ROOT>"),
     ("<PROJETOS_ROOT>/", "<PROJETOS_ROOT>/"),
-    ("S:\\projetos multi i.a\\", "<PROJETOS_ROOT>\\"),
+    ("<PROJETOS_ROOT>/".replace("/", "\\"), "<PROJETOS_ROOT>\\"),
     ("<USER_HOME>", "<USER_HOME>"),
     ("C:\\Users\\<USUARIO>", "<USER_HOME>"),
     ("<AUTOR>", "<AUTOR>"),
@@ -281,7 +292,9 @@ def gerar_template(central, destino):
 
     # Copia arquivos de topo
     for nome in os.listdir(central_path):
-        if nome in EXCLUIR or nome in EXCLUIR_TOPO:
+        if nome in EXCLUIR or nome in EXCLUIR_TOPO or (nome + "/") in EXCLUIR:
+            continue
+        if nome.lower().endswith(EXCLUIR_SUFIXO):
             continue
         src = os.path.join(central_path, nome)
         dst = destino_path / nome
@@ -297,7 +310,7 @@ def gerar_template(central, destino):
                     # pula .git e excluídos
                     if any(x in rel_f for x in EXCLUIR):
                         continue
-                    if f in EXCLUIR_NOME_EXATO:
+                    if f in EXCLUIR_NOME_EXATO or f.lower().endswith(EXCLUIR_SUFIXO):
                         continue
                     src_f = os.path.join(raiz, f)
                     dst_f = destino_path / rel / f
@@ -373,7 +386,8 @@ def gravar_manifesto(central: Path, destino: Path) -> None:
     import hashlib
     import json as _json
 
-    chaves = ["MEGABRAIN.md", "skills/megabrain/SKILL.md", "VERSAO.txt"]
+    chaves = ["MEGABRAIN.md", "skills/megabrain/SKILL.md", "VERSAO.txt",
+              "plugin-megabrain-claude/scripts/260821_session-start.js"]  # v6.1
     hashes = {}
     for rel in chaves:
         try:

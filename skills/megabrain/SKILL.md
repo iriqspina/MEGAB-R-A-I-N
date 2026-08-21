@@ -1,13 +1,16 @@
 ---
 name: megabrain
-description: Protocolo de execução multi-agente — gates de entrega anti-slop, Duplo Diamante para projetos de design, roteamento de arquitetura (skill vs script vs subagente) e camada de projeto (fases macro, regras de ouro). Use quando o usuário digitar /megabrain ou /metaprotocolo, escrever "megabrain" ou "metaclaude", pedir para "rodar no modo completo" ou "caprichar", abrir ou retomar um projeto com ESTADO.md/HANDOFF.md, passar trabalho de um agente para o outro, iniciar entrega complexa (proposta, deck, peça de cliente, relatório, código), pedir para revisar um prompt/brief/workflow, ou perguntar como evitar respostas genéricas de IA.
+description: Protocolo de execução multi-agente — gates de entrega anti-slop, Duplo Diamante para projetos de design, roteamento de arquitetura (skill vs script vs subagente) e camada de projeto (fases macro, regras de ouro). Use quando o usuário digitar /megabrain, escrever "megabrain", pedir para "rodar no modo completo" ou "caprichar", abrir ou retomar um projeto com ESTADO.md/HANDOFF.md, passar trabalho de um agente para o outro, iniciar entrega complexa (proposta, deck, peça de cliente, relatório, código), pedir para revisar um prompt/brief/workflow, ou perguntar como evitar respostas genéricas de IA.
 ---
 
 # megabrain — protocolo operacional
 
-**v5.0 · 2026-08-16.** Base: v4.9 do repositório. Mudou: numeração de gates
-consistente com o TL;DR, modo leve/completo explícito, Gate 5 confere a cópia
-que rodou, Gate 7 grava sob autorização permanente, `5b` virou `5.1`.
+**v5.1 · 2026-08-21.** Base: v5.0 (260816). Mudou: gatilhos legados saíram da
+`description` (renomeação total, decisão 260817), Gate 0 abre com
+`mb-preflight.py`, Gate 6 regenera o relatório vivo (versão atual × anterior).
+Histórico: v5.0 — numeração de gates consistente com o TL;DR, modo
+leve/completo explícito, Gate 5 confere a cópia que rodou, Gate 7 grava sob
+autorização permanente, `5b` virou `5.1`.
 
 Protocolo multi-agente e agnóstico de modelo — roda igual em qualquer CLI ou
 chat de IA com acesso a arquivo (Claude Code, Kimi CLI, ou colado direto
@@ -73,6 +76,10 @@ material já saiu, ele já saiu.
 
 Antes de tocar em qualquer arquivo de `projetos/<nome>/`:
 
+0. Primeiro pedido da sessão: `python "<MEGABRAIN_ROOT>/bin/mb-preflight.py" --repo "<MEGABRAIN_ROOT>"`
+   (v6.1 — git atrás/sem push, skill instalada ≠ fonte, fatos vencidos,
+   resíduo de nome antigo; saída 2 = pendência, e o veredito diz qual).
+   Se não rodou, diga que não rodou — não adivinhe o resultado.
 1. `git pull`
 2. Leia nesta ordem: `ESTADO.md` → `HANDOFF.md` → o fim de `DECISOES.md` →
    `LICOES.md`. **Não varra a árvore antes disso.**
@@ -371,6 +378,7 @@ Antes de encerrar a sessão, sempre. Não é opcional e não é resumo bonito �
 6. **Propagação do megabrain core:**
    - Se você alterou `<MEGABRAIN_ROOT>/skills/megabrain/SKILL.md`, `MEGABRAIN.md`, `referencias/` ou `VERSAO.txt`, a central ficou mais nova que os projetos.
    - Antes de encerrar, rode `mb-check-version.py` nos projetos ativos para propagar a versão central. Se um projeto estiver mais novo, pare e pergunte ao usuário antes de sobrescrever.
+   - Se você mudou a versão (VERSAO.txt) ou commitou no repo: regenere o relatório vivo (`python "<MEGABRAIN_ROOT>/bin/mb-relatorio-vivo.py"`). Desde a v6.1 ele mostra no topo a versão atual × anterior, o commit, o que falta de push e qual versão cada projeto puxou — e guarda o HTML anterior sozinho.
    - Se não puder rodar nos projetos, anote no `HANDOFF.md` que a sincronização é obrigatória na próxima sessão.
 
 Um handoff que diz "continuar o projeto" não é handoff. Próximo passo tem

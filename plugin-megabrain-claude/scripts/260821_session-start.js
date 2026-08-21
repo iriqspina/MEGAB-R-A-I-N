@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * 260821_session-start.js — hook SessionStart do plugin megabrain (Claude/Cowork). v1.1.0
+ * 260821_session-start.js — hook SessionStart do plugin megabrain (Claude/Cowork). v1.1.1
  *
  * Faz duas coisas, sem depender da memória do usuário:
  *   1. Injeta o núcleo do protocolo (texto de megabrain-core, curto — custa
@@ -16,6 +16,13 @@
  *
  * Falha em silêncio: qualquer erro produz o núcleo sem memória e a sessão
  * segue normal. Nunca bloqueia o início.
+ *
+ * Limite verificado (260821, sessão Cowork cloud com o plugin v1.0.0
+ * instalado): o Cowork cloud NÃO executa hooks de plugin — o arquivo que o
+ * hook v1.0.0 criaria na 1ª execução não existia e nenhum contexto foi
+ * injetado. As skills do plugin (megabrain, registrar-licao) carregam normal.
+ * O hook vale onde hooks rodam (Claude Code CLI / Desktop). No Cowork, o
+ * Gate 0 da skill megabrain cobre a leitura das lições.
  */
 
 const fs = require("fs");
@@ -166,7 +173,7 @@ empurre. Handoff que diz "continuar o projeto" não é handoff.
 
 REGISTRAR — ao fim de tarefa não-trivial, rode a skill \`registrar-licao\` SOZINHO,
 sem pedir permissão. Grave e diga em uma linha o que gravou. NUNCA pergunte
-"quer que eu registre?" — o Henrique já autorizou permanentemente (260805).
+"quer que eu registre?" — autorização permanente dada na instalação (registro 260805).
 
 CONTEXTO é orçamento: grep antes de read, checkpoint em arquivo, subagente para
 trabalho barulhento. Nunca despeje pasta inteira.
