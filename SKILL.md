@@ -5,7 +5,9 @@ description: Protocolo de execução multi-agente — gates de entrega anti-slop
 
 # megabrain — protocolo operacional
 
-**v5.4 · 2026-08-22.** Base: v5.3 (260822). Mudou: raiz da central sem arquivo solto
+**v5.5 · 2026-08-22.** Base: v5.4 (260822). Mudou: Gate 6 item 5 — push por ambiente
+(autorização permanente; cloud com repo como fonte empurra, sem fonte cai no `.cmd`;
+git nunca pelo bridge). Histórico: v5.4 — raiz da central sem arquivo solto
 (layout `nucleo/ estado/ identidade/ relatorios/` — seção "Localizar a instalação").
 v5.3 (260822) — Mudou: Gate 0 garante `cerebro/`
 (v6.2 — `mb-check-version.py` cria `raw/wiki/pessoas/INDICE.md` no projeto), Gate 7
@@ -412,7 +414,8 @@ Antes de encerrar a sessão, sempre. Não é opcional e não é resumo bonito �
    rediscutida daqui a duas semanas.
 5. Git:
    - `git add -A && git commit -m "<agente>: <o que mudou>"` (commit local pode ser automático).
-   - **Antes de `git push`, confirme com o usuário.** Não suba prioritariamente; só empurre se ele aprovar ou se já tiver autorização explícita permanente para este repo.
+   - **Push — regra por ambiente (v5.5):** o usuário já deu autorização permanente de commit e push para os repos do megabrain; não peça de novo. Sessão cloud (Cowork) com o repo adicionado como **fonte da sessão**: clone no container, commit e `git push` direto. Sessão cloud **sem** o repo como fonte: o proxy não injeta credencial (403) — commite no `_github-repo-local` e entregue o push ao `05_scripts/260821_push-github.cmd`, dizendo isso em uma linha. Sessão local (CLI/desktop): push direto.
+   - **Nunca rode git pela pasta montada do bridge** (`$HOME/mnt/...` no Cowork): não há rede e a sessão não apaga `index.lock`/`HEAD.lock`/`tmp_obj_*`, que ficam órfãos no `.git`. Leitura de arquivo pelo bridge é ok; git é só no container ou no `.cmd`.
    - Se este trabalho alterou arquivos em `<MEGABRAIN_ROOT>/`, rode `python "<MEGABRAIN_ROOT>/bin/mb-sync-projeto-para-central.py" --projeto <pasta-do-projeto>` para subir a versão do projeto para a central, ou deixe claro no `HANDOFF.md` que a central ficou mais nova e os projetos devem sincronizar no próximo `Gate 0`.
 6. **Propagação do megabrain core:**
    - Se você alterou `<MEGABRAIN_ROOT>/skills/megabrain/SKILL.md`, `MEGABRAIN.md`, `referencias/` ou `VERSAO.txt`, a central ficou mais nova que os projetos.
