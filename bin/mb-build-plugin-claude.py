@@ -103,7 +103,7 @@ def validar(plugin: Path) -> list[str]:
     if not hook.is_file():
         erros.append(f"{HOOK}: ausente")
     elif shutil.which("node"):
-        r = subprocess.run(["node", "--check", str(hook)], capture_output=True, text=True)
+        r = subprocess.run(["node", "--check", str(hook)], capture_output=True, text=True, encoding="utf-8", errors="replace")
         if r.returncode != 0:
             erros.append(f"node --check: {r.stderr.strip()[:200]}")
         else:
@@ -112,7 +112,7 @@ def validar(plugin: Path) -> list[str]:
             with tempfile.TemporaryDirectory() as tmp:
                 Path(tmp, "licoes-megabrain.md").write_text("## 000000 — teste\nGATILHO: x\n", encoding="utf-8")
                 env = dict(os.environ, CLAUDE_PROJECT_DIR=tmp)
-                r = subprocess.run(["node", str(hook)], capture_output=True, text=True, env=env, timeout=15)
+                r = subprocess.run(["node", str(hook)], capture_output=True, text=True, encoding="utf-8", errors="replace", env=env, timeout=15)
                 try:
                     saida = json.loads(r.stdout)
                     ctx = saida["hookSpecificOutput"]["additionalContext"]

@@ -42,6 +42,7 @@ TARGET_FILE = {
     "claude": "CLAUDE.md",
     "gemini": "GEMINI.md",
     "kimi": "AGENTS.md",
+    "codex": "AGENTS.md",
     "claude-style": str(Path("output-styles") / "megabrain.md"),
 }
 
@@ -130,7 +131,7 @@ def sync_um(target: str, source: Path, diretorio: Path, modo: str, usuario: str 
 def main():
     ap = argparse.ArgumentParser(description="Sincroniza identidade entre agentes")
     ap.add_argument("--source", required=True, help="arquivo de identidade fonte")
-    ap.add_argument("--target", required=True, choices=["claude", "gemini", "kimi", "claude-style", "all"])
+    ap.add_argument("--target", required=True, choices=["claude", "gemini", "kimi", "codex", "claude-style", "all"])
     ap.add_argument("--dir", default=".", help="raiz do projeto (default: .)")
     ap.add_argument("--modo", choices=["import", "conteudo"], default=None,
                      help="default: conteudo pra kimi, import pra claude/gemini")

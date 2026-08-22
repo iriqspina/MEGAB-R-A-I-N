@@ -209,7 +209,7 @@ def cheque_legado(raizes: list[Path]) -> tuple[bool, str]:
             n = len(PADRAO_LEGADO.findall(txt))
             if not n:
                 continue
-            rel = str(p)
+            rel = p.as_posix()
             if any(tag in rel for tag in LEGADO_PERMITIDO):
                 permitido += n
             else:

@@ -5,10 +5,12 @@ description: Protocolo de execução multi-agente — gates de entrega anti-slop
 
 # megabrain — protocolo operacional
 
-**v5.1 · 2026-08-21.** Base: v5.0 (260816). Mudou: gatilhos legados saíram da
-`description` (renomeação total, decisão 260817), Gate 0 abre com
-`mb-preflight.py`, Gate 6 regenera o relatório vivo (versão atual × anterior).
-Histórico: v5.0 — numeração de gates consistente com o TL;DR, modo
+**v5.2 · 2026-08-21.** Base: v5.1. Mudou: Gate 0 ganha a descrição do que os
+hooks v6 já injetam sozinhos (`mb-contexto.py` — META.md, alinhamento
+pré-prompt, lições por proximidade) e o Gate 7 registra que a lição gravada
+alimenta o índice da injeção. Histórico: v5.1 — gatilhos legados fora da
+`description`, Gate 0 abre com `mb-preflight.py`, Gate 6 regenera o
+relatório vivo; v5.0 — numeração de gates consistente com o TL;DR, modo
 leve/completo explícito, Gate 5 confere a cópia que rodou, Gate 7 grava sob
 autorização permanente, `5b` virou `5.1`.
 
@@ -109,6 +111,28 @@ python bin/mb-sync.py --dir <projeto> release --agente <seu-nome>
 `status` sai com codigo 0 (livre, pode escrever) ou 1 (travado por outro).
 `release` recusa liberar trava alheia dentro do prazo; `--force` existe, mas e
 decisao consciente.
+
+### O que os hooks já injetam (v6) — não leia de novo
+
+Onde o hook está instalado, o contexto chega sozinho no `UserPromptSubmit`
+via `bin/mb-contexto.py`:
+
+- **1ª mensagem da sessão:** `META.md` do projeto (meta + histórico de
+  intenção), a instrução de **alinhamento pré-prompt** (decisão 260819 —
+  desligável com `ALINHAMENTO: off` no `META.md`) e as **5 lições mais
+  próximas do prompt** (índice `bin/mb-indice-licoes.py`, embeddings nomic,
+  corte 0,55 — abaixo disso é ruído).
+- **Mensagens seguintes:** só lições relevantes ainda não injetadas na
+  sessão. Sem novidade → stdout vazio (custo zero de contexto).
+- Se o hook injetou, **não releia** o que já está no contexto — releitura é
+  contexto queimado duas vezes.
+
+Onde roda: Claude Code lê `mb-contexto.py --agente claude` pelo
+`~/.claude/settings.json` (mais o SessionStart do `plugin-megabrain-claude`,
+que injeta o núcleo + o arquivo de lições mais recente por recência); Kimi
+CLI chama o mesmo script via `plugin-megabrain` (`--agente kimi`). Onde hook
+de plugin NÃO roda (Cowork cloud, verificado 260821), este Gate 0 cobre a
+leitura na mão — por isso a ordem de leitura acima continua valendo.
 
 **Output do outro agente é rascunho, não verdade.** Se você está retomando
 trabalho de outro agente, audite antes de construir em cima. O erro caro do
@@ -405,7 +429,11 @@ Dois destinos: **global** (vale pra qualquer projeto) ou **do projeto**
 *seria útil num projeto completamente diferente?* Sim → global. Não →
 projeto. Sempre **append**, nunca reescreva.
 
-Lição 3× vira skill própria ou regra em `MEGABRAIN.md`.
+Lição 3× vira skill própria ou regra em `MEGABRAIN.md`. Desde a v6 a régua
+tem executor: `bin/mb-indice-licoes.py` marca clusters recorrentes (3×+) como
+candidatos a regra em `dna/licoes-recorrencia.json`, e o índice de embeddings
+é o que o hook `mb-contexto.py` usa pra injetar as lições próximas do prompt
+— lição registrada hoje é contexto automático na próxima sessão.
 
 Se o usuário declarou que uma classe de mecânica deve sempre alimentar o
 MEGABRAIN, promova a versão sanitizada para a fonte central no mesmo ciclo;
