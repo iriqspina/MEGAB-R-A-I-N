@@ -185,7 +185,13 @@ def main() -> int:
     args = p.parse_args()
 
     try:
-        bruto = sys.stdin.read()
+        buf = getattr(sys.stdin, "buffer", None)
+        if buf is not None:
+            # bytes + utf-8-sig: independe da codepage do console (cp1252
+            # corromperia o BOM) e já o remove — ver mb-observar.py.
+            bruto = buf.read().decode("utf-8-sig", errors="replace")
+        else:
+            bruto = sys.stdin.read()
         bruto = bruto.lstrip("﻿").strip()
         payload = json.loads(bruto) if bruto else {}
     except Exception:

@@ -133,7 +133,13 @@ def gravar(linha: dict, cwd: str | None) -> Path | None:
 
 def modo_hook(args) -> int:
     try:
-        bruto = sys.stdin.read()
+        buf = getattr(sys.stdin, "buffer", None)
+        if buf is not None:
+            # bytes + utf-8-sig: independe da codepage do console (cp1252
+            # corromperia o BOM antes do lstrip abaixo) e já remove o BOM.
+            bruto = buf.read().decode("utf-8-sig", errors="replace")
+        else:
+            bruto = sys.stdin.read()
     except Exception:
         bruto = ""
     # PowerShell 5.1 injeta BOM no pipe (lição 260819); json.loads recusa.
