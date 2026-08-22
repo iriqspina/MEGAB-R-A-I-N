@@ -23,7 +23,8 @@ pedido em markdown:
    via plugin) gravam prompt, arquivos tocados e fim de turno em
    `<projeto>/.mb-log/*.jsonl` (local, retenção sem limite, poda manual).
    `bin/mb-relatorio-agentes.py` → `RELATORIO-AGENTES.html`;
-   `bin/mb-relatorio-vivo.py` → `RELATORIO-VIVO.html` (auto-reload, o
+   `bin/mb-relatorio-vivo.py` → `RELATORIO.html` — desde a v6.6 é O relatório
+   (auto-reload, o
    usuário deixa aberto). Feedback do GerenteNeuron entra via
    `bin/mb-observar.py --importar-feedback`.
 2. **Compreensão da meta** — `META.md` por projeto (template em
@@ -229,7 +230,7 @@ estado → grelhar → spec → tickets → implementar → validar → publicar
 | `.scratch/<feature>/` | tracker vivo: spec, plano, grelha, issues |
 | `docs/` | planos e handoffs, `YYMMDD` quando datado |
 | `Atalhos\*.cmd` + `LEIAME` | dia a dia num clique, numerados |
-| relatório de projeto (`RELATORIO.html`) | instância aplicada — contexto, estado/handoff, situação e pendências concentrados num HTML só; gerado por `bin/mb-relatorio-projeto.py` (ver seção 5b) — edita-se o gerador/fonte, nunca o HTML |
+| relatório de projeto (`RELATORIO.html`) | instância aplicada — contexto, estado/handoff, situação e pendências concentrados num HTML só; gerado por `bin/mb-relatorio-vivo.py` desde a v6.6 (o antigo `mb-relatorio-projeto.py` virou alias) — edita-se o gerador/fonte, nunca o HTML |
 | `CHANGELOG.md` | o que subiu, mais novo primeiro |
 | `_arquivo\_tmp\` | sondas e scripts de uma vez só |
 | `MEGABRAIN\` | esta pipeline sincronizada (inclui `dna\` — relatório DNA do protocolo) — não editar a cópia |
@@ -280,6 +281,35 @@ vs script), Duplo Diamante pra projeto de design. Não duplicado aqui —
 edite lá.
 
 ## 5b · Relatório de projeto — template de consolidação
+
+## 0c. Relatório único e biblioteca visual (v6.6, 260822)
+
+**Relatório = relatório vivo.** Um por instância, gerado por
+`bin/mb-relatorio-vivo.py` em `RELATORIO.html`: dashboard ao vivo no topo,
+`.md` da instância agregados embaixo. Vale igual na central e no projeto.
+O que envelhece vai pra `90_arquivo/relatorios-antigos/` com `INDICE.md`.
+
+**Planta fixa** — a mesma em toda instância, slot vazio não some:
+
+```
+D1 identidade+versão · D2 KPI · D3 para você · D4 saúde · D5 distribuição
+W1 gates · W2 trilha agente×você · W3 camadas · W4 histórico
+E1 progresso · E2 notas · E3 decisões · E4 eventos+fila
+C1 índice · C2 documentos · R rodapé
+```
+
+**Antes de escrever CSS, procure a mecânica.** `modelos/visuais/` guarda
+`tokens.css` (cor/tipo/espaço — fonte única) e `mecanicas/*.html`
+(8 peças com cabeçalho `@mb-visual`). `bin/mb_visual.py` renderiza:
+`v.render("kpi-linha", dados)`. Catálogo: `modelos/visuais/CATALOGO.md`
+(agente) e `04_relatorios/CATALOGO-VISUAL.html` (humano) — os dois gerados
+por `python bin/mb_visual.py --catalogo`.
+
+**Figma manda no layout; o Python manda no dado.** O arquivo `megabrain`
+(Figma) tem a planta, as fichas das mecânicas e os 16 tokens em 2 modos.
+Desenhar lá, ajustar o `.html` da mecânica, e todo lugar onde ela aparece
+herda. O caminho inverso — gerar o Figma a partir do HTML — foi descartado
+em 260822.
 
 Desde 260814. Todo projeto pode gerar um **relatório de projeto**: o irmão
 do relatório DNA (`MEGABRAIN\dna\`). O DNA descreve o **protocolo**

@@ -1,0 +1,32 @@
+<!--@mb-visual
+id: matriz
+nome: Matriz de comparação
+quando: comparar opções por critério — antes×depois, ferramenta A×B, o que cada camada cobre
+dados: titulo, legenda, colunas[]{rotulo}, linhas[]{rotulo, celulas[]{v, status}}
+status: ok | ativo | espera | trava
+custo: ~2 linhas por célula. Use no lugar de 3 parágrafos de comparação.
+-->
+<style>
+.mbv-mtz{margin:var(--s3) 0}
+.mbv-mtz__cab{display:flex;align-items:baseline;gap:var(--s2);flex-wrap:wrap;margin-bottom:var(--s2)}
+.mbv-mtz__tit{font-weight:700;font-size:.9rem}
+.mbv-mtz__leg{font-size:.72rem;color:var(--ink-faint)}
+.mbv-mtz__rolo{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r)}
+.mbv-mtz table{border-collapse:collapse;width:100%;min-width:26rem;background:var(--paper-high)}
+.mbv-mtz th,.mbv-mtz td{padding:var(--s1) var(--s2);text-align:left;font-size:.74rem;border-bottom:1px solid var(--line);border-right:1px solid var(--line);vertical-align:top}
+.mbv-mtz th:last-child,.mbv-mtz td:last-child{border-right:0}
+.mbv-mtz tr:last-child td{border-bottom:0}
+.mbv-mtz thead th{background:var(--paper-sunk);font-size:.66rem;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-faint);white-space:nowrap}
+.mbv-mtz tbody th{font-weight:700;background:var(--paper-sunk);white-space:nowrap}
+.mbv-mtz td.mbv-c--ok{color:var(--ok)} .mbv-mtz td.mbv-c--trava{color:var(--signal)}
+.mbv-mtz td.mbv-c--espera{color:var(--warn)} .mbv-mtz td.mbv-c--ativo{color:var(--info)}
+</style>
+<template>
+<figure class="mbv-mtz">
+  <figcaption class="mbv-mtz__cab"><span class="mbv-mtz__tit">{{titulo}}</span><span class="mbv-mtz__leg">{{legenda}}</span></figcaption>
+  <div class="mbv-mtz__rolo"><table>
+    <thead><tr><th></th>{{#colunas}}<th>{{rotulo}}</th>{{/colunas}}</tr></thead>
+    <tbody>{{#linhas}}<tr><th scope="row">{{rotulo}}</th>{{#celulas}}<td class="mbv-c--{{status}}">{{v}}</td>{{/celulas}}</tr>{{/linhas}}</tbody>
+  </table></div>
+</figure>
+</template>

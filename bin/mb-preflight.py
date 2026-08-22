@@ -56,6 +56,10 @@ LEGADO_PERMITIDO = (
     "mb-build-plugin-claude.py", "plugin-megabrain-claude/README.md",
     # derivados que embutem o TEXTO das lições/decisões (regenerados, não fonte)
     "PAINEL-MEGABRAIN.html", "RELATORIO-AGENTES.html", "RELATORIO-VIVO.html",
+    # v6.6: o relatório passou a agregar os .md da instância (DECISOES, HANDOFF,
+    # lições) — logo ele HERDA as menções históricas que já são permitidas na
+    # fonte. Varrer o derivado por resíduo é acusar duas vezes o mesmo texto.
+    "04_relatorios/", "relatorios-antigos/", "RELATORIO.html", "CATALOGO-VISUAL.html",
     "indice-licoes.json", "licoes-recorrencia.json",
     # congelados/backups: história, não fonte viva
     "PIPELINE.md", "260805_licoes-backup", "260811_prompt-claude-handoff", "mb-patch-v5.py",

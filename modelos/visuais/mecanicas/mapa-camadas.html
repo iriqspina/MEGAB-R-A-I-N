@@ -1,0 +1,37 @@
+<!--@mb-visual
+id: mapa-camadas
+nome: Mapa de camadas
+quando: arquitetura empilhada — onde mora o quê e o que desce pra onde. Ordem: de cima (fonte) pra baixo (consumo).
+dados: titulo, legenda, camadas[]{nome, papel, itens[]{rotulo, det, status}}
+status: ok | ativo | espera | trava
+custo: ~20 linhas. Substitui um parágrafo inteiro de "onde fica cada coisa".
+-->
+<style>
+.mbv-mapa{margin:var(--s3) 0}
+.mbv-mapa__cab{display:flex;align-items:baseline;gap:var(--s2);flex-wrap:wrap;margin-bottom:var(--s2)}
+.mbv-mapa__tit{font-weight:700;font-size:.9rem}
+.mbv-mapa__leg{font-size:.72rem;color:var(--ink-faint)}
+.mbv-camada{border:1px solid var(--line);border-bottom:0;background:var(--paper-high)}
+.mbv-camada:last-of-type{border-bottom:1px solid var(--line)}
+.mbv-camada__cab{display:flex;align-items:baseline;gap:var(--s2);flex-wrap:wrap;padding:var(--s2) var(--s2) var(--s1);border-bottom:1px dashed var(--line)}
+.mbv-camada__nome{font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+.mbv-camada__papel{font-size:.68rem;color:var(--ink-faint)}
+.mbv-camada__itens{display:flex;flex-wrap:wrap;gap:var(--s1);padding:var(--s2)}
+.mbv-item{flex:0 1 auto;border:1px solid var(--line);border-radius:var(--r);padding:var(--s1) var(--s2);background:var(--paper)}
+.mbv-item__r{font-family:var(--mono);font-size:.72rem;font-weight:700}
+.mbv-item__d{font-size:.66rem;color:var(--ink-faint);margin-top:1px}
+.mbv-item--ok{border-color:var(--ok)}      .mbv-item--ok .mbv-item__r{color:var(--ok)}
+.mbv-item--ativo{border-color:var(--info)} .mbv-item--ativo .mbv-item__r{color:var(--info)}
+.mbv-item--espera{border-style:dashed;border-color:var(--warn)} .mbv-item--espera .mbv-item__r{color:var(--warn)}
+.mbv-item--trava{border-color:var(--signal);background:var(--signal-soft)} .mbv-item--trava .mbv-item__r{color:var(--signal)}
+.mbv-mapa__seta{text-align:center;font-size:.8rem;color:var(--ink-faint);line-height:1;padding:2px 0}
+</style>
+<template>
+<figure class="mbv-mapa">
+  <figcaption class="mbv-mapa__cab"><span class="mbv-mapa__tit">{{titulo}}</span><span class="mbv-mapa__leg">{{legenda}}</span></figcaption>
+  {{#camadas}}<div class="mbv-camada">
+    <div class="mbv-camada__cab"><span class="mbv-camada__nome">{{nome}}</span><span class="mbv-camada__papel">{{papel}}</span></div>
+    <div class="mbv-camada__itens">{{#itens}}<span class="mbv-item mbv-item--{{status}}"><span class="mbv-item__r">{{rotulo}}</span><span class="mbv-item__d">{{det}}</span></span>{{/itens}}</div>
+  </div>{{/camadas}}
+</figure>
+</template>

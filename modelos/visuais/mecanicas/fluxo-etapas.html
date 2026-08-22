@@ -1,0 +1,46 @@
+<!--@mb-visual
+id: fluxo-etapas
+nome: Fluxo de etapas (pipeline horizontal)
+quando: uma sequência que tem estado — gates 0→7, pipeline de publicação, fases do Duplo Diamante
+dados: titulo, legenda, etapas[]{n, titulo, det, status}
+status: ok | ativo | espera | trava
+custo: ~15 linhas de dados; zero CSS novo
+-->
+<style>
+.mbv-fluxo{margin:var(--s3) 0}
+.mbv-fluxo__cab{display:flex;align-items:baseline;gap:var(--s2);flex-wrap:wrap;margin-bottom:var(--s2)}
+.mbv-fluxo__tit{font-weight:700;font-size:.9rem}
+.mbv-fluxo__leg{font-size:.72rem;color:var(--ink-faint)}
+.mbv-fluxo__trilho{display:flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--paper-high)}
+.mbv-etapa{flex:1 1 8.5rem;min-width:8.5rem;border-right:1px solid var(--line);padding:0 0 var(--s2)}
+.mbv-etapa:last-child{border-right:0}
+.mbv-etapa__barra{height:3px;background:var(--line-strong)}
+.mbv-etapa__topo{display:flex;align-items:center;gap:var(--s1);padding:var(--s2) var(--s2) 0}
+.mbv-etapa__n{font-family:var(--mono);font-size:.66rem;font-weight:700;color:var(--ink-faint);letter-spacing:.06em}
+.mbv-etapa__glifo{margin-left:auto;font-size:.8rem;line-height:1}
+.mbv-etapa__tit{padding:var(--s1) var(--s2) 0;font-size:.8rem;font-weight:700;line-height:1.25}
+.mbv-etapa__det{padding:var(--s1) var(--s2) 0;font-size:.7rem;color:var(--ink-soft);line-height:1.4}
+.mbv-etapa--ok    .mbv-etapa__barra{background:var(--ok)}
+.mbv-etapa--ok    .mbv-etapa__glifo{color:var(--ok)}
+.mbv-etapa--ativo .mbv-etapa__barra{background:var(--info)}
+.mbv-etapa--ativo .mbv-etapa__glifo{color:var(--info)}
+.mbv-etapa--ativo {background:var(--info-soft)}
+.mbv-etapa--espera .mbv-etapa__barra{background:var(--line-strong)}
+.mbv-etapa--espera .mbv-etapa__tit,.mbv-etapa--espera .mbv-etapa__n{color:var(--ink-faint)}
+.mbv-etapa--trava .mbv-etapa__barra{background:var(--signal)}
+.mbv-etapa--trava .mbv-etapa__glifo{color:var(--signal)}
+.mbv-etapa--trava {background:var(--signal-soft)}
+</style>
+<template>
+<figure class="mbv-fluxo">
+  <figcaption class="mbv-fluxo__cab"><span class="mbv-fluxo__tit">{{titulo}}</span><span class="mbv-fluxo__leg">{{legenda}}</span></figcaption>
+  <div class="mbv-fluxo__trilho">
+    {{#etapas}}<div class="mbv-etapa mbv-etapa--{{status}}">
+      <div class="mbv-etapa__barra"></div>
+      <div class="mbv-etapa__topo"><span class="mbv-etapa__n">{{n}}</span><span class="mbv-etapa__glifo" aria-label="{{status}}">{{glifo}}</span></div>
+      <div class="mbv-etapa__tit">{{titulo}}</div>
+      <div class="mbv-etapa__det">{{det}}</div>
+    </div>{{/etapas}}
+  </div>
+</figure>
+</template>

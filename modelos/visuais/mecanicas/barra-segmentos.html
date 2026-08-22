@@ -1,0 +1,29 @@
+<!--@mb-visual
+id: barra-segmentos
+nome: Barra de segmentos
+quando: uma população repartida — 16 projetos por versão, tokens por fase, tarefas por estado
+dados: titulo, total, segmentos[]{rotulo, n, status}
+status: ok | ativo | espera | trava
+custo: ~3 linhas por segmento. Largura calculada pelo renderizador (n/total).
+-->
+<style>
+.mbv-barra{margin:var(--s3) 0}
+.mbv-barra__tit{font-weight:700;font-size:.9rem;margin-bottom:var(--s2)}
+.mbv-barra__trilho{display:flex;height:1.4rem;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--paper-sunk)}
+.mbv-barra__seg{display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.66rem;font-weight:700;color:var(--paper-high);border-right:1px solid var(--paper-high)}
+.mbv-barra__seg:last-child{border-right:0}
+.mbv-barra__seg--ok{background:var(--ok)} .mbv-barra__seg--ativo{background:var(--info)}
+.mbv-barra__seg--espera{background:var(--warn)} .mbv-barra__seg--trava{background:var(--signal)}
+.mbv-barra__leg{display:flex;flex-wrap:wrap;gap:var(--s2);margin-top:var(--s2);font-size:.7rem;color:var(--ink-soft)}
+.mbv-barra__leg span{display:flex;align-items:center;gap:var(--s1)}
+.mbv-barra__pt{width:.55rem;height:.55rem;border-radius:var(--r);flex:0 0 auto}
+.mbv-barra__pt--ok{background:var(--ok)} .mbv-barra__pt--ativo{background:var(--info)}
+.mbv-barra__pt--espera{background:var(--warn)} .mbv-barra__pt--trava{background:var(--signal)}
+</style>
+<template>
+<figure class="mbv-barra">
+  <figcaption class="mbv-barra__tit">{{titulo}}</figcaption>
+  <div class="mbv-barra__trilho">{{#segmentos}}<div class="mbv-barra__seg mbv-barra__seg--{{status}}" style="width:{{pct}}%" title="{{rotulo}}: {{n}}">{{n}}</div>{{/segmentos}}</div>
+  <div class="mbv-barra__leg">{{#segmentos}}<span><i class="mbv-barra__pt mbv-barra__pt--{{status}}"></i>{{rotulo}} · {{n}}</span>{{/segmentos}}</div>
+</figure>
+</template>

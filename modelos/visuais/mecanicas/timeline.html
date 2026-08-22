@@ -1,0 +1,33 @@
+<!--@mb-visual
+id: timeline
+nome: Linha do tempo vertical
+quando: histórico datado — versões, decisões, sessões. Ordem: mais recente em cima.
+dados: titulo, itens[]{data, titulo, det, status}
+status: ok | ativo | espera | trava
+custo: ~4 linhas por item
+-->
+<style>
+.mbv-tl{margin:var(--s3) 0}
+.mbv-tl__tit{font-weight:700;font-size:.9rem;margin-bottom:var(--s2)}
+.mbv-tl__lista{list-style:none;margin:0;padding:0 0 0 var(--s3);border-left:1px solid var(--line)}
+.mbv-tl__i{position:relative;padding:0 0 var(--s3) 0}
+.mbv-tl__i:last-child{padding-bottom:0}
+.mbv-tl__i::before{content:"";position:absolute;left:calc(-1 * var(--s3) - 4px);top:.28rem;width:7px;height:7px;border-radius:50%;background:var(--paper);border:2px solid var(--line-strong)}
+.mbv-tl__i--ok::before{background:var(--ok);border-color:var(--ok)}
+.mbv-tl__i--ativo::before{background:var(--info);border-color:var(--info)}
+.mbv-tl__i--espera::before{background:var(--paper);border-color:var(--warn)}
+.mbv-tl__i--trava::before{background:var(--signal);border-color:var(--signal)}
+.mbv-tl__data{font-family:var(--mono);font-size:.66rem;color:var(--ink-faint);letter-spacing:.04em}
+.mbv-tl__h{font-size:.82rem;font-weight:700;line-height:1.3;margin-top:1px}
+.mbv-tl__d{font-size:.72rem;color:var(--ink-soft);line-height:1.45;margin-top:2px}
+</style>
+<template>
+<figure class="mbv-tl">
+  <figcaption class="mbv-tl__tit">{{titulo}}</figcaption>
+  <ul class="mbv-tl__lista">{{#itens}}<li class="mbv-tl__i mbv-tl__i--{{status}}">
+    <div class="mbv-tl__data">{{data}}</div>
+    <div class="mbv-tl__h">{{titulo}}</div>
+    <div class="mbv-tl__d">{{det}}</div>
+  </li>{{/itens}}</ul>
+</figure>
+</template>

@@ -1,0 +1,30 @@
+<!--@mb-visual
+id: semaforo
+nome: Semáforo de estado
+quando: lista de coisas que estão OK / esperando / travadas — saúde do sistema, checklist de saída
+dados: titulo, itens[]{rotulo, estado, det}
+status: ok | ativo | espera | trava  (campo chama-se "estado" aqui)
+custo: ~3 linhas por item. Use quando o leitor precisa varrer, não ler.
+-->
+<style>
+.mbv-sem{margin:var(--s3) 0}
+.mbv-sem__tit{font-weight:700;font-size:.9rem;margin-bottom:var(--s2)}
+.mbv-sem__grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(13rem,1fr));gap:0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--paper-high)}
+.mbv-sem__i{display:flex;gap:var(--s2);padding:var(--s2);border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.mbv-sem__glifo{font-size:.8rem;line-height:1.3;flex:0 0 auto}
+.mbv-sem__r{font-size:.78rem;font-weight:700;line-height:1.3}
+.mbv-sem__d{font-size:.68rem;color:var(--ink-soft);line-height:1.4;margin-top:2px}
+.mbv-sem__i--ok    .mbv-sem__glifo{color:var(--ok)}
+.mbv-sem__i--ativo .mbv-sem__glifo{color:var(--info)}
+.mbv-sem__i--espera{background:var(--warn-soft)}  .mbv-sem__i--espera .mbv-sem__glifo{color:var(--warn)}
+.mbv-sem__i--trava {background:var(--signal-soft)} .mbv-sem__i--trava  .mbv-sem__glifo{color:var(--signal)}
+</style>
+<template>
+<figure class="mbv-sem">
+  <figcaption class="mbv-sem__tit">{{titulo}}</figcaption>
+  <div class="mbv-sem__grade">{{#itens}}<div class="mbv-sem__i mbv-sem__i--{{estado}}">
+    <span class="mbv-sem__glifo" aria-label="{{estado}}">{{glifo}}</span>
+    <div><div class="mbv-sem__r">{{rotulo}}</div><div class="mbv-sem__d">{{det}}</div></div>
+  </div>{{/itens}}</div>
+</figure>
+</template>

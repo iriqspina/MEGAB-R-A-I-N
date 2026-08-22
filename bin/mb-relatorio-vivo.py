@@ -39,6 +39,8 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import importlib.util
+import sys
 import html
 import json
 import os
@@ -49,7 +51,48 @@ from pathlib import Path
 
 import mb_utils as u
 
+try:
+    import mb_visual as vis
+except Exception:  # biblioteca visual ausente: relatório degrada, não quebra
+    vis = None
+
 u.utf8_console()
+
+
+# CSS do conteúdo agregado (.md) e dos slots fixos. Fica aqui, e não em
+# modelos/visuais/, porque descreve a PÁGINA — as mecânicas descrevem peças.
+CSS_CONTEUDO = """
+.faixa { margin:2.4rem 0 .2rem; padding:.35rem 0; border-top:2px solid var(--ink);
+  border-bottom:1px solid var(--line); font:800 .7rem/1.3 var(--mono);
+  text-transform:uppercase; letter-spacing:.14em; }
+.faixa small { font-weight:400; letter-spacing:.04em; color:var(--ink-faint); text-transform:none; }
+.slot { margin:1.1rem 0; }
+.slot__tit { font-size:.8rem; font-weight:800; margin:0 0 .4rem; letter-spacing:.01em; }
+.slot__vazio { font-size:.78rem; color:var(--ink-faint); border:1px dashed var(--line-strong);
+  border-radius:2px; padding:.6rem .8rem; margin:0; background:var(--paper-high); }
+.indice { display:flex; flex-wrap:wrap; gap:.3rem .7rem; font-size:.74rem; padding:.5rem 0 0; }
+.indice a { color:var(--info); text-decoration:none; border-bottom:1px solid var(--line); }
+.indice a:hover { border-bottom-color:var(--info); }
+.doc section { border-top:1px solid var(--line); padding:1.4rem 0 .4rem; }
+.doc section h2 { font-size:1rem; margin:0 0 .2rem; }
+.doc .section-file { font:400 .68rem/1.3 var(--mono); color:var(--ink-faint); margin-bottom:.6rem; }
+.doc h3 { font-size:.86rem; margin:1.1rem 0 .3rem; }
+.doc h4 { font-size:.78rem; margin:.9rem 0 .25rem; color:var(--ink-soft); }
+.doc p { font-size:.84rem; line-height:1.6; margin:.5rem 0; }
+.doc ul, .doc ol { font-size:.84rem; line-height:1.6; padding-left:1.2rem; margin:.5rem 0; }
+.doc li { margin:.15rem 0; }
+.doc code { font-family:var(--mono); font-size:.78em; background:var(--paper-sunk);
+  border:1px solid var(--line); border-radius:2px; padding:0 .2em; }
+.doc pre { overflow-x:auto; background:var(--paper-sunk); border:1px solid var(--line);
+  padding:.7rem; font-family:var(--mono); font-size:.72rem; line-height:1.5; }
+.doc blockquote { margin:.6rem 0; padding:.3rem 0 .3rem .9rem; border-left:3px solid var(--line-strong);
+  color:var(--ink-soft); font-size:.82rem; }
+.doc .tbl-wrap { overflow-x:auto; margin:.7rem 0; }
+.doc .chk { font-family:var(--mono); font-size:.8em; color:var(--ink-faint); }
+.doc hr { border:0; border-top:1px solid var(--line); margin:1.2rem 0; }
+.doc a { color:var(--info); }
+@media (max-width: 720px) { .duo { grid-template-columns:1fr; } }
+"""
 
 RELOAD_SEGUNDOS = 15
 STATUS_VALIDOS = {"pendente", "fazendo", "feito", "bloqueado"}
@@ -165,10 +208,59 @@ def projetos_versao(c: Path, atual_linha: str | None) -> list[dict]:
     return saida
 
 
+def pasta_arquivo(c: Path) -> Path:
+    """Onde moram os relatórios que ficaram velhos.
+
+    Saiu de .mb-backup/ (escondido, nome de backup) para 90_arquivo/ na v6.6:
+    relatório vencido é histórico consultável, não lixo de sistema. A migração
+    dos antigos acontece na primeira execução e não apaga nada.
+    """
+    try:
+        base = u.pasta(c, "90_arquivo")
+    except Exception:
+        base = c / "90_arquivo"
+    if not base.exists():
+        base = c / "90_arquivo"
+    destino = base / "relatorios-antigos"
+    velha = c / ".mb-backup" / "relatorio-vivo"
+    if velha.is_dir() and not destino.exists():
+        try:
+            destino.mkdir(parents=True, exist_ok=True)
+            for item in velha.iterdir():
+                if item.is_file() and not (destino / item.name).exists():
+                    shutil.copy2(item, destino / item.name)
+        except OSError:
+            pass
+    destino.mkdir(parents=True, exist_ok=True)
+    return destino
+
+
+def indexar_arquivo(pasta: Path) -> None:
+    """INDICE.md navegável — sem isso a pasta vira cemitério sem lápide."""
+    arquivos = sorted((x for x in pasta.glob("*_RELATORIO*.html")), reverse=True)
+    linhas = ["# Relatórios antigos", "",
+              "Cada arquivo aqui é o relatório como ele estava ANTES de uma troca de",
+              "versão ou de commit. O relatório vivo (`04_relatorios/RELATORIO.html`) é",
+              "sempre o atual; estes são o histórico. Guardados automaticamente pelo",
+              "`bin/mb-relatorio-vivo.py`; os mais velhos são podados após "
+              f"{SNAPSHOTS_MAX}.", "",
+              "| quando | commit | arquivo |", "|---|---|---|"]
+    for a in arquivos:
+        partes = a.stem.split("_")
+        quando = f"{partes[0]} {partes[1][:2]}:{partes[1][2:]}" if len(partes) > 1 else partes[0]
+        commit = partes[-1] if len(partes) > 2 else "—"
+        linhas.append(f"| {quando} | `{commit}` | [{a.name}](./{a.name}) |")
+    linhas.append("")
+    try:
+        (pasta / "INDICE.md").write_text("\n".join(linhas), encoding="utf-8")
+    except OSError:
+        pass
+
+
 def estado_versao(c: Path, atual: dict, forcar_snapshot: bool = False) -> dict:
     """Guarda o par atual/anterior e o snapshot do HTML quando a versão ou o
     commit muda. Retorna {'atual':..., 'anterior':..., 'snapshot': path|None}."""
-    pasta = c / ".mb-backup" / "relatorio-vivo"
+    pasta = pasta_arquivo(c)
     arq = pasta / "versao-atual.json"
     dados = {}
     txt = u.safe_read_text(arq)
@@ -182,17 +274,17 @@ def estado_versao(c: Path, atual: dict, forcar_snapshot: bool = False) -> dict:
     chave = ("versao", "commit")
     mudou = any(guardado.get(k) != atual.get(k) for k in chave)
     snapshot = None
-    html_atual = u.achar(c, "RELATORIO-VIVO.html")
+    html_atual = u.achar(c, "RELATORIO.html")
     if (mudou and guardado) or forcar_snapshot:
         if html_atual.is_file():
             try:
                 pasta.mkdir(parents=True, exist_ok=True)
                 rotulo = (guardado.get("commit") or atual.get("commit") or "semgit")[:7]
-                nome = f"{dt.datetime.now():%y%m%d_%H%M}_RELATORIO-VIVO_{rotulo}.html"
+                nome = f"{dt.datetime.now():%y%m%d_%H%M}_RELATORIO_{rotulo}.html"
                 snapshot = pasta / nome
                 shutil.copy2(html_atual, snapshot)
                 # poda: mantém os SNAPSHOTS_MAX mais recentes
-                antigos = sorted(pasta.glob("*_RELATORIO-VIVO_*.html"))
+                antigos = sorted(x for x in pasta.glob("*_RELATORIO*.html"))
                 for velho in antigos[:-SNAPSHOTS_MAX]:
                     try:
                         velho.unlink()
@@ -200,6 +292,7 @@ def estado_versao(c: Path, atual: dict, forcar_snapshot: bool = False) -> dict:
                         pass
             except OSError:
                 snapshot = None
+        indexar_arquivo(pasta)
     if mudou:
         if guardado:
             anterior = dict(guardado)
@@ -318,6 +411,183 @@ def fila_pendentes(c: Path) -> list[dict]:
     return fila
 
 
+
+# ---------------------------------------------------------------------------
+# v6.6 — fusão: o relatório vivo absorveu o agregador de .md
+# ---------------------------------------------------------------------------
+
+# Pastas da central que NÃO entram no conteúdo do relatório: são código,
+# derivado ou arquivo morto. Sem esta lista o rglob puxa referencias/,
+# github-export/ e repo-local/ e o HTML passa de 2 MB.
+IGNORAR_CENTRAL = {
+    "90_arquivo", "99_to_delete", "_github-repo-local", "260810_github-export",
+    "04_relatorios", "06_dist", "referencias", "modelos", "skills", "tests",
+    "bin", "dna", "plugin-megabrain", "plugin-megabrain-claude",
+    "relatorio-megabrain", "gerenteneuron", ".claude", ".mb-backup", ".mb-log",
+    ".mb-aspirador", "__pycache__", ".git", "megabrain",
+}
+
+
+def _motor_md():
+    """Carrega mb-relatorio-projeto.py como módulo.
+
+    O hífen no nome impede o import normal — daí o importlib. Fundir por
+    composição e não copiando 400 linhas: o conversor de markdown continua
+    tendo UM dono, e corrigir um bug lá conserta os dois escopos.
+    """
+    arq = Path(__file__).resolve().parent / "mb-relatorio-projeto.py"
+    if not arq.is_file():
+        return None
+    spec = importlib.util.spec_from_file_location("mb_rel_projeto", arq)
+    if not spec or not spec.loader:
+        return None
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules["mb_rel_projeto"] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def _titulo_md(relativo: str, texto: str) -> str:
+    for linha in texto.splitlines():
+        if linha.startswith("# "):
+            return linha[2:].strip()
+    return Path(relativo).stem.replace("_", " ").replace("-", " ")
+
+
+def conteudo_md(inst: Path, na_central: bool) -> tuple[list[tuple[str, str]], str]:
+    """Todo o .md informacional da instância vira seção navegável.
+
+    É a metade que vinha do RELATORIO.html antigo. Retorna (índice, html).
+    """
+    mod = _motor_md()
+    if not mod:
+        return [], ""
+    if na_central:
+        achados = []
+        ignorar = {x.casefold() for x in IGNORAR_CENTRAL}
+        for caminho in sorted(inst.rglob("*.md"), key=lambda p: str(p).casefold()):
+            rel = caminho.relative_to(inst)
+            if {p.casefold() for p in rel.parts[:-1]} & ignorar:
+                continue
+            texto = mod.ler(caminho)
+            if texto:
+                achados.append((rel.as_posix(), texto))
+    else:
+        achados = mod.descobrir_markdowns(inst, set())
+
+    pendencias: list = []
+    navs, secoes = [], []
+    for relativo, texto in achados:
+        ident = mod.id_extra(relativo)
+        titulo = _titulo_md(relativo, texto)
+        corpo = mod.markdown_para_html(texto, pendencias, relativo)
+        secoes.append(mod.secao(ident, titulo, corpo, relativo))
+        navs.append((ident, titulo))
+    return navs, "".join(secoes)
+
+
+def _timeline_versao(c: Path, n: int = 6) -> list[dict]:
+    """Histórico lido do VERSAO.txt — a fonte já existe, não invente outra."""
+    txt = u.safe_read_text(u.achar(c, "VERSAO.txt")) or ""
+    itens = []
+    for m in re.finditer(r"^(\d{4})-(\d{2})-(\d{2})\s*·\s*(v[\d.]+)\s*—\s*(.+)$",
+                         txt, re.MULTILINE):
+        aaaa, mm, dd, ver, resto = m.groups()
+        cabeca, _, cauda = resto.partition(":")
+        itens.append({
+            "data": f"{aaaa[2:]}{mm}{dd}",
+            "titulo": f"{ver} — {cabeca.strip()}",
+            "det": " ".join(cauda.split())[:150],
+            "status": "ativo" if not itens else "ok",
+        })
+        if len(itens) >= n:
+            break
+    return itens
+
+
+def pecas_visuais(c: Path, git: dict, versao: str, projetos: list,
+                  prog: dict, na_central: bool, saude_extra: list | None = None) -> dict:
+    """Uma peça visual por SLOT do dashboard.
+
+    Devolve dict — nunca uma string única — porque o layout do relatório é
+    FIXO: cada peça tem um lugar reservado na página e é montada lá. Peça
+    ausente vira estado vazio, não buraco que empurra o resto pra cima.
+
+    Metade dos dados é viva (git, projetos, versão, PROGRESSO); a outra
+    metade é a descrição canônica do workflow em modelos/visuais/exemplos.json
+    — a mesma fonte do catálogo, para não existirem duas verdades.
+    """
+    vazio = {k: "" for k in ("kpi", "distribuicao", "saude", "gates", "trilha", "camadas", "historico")}
+    if vis is None:
+        return vazio
+    try:
+        dados = vis.exemplos()
+    except Exception:
+        dados = {}
+    p = dict(vazio)
+
+    atrasados = [x for x in projetos if x.get("estado") == "desatualizado"]
+    etapas = prog.get("etapas", [])
+    feitas = sum(1 for x in etapas if x.get("status") == "feito")
+
+    kpi = [
+        {"valor": versao_resumida(versao), "rotulo": "versão", "status": "ok",
+         "det": (git.get("assunto") or "")[:46]},
+        {"valor": git.get("head_curto") or "—", "rotulo": "commit",
+         "status": "ok" if git.get("sem_push") == 0 else "espera",
+         "det": "= origin/main" if git.get("sem_push") == 0
+                else f"{git.get('sem_push') or '?'} commit sem push"},
+        {"valor": (f"{len(projetos) - len(atrasados)}/{len(projetos)}" if projetos else "—"),
+         "rotulo": "projetos na atual",
+         "status": "ok" if projetos and not atrasados else "espera",
+         "det": "sincronizar-pipeline.cmd" if atrasados else ("nada a fazer" if projetos else "sem projetos irmãos")},
+        {"valor": (f"{feitas}/{len(etapas)}" if etapas else "—"), "rotulo": "etapas",
+         "status": "ok" if etapas and feitas == len(etapas) else "ativo",
+         "det": "PROGRESSO.json"},
+    ]
+    try:
+        kpi.append({"valor": str(len(vis.ids())), "rotulo": "mecânicas visuais",
+                    "status": "ok", "det": "modelos/visuais/"})
+    except Exception:
+        pass
+    p["kpi"] = vis.render("kpi-linha", {"itens": kpi})
+
+    if projetos:
+        por_versao: dict[str, int] = {}
+        for x in projetos:
+            chave = x.get("puxada") or "?"
+            por_versao[chave] = por_versao.get(chave, 0) + 1
+        atual = versao_resumida(versao)
+        segs = [{"rotulo": v, "n": n, "status": "ok" if v == atual else "espera"}
+                for v, n in sorted(por_versao.items(), key=lambda kv: -kv[1])]
+        p["distribuicao"] = vis.render("barra-segmentos", {
+            "titulo": f"Os {len(projetos)} projetos por versão do megabrain", "segmentos": segs})
+
+    saude = [
+        {"rotulo": "git", "estado": "ok" if git.get("sem_push") == 0 else "espera",
+         "det": f"{git.get('head_curto') or '—'} · " +
+                ("nada pendente" if git.get("sem_push") == 0 else "commit local sem push")},
+        {"rotulo": "árvore", "estado": "espera" if git.get("suja") else "ok",
+         "det": "mudanças não commitadas" if git.get("suja") else "limpa"},
+        {"rotulo": "projetos", "estado": "espera" if atrasados else "ok",
+         "det": f"{len(atrasados)} desatualizado(s)" if atrasados else "todos na versão atual"},
+        {"rotulo": "biblioteca visual", "estado": "ok" if vis.ids() else "trava",
+         "det": f"{len(vis.ids())} mecânicas em modelos/visuais/"},
+    ]
+    for extra in (saude_extra or []):
+        saude.append(extra)
+    p["saude"] = vis.render("semaforo", {"titulo": "Saúde do sistema", "itens": saude})
+
+    for chave, ident in (("gates", "fluxo-etapas"), ("trilha", "trilha-dupla"), ("camadas", "mapa-camadas")):
+        if ident in dados:
+            p[chave] = vis.render(ident, dados[ident])
+
+    linha = _timeline_versao(c)
+    if linha:
+        p["historico"] = vis.render("timeline", {"titulo": "Histórico de versão", "itens": linha})
+    return p
+
+
 def gerar_html(c: Path, forcar_snapshot: bool = False) -> bool:
     e = html.escape
     prog = carregar_progresso(c)
@@ -357,7 +627,7 @@ def gerar_html(c: Path, forcar_snapshot: bool = False) -> bool:
                     f"{' · saiu ' + e(anterior.get('saiu_em', '')[:16].replace('T', ' ')) if anterior.get('saiu_em') else ''}"
                     if anterior else "— (primeira versão registrada)")
     snapshot_txt = (f"HTML anterior guardado: {e(ver['snapshot'].name)}" if ver["snapshot"]
-                    else "snapshot só quando a versão/commit muda (.mb-backup/relatorio-vivo/)")
+                    else "guardado só quando versão/commit muda (90_arquivo/relatorios-antigos/)")
 
     projetos = projetos_versao(c, versao)
     linhas_proj = "".join(
@@ -410,6 +680,27 @@ def gerar_html(c: Path, forcar_snapshot: bool = False) -> bool:
         f'<td>{item["idade"]}d</td></tr>'
         for item in fila
     ) or '<tr><td colspan="3" class="det">fila vazia</td></tr>'
+
+    # --- v6.6: peças visuais, conteúdo .md e CSS da biblioteca ---
+    na_central = u.e_central(c) if hasattr(u, "e_central") else True
+    pecas = pecas_visuais(c, git, versao, projetos, prog, na_central)
+    navs_md, secoes_md = conteudo_md(c, na_central)
+    css_extra = ""
+    if vis is not None:
+        try:
+            css_extra = vis.css()
+        except Exception:
+            css_extra = ""
+    css_extra += CSS_CONTEUDO
+    bloco_indice = ("".join(f'<a href="#{e(i)}">{e(tt)}</a>' for i, tt in navs_md)
+                    if navs_md else '<span class="det">nenhum .md informacional encontrado</span>')
+
+    def slot(ident: str, titulo: str, corpo: str, vazio: str = "sem dado nesta instância") -> str:
+        """Slot de posição fixa: existe sempre, mesmo vazio. É o que garante
+        que o relatório de um projeto e o da central tenham a MESMA planta."""
+        interno = corpo if corpo and corpo.strip() else f'<p class="slot__vazio">{e(vazio)}</p>'
+        cab = f'<h3 class="slot__tit">{e(titulo)}</h3>' if titulo else ""
+        return f'<section class="slot" id="{e(ident)}">{cab}{interno}</section>'
 
     pagina = f"""<!doctype html>
 <html lang="pt-BR">
@@ -477,21 +768,24 @@ ul.simples {{ margin:.3rem 0 0; padding-left:1.1rem; font-size:.85rem; color:var
 .pill--sem {{ color:var(--ink-faint); }}
 tr.proj--desatualizado td {{ background:var(--signal-soft); }}
 @media (max-width:44rem) {{ .duo {{ grid-template-columns:1fr; }} .versao > div {{ border-right:0; border-bottom:1px solid var(--line); }} }}
+{css_extra}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <span class="eyebrow">megabrain · retrato ao vivo</span>
+
+  <!-- ═══ D · DASHBOARD — planta fixa: D1→D5 nesta ordem, sempre ═══ -->
+  <header id="d1-identidade">
+    <span class="eyebrow">megabrain · relatório</span>
     <h1>{e(prog.get("projeto", "megabrain"))}</h1>
-    <p class="meta pulse">gerado {agora:%d/%m %H:%M:%S} · recarrega sozinho a cada {RELOAD_SEGUNDOS}s</p>
+    <p class="meta pulse">gerado {agora:%d/%m %H:%M:%S} · recarrega sozinho a cada {RELOAD_SEGUNDOS}s · trava: {e(quem)} (até {e(ate)})</p>
     {f'<p class="det">{e(tldr)}</p>' if tldr else ""}
   </header>
 
   <div class="versao">
     <div>
-      <span class="label">megabrain ATUAL</span>
-      <span class="big">{e(atual["versao"])}</span><br>
+      <span class="label">versão ATUAL</span>
+      <span class="big">{e(versao_resumida(versao))}</span><br>
       <span class="det" title="{e(versao)}">{e(versao[:110])}{"…" if len(versao) > 110 else ""}</span>
     </div>
     <div>
@@ -508,42 +802,55 @@ tr.proj--desatualizado td {{ background:var(--signal-soft); }}
     </div>
   </div>
 
-  {bloco_para_voce}
+  {slot("d2-kpi", "", pecas["kpi"], "biblioteca visual ausente — rode python bin/mb_visual.py")}
+  {slot("d3-acao", "Para você — o que fazer agora", bloco_para_voce, "nada pendente do seu lado (seção PARA VOCÊ do HANDOFF.md está vazia)")}
+  {slot("d4-saude", "", pecas["saude"])}
+  {slot("d5-distribuicao", "", pecas["distribuicao"] + f'<table><thead><tr><th>projeto</th><th>puxou</th><th>commit</th><th>quando</th><th>estado</th></tr></thead><tbody>{linhas_proj}</tbody></table><p class="det">fonte: <code>&lt;projeto&gt;/MEGABRAIN/VERSAO.txt</code> + <code>.mb-origem.json</code>. Desatualizado = rode <code>sincronizar-pipeline.cmd</code>.</p>' if projetos else pecas["distribuicao"], "nenhum projeto irmão com MEGABRAIN/ encontrado")}
 
-  <h2 style="margin-top:0">Projetos × versão do megabrain puxada {f'<span class="alerta">({desatualizados} desatualizado{"s" if desatualizados != 1 else ""})</span>' if desatualizados else '<span class="ok">(todos na atual)</span>' if projetos else ''}</h2>
-  <table><thead><tr><th>projeto</th><th>puxou</th><th>commit</th><th>quando</th><th>estado</th></tr></thead>
-  <tbody>{linhas_proj}</tbody></table>
-  <p class="det">fonte: <code>&lt;projeto&gt;/MEGABRAIN/VERSAO.txt</code> + <code>.mb-origem.json</code> (gravado pelo mb-check-version.py desde a v6.1). Desatualizado = rode <code>sincronizar-pipeline.cmd</code> ou <code>mb-check-version.py --projeto</code>.</p>
+  <!-- ═══ W · WORKFLOW — o desenho do sistema ═══ -->
+  <h2 class="faixa">Workflow <small>— dados em modelos/visuais/exemplos.json; mecânicas em modelos/visuais/mecanicas/</small></h2>
+  {slot("w1-gates", "", pecas["gates"])}
+  {slot("w2-trilha", "", pecas["trilha"])}
+  {slot("w3-camadas", "", pecas["camadas"])}
+  {slot("w4-historico", "", pecas["historico"], "VERSAO.txt sem linhas no formato 'AAAA-MM-DD · vX.Y — título'")}
 
-  <span class="label">progresso — {feitas}/{len(etapas)} etapas ({pct}%)</span>
-  <div class="barra"><div></div></div>
-
-  <h2>Etapas</h2>
-  <ul class="etapas">{"".join(linhas_etapas)}</ul>
-
-  <h2>Notas da execução</h2>
-  <ul class="notas">{linhas_notas}</ul>
-
+  <!-- ═══ E · ESTADO DA EXECUÇÃO ═══ -->
+  <h2 class="faixa">Estado da execução <small>— PROGRESSO.json · HANDOFF.md · DECISOES.md · .mb-log/</small></h2>
+  <section class="slot" id="e1-progresso">
+    <span class="label">progresso — {feitas}/{len(etapas)} etapas ({pct}%)</span>
+    <div class="barra"><div></div></div>
+    <ul class="etapas">{"".join(linhas_etapas) or '<li class="det">sem etapas no PROGRESSO.json</li>'}</ul>
+  </section>
+  {slot("e2-notas", "Notas da execução", f'<ul class="notas">{linhas_notas}</ul>')}
   <div class="duo">
     <div>
-      <h2>Trava</h2>
-      <div class="cartao"><strong>{e(quem)}</strong><br><span class="det">até {e(ate)}</span></div>
-      <h2>Últimas decisões</h2>
-      <div class="cartao"><ul class="simples">{linhas_dec}</ul></div>
+      <section class="slot" id="e3-decisoes">
+        <h3 class="slot__tit">Últimas decisões</h3>
+        <div class="cartao"><ul class="simples">{linhas_dec}</ul></div>
+      </section>
     </div>
     <div>
-      <h2>Eventos de hoje (central)</h2>
-      <table><thead><tr><th>hora</th><th>agente</th><th>evento</th><th>resumo</th></tr></thead>
-      <tbody>{linhas_ev}</tbody></table>
-      <h2>Fila alteracoes-pendentes</h2>
-      <table><thead><tr><th>nota</th><th>dono</th><th>idade</th></tr></thead>
-      <tbody>{linhas_fila}</tbody></table>
-      <p class="det">destaque = 7+ dias parada ou sem dono. Nota nova leva linha <code>DONO:</code>.</p>
+      <section class="slot" id="e4-eventos">
+        <h3 class="slot__tit">Eventos de hoje</h3>
+        <table><thead><tr><th>hora</th><th>agente</th><th>evento</th><th>resumo</th></tr></thead>
+        <tbody>{linhas_ev}</tbody></table>
+        <h3 class="slot__tit" style="margin-top:1rem">Fila 08_alteracoes-pendentes</h3>
+        <table><thead><tr><th>nota</th><th>dono</th><th>idade</th></tr></thead>
+        <tbody>{linhas_fila}</tbody></table>
+        <p class="det">destaque = 7+ dias parada ou sem dono.</p>
+      </section>
     </div>
   </div>
 
-  <p class="meta" style="margin-top:2rem">fonte: PROGRESSO.json · ESTADO.md · HANDOFF.md · VERSAO.txt · git de {e(git["repo"] or "—")} · .mb-log/ · arquivo local, não sobe pro GitHub.<br>
-  sem servidor local o navegador não detecta mudança de arquivo — por isso o reload em intervalo fixo, preservando o scroll.</p>
+  <!-- ═══ C · CONTEÚDO — os .md da instância, agregados (era o RELATORIO.html antigo) ═══ -->
+  <h2 class="faixa">Documentos <small>— {len(navs_md)} arquivo(s) .md desta instância, na íntegra</small></h2>
+  <nav class="indice">{bloco_indice}</nav>
+  <div class="doc">{secoes_md}</div>
+
+  <!-- ═══ R · RODAPÉ ═══ -->
+  <p class="meta" style="margin-top:2.5rem">fonte: PROGRESSO.json · ESTADO.md · HANDOFF.md · DECISOES.md · VERSAO.txt · git de {e(git["repo"] or "—")} · .mb-log/ · os .md acima. Arquivo local, não sobe pro GitHub.<br>
+  sem servidor local o navegador não detecta mudança de arquivo — por isso o reload em intervalo fixo, preservando o scroll.<br>
+  planta fixa D1–D5 · W1–W4 · E1–E4 · C: cada bloco tem lugar reservado e aparece vazio quando não há dado, para o relatório de qualquer projeto ter a mesma leitura.</p>
 </div>
 <script>
 (function () {{
@@ -562,7 +869,7 @@ tr.proj--desatualizado td {{ background:var(--signal-soft); }}
 </body>
 </html>
 """
-    return u.atomic_write_text(u.achar(c, "RELATORIO-VIVO.html"), pagina)
+    return u.atomic_write_text(u.achar(c, "RELATORIO.html"), pagina)
 
 
 def main() -> int:
@@ -572,7 +879,7 @@ def main() -> int:
                    help='ex.: --marcar f2.1 feito "template criado"')
     p.add_argument("--nota", default=None)
     p.add_argument("--snapshot", action="store_true",
-                   help="guarda o HTML atual em .mb-backup/relatorio-vivo/ mesmo sem troca de versão")
+                   help="guarda o HTML atual em 90_arquivo/relatorios-antigos/ mesmo sem troca de versão")
     args = p.parse_args()
 
     c = central()
@@ -604,7 +911,7 @@ def main() -> int:
 
     if not gerar_html(c, forcar_snapshot=args.snapshot):
         return 1
-    print(f"relatório vivo: {u.achar(c, 'RELATORIO-VIVO.html')}")
+    print(f"relatório: {u.achar(c, 'RELATORIO.html')}")
     return 0
 
 

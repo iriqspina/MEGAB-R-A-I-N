@@ -1,0 +1,52 @@
+/* modelos/visuais/tokens.css — 260822
+   FONTE ÚNICA de cor, tipo e espaço do megabrain.
+   Quem consome: bin/mb_visual.py (inlina no HTML gerado) e qualquer peça
+   nova que precise parecer parte do sistema.
+   Regra: nunca escreva um #hex solto numa mecânica. Se falta um token, some aqui. */
+
+:root {
+  /* superfície — papel quente, não branco de tela */
+  --paper:        #f2efe7;
+  --paper-high:   #fffdf8;
+  --paper-sunk:   #e8e4d9;
+
+  /* tinta */
+  --ink:          #171716;
+  --ink-soft:     #55544f;
+  --ink-faint:    #68665f;
+  --line:         #cec9bc;
+  --line-strong:  #a9a294;
+
+  /* estado — sempre acompanhado de forma/glifo, nunca cor sozinha */
+  --ok:           #23613e;  --ok-soft:     #dce9df;
+  --info:         #245d7c;  --info-soft:   #dce9ef;
+  --warn:         #7a5410;  --warn-soft:   #f0e6cf;
+  --signal:       #a63025;  --signal-soft: #f1d8d1;
+
+  /* tipografia */
+  --sans: Arial, Helvetica, sans-serif;
+  --mono: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+
+  /* espaço — escala de 4 passos, sem meio-termo */
+  --s1: .35rem;  --s2: .7rem;  --s3: 1.2rem;  --s4: 2rem;
+
+  /* forma — canto quase reto: isto é manual técnico, não app de banco */
+  --r: 2px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="claro"]) {
+    --paper:      #16150f;
+    --paper-high: #1f1e17;
+    --paper-sunk: #100f0a;
+    --ink:        #efe9d9;
+    --ink-soft:   #b4ada0;
+    --ink-faint:  #918a7d;
+    --line:       #3b382f;
+    --line-strong:#5c584c;
+    --ok:         #7fc79c;  --ok-soft:     #1b2f22;
+    --info:       #8cc0dd;  --info-soft:   #16262f;
+    --warn:       #d9b467;  --warn-soft:   #2c2517;
+    --signal:     #e39288;  --signal-soft: #331915;
+  }
+}

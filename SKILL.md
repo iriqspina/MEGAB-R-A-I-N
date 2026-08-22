@@ -5,21 +5,15 @@ description: Protocolo de execução multi-agente — gates de entrega anti-slop
 
 # megabrain — protocolo operacional
 
-**v5.5 · 2026-08-22.** Base: v5.4 (260822). Mudou: Gate 6 item 5 — push por ambiente
-(autorização permanente; cloud com repo como fonte empurra, sem fonte cai no `.cmd`;
-git nunca pelo bridge). Histórico: v5.4 — raiz da central sem arquivo solto
-(layout `nucleo/ estado/ identidade/ relatorios/` — seção "Localizar a instalação").
-v5.3 (260822) — Mudou: Gate 0 garante `cerebro/`
-(v6.2 — `mb-check-version.py` cria `raw/wiki/pessoas/INDICE.md` no projeto), Gate 7
-separou fato de conteúdo (→ `/ingerir`) de lição de processo (→ `/registrar-licao`),
-roteamento ganhou a linha "conhecimento de conteúdo". Histórico: v5.2 (260821) — Base: v5.1. Mudou: Gate 0 ganha a descrição do que os
-hooks v6 já injetam sozinhos (`mb-contexto.py` — META.md, alinhamento
-pré-prompt, lições por proximidade) e o Gate 7 registra que a lição gravada
-alimenta o índice da injeção. Histórico: v5.1 — gatilhos legados fora da
-`description`, Gate 0 abre com `mb-preflight.py`, Gate 6 regenera o
-relatório vivo; v5.0 — numeração de gates consistente com o TL;DR, modo
-leve/completo explícito, Gate 5 confere a cópia que rodou, Gate 7 grava sob
-autorização permanente, `5b` virou `5.1`.
+**v5.6 · 2026-08-22.** Base: v5.5 (260822). Mudou: existe UM relatório por
+instância — o vivo absorveu o agregador de `.md` e grava `RELATORIO.html`
+(seção 5.1 reescrita); nasce a biblioteca visual `modelos/visuais/` com
+renderizador `bin/mb_visual.py` e a regra "procure a mecânica antes de
+escrever CSS"; relatório vencido vai pra `90_arquivo/relatorios-antigos/`
+com índice. Histórico: v5.5 — push por ambiente (Gate 6 item 5); v5.4 — raiz
+da central sem arquivo solto; v5.3 — Gate 0 garante `cerebro/`, Gate 7 separa
+fato de lição; v5.2 — Gate 0 descreve o que os hooks v6 injetam; v5.1 —
+gatilhos legados fora da `description`, Gate 0 abre com `mb-preflight.py`.
 
 Protocolo multi-agente e agnóstico de modelo — roda igual em qualquer CLI ou
 chat de IA com acesso a arquivo (Claude Code, Kimi CLI, ou colado direto
@@ -374,14 +368,48 @@ Rubricas prontas: `referencias/260810_evaluation-gates.md`
 
 ### 5.1 Amarrar pontas — antes de qualquer coisa sair
 
-### Relatório único por projeto
+### Relatório único por instância
 
-Se a instância tiver `RELATORIO.html`, trate-o como a porta de entrada de
-usuário e IA. Ao criar ou alterar informação em `.md`, regenere o relatório
-antes de entregar. O Markdown continua sendo a fonte da verdade: não crie outro
-relatório nem um Markdown duplicado para "resumir" o que já existe. Use
-`bin/mb-relatorio-projeto.py`; por padrão ele reúne todos os `.md` informacionais
-da instância e deixa só `MEGABRAIN/`, `.git/`, caches e dependências de fora.
+**Relatório = relatório vivo.** Desde a v6.6 não existe mais um "relatório
+normal" separado: `bin/mb-relatorio-vivo.py` gera `RELATORIO.html` — dashboard
+ao vivo no topo, documentos `.md` da instância agregados embaixo, na mesma
+página. Vale para a central e para qualquer projeto.
+`mb-relatorio-projeto.py` continua sendo a casa do conversor de markdown
+(importado pelo vivo), mas rodá-lo direto só delega.
+
+Quando este protocolo disser "relatório", é esse. Relatório que ficou velho
+(troca de versão ou de commit) é guardado sozinho em
+`90_arquivo/relatorios-antigos/` com `INDICE.md` — histórico consultável, não
+uma segunda fonte.
+
+Ao criar ou alterar informação em `.md`, regenere antes de entregar. O Markdown
+continua sendo a fonte da verdade: não crie outro relatório nem um Markdown
+duplicado para "resumir" o que já existe.
+
+**A planta é fixa.** `D1–D5` (identidade, KPI, para você, saúde, distribuição) ·
+`W1–W4` (gates, trilha agente×humano, camadas, histórico) · `E1–E4` (progresso,
+notas, decisões, eventos) · `C1–C2` (índice, documentos) · `R`. Slot sem dado
+**não some** — vira estado vazio. É o que faz o relatório de qualquer projeto
+ter a mesma leitura. Fonte de layout: arquivo **megabrain** no Figma.
+
+### Antes de escrever HTML ou CSS: procure a mecânica
+
+`modelos/visuais/` guarda as peças visuais prontas (`tokens.css`,
+`mecanicas/*.html`, `exemplos.json`). Catálogo barato pro agente:
+`modelos/visuais/CATALOGO.md`. Galeria pro humano:
+`04_relatorios/CATALOGO-VISUAL.html`.
+
+```python
+import mb_visual as v
+html = v.render("fluxo-etapas", {"titulo": "...", "etapas": [...]})
+css  = v.css()
+```
+
+Regra: **escolher um id e preencher dados, não escrever CSS.** Inventar visual
+do zero quando já existe mecânica é queimar token duas vezes e criar um segundo
+dialeto visual. Falta uma peça? Crie a mecânica (com cabeçalho `@mb-visual` e
+exemplo), não um one-off dentro de um script. `#hex` solto numa mecânica é bug:
+cor sai de `tokens.css`.
 
 Antes de uma aprovação humana, envio externo, fechamento semanal ou handoff,
 varra estado, tracker, decisões e fontes por dúvida aberta, número velho,
@@ -420,7 +448,7 @@ Antes de encerrar a sessão, sempre. Não é opcional e não é resumo bonito �
 6. **Propagação do megabrain core:**
    - Se você alterou `<MEGABRAIN_ROOT>/skills/megabrain/SKILL.md`, `MEGABRAIN.md`, `referencias/` ou `VERSAO.txt`, a central ficou mais nova que os projetos.
    - Antes de encerrar, rode `mb-check-version.py` nos projetos ativos para propagar a versão central. Se um projeto estiver mais novo, pare e pergunte ao usuário antes de sobrescrever.
-   - Se você mudou a versão (VERSAO.txt) ou commitou no repo: regenere o relatório vivo (`python "<MEGABRAIN_ROOT>/bin/mb-relatorio-vivo.py"`). Desde a v6.1 ele mostra no topo a versão atual × anterior, o commit, o que falta de push e qual versão cada projeto puxou — e guarda o HTML anterior sozinho.
+   - Se você mudou a versão (VERSAO.txt) ou commitou no repo: regenere o relatório (`python "<MEGABRAIN_ROOT>/bin/mb-relatorio-vivo.py"` → `RELATORIO.html`). Desde a v6.1 ele mostra no topo a versão atual × anterior, o commit, o que falta de push e qual versão cada projeto puxou — e guarda o HTML anterior sozinho.
    - Se não puder rodar nos projetos, anote no `HANDOFF.md` que a sincronização é obrigatória na próxima sessão.
 
 Um handoff que diz "continuar o projeto" não é handoff. Próximo passo tem
@@ -483,6 +511,7 @@ delas. Ordem: **formato pedido > protocolo > default do modelo.**
 | Trabalho barulhento sem sujar contexto | Subagente, ou o outro modelo |
 | Garantia determinística (não "pedido") | Hook / script |
 | Conhecimento pesado e raro | Referência em `referencias/260810_*.md`, sob demanda |
+| Peça visual (fluxo, dashboard, comparação, linha do tempo) | `modelos/visuais/` via `bin/mb_visual.py` — catálogo em `CATALOGO.md`. Nunca CSS novo antes de olhar lá |
 | Estado que atravessa sessões e modelos | `ESTADO.md`, `HANDOFF.md`, `DECISOES.md`, `LICOES.md` |
 | Conhecimento de conteúdo (cliente, mercado, fonte, referência) — citável por path | `cerebro/` (`raw/` → `/ingerir` → `wiki/`, `pessoas/`, `INDICE.md`); índice em `bin/mb-indice-cerebro.py`, injetado pelo hook |
 | Fases macro do projeto, artefatos, regras de ouro | `MEGABRAIN.md` |

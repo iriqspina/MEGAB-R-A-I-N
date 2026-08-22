@@ -58,6 +58,7 @@ import html
 import json
 import os
 import re
+import subprocess
 import sys
 from urllib.parse import urlparse
 from pathlib import Path
@@ -976,7 +977,24 @@ Se o "gerado em" lá em cima está velho, o retrato está velho.</p>
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Gerador do relatório de projeto (irmão do relatório DNA)")
+    """APOSENTADO na v6.6 (260822) — existe UM relatório por instância.
+
+    Este arquivo continua sendo a casa do conversor de markdown, importado por
+    mb-relatorio-vivo.py; o que saiu foi a geração de uma SEGUNDA página. Rodar
+    direto agora delega, para não quebrar .cmd e docs que apontavam pra cá.
+    """
+    print("mb-relatorio-projeto.py foi fundido no relatório vivo na v6.6.")
+    print("O relatório é um só: bin/mb-relatorio-vivo.py (grava RELATORIO.html).")
+    print("Delegando...\n")
+    vivo = Path(__file__).resolve().parent / "mb-relatorio-vivo.py"
+    if vivo.is_file():
+        raise SystemExit(subprocess.call([sys.executable, str(vivo)]))
+    print("ERRO: bin/mb-relatorio-vivo.py não encontrado.")
+    raise SystemExit(1)
+
+
+def _main_legado():
+    ap = argparse.ArgumentParser(description="[legado] gerador da página agregada de .md")
     ap.add_argument("--projeto", required=True, help="raiz do projeto")
     ap.add_argument("--titulo", required=True, help="nome do projeto (aparece no título)")
     ap.add_argument("--plano", required=True, help="caminho (relativo à raiz) do arquivo vivo principal")

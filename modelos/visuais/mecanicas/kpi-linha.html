@@ -1,0 +1,27 @@
+<!--@mb-visual
+id: kpi-linha
+nome: Linha de KPI
+quando: 3 a 6 números que dão o retrato em 3 segundos — versão, commits, projetos, pendências
+dados: itens[]{valor, rotulo, det, status}
+status: (opcional) ok | ativo | espera | trava — pinta só o valor
+custo: ~8 linhas de dados. A mecânica mais barata do catálogo.
+-->
+<style>
+.mbv-kpi{display:flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:var(--r);background:var(--paper-high);margin:var(--s3) 0}
+.mbv-kpi__i{flex:1 1 8rem;min-width:8rem;padding:var(--s2) var(--s3);border-right:1px solid var(--line)}
+.mbv-kpi__i:last-child{border-right:0}
+.mbv-kpi__v{font-family:var(--mono);font-size:1.45rem;font-weight:700;line-height:1.05;letter-spacing:-.02em;word-break:break-word}
+.mbv-kpi__r{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-faint);margin-top:var(--s1)}
+.mbv-kpi__d{font-size:.7rem;color:var(--ink-soft);margin-top:2px;line-height:1.35}
+.mbv-kpi__i--ok .mbv-kpi__v{color:var(--ok)}
+.mbv-kpi__i--ativo .mbv-kpi__v{color:var(--info)}
+.mbv-kpi__i--espera .mbv-kpi__v{color:var(--warn)}
+.mbv-kpi__i--trava .mbv-kpi__v{color:var(--signal)}
+</style>
+<template>
+<div class="mbv-kpi">{{#itens}}<div class="mbv-kpi__i mbv-kpi__i--{{status}}">
+  <div class="mbv-kpi__v">{{valor}}</div>
+  <div class="mbv-kpi__r">{{rotulo}}</div>
+  <div class="mbv-kpi__d">{{det}}</div>
+</div>{{/itens}}</div>
+</template>

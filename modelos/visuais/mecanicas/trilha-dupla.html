@@ -1,0 +1,41 @@
+<!--@mb-visual
+id: trilha-dupla
+nome: Trilha dupla (raia agente × raia humano)
+quando: mostrar onde o trabalho passa da máquina pra pessoa — e onde ele empaca esperando alguém
+dados: titulo, legenda, raias[]{nome, papel, blocos[]{titulo, det, status}}
+status: ok | ativo | espera | trava
+custo: a mecânica mais cara em dados (~25 linhas) e a que mais explica
+-->
+<style>
+.mbv-trilha{margin:var(--s3) 0}
+.mbv-trilha__cab{display:flex;align-items:baseline;gap:var(--s2);flex-wrap:wrap;margin-bottom:var(--s2)}
+.mbv-trilha__tit{font-weight:700;font-size:.9rem}
+.mbv-trilha__leg{font-size:.72rem;color:var(--ink-faint)}
+.mbv-raia{display:grid;grid-template-columns:7.5rem 1fr;border:1px solid var(--line);border-bottom:0;background:var(--paper-high)}
+.mbv-raia:last-of-type{border-bottom:1px solid var(--line)}
+.mbv-raia__rot{padding:var(--s2);border-right:1px solid var(--line);background:var(--paper-sunk)}
+.mbv-raia__nome{font-size:.78rem;font-weight:700;line-height:1.2}
+.mbv-raia__papel{font-size:.66rem;color:var(--ink-faint);margin-top:2px;line-height:1.3}
+.mbv-raia__blocos{display:flex;flex-wrap:wrap;gap:var(--s2);padding:var(--s2)}
+.mbv-bloco{flex:1 1 9rem;min-width:9rem;border-left:3px solid var(--line-strong);padding:0 0 0 var(--s2)}
+.mbv-bloco__tit{font-size:.76rem;font-weight:700;line-height:1.3;display:flex;gap:var(--s1);align-items:baseline}
+.mbv-bloco__glifo{font-size:.72rem}
+.mbv-bloco__det{font-size:.68rem;color:var(--ink-soft);line-height:1.4;margin-top:2px}
+.mbv-bloco--ok{border-left-color:var(--ok)}     .mbv-bloco--ok    .mbv-bloco__glifo{color:var(--ok)}
+.mbv-bloco--ativo{border-left-color:var(--info)} .mbv-bloco--ativo .mbv-bloco__glifo{color:var(--info)}
+.mbv-bloco--espera{border-left-color:var(--warn)}.mbv-bloco--espera .mbv-bloco__glifo{color:var(--warn)}
+.mbv-bloco--espera .mbv-bloco__tit{color:var(--ink-soft)}
+.mbv-bloco--trava{border-left-color:var(--signal)}.mbv-bloco--trava .mbv-bloco__glifo{color:var(--signal)}
+</style>
+<template>
+<figure class="mbv-trilha">
+  <figcaption class="mbv-trilha__cab"><span class="mbv-trilha__tit">{{titulo}}</span><span class="mbv-trilha__leg">{{legenda}}</span></figcaption>
+  {{#raias}}<div class="mbv-raia">
+    <div class="mbv-raia__rot"><div class="mbv-raia__nome">{{nome}}</div><div class="mbv-raia__papel">{{papel}}</div></div>
+    <div class="mbv-raia__blocos">{{#blocos}}<div class="mbv-bloco mbv-bloco--{{status}}">
+      <div class="mbv-bloco__tit"><span class="mbv-bloco__glifo">{{glifo}}</span><span>{{titulo}}</span></div>
+      <div class="mbv-bloco__det">{{det}}</div>
+    </div>{{/blocos}}</div>
+  </div>{{/raias}}
+</figure>
+</template>

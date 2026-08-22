@@ -1,0 +1,136 @@
+{
+  "_leiame": "Dados de exemplo de cada mecânica. Dupla função: alimenta a galeria (CATALOGO-VISUAL.html) e serve de FORMA pronta pro agente copiar — em vez de inventar a estrutura, ele troca os valores. O conteúdo aqui é o megabrain real de 260822.",
+
+  "kpi-linha": {
+    "itens": [
+      {"valor": "v6.6", "rotulo": "versão", "det": "anterior: v6.5", "status": "ok"},
+      {"valor": "834dde9", "rotulo": "commit", "det": "= origin/main", "status": "ok"},
+      {"valor": "16", "rotulo": "projetos", "det": "todos em v6.1 — 5 versões atrás", "status": "espera"},
+      {"valor": "6", "rotulo": "pendências suas", "det": "seção PARA VOCÊ do HANDOFF", "status": "espera"},
+      {"valor": "8", "rotulo": "mecânicas visuais", "det": "modelos/visuais/", "status": "ok"}
+    ]
+  },
+
+  "fluxo-etapas": {
+    "titulo": "Gates de entrega — o ciclo de uma sessão",
+    "legenda": "modo completo; leve roda só 1 · 4 · 5",
+    "etapas": [
+      {"n": "0", "titulo": "Assumir", "det": "preflight, pull, ESTADO→HANDOFF→DECISOES, trava", "status": "ok"},
+      {"n": "1", "titulo": "Enquadrar", "det": "artefato, leitor, 3 critérios, contraexemplo", "status": "ok"},
+      {"n": "2", "titulo": "Orçar contexto", "det": "ler sob demanda, delegar barulho", "status": "ok"},
+      {"n": "3", "titulo": "Gerar", "det": "estrutura antes de prosa", "status": "ok"},
+      {"n": "4", "titulo": "Auditar", "det": "anti-slop + 1 rodada de reparo", "status": "ativo"},
+      {"n": "5", "titulo": "Verificar", "det": "abre? caminho existe? número confere?", "status": "espera"},
+      {"n": "6", "titulo": "Passar bastão", "det": "ESTADO, HANDOFF, DECISOES, commit, relatório", "status": "espera"},
+      {"n": "7", "titulo": "Registrar", "det": "lição → índice → injeção automática", "status": "espera"}
+    ]
+  },
+
+  "trilha-dupla": {
+    "titulo": "Onde o trabalho passa da máquina pra você",
+    "legenda": "a raia de baixo é o gargalo real do megabrain hoje",
+    "raias": [
+      {"nome": "AGENTE", "papel": "roda sozinho no Cowork / CLI", "blocos": [
+        {"titulo": "Gate 0 + trava", "det": "preflight, lê estado, trava o escopo", "status": "ok"},
+        {"titulo": "Gerar e auditar", "det": "escreve código, doc, peça; passa o anti-slop", "status": "ok"},
+        {"titulo": "Verificar", "det": "suíte 25/25, gera os HTML, confere caminho", "status": "ok"},
+        {"titulo": "Fechar", "det": "ESTADO, HANDOFF, DECISOES, lição, commit local", "status": "ok"},
+        {"titulo": "Push (com repo como fonte)", "det": "só quando a sessão tem o repo; senão cai pra você", "status": "espera"}
+      ]},
+      {"nome": "VOCÊ", "papel": "só acontece na sua máquina", "blocos": [
+        {"titulo": "publicar-github.cmd", "det": "regenera o export — o bridge não apaga arquivo", "status": "espera"},
+        {"titulo": "push-github.cmd", "det": "sempre DEPOIS do publicar (lição 260822)", "status": "espera"},
+        {"titulo": "sincronizar-pipeline.cmd", "det": "espalha a versão pros 16 projetos", "status": "trava"},
+        {"titulo": "instalar o .plugin", "det": "06_dist/ → Cowork; Kimi tem .cmd próprio", "status": "espera"},
+        {"titulo": "Ollama: reindexar", "det": "sem isso o hook não injeta lição nem cérebro novo", "status": "trava"}
+      ]}
+    ]
+  },
+
+  "mapa-camadas": {
+    "titulo": "As 4 camadas do megabrain",
+    "legenda": "de cima pra baixo: a verdade desce, nunca sobe sozinha",
+    "camadas": [
+      {"nome": "Fonte", "papel": "a central — só aqui se edita", "itens": [
+        {"rotulo": "00_nucleo", "det": "MEGABRAIN.md, VERSAO, lições", "status": "ok"},
+        {"rotulo": "01_estado", "det": "ESTADO, HANDOFF, DECISOES", "status": "ok"},
+        {"rotulo": "bin/", "det": "26 scripts", "status": "ok"},
+        {"rotulo": "skills/", "det": "megabrain v5.5, ingerir", "status": "ok"},
+        {"rotulo": "modelos/visuais/", "det": "8 mecânicas", "status": "ativo"}
+      ]},
+      {"nome": "Distribuição", "papel": "empacota a fonte pros agentes", "itens": [
+        {"rotulo": "plugin Claude", "det": "v1.3.0 instalado", "status": "ok"},
+        {"rotulo": "plugin Kimi", "det": "3.4.0", "status": "ok"},
+        {"rotulo": "hooks", "det": "injetam META + lições + cérebro", "status": "ok"},
+        {"rotulo": "Cowork cloud", "det": "hook NÃO roda — Gate 0 na mão", "status": "espera"}
+      ]},
+      {"nome": "Projetos", "papel": "16 cópias que consomem", "itens": [
+        {"rotulo": "MEGABRAIN/", "det": "cópia plana da fonte", "status": "espera"},
+        {"rotulo": "cerebro/", "det": "raw → wiki → pessoas", "status": "ativo"},
+        {"rotulo": ".mb-log/", "det": "observabilidade por sessão", "status": "ok"}
+      ]},
+      {"nome": "Publicação", "papel": "o que sai pro mundo", "itens": [
+        {"rotulo": "260810_github-export", "det": "gerado — nunca editar", "status": "ok"},
+        {"rotulo": "_github-repo-local", "det": "espelho com .git", "status": "ok"},
+        {"rotulo": "GitHub", "det": "834dde9 = origin/main", "status": "ok"}
+      ]}
+    ]
+  },
+
+  "timeline": {
+    "titulo": "Histórico de versão",
+    "itens": [
+      {"data": "260822", "titulo": "v6.6 — relatório único e visual", "det": "vivo absorve o normal; modelos/visuais/ nasce", "status": "ativo"},
+      {"data": "260822", "titulo": "v6.5 — push por ambiente", "det": "cloud com repo empurra; sem repo cai no .cmd", "status": "ok"},
+      {"data": "260822", "titulo": "v6.4 — pastas numeradas", "det": "numerada = você entra; sem número = código entra", "status": "ok"},
+      {"data": "260822", "titulo": "v6.3 — raiz zero", "det": "nenhum arquivo solto na raiz da central", "status": "ok"},
+      {"data": "260822", "titulo": "v6.2 — cérebro + /ingerir", "det": "memória de conteúdo, não só de processo", "status": "ok"},
+      {"data": "260821", "titulo": "v6.1 — versão visível", "det": "relatório mostra versão × commit × push pendente", "status": "ok"}
+    ]
+  },
+
+  "semaforo": {
+    "titulo": "Saúde do sistema",
+    "itens": [
+      {"rotulo": "git", "estado": "ok", "det": "834dde9 = origin/main, nada pendente"},
+      {"rotulo": "preflight", "estado": "ok", "det": "PODE COMEÇAR"},
+      {"rotulo": "suíte", "estado": "ok", "det": "25/25"},
+      {"rotulo": "plugin Claude", "estado": "ok", "det": "v1.3.0, skill v5.5 confirmada"},
+      {"rotulo": "cérebro", "estado": "ativo", "det": "1 fonte ingerida, 1 página de wiki"},
+      {"rotulo": "embeddings", "estado": "trava", "det": "índice vazio — precisa do Ollama na sua máquina"},
+      {"rotulo": "16 projetos", "estado": "espera", "det": "em v6.1; sincronizar-pipeline.cmd resolve"},
+      {"rotulo": "99_to_delete", "estado": "espera", "det": "7 itens esperando você apagar"}
+    ]
+  },
+
+  "barra-segmentos": {
+    "titulo": "Os 16 projetos por versão do megabrain",
+    "segmentos": [
+      {"rotulo": "v6.1 (5 atrás)", "n": 16, "status": "espera"},
+      {"rotulo": "v6.6 (atual)", "n": 0, "status": "ok"}
+    ]
+  },
+
+  "matriz": {
+    "titulo": "Relatório: antes × depois da v6.6",
+    "legenda": "a mudança que esta versão faz",
+    "colunas": [{"rotulo": "Até a v6.5"}, {"rotulo": "Da v6.6 em diante"}],
+    "linhas": [
+      {"rotulo": "Quantos arquivos", "celulas": [
+        {"v": "2 — RELATORIO.html e RELATORIO-VIVO.html", "status": "trava"},
+        {"v": "1 — RELATORIO.html (o vivo)", "status": "ok"}]},
+      {"rotulo": "Quem gera", "celulas": [
+        {"v": "2 scripts, 1.600 linhas somadas", "status": "trava"},
+        {"v": "mb-relatorio-vivo.py; o outro virou alias", "status": "ok"}]},
+      {"rotulo": "Onde roda", "celulas": [
+        {"v": "vivo só na central, normal só em projeto", "status": "espera"},
+        {"v": "os dois escopos, mesmo gerador", "status": "ok"}]},
+      {"rotulo": "Visual", "celulas": [
+        {"v": "CSS reescrito a cada peça", "status": "trava"},
+        {"v": "8 mecânicas em modelos/visuais/", "status": "ok"}]},
+      {"rotulo": "Versões velhas", "celulas": [
+        {"v": "escondidas em .mb-backup/", "status": "espera"},
+        {"v": "90_arquivo/relatorios-antigos/ com índice", "status": "ok"}]}
+    ]
+  }
+}
