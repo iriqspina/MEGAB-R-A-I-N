@@ -52,7 +52,7 @@ def detectar_central():
 
 def parece_central(pasta: Path) -> bool:
     """Falha fechada: só escreve numa pasta que tem cara de central."""
-    return (pasta / "VERSAO.txt").is_file() and (pasta / "MEGABRAIN.md").is_file()
+    return (u.achar(pasta, "VERSAO.txt")).is_file() and (u.achar(pasta, "MEGABRAIN.md")).is_file()
 
 
 def dividir_entradas(texto: str):

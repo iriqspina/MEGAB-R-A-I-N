@@ -48,6 +48,44 @@ pedido em markdown:
    (`gerenteneuron/orquestrador.py`, modelos de `pricing.json`, nunca
    hardcoded).
 
+## 0b · O que a v6.2 adicionou (260822)
+
+**Camada de conteúdo** — até a v6.1 o megabrain só tinha memória de processo
+(lições, decisões, estado). Agora existe `cerebro/` (padrão "LLM wiki",
+Karpathy 2026 — ver `cerebro/wiki/260822_segundo-cerebro-llm-wiki.md`):
+
+1. `cerebro/raw/` fonte bruta imutável · `wiki/` um tópico por arquivo ·
+   `pessoas/` um card por contato · `INDICE.md` mapa. Em **cada projeto** (o
+   Gate 0 cria via `mb-check-version.py`) e na central (conhecimento que vale
+   em qualquer projeto).
+2. Skill `/ingerir` (`skills/ingerir/SKILL.md`, nos dois plugins): lê `raw/`
+   pendente, destila, linka, atualiza `INDICE.md`, indexa.
+3. `bin/mb-indice-cerebro.py` reusa o motor de embeddings das lições; o hook
+   `mb-contexto.py` injeta as 3 páginas mais próximas do prompt, com a regra
+   "responda a partir delas e cite o path; senão 'não encontrado'".
+4. Identidade (`260810_memoria-pessoal.md` → CLAUDE/GEMINI/AGENTS): regra de
+   recuperação só-das-fontes. `cerebro/` fica fora do pacote público.
+5. Raiz arrumada: executáveis em `05_scripts/`, congelados em `90_arquivo/`,
+   instaláveis em `06_dist/`, referências sem data arquivadas
+   (`bin/mb-arrumar.py` v2, com backup em `.mb-backup/arrumar-*.zip`).
+6. **v6.3 (mesmo dia) — raiz sem arquivo solto:** canônicos em `00_nucleo/`
+   (este arquivo, VERSAO.txt, README.md, OFFLINE.md, licoes-megabrain.md),
+   `01_estado/` (ESTADO, HANDOFF, DECISOES, META, CHECKLIST, ALINHAMENTO,
+   PROGRESSO.json), `02_identidade/` (260810_memoria-pessoal.md),
+   `04_relatorios/` (4 HTML). Só `.gitignore` e pastas-ponto ficam na raiz.
+   Tabela em `bin/mb_utils.py: PASTAS_RAIZ`; todo script resolve com
+   `u.achar(raiz, nome)` — funciona no layout novo e no plano (projetos,
+   export público, centrais antigas). O export do GitHub é achatado pelo
+   gerador, então o pacote público não muda de cara.
+7. **v6.4 (mesmo dia) — pastas numeradas:** as 11 pastas que o humano abre
+   ganham prefixo `NN_` (tabela `mb_utils.PASTAS_NUMERADAS`, resolvedor
+   `u.pasta(raiz, nome)` aceita os dois nomes). As 12 pastas de código
+   (`bin/`, `referencias/`, `skills/`, `dna/`, `modelos/`, `tests/`, os dois
+   plugins, `gerenteneuron/`, `relatorio-megabrain/`, export e espelho)
+   ficam sem número de propósito: caminho fixo em scripts, plugins
+   instalados e nas cópias dos projetos. Regra: **numerada = você entra;
+   sem número = código entra.**
+
 ---
 
 ## 1 · Relação entre os três arquivos
@@ -56,11 +94,11 @@ pedido em markdown:
 |---|---|---|
 | `skills/megabrain/SKILL.md` | Router do `/megabrain` — gates de entrega, multi-agente (Claude+Kimi), roteamento de arquitetura | Sim — é o que dispara |
 | `skills/gerenteneuron/SKILL.md` | Roteador unificado de chat multi-IA local (`/gerenteneuron`) — escolhe modelo por custo/capacidade | Sim |
-| `260810_MEGABRAIN.md` (este) | Camada de projeto: fases macro, artefatos, regras de ouro, níveis de adoção, biblioteca visual pessoal | Sim |
-| `260810_memoria-pessoal.md` | Perfil de identidade (nome, TDAH, formato de resposta obrigatório) — fonte da sincronização entre agentes, nunca sai desta pasta | Sim |
-| `PIPELINE.md` | v2, congelado — mantido por histórico, não recebe mudança nova | Não |
+| `MEGABRAIN.md` (este) | Camada de projeto: fases macro, artefatos, regras de ouro, níveis de adoção, biblioteca visual pessoal | Sim |
+| `identidade/260810_memoria-pessoal.md` | Perfil de identidade (nome, TDAH, formato de resposta obrigatório) — fonte da sincronização entre agentes, nunca sai desta pasta | Sim |
+| `90_arquivo/PIPELINE.md` | v2, congelado — mantido por histórico, não recebe mudança nova | Não |
 
-`PIPELINE.md` continua no disco (não apago nem renomeio arquivo já escrito)
+`PIPELINE.md` foi para `90_arquivo/` (260822; nome preservado)
 com um aviso de descontinuação no topo apontando pra cá.
 
 ---
@@ -346,7 +384,7 @@ GitHub, é método, não gosto pessoal). Aqui fica só a lista concreta:
 | **2 · tracker** | + `.scratch/` com specs/tickets + regras do repo | entrou em desenvolvimento |
 | **3 · ciclo completo** | + harness com carimbo + `Atalhos\` + relatório vivo + deploy com portões | produto no ar |
 
-Todo projeto nasce no nível 1 (`novo-projeto.cmd`). Subir de nível é decisão
+Todo projeto nasce no nível 1 (`05_scripts/novo-projeto.cmd`). Subir de nível é decisão
 explícita, com spec — nunca por acidente.
 
 ## 8 · Roteamento de projetos pessoais → skill dedicada
@@ -360,7 +398,7 @@ explícita, com spec — nunca por acidente.
    declarou promoção obrigatória, isso acontece no mesmo ciclo.
 3. Lição 3× → entra neste arquivo, na `SKILL.md`, num template ou script.
 4. Editou a fonte → bump em `VERSAO.txt` (data + uma linha do que mudou).
-5. Espalhar → `sincronizar-pipeline.cmd`.
+5. Espalhar → `05_scripts/sincronizar-pipeline.cmd`.
 6. A cópia dentro de cada projeto não se edita — a fonte manda.
 
 ## 10 · Versão multi-IA (opcional)
@@ -371,4 +409,6 @@ quando o projeto é multi-agente, ou ignorado quando o projeto usa um só
 agente. Se a leitura conjunta falhar ou pesar o contexto, use a referência
 separada como fallback.
 
-Origem: fusão entre pipeline de projeto v2 e protocolo multi-agente v3.
+Origem: `PIPELINE.md` v2 (Rodada, djinn, megabrain, Financeiro da Silva)
+fundida com a v3 multi-agente (Claude+Kimi, gates de entrega, bastão) em
+260810. Ver `90_arquivo/260810_VISAO-GERAL.md` para o que mudou nesta fusão e por quê.

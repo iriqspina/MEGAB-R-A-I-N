@@ -254,6 +254,72 @@ MARK_END = "<!-- MEGABRAIN:AUTO-SYNC:END -->"
 
 IDENTIDADE_DEFAULT = "260810_memoria-pessoal.md"
 
+# ---------------------------------------------------------------------------
+# v6.3 (260822): raiz da central sem arquivo solto. Cada arquivo canônico
+# mora numa pasta; as cópias de projeto (MEGABRAIN/) e centrais antigas
+# continuam planas. achar() resolve os dois layouts — sempre use achar(raiz,
+# nome) em vez de raiz / nome para qualquer nome desta tabela.
+# ---------------------------------------------------------------------------
+# v6.4 (260822): pastas "de humano" numeradas (NN_nome) pra ordenar e achar;
+# pastas "de código" (bin, referencias, skills, dna, modelos, tests, plugins,
+# export, espelho) ficam sem número — caminho fixo em scripts e plugins.
+PASTAS_NUMERADAS = {
+    "nucleo": "00_nucleo", "estado": "01_estado", "identidade": "02_identidade",
+    "cerebro": "03_cerebro", "relatorios": "04_relatorios", "scripts": "05_scripts",
+    "dist": "06_dist", "docs": "07_docs", "alteracoes-pendentes": "08_alteracoes-pendentes",
+    "_arquivo": "90_arquivo", "_to_delete": "99_to_delete",
+}
+NOMES_ANTIGOS = {v: k for k, v in PASTAS_NUMERADAS.items()}
+
+
+def pasta(raiz, nome: str) -> Path:
+    """Pasta da raiz pelo nome lógico ("cerebro"), em qualquer layout:
+    numerada se existir, senão a plana se existir, senão a numerada (vai
+    ser criada assim)."""
+    base = Path(raiz)
+    num = base / PASTAS_NUMERADAS.get(nome, nome)
+    if num.is_dir():
+        return num
+    plana = base / nome
+    if plana.is_dir():
+        return plana
+    return num
+
+
+PASTAS_RAIZ = {
+    "MEGABRAIN.md": "nucleo", "VERSAO.txt": "nucleo", "README.md": "nucleo",
+    "OFFLINE.md": "nucleo", "licoes-megabrain.md": "nucleo",
+    "ESTADO.md": "estado", "HANDOFF.md": "estado", "DECISOES.md": "estado",
+    "META.md": "estado", "CHECKLIST-ABERTURA.md": "estado",
+    "ALINHAMENTO-AGENTES.md": "estado", "PROGRESSO.json": "estado",
+    "260810_memoria-pessoal.md": "identidade",
+    "RELATORIO.html": "relatorios", "RELATORIO-VIVO.html": "relatorios",
+    "RELATORIO-AGENTES.html": "relatorios", "PAINEL-MEGABRAIN.html": "relatorios",
+}
+
+
+def achar(raiz, nome: str) -> Path:
+    """Caminho de um arquivo canônico na raiz dada, em qualquer layout.
+    Ordem: existe na raiz → raiz/nome; existe na pasta → raiz/pasta/nome;
+    nada existe → raiz/pasta/nome se a pasta existir (vai ser criado lá),
+    senão raiz/nome (layout plano de projeto/central antiga)."""
+    base = Path(raiz)
+    plano = base / nome
+    logica = PASTAS_RAIZ.get(nome)
+    if logica is None or plano.exists():
+        return plano
+    d = pasta(base, logica)
+    if d.is_dir():
+        return d / nome
+    return plano
+
+
+def e_central(raiz) -> bool:
+    """Central válida = VERSAO.txt + MEGABRAIN.md (em qualquer layout) + bin/."""
+    base = Path(raiz)
+    return (achar(base, "VERSAO.txt").is_file() and achar(base, "MEGABRAIN.md").is_file()
+            and (base / "bin").is_dir())
+
 
 def extract_usuario(texto: str) -> str | None:
     """Extrai o valor da linha `USUARIO:` do arquivo de identidade.
@@ -279,7 +345,7 @@ def detectar_usuario(identidade_path: Path | None = None) -> str:
     diretório atual. Retorna "<USUARIO>" se não conseguir detectar.
     """
     if identidade_path is None:
-        identidade_path = Path(IDENTIDADE_DEFAULT)
+        identidade_path = achar(Path("."), IDENTIDADE_DEFAULT)
     texto = safe_read_text(identidade_path)
     if texto is None:
         return "<USUARIO>"

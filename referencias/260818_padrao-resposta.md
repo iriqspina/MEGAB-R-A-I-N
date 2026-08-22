@@ -15,7 +15,7 @@ o formato é previsível.
 
 Regra dura de manutenção: **edite só a fonte** (o arquivo de identidade —
 nesta instalação, `260810_memoria-pessoal.md`, seção "Forma de falar") e
-rode a sincronização (`260810_sincronizar-identidade.cmd`). Nunca edite a
+rode a sincronização (`05_scripts/260810_sincronizar-identidade.cmd`). Nunca edite a
 cópia sincronizada dentro de CLAUDE.md/GEMINI.md/AGENTS.md.
 
 ## Voz — vale em todo nível

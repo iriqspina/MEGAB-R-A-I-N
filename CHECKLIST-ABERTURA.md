@@ -18,12 +18,12 @@
 - **Por quê:** `skills/megabrain/SKILL.md` e `MEGABRAIN.md` da central foram
   editados depois que o refresh do plugin rodou no subagente.
 - **Como:** `diff` seguido de `robocopy` das linhas 48–50 do
-  `sincronizar-pipeline.cmd` se necessário.
+  `05_scripts/sincronizar-pipeline.cmd` se necessário.
 - **RESOLVIDO:** não
 
 ## 260818 — identidade ainda não propagada pros agentes
 
-- **Checar:** se `260810_sincronizar-identidade.cmd` já foi rodado nesta
+- **Checar:** se `05_scripts/260810_sincronizar-identidade.cmd` já foi rodado nesta
   sessão e se os blocos AUTO-SYNC em `~/.claude/CLAUDE.md`,
   `~/.gemini/GEMINI.md`, `~/.kimi/AGENTS.md`, `~/.kimi-code/AGENTS.md` e
   `~/.codex/AGENTS.md` batem com `260810_memoria-pessoal.md`.

@@ -45,8 +45,8 @@ EXCLUIR = {
     ".dna-backup",
     "260810_github-export",
     "_github-repo-local",
-    "_to_delete",
-    "alteracoes-pendentes",
+    "_to_delete", "99_to_delete",
+    "alteracoes-pendentes", "08_alteracoes-pendentes",
     ".mb-backup",  # evita backup recursivo
 }
 

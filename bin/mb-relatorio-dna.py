@@ -58,7 +58,7 @@ def detectar_central() -> Path:
 
 
 def ler_versao(central: Path) -> str:
-    path = central / "VERSAO.txt"
+    path = u.achar(central, "VERSAO.txt")
     if not path.exists():
         return "desconhecida"
     for linha in path.read_text(encoding="utf-8").splitlines():

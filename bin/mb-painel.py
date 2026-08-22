@@ -34,10 +34,16 @@ EXTENSOES = {".md", ".txt"}
 IGNORAR = {".git", ".mb-backup", ".dna-backup", ".mb-aspirador", "__pycache__", ".mb-log"}
 
 GRUPOS = [
-    ("protocolo", ["skills/megabrain/SKILL.md", "MEGABRAIN.md", "skills/codex-megabrain/SKILL.md"]),
-    ("porta de entrada", ["README.md", "VERSAO.txt", "OFFLINE.md", "AUDITORIA.md"]),
+    ("protocolo", ["skills/megabrain/SKILL.md", "MEGABRAIN.md", "00_nucleo/MEGABRAIN.md", "skills/codex-megabrain/SKILL.md", "skills/ingerir/SKILL.md"]),
+    ("porta de entrada", ["README.md", "VERSAO.txt", "OFFLINE.md", "00_nucleo/", "AUDITORIA.md"]),
+    ("estado", ["01_estado/"]),
+    ("cérebro", ["03_cerebro/"]),
+    ("relatórios", ["04_relatorios/"]),
+    ("scripts", ["05_scripts/"]),
+    ("instaláveis", ["06_dist/"]),
     ("referências", ["referencias/"]),
-    ("apoio", ["docs/", "modelos/", "dna/"]),
+    ("apoio", ["07_docs/", "modelos/", "dna/", "08_alteracoes-pendentes/"]),
+    ("arquivo", ["90_arquivo/"]),
 ]
 
 GATES = [
@@ -229,7 +235,7 @@ def agrupar(arquivos: list[dict]) -> list[dict]:
 
 
 def montar(raiz: Path, arquivos: list[dict]) -> str:
-    versao_txt = (raiz / "VERSAO.txt")
+    versao_txt = (u.achar(raiz, "VERSAO.txt"))
     versao = versao_txt.read_text(encoding="utf-8").splitlines()[0] if versao_txt.exists() else "sem VERSAO.txt"
     dados = {
         "raiz": str(raiz),
@@ -697,11 +703,11 @@ def main() -> int:
     ap.add_argument("--saida", default="PAINEL-MEGABRAIN.html")
     args = ap.parse_args()
     raiz = Path(args.raiz).resolve()
-    if not (raiz / "VERSAO.txt").exists():
+    if not (u.achar(raiz, "VERSAO.txt")).exists():
         print(f"{raiz} nao parece a raiz do megabrain (sem VERSAO.txt).")
         return 1
     arquivos = coletar(raiz)
-    saida = raiz / args.saida
+    saida = u.achar(raiz, args.saida) if args.saida == "PAINEL-MEGABRAIN.html" else raiz / args.saida
     saida.write_text(montar(raiz, arquivos), encoding="utf-8")
     print(f"painel: {saida}  ({saida.stat().st_size // 1024} KB, {len(arquivos)} arquivos)")
     return 0

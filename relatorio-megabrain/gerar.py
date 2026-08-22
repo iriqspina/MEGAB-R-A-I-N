@@ -12,11 +12,14 @@ from pathlib import Path
 
 FONTE = Path(__file__).resolve().parent
 RAIZ = FONTE.parent
-SAIDA = RAIZ / "RELATORIO.html"
+import sys as _sys
+_sys.path.insert(0, str(RAIZ / "bin"))
+import mb_utils as u  # noqa: E402
+SAIDA = u.achar(RAIZ, "RELATORIO.html")
 
 
 def versao_atual() -> str:
-    primeira_linha = (RAIZ / "VERSAO.txt").read_text(encoding="utf-8").splitlines()[0]
+    primeira_linha = u.achar(RAIZ, "VERSAO.txt").read_text(encoding="utf-8").splitlines()[0]
     achado = re.search(r"v\d+(?:\.\d+)+", primeira_linha)
     return achado.group(0) if achado else "versão não identificada"
 

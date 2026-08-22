@@ -43,7 +43,7 @@ u.utf8_console()
 
 TEXTO = {".md", ".txt", ".py", ".cmd", ".js", ".mjs", ".json", ".yaml", ".yml", ".html", ".css"}
 PULAR_DIRS = {".git", "node_modules", "__pycache__", ".venv", "venv", ".mb-backup",
-              ".mb-aspirador", ".dna-backup", ".megabrain", ".mb-log", "_to_delete",
+              ".mb-aspirador", ".dna-backup", ".megabrain", ".mb-log", "_to_delete", "99_to_delete",
               "260810_backup-raiz-perfil", "260810_variantes", "260810_github-export",
               ".orquestrador"}  # diálogos antigos do orquestrador: artefato de execução
 # Onde o nome antigo é reconhecimento deliberado (ler arquivo legado, registrar
@@ -89,9 +89,9 @@ def achar_repo(base: Path) -> Path | None:
 
 def achar_central(base: Path) -> Path:
     """--repo pode ser a central ou o repo-local dentro dela."""
-    if (base / "VERSAO.txt").is_file() and (base / "bin").is_dir() and (base / "_github-repo-local").is_dir():
+    if (u.achar(base, "VERSAO.txt")).is_file() and (base / "bin").is_dir() and (base / "_github-repo-local").is_dir():
         return base
-    if base.name == "_github-repo-local" and (base.parent / "VERSAO.txt").is_file():
+    if base.name == "_github-repo-local" and (u.achar(base.parent, "VERSAO.txt")).is_file():
         return base.parent
     return base
 

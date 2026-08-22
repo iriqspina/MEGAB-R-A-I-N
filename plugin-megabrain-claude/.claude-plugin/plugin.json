@@ -1,6 +1,6 @@
 {
   "name": "megabrain",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Protocolo de execução multi-agente de alto padrão para entregas: gates anti-slop, Duplo Diamante para design, orçamento de contexto, handoff entre agentes e loop de lições que acumula entre sessões. Instala o núcleo sempre-ativo via hook SessionStart, sem editar CLAUDE.md.",
   "author": {
     "name": "iriqspina"

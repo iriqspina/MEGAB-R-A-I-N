@@ -5,7 +5,12 @@ description: Protocolo de execução multi-agente — gates de entrega anti-slop
 
 # megabrain — protocolo operacional
 
-**v5.2 · 2026-08-21.** Base: v5.1. Mudou: Gate 0 ganha a descrição do que os
+**v5.4 · 2026-08-22.** Base: v5.3 (260822). Mudou: raiz da central sem arquivo solto
+(layout `nucleo/ estado/ identidade/ relatorios/` — seção "Localizar a instalação").
+v5.3 (260822) — Mudou: Gate 0 garante `cerebro/`
+(v6.2 — `mb-check-version.py` cria `raw/wiki/pessoas/INDICE.md` no projeto), Gate 7
+separou fato de conteúdo (→ `/ingerir`) de lição de processo (→ `/registrar-licao`),
+roteamento ganhou a linha "conhecimento de conteúdo". Histórico: v5.2 (260821) — Base: v5.1. Mudou: Gate 0 ganha a descrição do que os
 hooks v6 já injetam sozinhos (`mb-contexto.py` — META.md, alinhamento
 pré-prompt, lições por proximidade) e o Gate 7 registra que a lição gravada
 alimenta o índice da injeção. Histórico: v5.1 — gatilhos legados fora da
@@ -36,7 +41,14 @@ quem criou o protocolo.
 1. Procure, nesta ordem: `MEGABRAIN/` dentro do projeto atual; a variável de
    ambiente `MEGABRAIN_CENTRAL`; e uma pasta ancestral ou do workspace que
    contenha `VERSAO.txt`, `MEGABRAIN.md`, `bin/mb-check-version.py` e
-   `referencias/`.
+   `referencias/`. **Layout (v6.3):** na central os arquivos canônicos moram
+   em pastas — `00_nucleo/` (MEGABRAIN.md, VERSAO.txt, README.md, OFFLINE.md,
+   licoes-megabrain.md), `01_estado/` (ESTADO.md, HANDOFF.md, DECISOES.md,
+   META.md, CHECKLIST, ALINHAMENTO, PROGRESSO.json), `02_identidade/`
+   (memória pessoal), `04_relatorios/` (HTML gerados). Cópias de projeto
+   (`MEGABRAIN/`) e projetos continuam planos. Sempre que um caminho deste
+   protocolo citar um desses nomes na raiz, procure na raiz **e** na pasta
+   correspondente (os scripts fazem isso via `mb_utils.achar`).
 2. Se encontrar uma única pasta válida, diga o caminho encontrado e use-o em
    todos os comandos desta sessão.
 3. Se houver mais de uma pasta válida, mostre as opções e peça para o usuário
@@ -97,6 +109,9 @@ Antes de tocar em qualquer arquivo de `projetos/<nome>/`:
    - Se o projeto for mais novo: o script avisa e sai com código 2. **Pare e pergunte ao usuário** se deve subir as mudanças para a central (`mb-sync-projeto-para-central.py`) ou manter o projeto local.
    - Se indefinido: pergunte antes de sobrescrever.
    - **Nunca use um megabrain de projeto desatualizado sem sincronizar primeiro.**
+   - Desde a v6.2 o mesmo script garante `<projeto>/cerebro/` (`raw/`, `wiki/`,
+     `pessoas/`, `INDICE.md`). Fonte que o usuário trouxe (artigo, PDF, print,
+     briefing) vai pra `cerebro/raw/` e passa por `/ingerir` — não fica no chat.
 5. **Confirme caminhos relevantes no início do projeto.** Antes de criar repos, subir arquivos ou pedir credenciais, valide com o usuário onde cada artefato deve morar (local, pasta compartilhada, GitHub privado/público, etc.). Não suba nada para Git sem confirmação explícita, a menos que ele já tenha autorizado permanentemente para aquele repo.
 6. Só então planeje.
 
@@ -429,7 +444,13 @@ Dois destinos: **global** (vale pra qualquer projeto) ou **do projeto**
 *seria útil num projeto completamente diferente?* Sim → global. Não →
 projeto. Sempre **append**, nunca reescreva.
 
-Lição 3× vira skill própria ou regra em `MEGABRAIN.md`. Desde a v6 a régua
+Lição 3× vira skill própria ou regra em `MEGABRAIN.md`.
+
+**Fato ≠ lição.** O que você descobriu sobre cliente, mercado, ferramenta,
+hardware ou fonte é **conteúdo** — vai pra `cerebro/wiki/` ou `pessoas/` via
+`/ingerir` (fonte em `raw/`, página com path citável). O que você descobriu
+sobre *como trabalhar* é lição. Misturar os dois é o que faz `LICOES.md`
+virar diário e o cérebro virar vazio. Desde a v6 a régua
 tem executor: `bin/mb-indice-licoes.py` marca clusters recorrentes (3×+) como
 candidatos a regra em `dna/licoes-recorrencia.json`, e o índice de embeddings
 é o que o hook `mb-contexto.py` usa pra injetar as lições próximas do prompt
@@ -460,6 +481,7 @@ delas. Ordem: **formato pedido > protocolo > default do modelo.**
 | Garantia determinística (não "pedido") | Hook / script |
 | Conhecimento pesado e raro | Referência em `referencias/260810_*.md`, sob demanda |
 | Estado que atravessa sessões e modelos | `ESTADO.md`, `HANDOFF.md`, `DECISOES.md`, `LICOES.md` |
+| Conhecimento de conteúdo (cliente, mercado, fonte, referência) — citável por path | `cerebro/` (`raw/` → `/ingerir` → `wiki/`, `pessoas/`, `INDICE.md`); índice em `bin/mb-indice-cerebro.py`, injetado pelo hook |
 | Fases macro do projeto, artefatos, regras de ouro | `MEGABRAIN.md` |
 | Ação que o sandbox conectado não alcança (pasta home, caminho fora do que foi conectado, delete/rename bloqueado, ação de SO) | `/kimi` — Kimi CLI roda local, sem sandbox (`referencias/260811_kimi-handoff.md`) |
 

@@ -1,5 +1,5 @@
 MEGABRAIN — cópia sincronizada. NÃO EDITE os arquivos desta pasta.
 
-Fonte canônica: <MEGABRAIN_ROOT>
-Para mudar qualquer coisa: edite a fonte e rode sincronizar-pipeline.cmd lá.
+Fonte canônica: <MEGABRAIN_ROOT> (lá os canônicos ficam em nucleo/, estado/, identidade/, relatorios/; aqui a cópia é plana)
+Para mudar qualquer coisa: edite a fonte e rode scripts\sincronizar-pipeline.cmd lá.
 A fonte manda; a cópia obedece.

@@ -39,6 +39,7 @@ import mb_utils as u
 
 MAX_META_CHARS = 3000
 MAX_LICOES = 5
+MAX_PAGINAS_CEREBRO = 3   # v6.2: páginas de cerebro/ (wiki+pessoas) mais próximas do prompt
 SCORE_MINIMO_EMBED = 0.55   # abaixo disso a lição é ruído, não ajuda
 SENTINEL_DIR = Path(tempfile.gettempdir()) / "megabrain-sessoes"
 
@@ -79,6 +80,14 @@ def carregar_indice_licoes():
     spec = importlib.util.spec_from_file_location("mb_indice_licoes", caminho)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
+    return mod
+
+
+def carregar_indice_cerebro():
+    caminho = Path(__file__).resolve().parent / "mb-indice-cerebro.py"
+    spec = importlib.util.spec_from_file_location("mb_indice_cerebro", caminho)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)  # type: ignore[union-attr]
     return mod
 
 
@@ -128,7 +137,7 @@ def montar(payload: dict, agente: str) -> str:
     if primeira:
         meta_txt = None
         if projeto:
-            meta_txt = u.safe_read_text(projeto / "META.md")
+            meta_txt = u.safe_read_text(u.achar(projeto, "META.md"))
         if meta_txt:
             meta_existe = True
             recorte = meta_txt.strip()
@@ -160,6 +169,23 @@ def montar(payload: dict, agente: str) -> str:
                 f"### Lições relevantes pra este prompt ({len(novas)} de 126+, "
                 "por proximidade — cada uma já foi paga em erro)\n" + blocos)
             injetadas.update(e["chave"] for e in novas)
+
+    # Páginas do cérebro (v6.2) — conteúdo, não processo. Só inéditas na sessão.
+    if prompt.strip():
+        try:
+            cer = carregar_indice_cerebro()
+            pags = cer.buscar(prompt, MAX_PAGINAS_CEREBRO, None, payload.get("cwd") or os.getcwd())
+        except Exception:
+            pags = []
+        novas_p = [e for e in pags if e["chave"] not in injetadas
+                   and e.get("score", 0) >= SCORE_MINIMO_EMBED]
+        if novas_p:
+            blocos = "\n\n".join(f"**{e['chave']}**\n{e['texto'][:900]}" for e in novas_p)
+            partes.append(
+                f"### Páginas do cérebro relevantes ({len(novas_p)}, por proximidade — "
+                "responda a partir delas e cite o path; se não cobrem, diga "
+                "'não encontrado no cérebro')\n" + blocos)
+            injetadas.update(e["chave"] for e in novas_p)
 
     estado_novo = {
         "primeira": False,

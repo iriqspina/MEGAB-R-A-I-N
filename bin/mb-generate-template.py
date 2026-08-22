@@ -37,6 +37,10 @@ DESTINO_DEFAULT = os.path.join(CENTRAL_DEFAULT, "260810_github-export")
 
 # Não copiar: exclusivamente pessoais ou gerados (match por substring no caminho relativo)
 EXCLUIR = {
+    "cerebro", "03_cerebro",  # v6.2: conteúdo pessoal (wiki/pessoas/raw) nunca sai
+    "_arquivo", "90_arquivo",  # v6.2: histórico congelado
+    "dist", "06_dist", "05_scripts", "04_relatorios",  # v6.2/v6.4: instaláveis (.plugin/.skill)
+    "_to_delete",
     "260810_memoria-pessoal.md",
     "licoes-megabrain.md",
     ".mb-log",  # v6 fase 1: cobre também .mb-log/ dentro de subpastas (walk)
@@ -60,8 +64,8 @@ EXCLUIR = {
     # Cópia derivada usada localmente por sincronização de projetos. O pacote
     # público já é a raiz portátil e não deve carregar esta árvore duplicada.
     "MEGABRAIN",
-    "_to_delete",
-    "alteracoes-pendentes",
+    "_to_delete", "99_to_delete",
+    "alteracoes-pendentes", "08_alteracoes-pendentes",
     "referencias visuais",
     ".git",
     ".mb-aspirador",
@@ -290,8 +294,28 @@ def gerar_template(central, destino):
 
     erros = False
 
+    # v6.3: raiz da central sem arquivo solto — nucleo/ estado/ identidade/
+    # relatorios/ são achatadas no export (o pacote público e as cópias de
+    # projeto continuam planas). As regras de EXCLUIR valem pelo nome.
+    ACHATAR = sorted({u.pasta(central_path, v).name for v in set(u.PASTAS_RAIZ.values())})
+    for pasta in ACHATAR:
+        d = central_path / pasta
+        if not d.is_dir():
+            continue
+        for nome in os.listdir(d):
+            if nome in EXCLUIR or nome in EXCLUIR_TOPO or nome in EXCLUIR_NOME_EXATO:
+                continue
+            if nome.lower().endswith(EXCLUIR_SUFIXO) or nome.startswith("."):
+                continue
+            src = os.path.join(d, nome)
+            if os.path.isfile(src):
+                if not copiar_sanitizando(src, str(destino_path / nome)):
+                    erros = True
+
     # Copia arquivos de topo
     for nome in os.listdir(central_path):
+        if nome in ACHATAR:
+            continue
         if nome in EXCLUIR or nome in EXCLUIR_TOPO or (nome + "/") in EXCLUIR:
             continue
         if nome.lower().endswith(EXCLUIR_SUFIXO):
@@ -330,11 +354,11 @@ def gerar_template(central, destino):
             erros = True
 
     # VERSAO.txt público: só a versão atual, sem histórico com nomes de projeto
-    versao_src = central_path / "VERSAO.txt"
+    versao_src = u.achar(central_path, "VERSAO.txt")
     if versao_src.is_file():
         primeira = u.read_first_non_empty_line(versao_src) or ""
         primeira = sanitizar(primeira)
-        versao_dst = destino_path / "VERSAO.txt"
+        versao_dst = u.achar(destino_path, "VERSAO.txt")
         if not u.atomic_write_text(
             versao_dst,
             primeira + "\n\nHistórico completo: ver repositório privado da pasta central.\n",
@@ -391,7 +415,7 @@ def gravar_manifesto(central: Path, destino: Path) -> None:
     hashes = {}
     for rel in chaves:
         try:
-            hashes[rel] = hashlib.sha256((central / rel).read_bytes()).hexdigest()[:12]
+            hashes[rel] = hashlib.sha256(u.achar(central, rel).read_bytes()).hexdigest()[:12]
         except OSError:
             hashes[rel] = None
     manifesto = {"gerado_em": dt.datetime.now().astimezone().isoformat(timespec="seconds"),

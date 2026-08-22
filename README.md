@@ -12,7 +12,7 @@ regenere, nunca o HTML final.
 
 ## O que tem aqui
 
-- `SKILL.md` — o protocolo: gates de entrega (enquadrar → gerar → auditar →
+- `skills/megabrain/SKILL.md` — o protocolo: gates de entrega (enquadrar → gerar → auditar →
   verificar → passar o bastão → aprender), o gate de assumir trabalho
   multi-agente, Duplo Diamante para projetos de design, roteamento de
   arquitetura.

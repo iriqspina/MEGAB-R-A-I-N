@@ -144,7 +144,7 @@ def projetos_versao(c: Path, atual_linha: str | None) -> list[dict]:
         mb = p / "MEGABRAIN"
         if not mb.is_dir():
             continue
-        puxada = u.read_first_non_empty_line(mb / "VERSAO.txt")
+        puxada = u.read_first_non_empty_line(u.achar(mb, "VERSAO.txt"))
         origem = {}
         txt = u.safe_read_text(mb / ".mb-origem.json")
         if txt:
@@ -182,7 +182,7 @@ def estado_versao(c: Path, atual: dict, forcar_snapshot: bool = False) -> dict:
     chave = ("versao", "commit")
     mudou = any(guardado.get(k) != atual.get(k) for k in chave)
     snapshot = None
-    html_atual = c / "RELATORIO-VIVO.html"
+    html_atual = u.achar(c, "RELATORIO-VIVO.html")
     if (mudou and guardado) or forcar_snapshot:
         if html_atual.is_file():
             try:
@@ -213,7 +213,7 @@ def estado_versao(c: Path, atual: dict, forcar_snapshot: bool = False) -> dict:
 def secao_para_voce(c: Path) -> list[str]:
     """Linhas da seção '## PARA VOCÊ' (ou 'PARA O <nome>') do HANDOFF.md —
     o que o humano precisa fazer agora, separado do que é pro próximo agente."""
-    texto = u.safe_read_text(c / "HANDOFF.md") or ""
+    texto = u.safe_read_text(u.achar(c, "HANDOFF.md")) or ""
     m = re.search(r"^##+\s*PARA (?:VOC[EÊ]|O USU[AÁ]RIO|O \w+)\b[^\n]*\n(.*?)(?=^##|\Z)",
                   texto, re.MULTILINE | re.DOTALL | re.IGNORECASE)
     if not m:
@@ -233,7 +233,7 @@ def secao_para_voce(c: Path) -> list[str]:
 
 
 def carregar_progresso(c: Path) -> dict:
-    arq = c / "PROGRESSO.json"
+    arq = u.achar(c, "PROGRESSO.json")
     texto = u.safe_read_text(arq)
     if texto:
         try:
@@ -245,12 +245,12 @@ def carregar_progresso(c: Path) -> dict:
 
 def salvar_progresso(c: Path, dados: dict) -> bool:
     dados["atualizado"] = dt.datetime.now().astimezone().isoformat(timespec="seconds")
-    return u.atomic_write_text(c / "PROGRESSO.json",
+    return u.atomic_write_text(u.achar(c, "PROGRESSO.json"),
                                json.dumps(dados, ensure_ascii=False, indent=2) + "\n")
 
 
 def ler_trava(c: Path):
-    texto = u.safe_read_text(c / "HANDOFF.md") or ""
+    texto = u.safe_read_text(u.achar(c, "HANDOFF.md")) or ""
     quem = ate = "-"
     m = re.search(r"^TRAVADO_POR:\s*(.+)$", texto, re.MULTILINE)
     # O bloco do mb-sync fica no fim do arquivo; a última ocorrência vale.
@@ -262,7 +262,7 @@ def ler_trava(c: Path):
 
 
 def ultimas_decisoes(c: Path, n=3):
-    texto = u.safe_read_text(c / "DECISOES.md") or ""
+    texto = u.safe_read_text(u.achar(c, "DECISOES.md")) or ""
     titulos = re.findall(r"^## (.+)$", texto, re.MULTILINE)
     return titulos[-n:][::-1]
 
@@ -289,7 +289,7 @@ def eventos_hoje(c: Path, n=12):
 def fila_pendentes(c: Path) -> list[dict]:
     """alteracoes-pendentes/ com dono + idade (v6 fase 4: fila sem dono era
     um dos 7 problemas de lógica do diagnóstico)."""
-    base = c / "alteracoes-pendentes"
+    base = u.pasta(c, "alteracoes-pendentes")
     fila = []
     if not base.is_dir():
         return fila
@@ -326,8 +326,8 @@ def gerar_html(c: Path, forcar_snapshot: bool = False) -> bool:
     feitas = sum(1 for x in etapas if x.get("status") == "feito")
     pct = round(100 * feitas / len(etapas)) if etapas else 0
     quem, ate = ler_trava(c)
-    versao = u.read_first_non_empty_line(c / "VERSAO.txt") or "?"
-    estado = (u.safe_read_text(c / "ESTADO.md") or "").strip()
+    versao = u.read_first_non_empty_line(u.achar(c, "VERSAO.txt")) or "?"
+    estado = (u.safe_read_text(u.achar(c, "ESTADO.md")) or "").strip()
     tldr = ""
     m = re.search(r"TL;DR:(.*?)(?:\n\n|\Z)", estado, re.DOTALL)
     if m:
@@ -562,7 +562,7 @@ tr.proj--desatualizado td {{ background:var(--signal-soft); }}
 </body>
 </html>
 """
-    return u.atomic_write_text(c / "RELATORIO-VIVO.html", pagina)
+    return u.atomic_write_text(u.achar(c, "RELATORIO-VIVO.html"), pagina)
 
 
 def main() -> int:
@@ -604,7 +604,7 @@ def main() -> int:
 
     if not gerar_html(c, forcar_snapshot=args.snapshot):
         return 1
-    print(f"relatório vivo: {c / 'RELATORIO-VIVO.html'}")
+    print(f"relatório vivo: {u.achar(c, 'RELATORIO-VIVO.html')}")
     return 0
 
 

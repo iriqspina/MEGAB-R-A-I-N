@@ -164,7 +164,7 @@ def normalizar_fonte(fonte: Path, central: Path) -> Path | None:
         if (fonte / "bin").is_dir() and (fonte / "referencias").is_dir():
             return fonte
         # Se já for MEGABRAIN/
-        if (fonte / "VERSAO.txt").is_file():
+        if (u.achar(fonte, "VERSAO.txt")).is_file():
             return fonte
     return None
 

@@ -154,7 +154,7 @@ def base_dir_validada(args_dir: str) -> Path:
 
 def cmd_status(args) -> int:
     base = base_dir_validada(args.dir)
-    caminho = base / HANDOFF_NAME
+    caminho = u.achar(base, HANDOFF_NAME)
     texto = u.safe_read_text(caminho) or ""
 
     if not caminho.exists():
@@ -184,8 +184,8 @@ def cmd_status(args) -> int:
 
 def cmd_lock(args) -> int:
     base = base_dir_validada(args.dir)
-    caminho = base / HANDOFF_NAME
-    lock_path = base / f".{HANDOFF_NAME}.lock"
+    caminho = u.achar(base, HANDOFF_NAME)
+    lock_path = caminho.parent / f".{HANDOFF_NAME}.lock"
 
     if not u.acquire_lock(lock_path, timeout=5.0):
         print(f"recusado: nao foi possivel obter lock exclusivo ({lock_path})")
@@ -231,8 +231,8 @@ def cmd_lock(args) -> int:
 
 def cmd_release(args) -> int:
     base = base_dir_validada(args.dir)
-    caminho = base / HANDOFF_NAME
-    lock_path = base / f".{HANDOFF_NAME}.lock"
+    caminho = u.achar(base, HANDOFF_NAME)
+    lock_path = caminho.parent / f".{HANDOFF_NAME}.lock"
 
     if not u.acquire_lock(lock_path, timeout=5.0):
         print(f"recusado: nao foi possivel obter lock exclusivo ({lock_path})")

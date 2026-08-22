@@ -58,7 +58,38 @@ MAPEAMENTO = [
     ("bin", "bin"),
     ("dna", "dna"),  # pasta DNA (RELATORIO-DNA.html + dna.json + README.md) — desde 260814
     ("OFFLINE.md", "OFFLINE.md"),
+    ("skills/ingerir/SKILL.md", "skills/ingerir/SKILL.md"),  # v6.2 — LLM wiki
+    ("modelos", "modelos"),                                  # v6.2 — esqueleto do cerebro/
 ]
+
+ESQUELETO_CEREBRO = ("cerebro/raw", "cerebro/wiki", "cerebro/pessoas")
+
+
+def garantir_cerebro(central, mb_projeto, dry_run=False):
+    """v6.2: todo projeto aberto ganha cerebro/ (raw, wiki, pessoas, INDICE.md).
+    Não toca no que já existe — só cria o que falta."""
+    projeto = Path(mb_projeto).resolve().parent
+    modelo = Path(central).resolve() / "modelos" / "cerebro"
+    criados = []
+    for rel in ESQUELETO_CEREBRO:
+        d = projeto / rel
+        if not d.is_dir():
+            if not dry_run:
+                d.mkdir(parents=True, exist_ok=True)
+            criados.append(rel)
+    for rel in ("INDICE.md", "260822_LEIAME.md", "wiki/260822_MODELO-pagina.md",
+                "pessoas/260822_MODELO-card.md"):
+        src, dst = modelo / rel, projeto / "cerebro" / rel
+        if src.is_file() and not dst.exists():
+            if not dry_run:
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(src, dst)
+            criados.append(f"cerebro/{rel}")
+    if criados:
+        print(f"  cerebro/ {'(dry-run) criaria' if dry_run else 'criado'}: {', '.join(criados)}")
+    else:
+        print("  cerebro/ já existe no projeto")
+    return True
 
 
 def parse_versao(linha):
@@ -72,7 +103,7 @@ def parse_versao(linha):
 
 
 def ler_versao(pasta):
-    path = Path(pasta) / "VERSAO.txt"
+    path = u.achar(pasta, "VERSAO.txt")
     return u.read_first_non_empty_line(path)
 
 
@@ -169,7 +200,7 @@ def sincronizar_central_para_projeto(central, mb_projeto, dry_run=False):
     falhas = []
 
     for src_rel, dst_rel in MAPEAMENTO:
-        src = os.path.join(central, src_rel)
+        src = str(u.achar(central, src_rel))   # v6.3: central com pastas
         dst = os.path.join(mb_projeto, dst_rel)
         if not os.path.exists(src):
             print(f"  AVISO: {src} não existe na central, pulando")
@@ -177,8 +208,10 @@ def sincronizar_central_para_projeto(central, mb_projeto, dry_run=False):
         if not copiar(src, dst, dry_run, base=mb_projeto_path):
             falhas.append(dst_rel)
 
-    licoes_c = os.path.join(central, "licoes-megabrain.md")
-    licoes_p = os.path.join(mb_projeto, "licoes-megabrain.md")
+    garantir_cerebro(central, mb_projeto, dry_run)
+
+    licoes_c = str(u.achar(central, "licoes-megabrain.md"))
+    licoes_p = str(u.achar(mb_projeto, "licoes-megabrain.md"))
     if os.path.exists(licoes_c) and not os.path.exists(licoes_p):
         if not copiar(licoes_c, licoes_p, dry_run, base=mb_projeto_path):
             falhas.append("licoes-megabrain.md")
@@ -189,7 +222,11 @@ def sincronizar_central_para_projeto(central, mb_projeto, dry_run=False):
         print("dry-run concluído (teste pós-sync pulado)")
         return len(falhas) == 0
 
-    for _, dst_rel in MAPEAMENTO:
+    for src_rel, dst_rel in MAPEAMENTO:
+        # v6.2: item que a central não tem (central mais velha que o script)
+        # já foi avisado acima — não é falha do sync.
+        if not u.achar(central, src_rel).exists():
+            continue
         dst = os.path.join(mb_projeto, dst_rel)
         if not os.path.exists(dst):
             falhas.append(dst_rel)
@@ -277,7 +314,7 @@ def gate_drift(central: Path) -> int:
                 import json as _json
                 gravado = _json.loads(manifesto_txt).get("hash_fonte", {})
                 for rel, h_antigo in gravado.items():
-                    h_agora = h(central / rel)
+                    h_agora = h(u.achar(central, rel))
                     if h_antigo and h_agora and h_antigo != h_agora:
                         drift.append(f"central editada depois da última geração do export: {rel} "
                                      f"({h_antigo} → {h_agora}) — regenere o export")
@@ -312,6 +349,8 @@ def main():
                    help="URL do repositório remoto (default: GitHub público)")
     p.add_argument("--gate-drift", action="store_true",
                    help="v6 fase 4: compara central, export e repo-local; exit 1 em drift")
+    p.add_argument("--so-cerebro", action="store_true",
+                   help="v6.2: só garante cerebro/ no projeto (raw, wiki, pessoas, INDICE.md); não sincroniza versão")
     args = p.parse_args()
 
     if args.gate_drift:
@@ -329,12 +368,15 @@ def main():
         print(f"ERRO: central não encontrada em {central}")
         print("Dica: defina MEGABRAIN_CENTRAL ou passe --central")
         sys.exit(1)
-    if not (central / "VERSAO.txt").is_file():
+    if not (u.achar(central, "VERSAO.txt")).is_file():
         print(f"ERRO: {central} não parece uma central do megabrain (sem VERSAO.txt)")
         print("Dica: defina MEGABRAIN_CENTRAL ou passe --central")
         sys.exit(1)
 
     projeto_abs = Path(args.projeto).resolve()
+    if args.so_cerebro:
+        garantir_cerebro(central, projeto_abs / "MEGABRAIN", args.dry_run)
+        sys.exit(0)
     # Só compara samefile se ambos existirem; senão, compara caminho absoluto.
     mesmo_caminho = projeto_abs == central
     try:
@@ -407,7 +449,7 @@ def main():
 
         tocados = []
         for rel in ("MEGABRAIN.md", "skills/megabrain/SKILL.md", "VERSAO.txt"):
-            hc = _h(os.path.join(central, rel))
+            hc = _h(u.achar(central, rel))
             hp = _h(os.path.join(mb_projeto, rel))
             if hc and hp and hc != hp:
                 tocados.append(rel)

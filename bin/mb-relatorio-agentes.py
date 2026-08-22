@@ -282,7 +282,7 @@ code {{ font-family: var(--mono); font-size: .85em; overflow-wrap: anywhere; }}
 </html>
 """
 
-    saida = Path(args.saida) if args.saida else c / "RELATORIO-AGENTES.html"
+    saida = Path(args.saida) if args.saida else u.achar(c, "RELATORIO-AGENTES.html")
     if not u.atomic_write_text(saida, pagina):
         return 1
     print(f"relatório gerado: {saida}")

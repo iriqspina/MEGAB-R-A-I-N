@@ -130,7 +130,7 @@ def main() -> int:
     args = p.parse_args()
 
     projeto = Path(args.projeto).resolve()
-    meta = u.safe_read_text(projeto / "META.md")
+    meta = u.safe_read_text(u.achar(projeto, "META.md"))
     if meta is None:
         print(f"ERRO: {projeto} não tem META.md — crie a partir de modelos/META.md")
         return 1

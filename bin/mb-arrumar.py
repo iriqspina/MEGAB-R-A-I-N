@@ -38,61 +38,88 @@ def sha(caminho: Path) -> str:
 
 # --------------------------------------------------------------------- plano
 # tipo, origem, destino, motivo
+# v2 (260822): raiz enxuta — executaveis em scripts/, congelados em _arquivo/,
+# instalaveis em dist/. "remover" nunca apaga: vai para _to_delete/ (o humano
+# esvazia). Mover nao renomeia: arquivo datado continua datado.
 PLANO: list[tuple[str, str, str, str]] = [
     ("dedup", "SKILL.md", "skills/megabrain/SKILL.md",
      "duplicata byte a byte; os scripts do pacote elegem skills/megabrain como fonte"),
     ("dedup", "260810_MEGABRAIN.md", "MEGABRAIN.md",
      "duplicata byte a byte; prefixo de data nao serve a arquivo canonico"),
-    ("remover", "LEIAME.md", "",
-     "so aponta pro README.md e se justifica com uma premissa falsa"),
-    ("remover", "bin/260810_mb-sync.py", "",
-     "versao antiga do mb-sync: sem campo USUARIO, release sem --agente, --force sem protecao"),
-    ("mover", "LEIAME.txt", "modelos/LEIAME-copia-de-projeto.txt",
-     "e marcador da copia dentro do projeto; na raiz da fonte manda nao editar a fonte"),
-    ("mover", "requirements.txt", "docs/dependencias-sugeridas.txt",
-     "nenhuma das dependencias e importada por bin/; e sugestao, nao requisito"),
-    ("mover", "260810_abrir-kimi-visual.cmd", "scripts/abrir-kimi-visual.cmd", "executavel sai da raiz"),
-    ("mover", "260810_instalar-identidade.cmd", "scripts/instalar-identidade.cmd", "executavel sai da raiz"),
-    ("mover", "260810_publicar-github.cmd", "scripts/publicar-github.cmd", "executavel sai da raiz"),
-    ("mover", "260810_sincronizar-identidade.cmd", "scripts/sincronizar-identidade.cmd", "executavel sai da raiz"),
+    ("dedup", "referencias/anti-slop.md", "referencias/260810_anti-slop.md", "copia sem data, identica"),
+    ("dedup", "referencias/metaprompt-patterns.md", "referencias/260810_metaprompt-patterns.md", "copia sem data, identica"),
+    ("remover", "LEIAME.md", "", "so aponta pro README.md e se justifica com uma premissa falsa"),
+    ("remover", "LEIAME.txt", "", "ja vive em modelos/LEIAME-copia-de-projeto.txt (arrumacao v1)"),
+    ("remover", "requirements.txt", "", "ja vive em docs/dependencias-sugeridas.txt (arrumacao v1)"),
+    ("remover", "bin/260810_mb-sync.py", "", "versao antiga do mb-sync"),
+    # executaveis
+    ("mover", "260810_abrir-kimi-visual.cmd", "scripts/260810_abrir-kimi-visual.cmd", "executavel sai da raiz"),
+    ("mover", "260810_instalar-identidade.cmd", "scripts/260810_instalar-identidade.cmd", "executavel sai da raiz"),
+    ("mover", "260810_publicar-github.cmd", "scripts/260810_publicar-github.cmd", "executavel sai da raiz"),
+    ("mover", "260810_sincronizar-identidade.cmd", "scripts/260810_sincronizar-identidade.cmd", "executavel sai da raiz"),
+    ("mover", "260819_refresh-plugin-kimi.cmd", "scripts/260819_refresh-plugin-kimi.cmd", "executavel sai da raiz"),
+    ("mover", "260821_push-github.cmd", "scripts/260821_push-github.cmd", "executavel sai da raiz"),
     ("mover", "novo-projeto.cmd", "scripts/novo-projeto.cmd", "executavel sai da raiz"),
+    ("mover", "sincronizar-pipeline.cmd", "scripts/sincronizar-pipeline.cmd", "executavel sai da raiz"),
+    # congelados / historico
+    ("mover", "PIPELINE.md", "_arquivo/PIPELINE.md", "v2 congelado, substituido por MEGABRAIN.md"),
+    ("mover", "260810_VISAO-GERAL.md", "_arquivo/260810_VISAO-GERAL.md", "diario da fusao 260810, nao protocolo"),
+    ("mover", "260805_licoes-backup-pre-fix.md", "_arquivo/260805_licoes-backup-pre-fix.md", "backup pontual"),
+    ("mover", "260810_backup-raiz-perfil", "_arquivo/260810_backup-raiz-perfil", "backup pontual"),
+    ("mover", "260810_variantes", "_arquivo/260810_variantes", "variantes da fusao 260810"),
+    ("mover", "260811_prompt-claude-handoff.txt", "_arquivo/260811_prompt-claude-handoff.txt", "prompt pontual"),
+    ("mover", "260816_AUDITORIA-megabrain-v5.1.md", "_arquivo/260816_AUDITORIA-megabrain-v5.1.md", "auditoria fechada (v5.1)"),
+    ("mover", "260816_RELATORIO-gerenteneuron-v1.html", "_arquivo/260816_RELATORIO-gerenteneuron-v1.html", "relatorio datado"),
+    ("mover", "260819_RELATORIO-compreensao-megabrain.html", "_arquivo/260819_RELATORIO-compreensao-megabrain.html", "relatorio datado"),
+    ("mover", "260821_RELATORIO-cowork-sensacionalista.html", "_arquivo/260821_RELATORIO-cowork-sensacionalista.html", "relatorio datado"),
+    ("mover", "referencias/context-engineering.md", "_arquivo/referencias-v1/context-engineering.md", "fork sem data; a datada e a fonte"),
+    ("mover", "referencias/evaluation-gates.md", "_arquivo/referencias-v1/evaluation-gates.md", "fork sem data; a datada e a fonte"),
+    ("mover", "referencias/prompt-portatil.md", "_arquivo/referencias-v1/prompt-portatil.md", "fork sem data; a datada e a fonte"),
+    ("mover", "referencias/design-duplo-diamante.md", "_arquivo/referencias-v1/design-duplo-diamante.md", "fork sem data; 260810_design-projects.md e a fonte"),
+    # v3 (260822, raiz zero): canonicos em nucleo/, estado/, identidade/, relatorios/
+    # — tabela em mb_utils.PASTAS_RAIZ; scripts resolvem com u.achar().
+    *[("mover", nome, f"{pasta}/{nome}", "raiz sem arquivo solto (v6.3)") for nome, pasta in u.PASTAS_RAIZ.items()],
+    # instalaveis
+    ("mover", "260816_gerenteneuron.skill", "dist/260816_gerenteneuron.skill", "instalavel sai da raiz"),
+    ("mover", "260821_megabrain-v1.1.1.plugin", "dist/260821_megabrain-v1.1.1.plugin", "instalavel sai da raiz"),
 ]
 
 # arquivo alvo, trecho antigo, trecho novo  (aplicado so se o trecho existir)
 PATCHES: list[tuple[str, str, str]] = [
-    ("scripts/instalar-identidade.cmd", '%~dp0260810_memoria-pessoal.md', '%~dp0..\\260810_memoria-pessoal.md'),
-    ("scripts/instalar-identidade.cmd", '%~dp0bin\\', '%~dp0..\\bin\\'),
-    ("scripts/publicar-github.cmd", '%~dp0260810_github-export', '%~dp0..\\260810_github-export'),
-    ("scripts/publicar-github.cmd", '%~dp0_github-repo-local', '%~dp0..\\_github-repo-local'),
-    ("scripts/publicar-github.cmd",
-     'git commit -m "megabrain v3.1: pacote sanitizado (gates, multi-agente, sync de identidade sem dado pessoal); remove memoria-global.md do HEAD"',
-     'for /f "usebackq delims=" %%V in ("%CLONE%\\VERSAO.txt") do (set "MBVER=%%V" & goto :temversao)\n:temversao\ngit commit -m "megabrain: %MBVER%"'),
-    ("scripts/novo-projeto.cmd",
-     'set "ARQ=260810_MEGABRAIN.md VERSAO.txt licoes-megabrain.md LEIAME.txt"',
-     'set "ARQ=MEGABRAIN.md VERSAO.txt licoes-megabrain.md"'),
-    ("scripts/novo-projeto.cmd",
-     'robocopy "%FONTE%\\skills\\megabrain"',
-     'robocopy "%FONTE%\\modelos" "%DEST%\\MEGABRAIN" LEIAME-copia-de-projeto.txt /R:1 /W:1 >nul\nrobocopy "%FONTE%\\skills\\megabrain"'),
-    ("scripts/novo-projeto.cmd", 'MEGABRAIN\\260810_MEGABRAIN.md', 'MEGABRAIN\\MEGABRAIN.md'),
-    ("scripts/novo-projeto.cmd", 'MEGABRAIN v3 - projeto novo', 'MEGABRAIN - projeto novo'),
+    ("scripts/260810_instalar-identidade.cmd", '%~dp0260810_memoria-pessoal.md', '%~dp0..\\260810_memoria-pessoal.md'),
+    ("scripts/260810_instalar-identidade.cmd", '%~dp0bin\\', '%~dp0..\\bin\\'),
+    ("scripts/260810_sincronizar-identidade.cmd", 'set "MB=%~dp0"', 'set "MB=%~dp0..\\"'),
+    ("scripts/260810_publicar-github.cmd", '%~dp0260810_github-export', '%~dp0..\\260810_github-export'),
+    ("scripts/260810_publicar-github.cmd", '%~dp0_github-repo-local', '%~dp0..\\_github-repo-local'),
+    ("scripts/260810_publicar-github.cmd", '%~dp0bin\\', '%~dp0..\\bin\\'),
+    ("scripts/260810_publicar-github.cmd", '%~dp0VERSAO.txt', '%~dp0..\\VERSAO.txt'),
+    ("scripts/260821_push-github.cmd", 'set "RAIZ=%~dp0"', 'set "RAIZ=%~dp0..\\"'),
+    ("scripts/novo-projeto.cmd", 'set "FONTE=%~dp0"', 'set "FONTE=%~dp0..\\"'),
+    ("scripts/novo-projeto.cmd", 'set "CFG=%~dp0.mb-projetos.cmd"', 'set "CFG=%~dp0..\\.mb-projetos.cmd"'),
     ("README.md", '- `SKILL.md` — o protocolo:', '- `skills/megabrain/SKILL.md` — o protocolo:'),
-    ("bin/mb-check-version.py", '    ("260810_MEGABRAIN.md", "260810_MEGABRAIN.md"),\n', ''),
-    ("bin/mb-sync-projeto-para-central.py",
-     '    ("MEGABRAIN/260810_MEGABRAIN.md", "260810_MEGABRAIN.md"),\n', ''),
-    ("skills/megabrain/SKILL.md",
-     '`MEGABRAIN.md`, `260810_MEGABRAIN.md`, `referencias/`',
-     '`MEGABRAIN.md`, `referencias/`'),
-    ("MEGABRAIN.md", '| `260810_MEGABRAIN.md` (este) |', '| `MEGABRAIN.md` (este) |'),
-    ("bin/mb-generate-template.py",
-     'if src.endswith("MEGABRAIN.md") or src.endswith("260810_MEGABRAIN.md"):',
-     'if src.endswith("MEGABRAIN.md"):'),
+    ("MEGABRAIN.md", '| `PIPELINE.md` | v2, congelado', '| `_arquivo/PIPELINE.md` | v2, congelado'),
+    ("MEGABRAIN.md", '`PIPELINE.md` continua no disco (não apago nem renomeio arquivo já escrito)', '`PIPELINE.md` foi para `_arquivo/` (260822; nome preservado)'),
+    ("MEGABRAIN.md", "Ver `260810_VISAO-GERAL.md`", "Ver `_arquivo/260810_VISAO-GERAL.md`"),
+    ("MEGABRAIN.md", "5. Espalhar → `sincronizar-pipeline.cmd`.", "5. Espalhar → `scripts/sincronizar-pipeline.cmd`."),
+    ("MEGABRAIN.md", "nível 1 (`novo-projeto.cmd`)", "nível 1 (`scripts/novo-projeto.cmd`)"),
+    ("CHECKLIST-ABERTURA.md", "`sincronizar-pipeline.cmd`", "`scripts/sincronizar-pipeline.cmd`"),
+    ("CHECKLIST-ABERTURA.md", "`260810_sincronizar-identidade.cmd`", "`scripts/260810_sincronizar-identidade.cmd`"),
+    ("referencias/260818_padrao-resposta.md", "(`260810_sincronizar-identidade.cmd`)", "(`scripts/260810_sincronizar-identidade.cmd`)"),
+    ("modelos/LEIAME-copia-de-projeto.txt", "rode sincronizar-pipeline.cmd lá", "rode scripts\\sincronizar-pipeline.cmd lá"),
+    ("HANDOFF.md", "Duplo\n   clique em `260821_push-github.cmd`", "Duplo\n   clique em `scripts/260821_push-github.cmd`"),
 ]
 
 # arquivos que FALAM dos nomes antigos por oficio - nao sao referencia quebrada
-IGNORAR_NA_VARREDURA = ("bin/mb-arrumar.py", "docs/", "AUDITORIA-", "PAINEL-MEGABRAIN.html")
+IGNORAR_NA_VARREDURA = ("bin/mb-arrumar.py", "docs/", "AUDITORIA-", "PAINEL-MEGABRAIN.html",
+                        "_arquivo/", "_to_delete/", "90_arquivo/", "99_to_delete/", "08_alteracoes-pendentes/", "07_docs/", ".orquestrador/", "DECISOES.md",
+                        "licoes-megabrain.md", "PROGRESSO.json", "alteracoes-pendentes/",
+                        "260810_github-export/", "_github-repo-local/", "RELATORIO", "META.md",
+                        "bin/mb-generate-template.py", "bin/mb-preflight.py", "VERSAO.txt", "HANDOFF.md", "ESTADO.md", "bin/mb-check-version.py",
+                        ".mb-aspirador/", ".venv/", "dna/indice-licoes.json", "site-packages/")
 
 # nomes que nao podem sobrar referenciados depois da arrumacao
-ORFAOS = ["260810_MEGABRAIN.md", "260810_mb-sync.py", "LEIAME.md", "requirements.txt"]
+ORFAOS = ["260810_MEGABRAIN.md", "260810_mb-sync.py", "LEIAME.md", "requirements.txt",
+          "260810_VISAO-GERAL.md", "design-duplo-diamante.md"]
 
 
 def cabecalho_dependencias() -> str:
@@ -144,20 +171,22 @@ def executar(raiz: Path, aplicar: bool) -> int:
     backup.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(backup, "w", zipfile.ZIP_DEFLATED) as z:
         for f in raiz.rglob("*"):
-            if f.is_file() and ".mb-backup" not in f.parts and ".git" not in f.parts:
+            if f.is_file() and ".mb-backup" not in f.parts and ".git" not in f.parts and "_to_delete" not in f.parts and "__pycache__" not in f.parts:
                 z.write(f, f.relative_to(raiz))
     print(f"\nbackup: {backup.relative_to(raiz)}")
 
     for tipo, origem, destino, _ in acoes:
         o = raiz / origem
         if tipo == "remover":
-            o.unlink()
+            lixo = u.pasta(raiz, "_to_delete") / origem
+            lixo.parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(str(o), str(lixo))
         else:
             d = raiz / destino
             d.parent.mkdir(parents=True, exist_ok=True)
             if destino.endswith("dependencias-sugeridas.txt"):
                 d.write_text(cabecalho_dependencias() + o.read_text(encoding="utf-8"), encoding="utf-8")
-                o.unlink()
+                shutil.move(str(o), str(u.pasta(raiz, "_to_delete") / origem))
             else:
                 shutil.move(str(o), str(d))
     print(f"{len(acoes)} ação(ões) executada(s).")
@@ -196,9 +225,9 @@ def verificar(raiz: Path) -> int:
             continue
         txt = f.read_text(encoding="utf-8", errors="ignore")
         for orfao in ORFAOS:
-            if orfao in txt and not (raiz / orfao).exists():
+            if orfao in txt and not (raiz / orfao).exists() and not (raiz / "referencias" / orfao).exists():
                 for n, linha in enumerate(txt.splitlines(), 1):
-                    if orfao in linha:
+                    if orfao in linha and ("_arquivo/" + orfao) not in linha and ("_to_delete/" + orfao) not in linha and ("90_arquivo/" + orfao) not in linha and ("99_to_delete/" + orfao) not in linha:
                         print(f"  {f.relative_to(raiz)}:{n} → {orfao}")
                         achou += 1
     if achou:
@@ -215,7 +244,7 @@ def main() -> int:
     ap.add_argument("--verificar", action="store_true")
     args = ap.parse_args()
     raiz = Path(args.raiz).resolve()
-    if not (raiz / "VERSAO.txt").exists():
+    if not u.achar(raiz, "VERSAO.txt").exists():
         print(f"{raiz} nao parece ser a raiz do megabrain (sem VERSAO.txt).")
         return 1
     if args.verificar:

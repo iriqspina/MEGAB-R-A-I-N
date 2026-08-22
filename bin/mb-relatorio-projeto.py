@@ -533,7 +533,7 @@ def localizar_central(arg_central, projeto: Path):
             continue
         if c == copia:
             continue
-        if (c / "VERSAO.txt").is_file() and (c / "bin").is_dir():
+        if (u.achar(c, "VERSAO.txt")).is_file() and (c / "bin").is_dir():
             return c
     return None
 
@@ -573,14 +573,14 @@ def versao_megabrain(projeto: Path, central) -> dict:
     """v6.1 (260821): o que o projeto PUXOU (MEGABRAIN/VERSAO.txt + .mb-origem.json)
     contra o que a central TEM agora (VERSAO.txt + HEAD do git)."""
     mb = projeto / "MEGABRAIN"
-    puxada_linha = _primeira_linha(mb / "VERSAO.txt") if mb.is_dir() else ""
+    puxada_linha = _primeira_linha(u.achar(mb, "VERSAO.txt")) if mb.is_dir() else ""
     origem = {}
     if (mb / ".mb-origem.json").is_file():
         try:
             origem = json.loads((mb / ".mb-origem.json").read_text(encoding="utf-8"))
         except (OSError, ValueError):
             origem = {}
-    atual_linha = _primeira_linha(central / "VERSAO.txt") if central else ""
+    atual_linha = _primeira_linha(u.achar(central, "VERSAO.txt")) if central else ""
     head, head_data = _git_head(central) if central else (None, None)
     if not mb.is_dir():
         estado = "sem-copia"
@@ -655,7 +655,7 @@ def gerar(args, data_iso: str) -> str:
     central_link = None
     central = localizar_central(args.megabrain_central, projeto)
     if central:
-        mb_md = ler(central / "MEGABRAIN.md")
+        mb_md = ler(u.achar(central, "MEGABRAIN.md"))
         if mb_md:
             resumo_geral = primeiro_paragrafo(mb_md) or resumo_geral
             central_link = str(central)
@@ -664,9 +664,9 @@ def gerar(args, data_iso: str) -> str:
     versao_info = versao_megabrain(projeto, central)
 
     # --- estado / handoff (opcional) ---
-    estado_txt = ler(projeto / "ESTADO.md")
-    handoff_txt = ler(projeto / "HANDOFF.md")
-    decisoes_txt = ler(projeto / "DECISOES.md")
+    estado_txt = ler(u.achar(projeto, "ESTADO.md"))
+    handoff_txt = ler(u.achar(projeto, "HANDOFF.md"))
+    decisoes_txt = ler(u.achar(projeto, "DECISOES.md"))
     tem_handoff_dedicado = bool(estado_txt or handoff_txt or decisoes_txt)
 
     # --- plano vivo (obrigatório) ---
@@ -843,11 +843,11 @@ def gerar(args, data_iso: str) -> str:
     if skill_txt:
         adicionar_fonte(skill_rel, projeto / skill_rel)
     if estado_txt:
-        adicionar_fonte("ESTADO.md", projeto / "ESTADO.md")
+        adicionar_fonte("ESTADO.md", u.achar(projeto, "ESTADO.md"))
     if handoff_txt:
-        adicionar_fonte("HANDOFF.md", projeto / "HANDOFF.md")
+        adicionar_fonte("HANDOFF.md", u.achar(projeto, "HANDOFF.md"))
     if decisoes_txt:
-        adicionar_fonte("DECISOES.md", projeto / "DECISOES.md")
+        adicionar_fonte("DECISOES.md", u.achar(projeto, "DECISOES.md"))
     linhas_fontes = "".join(
         f'<tr><th>{html.escape(nome)}</th><td><button class="cp" onclick="cp(this,{html.escape(json.dumps(caminho), quote=True)})">copiar caminho</button>'
         f'<span class="section-file" style="margin:0 0 0 10px;display:inline">{html.escape(caminho)}</span></td></tr>'

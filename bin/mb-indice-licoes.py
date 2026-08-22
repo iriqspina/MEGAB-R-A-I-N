@@ -57,7 +57,7 @@ def central() -> Path:
 
 
 def fonte_default() -> Path:
-    return central() / "licoes-megabrain.md"
+    return u.achar(central(), "licoes-megabrain.md")
 
 
 def caminho_indice() -> Path:
