@@ -39,7 +39,7 @@ DESTINO_DEFAULT = os.path.join(CENTRAL_DEFAULT, "260810_github-export")
 EXCLUIR = {
     "cerebro", "03_cerebro",  # v6.2: conteúdo pessoal (wiki/pessoas/raw) nunca sai
     "_arquivo", "90_arquivo",  # v6.2: histórico congelado
-    "dist", "06_dist", "05_scripts", "04_relatorios",  # v6.2/v6.4: instaláveis (.plugin/.skill)
+    "dist", "06_dist", "04_relatorios",  # v6.2/v6.4 (05_scripts SAI como scripts/ — os .cmd fazem parte do pacote): instaláveis (.plugin/.skill)
     "_to_delete",
     "260810_memoria-pessoal.md",
     "licoes-megabrain.md",
@@ -321,7 +321,9 @@ def gerar_template(central, destino):
         if nome.lower().endswith(EXCLUIR_SUFIXO):
             continue
         src = os.path.join(central_path, nome)
-        dst = destino_path / nome
+        # v6.4: pasta numerada da central sai sem número no pacote público
+        nome_dst = u.NOMES_ANTIGOS.get(nome, nome)
+        dst = destino_path / nome_dst
         if os.path.isfile(src):
             if not copiar_sanitizando(src, str(dst)):
                 erros = True
@@ -337,7 +339,12 @@ def gerar_template(central, destino):
                     if f in EXCLUIR_NOME_EXATO or f.lower().endswith(EXCLUIR_SUFIXO):
                         continue
                     src_f = os.path.join(raiz, f)
-                    dst_f = destino_path / rel / f
+                    rel_dst = rel
+                    for antigo_num, antigo in u.NOMES_ANTIGOS.items():
+                        if rel == antigo_num or rel.startswith(antigo_num + os.sep):
+                            rel_dst = antigo + rel[len(antigo_num):]
+                            break
+                    dst_f = destino_path / rel_dst / f
                     if not copiar_sanitizando(src_f, str(dst_f)):
                         erros = True
 
