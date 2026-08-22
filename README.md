@@ -1,8 +1,8 @@
 # MEGABRAIN
 
-**Versão atual: v6.4 (2026-08-22).** A versão vale o que está em `VERSAO.txt`
+**Versão atual: v6.5 (2026-08-22).** A versão vale o que está em `VERSAO.txt`
 (changelog completo na central privada; aqui só a entrada vigente). Skill
-`megabrain` v5.4 · plugin Claude/Cowork v1.2.0.
+`megabrain` v5.5 · plugin Claude/Cowork v1.2.0.
 
 Protocolo de execução para agentes de IA (Claude Code, Kimi CLI, Gemini CLI
 como fallback opcional, ou colado direto em qualquer chat) — pensado para
