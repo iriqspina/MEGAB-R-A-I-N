@@ -124,3 +124,15 @@
 - RESOLVIDO: 260824 (noite, sessao Cowork) — plugin.json no synced do
   container = 1.6.3 e /megabrain carregou a SKILL.md v6.0 enxuta (10.2 KB,
   roteiro curto, caminhos v7). Reinstalacao pegou; sync da conta OK.
+
+## 260824 — onde conferir a versão do plugin (o caminho mudou)
+
+`~/.claude/plugins/synced/megabrain/` está VAZIO agora, e
+`~/.claude/plugins/data/megabrain-inline/` só guarda estado (sem arquivo).
+O `installed_plugins.json` lista só o plugin oficial do Figma — o megabrain
+entra por outro caminho (conta/app), que não dá pra ler do disco.
+
+**Como conferir de verdade:** sessão NOVA → `/megabrain` → o roteiro tem que
+citar **v7.1 / layout motor\**. Se vier falando de `referencias/` na raiz sem
+mencionar motor\, o plugin instalado ainda é o velho: reinstalar
+`motor\dist\260824_megabrain-v1.6.3.plugin`.
