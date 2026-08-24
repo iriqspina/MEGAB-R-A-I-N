@@ -556,7 +556,7 @@ def _versao_curta(linha: str) -> str:
 
 def _git_head(pasta: Path):
     import subprocess
-    for cand in (pasta, pasta / "_github-repo-local"):
+    for cand in (pasta, pasta / "_github/repo-local"):
         if not (cand / ".git").exists():
             continue
         try:

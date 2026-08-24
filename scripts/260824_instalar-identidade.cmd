@@ -4,7 +4,7 @@ chcp 65001 >nul
 rem Instala/copia o arquivo de identidade pessoal nos 6 destinos (Claude/Gemini/Kimi/Kimi Code/Codex/output style do Claude).
 rem Edite SO a fonte. Nunca edite as copias.
 
-set "FONTE=%~dp0..\02_identidade\260810_memoria-pessoal.md"
+set "FONTE=%~dp0..\memoria\identidade\260810_memoria-pessoal.md"
 set "SCRIPT=%~dp0..\bin\mb-sync-memoria.py"
 
 set "PY=python"

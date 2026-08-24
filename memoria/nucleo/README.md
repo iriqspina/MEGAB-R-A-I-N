@@ -46,7 +46,7 @@ assunto). O HTML não vem no pacote: edite a fonte e regenere.
   - `mb-check-version.py` — compara a versão do megabrain de um projeto com
     a central e sincroniza quando necessário.
   - `mb-generate-template.py` — gera o pacote público sanitizado
-    (`260810_github-export/`).
+    (`_github/export/`).
   - `mb-aspirador.py` — limpeza mecânica e não destrutiva de código
     (dry-run por padrão, backup obrigatório).
   - `mb-relatorio-dna.py` — gera o relatório DNA do protocolo em `dna/`.

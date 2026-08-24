@@ -3,8 +3,8 @@ setlocal
 chcp 65001 >nul
 rem Regenera o pacote publico e publica no clone local do repositorio GitHub.
 
-set "FONTE=%~dp0..\260810_github-export"
-set "CLONE=%~dp0..\_github-repo-local"
+set "FONTE=%~dp0..\_github\export"
+set "CLONE=%~dp0..\_github\repo-local"
 
 set "PY=python"
 where python >nul 2>nul || (

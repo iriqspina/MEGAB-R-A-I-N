@@ -43,10 +43,10 @@ EXCLUIR = {
     "__pycache__",
     ".mb-aspirador",
     ".dna-backup",
-    "260810_github-export",
-    "_github-repo-local",
+    "_github/export",
+    "_github/repo-local",
     "_to_delete", "99_to_delete",
-    "alteracoes-pendentes", "08_alteracoes-pendentes",
+    "alteracoes-pendentes", "memoria/pendencias",
     ".mb-backup",  # evita backup recursivo
 }
 

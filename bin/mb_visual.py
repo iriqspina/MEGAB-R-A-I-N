@@ -167,6 +167,90 @@ def css(usar: list[str] | None = None) -> str:
     return "\n\n".join(partes)
 
 
+
+def temas() -> list[dict]:
+    """Os temas disponíveis, lidos de modelos/visuais/temas/NN-nome.css.
+
+    Tema é a IDENTIDADE VISUAL (cor, tipo, raio, densidade); modo é só a
+    direção da luminosidade. Os dois eixos são independentes — 3 temas × 2
+    modos são 3+2 blocos de CSS, não 6.
+    """
+    pasta = raiz() / "temas"
+    if not pasta.is_dir():
+        return []
+    achados = []
+    for arq in sorted(pasta.glob("[0-9][0-9]-*.css")):
+        txt = arq.read_text(encoding="utf-8")
+        mn = re.search(r"@nome:\s*(.+)", txt)
+        ma = re.search(r"@amostra:\s*(.+)", txt)
+        nome = mn.group(1).strip() if mn else arq.stem.split("-", 1)[-1].title()
+        amostra = ([c.strip() for c in ma.group(1).split(",")] if ma
+                   else ["currentColor"] * 3)
+        achados.append({
+            "id": arq.stem, "num": arq.stem[:2], "nome": nome, "css": txt,
+            "amostra": amostra,
+        })
+    return achados
+
+
+def css_temas() -> str:
+    return "\n".join(t["css"] for t in temas())
+
+
+def _peca_tema(nome: str) -> str:
+    arq = raiz() / "temas" / nome
+    return arq.read_text(encoding="utf-8") if arq.is_file() else ""
+
+
+def css_seletor() -> str:
+    return _peca_tema("seletor.css")
+
+
+def js_seletor() -> str:
+    return _peca_tema("seletor.js")
+
+
+def script_antiflash() -> str:
+    """Inline e bloqueante no <head>: aplica tema/modo ANTES do primeiro paint.
+    O try/catch não é opcional — em file:// o Safari LANÇA no localStorage, e
+    sem o catch o script morre e nenhum atributo é aplicado."""
+    return ("(function(){var R=document.documentElement,K='mb-relatorio:';"
+            "try{var t=localStorage.getItem(K+'tema');if(t)R.setAttribute('data-tema',t);"
+            "var m=localStorage.getItem(K+'modo');if(m){R.setAttribute('data-modo',m);"
+            "R.style.colorScheme=m==='escuro'?'dark':'light';}}catch(e){}"
+            "R.classList.add('pre-carga');})();")
+
+
+def html_seletor(tema_padrao: str = "02-wildfire") -> str:
+    """Dois radiogroups. Cada chip é pintado com os PRÓPRIOS tokens do tema —
+    o preview mostra linguagem visual, não só cor."""
+    lista = temas()
+    if not lista:
+        return ""
+    botoes = []
+    for t in lista:
+        sw = "".join(f'<i style="background:{c}"></i>' for c in t["amostra"])
+        marcado = "true" if t["id"] == tema_padrao else "false"
+        botoes.append(f'<button class="sel__b" role="radio" data-grupo="tema" '
+                      f'data-valor="{t["id"]}" aria-checked="{marcado}">'
+                      f'<span class="sel__sw">{sw}</span>{t["num"]} {t["nome"]}</button>')
+    while len(botoes) < 3:
+        n = f"{len(botoes)+1:02d}"
+        botoes.append(f'<button class="sel__b" role="radio" disabled aria-checked="false">'
+                      f'<span class="sel__sw"><i style="background:var(--line)"></i>'
+                      f'<i style="background:var(--line)"></i>'
+                      f'<i style="background:var(--line)"></i></span>{n} —</button>')
+    modos = "".join(
+        f'<button class="sel__b" role="radio" data-grupo="modo" data-valor="{v}" '
+        f'aria-checked="{"true" if v == "sistema" else "false"}">{r}</button>'
+        for v, r in (("claro", "Claro"), ("escuro", "Escuro"), ("sistema", "Sistema")))
+    return (f'<div class="sel">'
+            f'<fieldset class="sel__g"><legend class="sel__l">tema</legend>'
+            f'<div class="sel__r" role="radiogroup" aria-label="Tema">{"".join(botoes)}</div></fieldset>'
+            f'<fieldset class="sel__g"><legend class="sel__l">modo</legend>'
+            f'<div class="sel__r" role="radiogroup" aria-label="Modo">{modos}</div></fieldset>'
+            f'<span class="sel__hint det" data-dica-modo></span></div>')
+
 def exemplos() -> dict:
     arq = raiz() / "exemplos.json"
     return json.loads(arq.read_text(encoding="utf-8")) if arq.is_file() else {}
@@ -257,7 +341,7 @@ def catalogo_md() -> str:
         "css  = v.css()                                    # tokens + estilo",
         "```", "",
         "Formas prontas de dados: `modelos/visuais/exemplos.json` (copie e troque os",
-        "valores). Galeria renderizada: `04_relatorios/CATALOGO-VISUAL.html`",
+        "valores). Galeria renderizada: `00_painel/CATALOGO-VISUAL.html`",
         "(`python bin/mb_visual.py --catalogo`).", "",
         "Status aceitos em toda mecânica: `ok` ✓ · `ativo` ● · `espera` ○ · `trava` ✕.",
         "O glifo é derivado pelo renderizador — não passe.", "",
@@ -288,7 +372,7 @@ if __name__ == "__main__":
         md = raiz() / "CATALOGO.md"
         md.write_text(catalogo_md(), encoding="utf-8")
         print(f"catálogo md: {md}")
-        destino = raiz().parent.parent / "04_relatorios" / "CATALOGO-VISUAL.html"
+        destino = raiz().parent.parent / "00_painel" / "CATALOGO-VISUAL.html"
         destino.parent.mkdir(parents=True, exist_ok=True)
         destino.write_text(pagina_catalogo(), encoding="utf-8")
         print(f"catálogo: {destino}  ({destino.stat().st_size // 1024} KB, {len(ids())} mecânicas)")

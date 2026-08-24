@@ -34,18 +34,18 @@ if exist "%DEST%" (
 
 mkdir "%DEST%\MEGABRAIN" 2>nul
 for %%A in (%ARQ%) do (
-  if exist "%FONTE%00_nucleo\%%A" copy "%FONTE%00_nucleo\%%A" "%DEST%\MEGABRAIN\%%A" >nul
+  if exist "%FONTE%memoria\nucleo\%%A" copy "%FONTE%memoria\nucleo\%%A" "%DEST%\MEGABRAIN\%%A" >nul
 )
 robocopy "%FONTE%bin" "%DEST%\MEGABRAIN\bin" /E /NFL /NDL /NJH /NJS >nul
 robocopy "%FONTE%dna" "%DEST%\MEGABRAIN\dna" /E /NFL /NDL /NJH /NJS >nul
 robocopy "%FONTE%referencias" "%DEST%\MEGABRAIN\referencias" /E /NFL /NDL /NJH /NJS >nul
 robocopy "%FONTE%skills\megabrain" "%DEST%\MEGABRAIN\skills\megabrain" /E /NFL /NDL /NJH /NJS >nul
 if exist "%FONTE%OFFLINE.md" copy "%FONTE%OFFLINE.md" "%DEST%\MEGABRAIN\OFFLINE.md" >nul
-if exist "%FONTE%modelos" robocopy "%FONTE%modelos" "%DEST%\MEGABRAIN" LEIAME-copia-de-projeto.txt /R:1 /W:1 >nul
+if exist "%FONTE%modelos" robocopy "%FONTE%modelos" "%DEST%\MEGABRAIN" LEIAME-megabrain-do-projeto.txt /R:1 /W:1 >nul
 
 echo.
 echo  Projeto criado em %DEST%
-echo  Leia MEGABRAIN\LEIAME-copia-de-projeto.txt (skill do protocolo em
+echo  Leia MEGABRAIN\LEIAME-megabrain-do-projeto.txt (skill do protocolo em
 echo  MEGABRAIN\skills\megabrain\SKILL.md, camada de projeto em
 echo  MEGABRAIN\MEGABRAIN.md).
 echo.

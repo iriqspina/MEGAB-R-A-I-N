@@ -1,0 +1,200 @@
+[
+  {
+    "n": "01",
+    "nome": "Linear",
+    "tipo": "estética · cinza quente",
+    "slug": "01_linear",
+    "url": "linear.app/now/how-we-redesigned-the-linear-ui",
+    "oque": "O refresh documentado pela própria equipe. O movimento de estado-da-arte em 2025 foi <em>para longe do frio</em> — sem virar papel.",
+    "roubar": "Elevação por empilhamento de cinzas quase idênticos + hairline de 1px. E rebaixar a navegação em vez de promover o conteúdo — é mais barato e mais eficaz. Inter no peso <b>590</b> (não 600) com tracking negativo escalonado.",
+    "nao": "O “softening” aplicado a tudo. A Linear otimiza para calma; monitoramento quer densidade e urgência. Suavizar toda borda apaga a separação entre séries.",
+    "png": "260822_01_linear.png"
+  },
+  {
+    "n": "02",
+    "nome": "Raycast",
+    "tipo": "estética · escada de superfície",
+    "slug": "02_raycast",
+    "url": "raycast.com",
+    "oque": "Command center para macOS. Densidade de instrumento sem um único drop shadow no produto inteiro.",
+    "roubar": "Escada de superfície: cada degrau mais claro lê como um passo mais próximo. E o <b>keycap inline de 20px</b> — ensina o atalho no ponto de uso sem roubar espaço.",
+    "nao": "O coral da marca. Saturação ali fica confinada a logo e badge; o chrome é monocromático — é isso que mantém legível uma tela de 200 linhas.",
+    "png": "260822_02_raycast.png"
+  },
+  {
+    "n": "03",
+    "nome": "Warp",
+    "tipo": "estética · acento único",
+    "slug": "03_warp",
+    "url": "warp.dev",
+    "oque": "Terminal agentic. Um fósforo violeta sobre preto fosco, e nada mais colorido na interface.",
+    "roubar": "Um acento cromático em toda a interface, e proibido no botão de ação. Texto primário em off-white <b>quente</b> (#faf9f6), não branco puro — tira a dureza clínica.",
+    "nao": "Gradientes e imagem de fundo (que eles adicionaram para customização). Em painel denso, fundo com gradiente destrói qualquer sparkline sobreposta.",
+    "png": "260822_03_warp.png"
+  },
+  {
+    "n": "04",
+    "nome": "Modal",
+    "tipo": "estética · racionamento",
+    "slug": "04_modal",
+    "url": "modal.com",
+    "oque": "Compute serverless para IA. A regra de cor mais disciplinada que encontramos.",
+    "roubar": "Racionar o sinal: uma cor de estado tratada como LED, não como pintura. É o que falta em 90% dos dashboards — todo mundo colore tudo e nada mais chama atenção.",
+    "nao": "Verde-sobre-preto como identidade. Sozinho, é literalmente o clichê de IA. O que salva aqui é a <em>disciplina</em>, não a cor.",
+    "png": "260822_04_modal.png"
+  },
+  {
+    "n": "05",
+    "nome": "Gitness",
+    "tipo": "estética · ao contrário",
+    "slug": "05_gitness",
+    "url": "gitness.com",
+    "oque": "Plataforma de CI/CD que faz duas coisas invertidas — e as duas funcionam.",
+    "roubar": "Bordas <b>claras</b> de 1px definindo cards sobre canvas quase preto — o oposto do padrão. E tracking positivo no display, em todos os tamanhos: rótulo de painel de controle, não headline de SaaS.",
+    "nao": "Duas cores de acento na mesma superfície. A regra deles: mint e azul nunca coexistem — e é o que impede virar arco-íris.",
+    "png": "260822_05_gitness.png"
+  },
+  {
+    "n": "06",
+    "nome": "Oxide Computer",
+    "tipo": "estética · quatro canais",
+    "slug": "06_oxide-computer",
+    "url": "oxide.computer",
+    "oque": "Identidade construída pela Pentagram a partir de TUI, CLI e ASCII art. A saída mais inteligente do clichê mono-acento.",
+    "roubar": "<b>Quatro cores funcionais</b> sobre preto em vez de um acento só — é assim que se escapa do clichê mantendo o look. Textura de grid derivada de ASCII. E mono para <em>dado</em>, não para código.",
+    "nao": "O verde isolado. Se roubar só o verde-sobre-preto você caiu exatamente no default. O que funciona é o conjunto de quatro + a textura.",
+    "png": "260822_06_oxide-computer.png"
+  },
+  {
+    "n": "07",
+    "nome": "Vercel Geist",
+    "tipo": "sistema · malha",
+    "slug": "07_vercel-geist",
+    "url": "vercel.com/geist/grid",
+    "oque": "O grid é descrito na própria doc como parte central da estética — não como utilitário.",
+    "roubar": "Malha de 1px permanentemente visível, e células sólidas <b>ocluem</b> as guias que as cruzam. Papel milimetrado técnico onde os cards recortam a malha em vez de flutuar sobre ela.",
+    "nao": "A paleta neutra sozinha. Geist é chassi excelente e <em>invisível</em> — a direção visual tem que vir de outro lugar.",
+    "png": "260822_07_vercel-geist.png"
+  },
+  {
+    "n": "08",
+    "nome": "Grafana",
+    "tipo": "dashboard · stat row",
+    "slug": "08_grafana",
+    "url": "play.grafana.org",
+    "oque": "O produto de monitoramento em produção. A linha de stat panels no topo é o padrão que virou consenso.",
+    "roubar": "Sparkline <b>atrás</b> do número, com preenchimento de área — e o número herda a cor do limiar em vez de ganhar um badge ao lado. Um elemento faz o trabalho de três.",
+    "nao": "A cauda longa de painéis abaixo. A stat row funciona porque é curta: 3 a 6. Acima disso ninguém lê nada.",
+    "png": "260822_08_grafana.png"
+  },
+  {
+    "n": "09",
+    "nome": "Cal.com · OpenStatus",
+    "tipo": "dashboard · barra de execuções",
+    "slug": "09_calcom-openstatus",
+    "url": "status.cal.com · themes.openstatus.dev",
+    "oque": "O widget mais reaproveitável do gênero status page. Troque “dia” por “sessão do agente”.",
+    "roubar": "45 a 90 barras finas, gap de 2–3px, altura fixa, cor sólida por estado. O histórico inteiro numa faixa de 46px — mais informativo que qualquer número isolado.",
+    "nao": "Tooltip como única forma de ler o detalhe. Em relatório estático que se lê de longe, o valor tem que estar na forma, não no hover.",
+    "png": "260822_09_calcom-openstatus.png"
+  },
+  {
+    "n": "10",
+    "nome": "OpenRouter",
+    "tipo": "dashboard · frescor",
+    "slug": "10_openrouter",
+    "url": "openrouter.ai/rankings",
+    "oque": "Leaderboard ao vivo. A gramática de “vivo” sem uma única animação.",
+    "roubar": "Carimbo de frescor explícito + <b>delta percentual em cada linha</b> + label “novo”. É o que faz a página parecer viva sem mover um pixel. Monitoramento sem sinal de recência mente por omissão.",
+    "nao": "O top-5 em card grande. Serve pra leaderboard público; num painel operacional a tabela densa desde a linha 1 é melhor.",
+    "png": "260822_10_openrouter.png"
+  },
+  {
+    "n": "11",
+    "nome": "Langfuse",
+    "tipo": "agente · dois modos",
+    "slug": "11_langfuse",
+    "url": "langfuse.com/docs/observability/features/agent-graphs",
+    "oque": "O melhor que existe hoje para desenhar execução de agente. Resolve a tensão central do problema.",
+    "roubar": "Dois modos sobre o <b>mesmo</b> run, com métricas iguais nos dois. Agregado: passos de mesmo nome colapsam com contador e loop vira ciclo. Expandido: um nó por chamada. Um agente que fez 40 chamadas não pode virar lista de 40 linhas.",
+    "nao": "Grafo como única leitura. Quando fica grande, a saída é um log linear com Ctrl+F — eles mesmos construíram isso depois.",
+    "png": "260822_11_langfuse.png"
+  },
+  {
+    "n": "12",
+    "nome": "Braintrust",
+    "tipo": "agente · span tipado",
+    "slug": "12_braintrust",
+    "url": "braintrust.dev/foundations/how-to-read-a-trace",
+    "oque": "Árvore à esquerda, detalhe à direita. O mecanismo mais reaproveitável da pesquisa inteira.",
+    "roubar": "Tipar o span e deixar o <b>tipo mudar o template do detalhe</b>. LLM mostra tokens e time-to-first-token; scoring mostra o score <em>e o raciocínio do juiz</em>. Número sem justificativa é ruído.",
+    "nao": "Renderizar tudo com o mesmo card genérico “chave: valor”. É o que quase todo painel faz, e é o que apaga a diferença entre os tipos.",
+    "png": "260822_12_braintrust.png"
+  },
+  {
+    "n": "13",
+    "nome": "Honeycomb BubbleUp",
+    "tipo": "dashboard · seleção × baseline",
+    "slug": "13_honeycomb-bubbleup",
+    "url": "docs.honeycomb.io/reference/honeycomb-ui/query/query-results",
+    "oque": "Você seleciona o anômalo e o sistema diz o que ele tem de diferente. Único mecanismo que responde “o que os caminhos ruins têm em comum”.",
+    "roubar": "Duas barras sobrepostas — amarelo é a sua seleção, azul é todo o resto — ordenadas pela diferença. Convenção de duas cores que não depende de escala sequencial nem de legenda.",
+    "nao": "Aplicar sem volume. Com 20 execuções a comparação é ruído estatístico; o mecanismo só ganha sentido a partir de algumas centenas.",
+    "png": "260822_13_honeycomb-bubbleup.png"
+  },
+  {
+    "n": "14",
+    "nome": "Blade Runner 2049 · Territory",
+    "tipo": "FUI · dois sistemas",
+    "slug": "14_blade-runner-2049-territory",
+    "url": "territorystudio.com/project/blade-runner-2049",
+    "oque": "Screen graphics feitos sob a diretriz “imagine um mundo onde a tecnologia digital não existe mais”.",
+    "roubar": "A bifurcação de dois sistemas dentro do mesmo produto — <em>dado bruto/legado</em> vs <em>síntese/controle</em>, com tratamentos opostos. E o ghosting como marcador semântico de <b>dado defasado</b>, em vez de um badge cinza.",
+    "nao": "As texturas orgânicas e as lentes ópticas. É set design: custa GPU e destrói densidade. O preto-e-branco geométrico é o que escala.",
+    "png": "260822_14_blade-runner-2049-territory.png"
+  },
+  {
+    "n": "15",
+    "nome": "Oblivion · GMUNK",
+    "tipo": "FUI · restrição",
+    "slug": "15_oblivion-gmunk",
+    "url": "gmunk.com/OBLIVION-GFX",
+    "oque": "Sistema gráfico completo do filme. Duas restrições declaradas, ambas aplicáveis.",
+    "roubar": "“Uma paleta que funcionasse igualmente bem sobre fundo escuro <b>ou</b> claro” — é exatamente a fuga do clichê preto+neon, e resolve claro/escuro de graça. Mais: “funcionalidade acima do excesso, mantendo o greeble sob controle”.",
+    "nao": "O método FUI inteiro. Todo FUI é otimizado para um plano de 3 segundos, não para 8 horas de plantão. Use a linguagem, nunca o método.",
+    "png": "260822_15_oblivion-gmunk.png"
+  },
+  {
+    "n": "16",
+    "nome": "Monaspace",
+    "tipo": "tipografia · texture healing",
+    "slug": "16_monaspace",
+    "url": "monaspace.githubnext.com",
+    "oque": "Superfamília de cinco monoespaçadas com métricas compartilhadas, do GitHub Next.",
+    "roubar": "<b>Texture healing</b> via alternates contextuais: iguala a densidade visual sem sair do mono. Colunas de ID e hash param de parecer manchadas. E as cinco famílias têm métricas idênticas — dá pra misturar na mesma tabela.",
+    "nao": "As ligaduras de código. Em dashboard, <code>!=</code> virando um glifo único destrói a leitura caractere a caractere que você precisa em log e ID.",
+    "png": "260822_16_monaspace.png"
+  },
+  {
+    "n": "17",
+    "nome": "Recursive",
+    "tipo": "tipografia · eixo MONO",
+    "slug": "17_recursive",
+    "url": "recursive.design",
+    "oque": "Variável de cinco eixos, com um que quase nenhuma outra fonte tem.",
+    "roubar": "O eixo <b>MONO (0→1)</b> interpola continuamente entre proporcional e monoespaçado. Com CASL 0 (“bordas achatadas, otimizado para informação densa”), é direção tipográfica futurista que não é mais uma grotesca neutra.",
+    "nao": "CASL 1 e o eixo cursivo. Formas de pincel em dado operacional destroem a autoridade da leitura.",
+    "png": "260822_17_recursive.png"
+  },
+  {
+    "n": "18",
+    "nome": "Halftone & dither em CSS",
+    "tipo": "textura · valor sem gradiente",
+    "slug": "18_halftone--dither-em-css",
+    "url": "leanrada.com/notes/pure-css-halftone",
+    "oque": "Meio-tom e dithering ordenado feitos em CSS puro, sem canvas e sem shader.",
+    "roubar": "Densidade de ponto como codificação de valor, e <b>dither para marcar incerteza</b>: série medida sólida, série estimada pontilhada. O olho lê a diferença sem legenda.",
+    "nao": "O pacote CRT completo (curvatura, scanline, máscara de sombra) e o <code>contrast(999)</code> sobre área grande — caro e força repaint. Pegue Bayer e quantização, deixe a curvatura.",
+    "png": "260822_18_halftone--dither-em-css.png"
+  }
+]

@@ -18,7 +18,7 @@ echo  ================================================================
 echo   REFRESH DO PLUGIN KIMI — fonte: plugin-megabrain/ da central
 echo  ================================================================
 echo.
-type "%FONTE%\00_nucleo\VERSAO.txt" | findstr /n "^" | findstr "^1:"
+type "%FONTE%\memoria\nucleo\VERSAO.txt" | findstr /n "^" | findstr "^1:"
 echo.
 
 if not exist "%PLUGIN%\kimi.plugin.json" (
@@ -46,12 +46,12 @@ robocopy "%FONTE%\bin" "%PLUGIN%\bin" mb-sync.py mb-sync-memoria.py /R:1 /W:1 >n
 rem --- 3. skill /megabrain (SKILL.md, MEGABRAIN.md, referencias) --
 echo  [3/4] copiando a skill /megabrain da central:
 robocopy "%FONTE%\skills\megabrain" "%SKILL_DEST%" SKILL.md /R:1 /W:1 >nul
-robocopy "%FONTE%\00_nucleo" "%SKILL_DEST%" MEGABRAIN.md /R:1 /W:1 >nul
+robocopy "%FONTE%\memoria\nucleo" "%SKILL_DEST%" MEGABRAIN.md /R:1 /W:1 >nul
 robocopy "%FONTE%\referencias" "%SKILL_DEST%\referencias" 26*_*.md /R:1 /W:1 >nul
 if errorlevel 8 (echo        FALHOU & pause & exit /b 1) else (echo        OK)
 if exist "%DESKTOP%\.." (
   robocopy "%FONTE%\skills\megabrain" "%DESKTOP%" SKILL.md /R:1 /W:1 >nul
-  robocopy "%FONTE%\00_nucleo" "%DESKTOP%" MEGABRAIN.md /R:1 /W:1 >nul
+  robocopy "%FONTE%\memoria\nucleo" "%DESKTOP%" MEGABRAIN.md /R:1 /W:1 >nul
   robocopy "%FONTE%\referencias" "%DESKTOP%\referencias" 26*_*.md /R:1 /W:1 >nul
   echo        OK (kimi-desktop tambem)
 )

@@ -149,8 +149,8 @@ class TestCheckVersion(Base):
         """v6 fase 4: export sem VERSAO (ou versao diferente) = drift, exit 1."""
         import os
         central = self.central_falsa()
-        (central / "260810_github-export").mkdir()
-        (central / "_github-repo-local").mkdir()
+        (central / "_github/export").mkdir(parents=True)
+        (central / "_github/repo-local").mkdir()
         env = {**os.environ, "MEGABRAIN_CENTRAL": str(central)}
         r = rodar(CHECK_VERSION, "--gate-drift", env=env)
         self.assertEqual(r.returncode, 1, f"export vazio devia acusar drift: {r.stdout}")

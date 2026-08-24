@@ -1,0 +1,428 @@
+<!doctype html><html lang=pt-BR class=pre-carga data-tema="02-wildfire"><head>
+<meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">
+<meta name=color-scheme content="light dark">
+<title>Tema 02 — Wildfire</title>
+<script>(function(){var R=document.documentElement,K='mb-relatorio:';
+ try{var t=localStorage.getItem(K+'tema');if(t)R.setAttribute('data-tema',t);
+ var m=localStorage.getItem(K+'modo');if(m){R.setAttribute('data-modo',m);
+ R.style.colorScheme=m==='escuro'?'dark':'light';}}catch(e){}})();</script>
+<style>/* ═══════════════════════════════════════════════════════════════════════
+   TEMA 01 · EDITORIAL                                           260822
+   Papel quente, tinta quase preta. O tema original do megabrain, agora
+   empacotado como um entre três.
+
+   Linha de pensamento: documento impresso. Substrato bege, régua fina,
+   serifa nos títulos. Rigor acadêmico assumido — é o tema para quando o
+   relatório vai ser LIDO de ponta a ponta, não vigiado.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+[data-tema="01-editorial"]{
+  --sans: Arial, Helvetica, sans-serif;
+  --mono: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --s1:.35rem; --s2:.7rem; --s3:1.2rem; --s4:2rem;
+  --r: 2px;
+  --tracking-rotulo: .08em;
+  --peso-titulo: 700;
+  --malha: 0;
+}
+
+[data-tema="01-editorial"][data-modo="claro"],
+[data-tema="01-editorial"]:not([data-modo="escuro"]){
+  --paper:#f2efe7; --paper-high:#fffdf8; --paper-sunk:#e8e4d9;
+  --ink:#171716; --ink-soft:#55544f; --ink-faint:#68665f;
+  --line:#cec9bc; --line-strong:#a9a294;
+  --ok:#23613e;     --ok-soft:#dce9df;
+  --info:#245d7c;   --info-soft:#dce9ef;
+  --warn:#7a5410;   --warn-soft:#f0e6cf;
+  --signal:#a63025; --signal-soft:#f1d8d1;
+  --ok-dim:#4e8a68; --bar-bg:#171716; --bar-ink:#f2efe7; --bar-line:#4a4740;
+  --brilho-vivo:none;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark){
+  [data-tema="01-editorial"]:not([data-modo]){
+    --paper:#16150f; --paper-high:#1f1e17; --paper-sunk:#100f0a;
+    --ink:#efe9d9; --ink-soft:#b4ada0; --ink-faint:#918a7d;
+    --line:#3b382f; --line-strong:#5c584c;
+    --ok:#7fc79c;     --ok-soft:#1b2f22;
+    --info:#8cc0dd;   --info-soft:#16262f;
+    --warn:#d9b467;   --warn-soft:#2c2517;
+    --signal:#e39288; --signal-soft:#331915;
+    --ok-dim:#4f8163; --bar-bg:#0d0c08; --bar-ink:#b4ada0; --bar-line:#2e2b24;
+    --brilho-vivo:none;
+    color-scheme: dark;
+  }
+}
+
+[data-tema="01-editorial"][data-modo="escuro"]{
+  --paper:#16150f; --paper-high:#1f1e17; --paper-sunk:#100f0a;
+  --ink:#efe9d9; --ink-soft:#b4ada0; --ink-faint:#918a7d;
+  --line:#3b382f; --line-strong:#5c584c;
+  --ok:#7fc79c;     --ok-soft:#1b2f22;
+  --info:#8cc0dd;   --info-soft:#16262f;
+  --warn:#d9b467;   --warn-soft:#2c2517;
+  --signal:#e39288; --signal-soft:#331915;
+  --ok-dim:#4f8163; --bar-bg:#0d0c08; --bar-ink:#b4ada0; --bar-line:#2e2b24;
+  --brilho-vivo:none;
+  color-scheme: dark;
+}
+/* ═══════════════════════════════════════════════════════════════════════
+   TEMA 02 · WILDFIRE                                            260822
+   Corpo neutro, dois fogos. Verde wildfire = o que está vivo;
+   vinho = o que trava e é seu. Nada mais tem cor.
+
+   Linha de pensamento: instrumento no escuro. O neutro é quase acromático
+   (C≈0.006) para que os dois acentos não tenham com o que competir — é a
+   disciplina de racionamento do Modal, com dois canais em vez de um.
+   "Espera" não ganha uma terceira cor: é o verde AINDA NÃO ACESO
+   (mesmo matiz, croma no chão). Todo estado mora no eixo verde→vinho.
+
+   Cor em OKLCH: L igual = brilho percebido igual em qualquer matiz, então
+   verde e vinho podem ter peso visual equivalente sem um berrar mais alto.
+   Suporte: Chrome 111+, Firefox 113+, Safari 15.4+ (widely available 2025).
+
+   Cascata (padrão Pico/Primer): os blocos são mutuamente exclusivos por
+   :not(), não por especificidade — a escolha explícita ganha do sistema NOS
+   DOIS SENTIDOS, sem !important e sem guerra de peso.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── invariantes do tema: não mudam com claro/escuro ────────────────── */
+[data-tema="02-wildfire"]{
+  --sans: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+  --s1:.3rem; --s2:.62rem; --s3:1.05rem; --s4:1.8rem;   /* mais apertado que o editorial */
+  --r: 3px;
+  --tracking-rotulo: .17em;   /* rótulo caixa-alta serigrafado (Gitness) */
+  --peso-titulo: 650;
+  --malha: 0;                 /* wildfire não usa papel milimetrado */
+}
+
+/* ── CLARO — explícito, ou quando não há escolha ────────────────────── */
+[data-tema="02-wildfire"][data-modo="claro"],
+[data-tema="02-wildfire"]:not([data-modo="escuro"]){
+  --paper:        oklch(96.5% .004 150);
+  --paper-high:   oklch(99.4% .002 150);
+  --paper-sunk:   oklch(92.5% .006 150);
+  --ink:          oklch(17%   .012 150);
+  --ink-soft:     oklch(43%   .009 150);
+  --ink-faint:    oklch(57%   .008 150);
+  --line:         oklch(86%   .008 150);
+  --line-strong:  oklch(72%   .011 150);
+
+  --ok:           oklch(48%   .145 148);   /* wildfire cravado p/ contraste em papel */
+  --ok-soft:      oklch(93%   .055 148);
+  --info:         oklch(43%   .155 148);   /* o vivo/agora */
+  --info-soft:    oklch(91%   .070 148);
+  --warn:         oklch(58%   .030 148);   /* verde ainda não aceso = espera */
+  --warn-soft:    oklch(94%   .018 148);
+  --signal:       oklch(41%   .155 18);    /* vinho */
+  --signal-soft:  oklch(92%   .045 18);
+
+  --ok-dim:       oklch(56%   .085 148);   /* concluído em massa — não compete com o vivo */
+  --bar-bg:       oklch(17%   .010 150);   /* a barra é sempre escura: é leitura de instrumento */
+  --bar-ink:      oklch(93%   .010 150);
+  --bar-line:     oklch(34%   .020 150);
+  --brilho-vivo:  none;
+  color-scheme: light;
+}
+
+/* ── ESCURO automático: só quando não há atributo nenhum ────────────── */
+@media (prefers-color-scheme: dark){
+  [data-tema="02-wildfire"]:not([data-modo]){
+    --paper:        oklch(15.5% .006 150);
+    --paper-high:   oklch(19.5% .007 150);
+    --paper-sunk:   oklch(11.5% .005 150);
+    --ink:          oklch(94%   .008 150);
+    --ink-soft:     oklch(72%   .008 150);
+    --ink-faint:    oklch(56%   .008 150);
+    --line:         oklch(29%   .010 150);
+    --line-strong:  oklch(42%   .013 150);
+
+    --ok:           oklch(80%   .175 148);
+    --ok-soft:      oklch(26%   .055 148);
+    --info:         oklch(86%   .195 148);   /* o fogo — máximo brilho */
+    --info-soft:    oklch(28%   .070 148);
+    --warn:         oklch(54%   .028 148);
+    --warn-soft:    oklch(22%   .014 148);
+    --signal:       oklch(66%   .165 18);
+    --signal-soft:  oklch(26%   .060 18);
+
+    --ok-dim:       oklch(52%   .080 148);
+    --bar-bg:       oklch(10.5% .006 150);
+    --bar-ink:      oklch(78%   .010 150);
+    --bar-line:     oklch(26%   .014 150);
+    --brilho-vivo: 0 0 0 1px oklch(86% .195 148 / .35), 0 0 22px oklch(86% .195 148 / .22);
+    color-scheme: dark;
+  }
+}
+
+/* ── ESCURO explícito ───────────────────────────────────────────────── */
+[data-tema="02-wildfire"][data-modo="escuro"]{
+  --paper:        oklch(15.5% .006 150);
+  --paper-high:   oklch(19.5% .007 150);
+  --paper-sunk:   oklch(11.5% .005 150);
+  --ink:          oklch(94%   .008 150);
+  --ink-soft:     oklch(72%   .008 150);
+  --ink-faint:    oklch(56%   .008 150);
+  --line:         oklch(29%   .010 150);
+  --line-strong:  oklch(42%   .013 150);
+
+  --ok:           oklch(80%   .175 148);
+  --ok-soft:      oklch(26%   .055 148);
+  --info:         oklch(86%   .195 148);
+  --info-soft:    oklch(28%   .070 148);
+  --warn:         oklch(54%   .028 148);
+  --warn-soft:    oklch(22%   .014 148);
+  --signal:       oklch(66%   .165 18);
+  --signal-soft:  oklch(26%   .060 18);
+
+  --ok-dim:       oklch(52%   .080 148);
+  --bar-bg:       oklch(10.5% .006 150);
+  --bar-ink:      oklch(78%   .010 150);
+  --bar-line:     oklch(26%   .014 150);
+  --brilho-vivo: 0 0 0 1px oklch(86% .195 148 / .35), 0 0 22px oklch(86% .195 148 / .22);
+  color-scheme: dark;
+}
+
+/* ── o que o tema muda ALÉM da cor ──────────────────────────────────── */
+/* O elemento vivo é o único que brilha. Um por viewport, regra do Modal. */
+[data-tema="02-wildfire"] .mbv-etapa--ativo,
+[data-tema="02-wildfire"] .step--now .step__body::before{ box-shadow: var(--brilho-vivo); }
+/* Rótulo serigrafado: tracking positivo só em caixa-alta pequena. */
+[data-tema="02-wildfire"] .mbv-kpi__r,
+[data-tema="02-wildfire"] .mbv-camada__nome,
+[data-tema="02-wildfire"] .slot__tit,
+[data-tema="02-wildfire"] .faixa{ letter-spacing: var(--tracking-rotulo); }
+/* Espera é traço interrompido, não cor nova. */
+[data-tema="02-wildfire"] .mbv-item--espera,
+[data-tema="02-wildfire"] .mbv-sem__i--espera{ border-style: dashed; }
+/* ═══ SELETOR DE TEMA E MODO ═══════════════════════════════════════════
+   Dois radiogroups, não seis botões soltos. Cada chip de tema é pintado
+   com os PRÓPRIOS tokens daquele tema — o preview mostra linguagem visual,
+   não só cor. Preview ao vivo no hover (padrão VS Code), commit no clique.
+   ═══════════════════════════════════════════════════════════════════════ */
+.sel{display:flex;gap:var(--s4);flex-wrap:wrap;align-items:flex-start;
+  padding:var(--s2) 0 var(--s3);border-bottom:1px solid var(--line);margin-bottom:var(--s3)}
+.sel__g{display:flex;flex-direction:column;gap:var(--s1);border:0;padding:0;margin:0;min-width:0}
+.sel__l{font-family:var(--mono);font-size:9.5px;font-weight:600;
+  letter-spacing:var(--tracking-rotulo,.14em);text-transform:uppercase;color:var(--ink-faint)}
+.sel__r{display:flex;gap:4px;flex-wrap:wrap}
+.sel__b{display:flex;align-items:center;gap:7px;background:var(--paper-high);
+  border:1px solid var(--line);border-radius:var(--r);padding:5px 10px;cursor:pointer;
+  font:inherit;font-size:12px;color:var(--ink);line-height:1.2;transition:border-color .12s}
+.sel__b:hover{border-color:var(--line-strong)}
+.sel__b:focus-visible{outline:2px solid var(--info);outline-offset:2px}
+.sel__b[aria-checked="true"]{border-color:var(--ink);background:var(--paper-sunk);font-weight:600}
+.sel__b[disabled]{opacity:.42;cursor:not-allowed}
+.sel__sw{display:flex;gap:2px;flex:0 0 auto}
+.sel__sw i{width:9px;height:16px;border-radius:1px;display:block;border:1px solid rgb(0 0 0/.14)}
+.sel__hint{font-size:11px;color:var(--ink-faint);align-self:flex-end;padding-bottom:2px}
+@media (prefers-reduced-motion:reduce){.sel__b{transition:none}}
+@media (forced-colors:active){
+  .sel__b{border:1px solid ButtonText}
+  .sel__b[aria-checked="true"]{outline:2px solid Highlight;outline-offset:2px}
+  .sel__sw i{forced-color-adjust:none}   /* a amostra É informação de cor */
+}
+*{box-sizing:border-box}
+html.pre-carga *{transition:none!important}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+  font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin-inline:auto;padding:clamp(20px,4vw,40px) clamp(14px,3vw,32px) 72px}
+h1{font-size:clamp(24px,4vw,34px);font-weight:var(--peso-titulo);letter-spacing:-.02em;margin:0}
+.eyebrow{font-family:var(--mono);font-size:10px;font-weight:600;
+  letter-spacing:var(--tracking-rotulo);text-transform:uppercase;color:var(--info)}
+.det{font-size:12px;color:var(--ink-faint)}
+
+/* barra de instrumento */
+.bar{display:flex;flex-wrap:wrap;background:var(--bar-bg);color:var(--bar-ink);border:1px solid var(--bar-line);
+  font-family:var(--mono);font-size:11px;letter-spacing:.04em;border-radius:var(--r);
+  overflow:hidden;margin:var(--s3) 0}
+.bar>*{padding:9px 14px;border-right:1px solid var(--bar-line);white-space:nowrap}
+.bar>*:last-child{border-right:0;margin-left:auto;opacity:.62}
+.bar b{letter-spacing:var(--tracking-rotulo)}
+.pt{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:6px;vertical-align:1px}
+
+/* kpi */
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(146px,1fr));
+  border:1px solid var(--line);border-radius:var(--r);background:var(--paper-high);overflow:hidden}
+.kpi>div{padding:14px 16px;border-right:1px solid var(--line);position:relative;overflow:hidden}
+.kpi>div:last-child{border-right:0}
+.kpi svg{position:absolute;inset:auto 0 0 0;height:32px;width:100%;opacity:.55}
+.kpi b{position:relative;font-family:var(--mono);font-size:25px;font-weight:600;
+  letter-spacing:-.03em;display:block;font-variant-numeric:tabular-nums;line-height:1.05}
+.kpi span{position:relative;display:block;font-family:var(--mono);font-size:9px;font-weight:500;
+  letter-spacing:var(--tracking-rotulo);text-transform:uppercase;color:var(--ink-faint);margin-top:7px}
+.kpi em{position:relative;display:block;font-style:normal;font-size:11px;color:var(--ink-soft);margin-top:3px}
+.k-ok b{color:var(--ok)} .k-vivo b{color:var(--info)} .k-esp b{color:var(--warn)} .k-crit b{color:var(--signal)}
+.k-vivo{background:var(--info-soft);box-shadow:var(--brilho-vivo)}
+
+/* barra de execuções */
+.runs{border:1px solid var(--line);border-radius:var(--r);background:var(--paper-high);
+  padding:12px 14px;margin-top:var(--s3)}
+.runs__h{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.runs__h span{font-family:var(--mono);font-size:9px;letter-spacing:var(--tracking-rotulo);
+  text-transform:uppercase;color:var(--ink-faint)}
+.runs__b{display:flex;gap:2px;align-items:flex-end;height:34px}
+.runs__b i{flex:1;border-radius:1px;display:block;opacity:.92}
+
+/* duo */
+.duo{display:grid;grid-template-columns:1.1fr 1fr;gap:var(--s3);margin-top:var(--s3)}
+.card{border:1px solid var(--line);border-radius:var(--r);background:var(--paper-high);padding:14px}
+.card>.t{font-family:var(--mono);font-size:9px;letter-spacing:var(--tracking-rotulo);
+  text-transform:uppercase;color:var(--ink-faint);margin-bottom:9px}
+.saude{display:grid;grid-template-columns:repeat(auto-fit,minmax(122px,1fr));gap:1px;background:var(--line)}
+.saude i{background:var(--paper-high);padding:7px 9px;font-size:12px;display:flex;gap:7px;
+  align-items:baseline;font-style:normal}
+.saude i b{font-weight:600}
+.saude i code{font-family:var(--mono);font-size:10px;color:var(--ink-faint);margin-left:auto}
+.s-esp{background:var(--warn-soft)!important;border:1px dashed var(--warn)}
+.s-crit{background:var(--signal-soft)!important}
+.g-ok{color:var(--ok)}.g-vivo{color:var(--info)}.g-esp{color:var(--warn)}.g-crit{color:var(--signal)}
+ol.todo{list-style:none;margin:0;padding:0;counter-reset:t}
+ol.todo li{counter-increment:t;font-size:12.5px;padding:5px 0 5px 24px;position:relative;
+  border-bottom:1px solid var(--line)}
+ol.todo li:last-child{border-bottom:0}
+ol.todo li::before{content:counter(t,decimal-leading-zero);position:absolute;left:0;top:5px;
+  font-family:var(--mono);font-size:10px;color:var(--ink-faint)}
+ol.todo code{font-family:var(--mono);font-size:11px;background:var(--paper-sunk);padding:0 4px}
+@media(max-width:760px){.duo{grid-template-columns:1fr}}
+</style></head>
+<body><div class=wrap>
+
+<span class=eyebrow>megabrain · relatório · tema 02</span>
+<h1>Wildfire</h1>
+<p class=det style="max-width:62ch;margin:.5em 0 0">Corpo neutro, dois fogos. Verde wildfire marca
+o que está <strong>vivo</strong>; vinho marca o que <strong>trava e é seu</strong>. Nada mais tem cor —
+“espera” é o mesmo verde ainda não aceso, não uma terceira tinta.</p>
+
+<div class=sel>
+  <fieldset class=sel__g><legend class=sel__l>tema</legend><div class=sel__r role=radiogroup aria-label=Tema>
+    <button class=sel__b role=radio data-grupo=tema data-valor="01-editorial" aria-checked=false>
+      <span class=sel__sw><i style="background:#f2efe7"></i><i style="background:#171716"></i><i style="background:#a63025"></i></span>01 Editorial</button>
+    <button class=sel__b role=radio data-grupo=tema data-valor="02-wildfire" aria-checked=true>
+      <span class=sel__sw><i style="background:#131614"></i><i style="background:#8ff77a"></i><i style="background:#8f2233"></i></span>02 Wildfire</button>
+    <button class=sel__b role=radio disabled aria-checked=false>
+      <span class=sel__sw><i style="background:var(--line)"></i><i style="background:var(--line)"></i><i style="background:var(--line)"></i></span>03 —</button>
+  </div></fieldset>
+  <fieldset class=sel__g><legend class=sel__l>modo</legend><div class=sel__r role=radiogroup aria-label=Modo>
+    <button class=sel__b role=radio data-grupo=modo data-valor=claro aria-checked=false>Claro</button>
+    <button class=sel__b role=radio data-grupo=modo data-valor=escuro aria-checked=false>Escuro</button>
+    <button class=sel__b role=radio data-grupo=modo data-valor=sistema aria-checked=true>Sistema</button>
+  </div></fieldset>
+  <span class="sel__hint det" data-dica-modo></span>
+</div>
+
+<div class=bar>
+  <b>MEGABRAIN</b><span>v6.6</span>
+  <span><i class="pt" style="background:var(--ok)"></i>834dde9 sincronizado</span>
+  <span><i class="pt" style="background:var(--warn)"></i>16 projetos atrás</span>
+  <span>trava livre</span><span>14:59:12 · há 12s</span>
+</div>
+
+<div class=kpi>
+  <div><svg viewBox="0 0 100 32" preserveAspectRatio=none><path d="M0 28 L16 28 L32 22 L48 22 L64 14 L80 14 L100 6" fill=none stroke="var(--line-strong)" stroke-width=1.5/></svg>
+    <b>v6.6</b><span>versão</span><em>6 releases em 4 dias</em></div>
+  <div class=k-ok><b>834dde9</b><span>commit</span><em>= origin/main</em></div>
+  <div class=k-esp><b>0<span style="color:var(--ink-faint);font-size:.62em">/16</span></b><span>projetos na atual</span><em>parado há 4 dias</em></div>
+  <div class=k-ok><b>25<span style="color:var(--ink-faint);font-size:.62em">/25</span></b><span>suíte</span><em>2,1s</em></div>
+  <div class=k-vivo><b>18</b><span>referências</span><em>09_visuais/00_entrada</em></div>
+  <div class=k-crit><b>6</b><span>esperando você</span><em>publicar → push → sync</em></div>
+</div>
+
+<div class=runs>
+  <div class=runs__h><span>últimas 40 sessões</span>
+    <span class=det style="text-transform:none;letter-spacing:0">verde concluída · espera pendência · vinho falhou · vazada em curso</span></div>
+  <div class=runs__b><i style="height:70%;background:var(--ok-dim)"></i><i style="height:55%;background:var(--ok-dim)"></i><i style="height:80%;background:var(--ok-dim)"></i><i style="height:45%;background:var(--ok-dim)"></i><i style="height:62%;background:var(--warn)"></i><i style="height:90%;background:var(--ok-dim)"></i><i style="height:50%;background:var(--ok-dim)"></i><i style="height:74%;background:var(--ok-dim)"></i><i style="height:38%;background:var(--ok-dim)"></i><i style="height:66%;background:var(--ok-dim)"></i><i style="height:95%;background:var(--warn)"></i><i style="height:58%;background:var(--ok-dim)"></i><i style="height:42%;background:var(--ok-dim)"></i><i style="height:71%;background:var(--ok-dim)"></i><i style="height:60%;background:var(--ok-dim)"></i><i style="height:35%;background:var(--signal)"></i><i style="height:78%;background:var(--ok-dim)"></i><i style="height:52%;background:var(--ok-dim)"></i><i style="height:64%;background:var(--ok-dim)"></i><i style="height:88%;background:var(--ok-dim)"></i><i style="height:47%;background:var(--ok-dim)"></i><i style="height:69%;background:var(--warn)"></i><i style="height:56%;background:var(--ok-dim)"></i><i style="height:83%;background:var(--ok-dim)"></i><i style="height:40%;background:var(--ok-dim)"></i><i style="height:75%;background:var(--ok-dim)"></i><i style="height:61%;background:var(--ok-dim)"></i><i style="height:49%;background:var(--ok-dim)"></i><i style="height:92%;background:var(--ok-dim)"></i><i style="height:57%;background:var(--ok-dim)"></i><i style="height:44%;background:var(--ok-dim)"></i><i style="height:72%;background:var(--ok-dim)"></i><i style="height:65%;background:var(--warn)"></i><i style="height:53%;background:var(--ok-dim)"></i><i style="height:86%;background:var(--ok-dim)"></i><i style="height:48%;background:var(--ok-dim)"></i><i style="height:70%;background:var(--ok-dim)"></i><i style="height:59%;background:var(--ok-dim)"></i><i style="height:81%;background:var(--ok-dim)"></i><i style="height:68%;background:transparent;border:1px solid var(--info);box-shadow:var(--brilho-vivo)"></i></div>
+</div>
+
+<div class=duo>
+  <div class=card><div class=t>saúde</div><div class=saude>
+    <i><b class=g-ok>✓</b><b>git</b><code>834dde9</code></i>
+    <i><b class=g-ok>✓</b><b>preflight</b><code>ok</code></i>
+    <i><b class=g-ok>✓</b><b>suíte</b><code>25/25</code></i>
+    <i><b class=g-ok>✓</b><b>plugin</b><code>1.4.0</code></i>
+    <i><b class=g-vivo>●</b><b>cérebro</b><code>1 fonte</code></i>
+    <i><b class=g-ok>✓</b><b>biblioteca</b><code>8 peças</code></i>
+    <i class=s-esp><b class=g-esp>○</b><b>projetos</b><code>16 atrás</code></i>
+    <i class=s-crit><b class=g-crit>✕</b><b>embeddings</b><code>vazio</code></i>
+  </div></div>
+  <div class=card><div class=t>o que trava, e só você destrava</div>
+    <ol class=todo>
+      <li><code>publicar-github.cmd</code> — regenera o export</li>
+      <li><code>push-github.cmd</code> — sempre depois do publicar</li>
+      <li><code>sincronizar-pipeline.cmd</code> — leva a v6.6 aos 16</li>
+      <li>instalar <code>megabrain-v1.4.0.plugin</code></li>
+      <li>Ollama de pé → reindexar lições e cérebro</li>
+    </ol></div>
+</div>
+
+</div>
+<script>/* Persistência com três quedas: localStorage → sessionStorage → memória.
+   Necessário porque em file:// o Safari LANÇA SecurityError no localStorage
+   (só sessionStorage passa) e o Chrome compartilha UMA origem entre todos os
+   arquivos locais — daí o namespace na chave. */
+(function(){
+  var R=document.documentElement, K='mb-relatorio:';
+  var mem={};
+  function get(k){ try{ var v=localStorage.getItem(K+k); if(v!=null) return v; }catch(e){}
+                   try{ var s=sessionStorage.getItem(K+k); if(s!=null) return s; }catch(e){}
+                   return mem[k]||null; }
+  function set(k,v){ mem[k]=v;
+    try{ v==null?localStorage.removeItem(K+k):localStorage.setItem(K+k,v); return; }catch(e){}
+    try{ v==null?sessionStorage.removeItem(K+k):sessionStorage.setItem(K+k,v); }catch(e){} }
+
+  function aplica(tema,modo){
+    if(tema) R.setAttribute('data-tema',tema);
+    if(modo){ R.setAttribute('data-modo',modo); R.style.colorScheme=modo==='escuro'?'dark':'light'; }
+    else{ R.removeAttribute('data-modo'); R.style.colorScheme='light dark'; }
+  }
+  function sistemaEscuro(){ try{ return matchMedia('(prefers-color-scheme: dark)').matches; }catch(e){ return false; } }
+
+  function marca(grupo,valor){
+    document.querySelectorAll('[data-grupo="'+grupo+'"]').forEach(function(b){
+      b.setAttribute('aria-checked', String(b.dataset.valor===valor));
+    });
+  }
+  function dica(){
+    var d=document.querySelector('[data-dica-modo]'); if(!d) return;
+    var m=R.getAttribute('data-modo');
+    d.textContent = m ? '' : 'sistema → ' + (sistemaEscuro()?'escuro':'claro');
+  }
+
+  var tema=get('tema')||R.getAttribute('data-tema')||'01-editorial';
+  var modo=get('modo');
+  aplica(tema,modo); marca('tema',tema); marca('modo',modo||'sistema');
+
+  document.addEventListener('click',function(ev){
+    var b=ev.target.closest('[data-grupo]'); if(!b||b.disabled) return;
+    var g=b.dataset.grupo, v=b.dataset.valor;
+    if(g==='tema'){ set('tema',v); aplica(v,R.getAttribute('data-modo')); marca('tema',v); }
+    else{
+      // Regra da Lea Verou: se a escolha coincide com o sistema, NÃO grave —
+      // gravar converte um ajuste temporário em pin permanente sem saída.
+      var coincide = (v==='escuro')===sistemaEscuro();
+      var efetivo = (v==='sistema'||coincide) ? null : v;
+      set('modo',efetivo); aplica(null,efetivo); marca('modo',efetivo||'sistema');
+    }
+    dica();
+  });
+
+  // preview ao vivo no hover (padrão VS Code), revertido ao sair sem clicar
+  var antes=null;
+  document.addEventListener('mouseover',function(ev){
+    var b=ev.target.closest('[data-grupo="tema"]'); if(!b||b.disabled) return;
+    if(antes===null) antes=R.getAttribute('data-tema');
+    R.setAttribute('data-tema', b.dataset.valor);
+  });
+  document.addEventListener('mouseout',function(ev){
+    var b=ev.target.closest('[data-grupo="tema"]'); if(!b||antes===null) return;
+    if(ev.relatedTarget && ev.relatedTarget.closest && ev.relatedTarget.closest('[data-grupo="tema"]')) return;
+    R.setAttribute('data-tema', antes); antes=null;
+  });
+  dica();
+})();
+</script>
+<script>requestAnimationFrame(function(){requestAnimationFrame(function(){
+  document.documentElement.classList.remove('pre-carga');})});</script>
+</body></html>

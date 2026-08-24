@@ -1,0 +1,1005 @@
+<title>Instrumento Serigrafado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..600&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+/* ─────────────────────────────────────────────────────────────
+   TOKENS — paleta clara completa. Substrato quente de painel de
+   instrumento; um único acento frio (teal) contra ele. Cores de
+   estado são semânticas e NÃO são o acento.
+   ───────────────────────────────────────────────────────────── */
+:root{
+  --ground:#EAE5D8;
+  --panel:#F6F3EA;
+  --sunk:#DDD7C6;
+  --ink:#131310;
+  --ink-soft:#57544B;
+  --ink-faint:#7C776B;
+  --rule:#C6BFAC;
+  --rule-soft:#D6D0BF;
+  --accent:#0B5B66;
+  --accent-soft:#CFE0E1;
+  --ok:#2C6B45;
+  --warn:#8A5A0E;
+  --crit:#A8321F;
+  --ok-bg:#D7E4D8;
+  --warn-bg:#EFE3C8;
+  --crit-bg:#F0D6CE;
+  --grid:rgba(19,19,16,.055);
+  --shadow:none;
+
+  --sans:"Instrument Sans","Helvetica Neue",Arial,sans-serif;
+  --serif:"Instrument Serif",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#100F0C;
+    --panel:#191813;
+    --sunk:#0A0908;
+    --ink:#EFE9DA;
+    --ink-soft:#ADA694;
+    --ink-faint:#837D6E;
+    --rule:#332F27;
+    --rule-soft:#26231D;
+    --accent:#5FC2CE;
+    --accent-soft:#12262A;
+    --ok:#77C295;
+    --warn:#D6AB5F;
+    --crit:#E08C7C;
+    --ok-bg:#16281D;
+    --warn-bg:#2A2214;
+    --crit-bg:#2E1814;
+    --grid:rgba(239,233,218,.05);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#100F0C;
+  --panel:#191813;
+  --sunk:#0A0908;
+  --ink:#EFE9DA;
+  --ink-soft:#ADA694;
+  --ink-faint:#837D6E;
+  --rule:#332F27;
+  --rule-soft:#26231D;
+  --accent:#5FC2CE;
+  --accent-soft:#12262A;
+  --ok:#77C295;
+  --warn:#D6AB5F;
+  --crit:#E08C7C;
+  --ok-bg:#16281D;
+  --warn-bg:#2A2214;
+  --crit-bg:#2E1814;
+  --grid:rgba(239,233,218,.05);
+}
+
+*{box-sizing:border-box}
+
+/* A malha milimetrada de 1px corre atrás de tudo; painéis sólidos
+   a ocluem. Roubado do GridSystem do Vercel Geist. */
+body{
+  margin:0;
+  background:
+    repeating-linear-gradient(to right, var(--grid) 0 1px, transparent 1px 40px),
+    repeating-linear-gradient(to bottom, var(--grid) 0 1px, transparent 1px 40px),
+    var(--ground);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:15px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px;margin-inline:auto;padding:clamp(28px,5vw,64px) clamp(16px,4vw,40px) 96px}
+
+/* ── tipografia ───────────────────────────────────────────── */
+h1,h2,h3{text-wrap:balance;margin:0}
+.eyebrow{
+  font-family:var(--mono);font-size:10px;font-weight:600;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--accent);
+}
+h1{
+  font-family:var(--serif);font-size:clamp(40px,7vw,74px);
+  font-weight:400;line-height:.98;letter-spacing:-.015em;margin:.18em 0 0;
+}
+h1 em{font-style:italic}
+.lede{font-size:clamp(15px,1.6vw,18px);color:var(--ink-soft);max-width:62ch;margin:1.1em 0 0}
+h2{
+  font-family:var(--serif);font-weight:400;font-size:clamp(26px,3.4vw,38px);
+  line-height:1.05;letter-spacing:-.01em;
+}
+h3{font-size:16px;font-weight:600;letter-spacing:-.005em}
+p{margin:.75em 0;max-width:68ch}
+a{color:var(--accent);text-underline-offset:3px;text-decoration-thickness:1px}
+code,.mono{font-family:var(--mono);font-size:.86em}
+.num{font-variant-numeric:tabular-nums}
+
+/* ── estrutura de seção ───────────────────────────────────── */
+section{margin-top:clamp(56px,9vw,110px);scroll-margin-top:64px}
+.sechead{
+  display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;
+  border-top:2px solid var(--ink);padding-top:14px;margin-bottom:26px;
+}
+.sechead .idx{
+  font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.16em;
+  color:var(--ink-faint);
+}
+.sechead .sub{font-size:13px;color:var(--ink-faint);flex:1 1 240px}
+
+/* ── painel: fundo sólido que oculta a malha ──────────────── */
+.panel{background:var(--panel);border:1px solid var(--rule);}
+
+/* ── nota / achado ────────────────────────────────────────── */
+.finding{
+  background:var(--panel);border:1px solid var(--rule);
+  border-left:3px solid var(--accent);padding:20px 22px;margin:26px 0;
+}
+.finding .tag{
+  font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--accent);display:block;margin-bottom:6px;
+}
+.finding p{margin:.4em 0}
+.finding p:last-child{margin-bottom:0}
+
+/* ── referências ──────────────────────────────────────────── */
+.refs{display:grid;gap:0;border:1px solid var(--rule);background:var(--panel)}
+.ref{
+  display:grid;grid-template-columns:44px 1fr;gap:0 16px;
+  padding:18px 20px;border-bottom:1px solid var(--rule-soft);
+}
+.ref:last-child{border-bottom:0}
+.ref__n{
+  font-family:var(--mono);font-size:11px;font-weight:600;color:var(--ink-faint);
+  letter-spacing:.08em;padding-top:3px;
+}
+.ref__head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.ref__name{font-size:16px;font-weight:600;letter-spacing:-.005em}
+.ref__kind{
+  font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink-faint);
+  border:1px solid var(--rule);padding:1px 6px;
+}
+.ref__what{font-size:13.5px;color:var(--ink-soft);margin:5px 0 0;max-width:70ch}
+.ref__steal{
+  margin:10px 0 0;padding:9px 12px;background:var(--sunk);
+  font-size:13.5px;line-height:1.5;max-width:none;
+}
+.ref__steal b{
+  font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--accent);display:block;margin-bottom:3px;
+}
+.ref__link{font-family:var(--mono);font-size:11px;word-break:break-all}
+
+/* ── swatches ─────────────────────────────────────────────── */
+.tokens{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:0;border:1px solid var(--rule)}
+.tok{border-right:1px solid var(--rule);border-bottom:1px solid var(--rule);background:var(--panel)}
+.tok__chip{height:56px;border-bottom:1px solid var(--rule)}
+.tok__meta{padding:8px 10px}
+.tok__name{font-family:var(--mono);font-size:11px;font-weight:600}
+.tok__hex{font-family:var(--mono);font-size:10px;color:var(--ink-faint)}
+.tok__use{font-size:11px;color:var(--ink-soft);margin-top:3px;line-height:1.35}
+
+/* ── regras adotadas / recusadas ──────────────────────────── */
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-top:24px}
+.rule-col{border:1px solid var(--rule);background:var(--panel);padding:18px 20px}
+.rule-col h3{margin-bottom:10px}
+.rule-col ul{margin:0;padding-left:0;list-style:none}
+.rule-col li{
+  font-size:13.5px;line-height:1.5;padding:7px 0 7px 20px;position:relative;
+  border-bottom:1px solid var(--rule-soft);
+}
+.rule-col li:last-child{border-bottom:0}
+.rule-col li::before{position:absolute;left:0;top:7px;font-family:var(--mono);font-size:12px}
+.adopt li::before{content:"+";color:var(--ok)}
+.reject li::before{content:"−";color:var(--crit)}
+.rule-col li b{font-weight:600}
+.rule-col li span{color:var(--ink-faint)}
+
+/* ═══════════ MOCKUP DO DASHBOARD ═══════════════════════════ */
+.mock{border:1px solid var(--ink);background:var(--panel);overflow:hidden}
+.mock__bar{
+  display:flex;align-items:center;gap:0;flex-wrap:wrap;
+  background:var(--ink);color:var(--ground);
+  font-family:var(--mono);font-size:11px;letter-spacing:.04em;
+}
+.mock__bar > *{padding:9px 14px;border-right:1px solid rgba(234,229,216,.16);white-space:nowrap}
+.mock__bar > *:last-child{border-right:0;margin-left:auto;color:rgba(234,229,216,.62)}
+.mock__bar .brand{font-weight:600;letter-spacing:.16em}
+.dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.dot--ok{background:#77C295}
+.dot--warn{background:#D6AB5F}
+
+.mock__kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));border-bottom:1px solid var(--rule)}
+.kpi{position:relative;padding:16px 16px 14px;border-right:1px solid var(--rule);overflow:hidden}
+.kpi:last-child{border-right:0}
+.kpi__spark{position:absolute;inset:auto 0 0 0;height:34px;opacity:.5}
+.kpi__v{
+  font-family:var(--mono);font-size:27px;font-weight:600;line-height:1;
+  letter-spacing:-.03em;font-variant-numeric:tabular-nums;position:relative;
+}
+.kpi__l{
+  font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink-faint);margin-top:8px;position:relative;
+}
+.kpi__d{font-size:11.5px;color:var(--ink-soft);margin-top:3px;position:relative}
+.kpi--ok .kpi__v{color:var(--ok)}
+.kpi--warn .kpi__v{color:var(--warn)}
+.kpi--crit .kpi__v{color:var(--crit)}
+.kpi__delta{font-family:var(--mono);font-size:10px;margin-left:6px;letter-spacing:0}
+
+.mock__runs{padding:14px 16px 16px;border-bottom:1px solid var(--rule)}
+.runs__head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:9px}
+.runs__t{font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint)}
+.runs__legend{font-size:11px;color:var(--ink-faint)}
+.runs__bars{display:flex;gap:2px;align-items:flex-end;height:34px}
+.runs__bars i{flex:1 1 auto;min-width:3px;border-radius:1px;display:block}
+
+.mock__split{display:grid;grid-template-columns:1.15fr 1fr}
+.mock__cell{padding:16px;border-right:1px solid var(--rule)}
+.mock__cell:last-child{border-right:0}
+.cellh{font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:10px}
+.health{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:1px;background:var(--rule-soft)}
+.health i{
+  background:var(--panel);padding:7px 9px;font-size:12px;display:flex;gap:7px;
+  align-items:baseline;font-style:normal;
+}
+.health i b{font-weight:600}
+.health i span{color:var(--ink-faint);font-size:11px;margin-left:auto;font-family:var(--mono)}
+.health i.s-ok{background:var(--panel)}
+.health i.s-warn{background:var(--warn-bg)}
+.health i.s-crit{background:var(--crit-bg)}
+.g-ok{color:var(--ok)}.g-warn{color:var(--warn)}.g-crit{color:var(--crit)}.g-run{color:var(--accent)}
+
+.todo{list-style:none;margin:0;padding:0;counter-reset:t}
+.todo li{
+  counter-increment:t;font-size:13px;line-height:1.45;padding:6px 0 6px 26px;
+  position:relative;border-bottom:1px solid var(--rule-soft);
+}
+.todo li:last-child{border-bottom:0}
+.todo li::before{
+  content:counter(t,decimal-leading-zero);position:absolute;left:0;top:6px;
+  font-family:var(--mono);font-size:10px;color:var(--ink-faint);letter-spacing:.06em;
+}
+.todo li code{background:var(--sunk);padding:0 4px}
+
+/* ═══════════ FLUXO VIVO ════════════════════════════════════ */
+.flow{border:1px solid var(--rule);background:var(--panel);padding:22px 20px}
+.flow__legend{
+  display:flex;gap:18px;flex-wrap:wrap;font-family:var(--mono);font-size:10px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);
+  padding-bottom:16px;margin-bottom:4px;border-bottom:1px solid var(--rule-soft);
+}
+.flow__legend i{font-style:normal;display:flex;align-items:center;gap:6px}
+.spine{list-style:none;margin:0;padding:0}
+.step{
+  display:grid;grid-template-columns:132px 1fr;gap:0 20px;position:relative;
+}
+.step__when{
+  font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--ink-faint);
+  padding:16px 0 0;text-align:right;
+}
+.step__body{
+  border-left:1px solid var(--rule);padding:16px 0 16px 22px;position:relative;
+}
+.step:last-child .step__body{border-left-color:transparent}
+.step__body::before{
+  content:"";position:absolute;left:-5px;top:21px;width:9px;height:9px;
+  border-radius:50%;background:var(--panel);border:2px solid var(--rule);
+}
+.step--done .step__body::before{background:var(--ok);border-color:var(--ok)}
+.step--now  .step__body::before{background:var(--accent);border-color:var(--accent);
+  box-shadow:0 0 0 4px var(--accent-soft)}
+.step--next .step__body::before{background:var(--panel);border-color:var(--ink-faint);border-style:dashed}
+.step--now .step__body{background:linear-gradient(to right,var(--accent-soft),transparent 70%)}
+.step__t{font-size:15px;font-weight:600;letter-spacing:-.005em}
+.step--next .step__t{color:var(--ink-soft)}
+.step__d{font-size:13px;color:var(--ink-soft);margin:3px 0 0;max-width:64ch}
+.step__tag{
+  font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.14em;
+  text-transform:uppercase;padding:1px 6px;border:1px solid currentColor;margin-left:8px;
+  vertical-align:2px;
+}
+.t-now{color:var(--accent)}
+.t-next{color:var(--ink-faint)}
+
+/* galhos descartados */
+.branches{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:6px}
+.branch{
+  display:grid;grid-template-columns:auto 1fr;gap:9px;align-items:start;
+  font-size:12.5px;color:var(--ink-faint);padding-left:2px;
+}
+.branch__arm{
+  font-family:var(--mono);font-size:11px;color:var(--rule);padding-top:1px;
+  user-select:none;
+}
+.branch s{text-decoration:line-through;text-decoration-color:var(--rule);color:var(--ink-soft)}
+.branch em{font-style:normal;color:var(--ink-faint)}
+
+/* ── perguntas ────────────────────────────────────────────── */
+.asks{display:grid;gap:0;border:1px solid var(--rule);background:var(--panel);margin-top:22px}
+.ask{padding:16px 20px;border-bottom:1px solid var(--rule-soft)}
+.ask:last-child{border-bottom:0}
+.ask__q{font-size:15px;font-weight:600}
+.ask__o{font-size:13px;color:var(--ink-soft);margin:6px 0 0}
+.ask__o b{color:var(--ink);font-weight:600}
+
+/* ── rodapé ───────────────────────────────────────────────── */
+footer{
+  margin-top:clamp(56px,9vw,100px);border-top:1px solid var(--rule);
+  padding-top:18px;font-size:12px;color:var(--ink-faint);
+}
+footer a{color:var(--ink-faint)}
+
+@media (max-width:720px){
+  .step{grid-template-columns:1fr}
+  .step__when{text-align:left;padding:14px 0 0}
+  .mock__split{grid-template-columns:1fr}
+  .mock__cell{border-right:0;border-bottom:1px solid var(--rule)}
+  .ref{grid-template-columns:1fr}
+  .ref__n{padding-top:0}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+
+<header>
+  <span class="eyebrow">megabrain · direção visual · 260822</span>
+  <h1>Instrumento<br><em>serigrafado</em></h1>
+  <p class="lede">Quinze referências verificadas e uma direção proposta para o relatório do megabrain
+  — e para todo projeto que roda na pipeline. A tese: isto não é um documento com números,
+  é um <strong>instrumento</strong>. Painel de laboratório sobre substrato quente, um único
+  acento frio, malha milimetrada por baixo. Precisão no lugar de neon.</p>
+</header>
+
+<div class="finding">
+  <span class="tag">o achado que muda o plano</span>
+  <p><strong>Não existe padrão consolidado para visualizar o <em>plano</em> de um agente.</strong>
+  O que está consolidado é o <em>rastro</em> — a árvore de spans do OpenTelemetry, que mostra o que
+  já aconteceu. Nenhuma ferramenta de produção que checamos mostra passos futuros ainda não
+  executados, nem caminhos considerados e abandonados.</p>
+  <p>Em agosto de 2026 ainda se publica <em>paper</em> cuja contribuição é a interface
+  (<a href="https://arxiv.org/html/2607.26300">AgentGUI</a>), e a pesquisa da Grafana mostra que
+  só <strong>7%</strong> usam observabilidade de LLM em produção. O campo é early adopter.
+  Traduzindo: o "fluxo vivo" que você pediu não tem de quem copiar — tem de quem roubar peça.</p>
+</div>
+
+<!-- ══════════════════ 01 · REFERÊNCIAS ══════════════════ -->
+<section id="refs">
+  <div class="sechead">
+    <span class="idx">01</span>
+    <h2>Quinze referências</h2>
+    <span class="sub">Todas verificadas por HTTP. <code>refero.design</code> e <code>lapa.ninja</code>
+    e <code>siteinspire</code> bloquearam o fetch — o que saiu do Refero veio do subdomínio
+    <code>styles.refero.design</code>, que é renderizado no servidor.</span>
+  </div>
+
+  <div class="refs">
+
+    <article class="ref">
+      <div class="ref__n">01</div>
+      <div>
+        <div class="ref__head"><span class="ref__name">Linear</span><span class="ref__kind">estética</span></div>
+        <p class="ref__what">O refresh de 2025 documentado pela própria equipe — o material mais
+        útil da pesquisa inteira, porque explica o mecanismo em vez de mostrar o resultado.</p>
+        <div class="ref__steal"><b>roubar</b>
+        Elevação <strong>sem uma sombra sequer</strong>: a hierarquia é empilhamento de cinzas quase
+        idênticos mais um hairline. E o princípio — <em>"nem todo elemento deve carregar o mesmo peso
+        visual"</em>: eles escureceram a sidebar para o conteúdo dominar, em vez de redesenhar o
+        conteúdo. Cor: três variáveis em LCH (base, accent, contrast) geram o tema inteiro.</div>
+        <p class="ref__link"><a href="https://linear.app/now/how-we-redesigned-the-linear-ui">linear.app/now/how-we-redesigned-the-linear-ui</a></p>
+      </div>
+    </article>
+
+    <article class="ref">
+      <div class="ref__n">02</div>
+      <div>
+        <div class="ref__head"><span class="ref__name">Raycast</span><span class="ref__kind">estética</span></div>
+        <p class="ref__what">Command center para macOS. Densidade de instrumento levada ao limite,
+        sem nenhum drop shadow no produto inteiro.</p>
+        <div class="ref__steal"><b>roubar</b>
+        <strong>Escada de superfície</strong>: canvas → surface → elevated → card, quatro tons, e
+        "cada degrau mais claro lê como um passo mais próximo do observador". Custo de render zero.
+        Segunda regra: <strong>saturação confinada ao conteúdo</strong> — o chrome é monocromático,
+        cor só aparece dentro do dado. É o que mantém legível uma tela de 200 linhas.</div>
+        <p class="ref__link"><a href="https://www.raycast.com/">raycast.com</a></p>
+      </div>
+    </article>
+
+    <article class="ref">
+      <div class="ref__n">03</div>
+      <div>
+        <div class="ref__head"><span class="ref__name">Warp</span><span class="ref__kind">estética · agente</span></div>
+        <p class="ref__what">Terminal agentic. Descrito pelo Refero como "cockpit de IDE onde o único
+        brilho é um fósforo violeta sobre preto fosco".</p>
+        <div class="ref__steal"><b>roubar</b>
+        <strong>Um acento cromático em toda a interface</strong> — e usado só em ícone, código e link,
+        <em>nunca</em> em botão de ação. Texto primário em off-white quente, não branco puro.
+        E o mecanismo de agente: <strong>o painel de Plan só existe quando há plano</strong>.
+        Visibilidade condicional aplicada ao próprio agente.</div>
+        <p class="ref__link"><a href="https://docs.warp.dev/agent-platform/warp-agents/interacting-with-agents/terminal-and-agent-modes">docs.warp.dev · terminal and agent modes</a></p>
+      </div>
+    </article>
+
+    <article class="ref">
+      <div class="ref__n">04</div>
+      <div>
+        <div class="ref__head"><span class="ref__name">Modal</span><span class="ref__kind">estética</span></div>
+        <p class="ref__what">Compute serverless para IA. Estética de terminal fosforescente em sala
+        de servidor escura.</p>
+        <div class="ref__steal"><b>roubar</b>
+        A regra explícita de racionamento: <strong>o verde de sinal aparece como preenchimento em
+        exatamente UM elemento por viewport</strong>, tratado como LED de status, e é proibido como
+        cor de texto de corpo. É a disciplina que falta em 90% dos dashboards — todo mundo colore
+        tudo e nada mais chama atenção.</div>
+        <p class="ref__link"><a href="https://modal.com">modal.com</a></p>
+      </div>
+    </article>
+
+    <article class="ref">
+      <div class="ref__n">05</div>
+      <div>
+        <div class="ref__head"><span class="ref__name">Gitness / Harness</span><span class="ref__kind">estética</span></div>
+        <p class="ref__what">Plataforma de CI/CD. Faz duas coisas ao contrário de todo mundo — e as
+        duas funcionam.</p>
+        <div class="ref__steal"><b>roubar</b>
+        <strong>Bordas claras de 1px definindo cards sobre canvas quase preto</strong>, em vez das
+        bordas escuras padrão: fica com cara de painel de instrumento serigrafado. E
+        <strong>tracking positivo no display</strong> (+0.056em em todos os tamanhos) — letras
+        espalhadas como rótulo de painel de controle, o oposto do tracking negativo de SaaS.</div>
+        <p class="ref__link"><a href="https://gitness.com">gitness.com</a></p>
+      </div>
+    </article>
+
+    <article class="ref">
+      <div class="ref__n">06</div>
+      <div>
+        <div class="ref__head"><span class="ref__name">Vercel Geist</span><span class="ref__kind">sistema</span></div>
+        <p class="ref__what">Design system da Vercel. O grid é descrito na própria doc como "parte
+        central da estética".</p>
+        <div class="ref__steal"><b>roubar</b>
+        <strong>Malha de 1px permanentemente visível atrás do layout, e células sólidas ocluem as
+        guias que as cruzam</strong> — papel milimetrado técnico onde os cards recortam a malha em
+        vez de flutuar sobre ela. <em>Esta página inteira está usando isso.</em> Segundo item: escala
+        de cor de 10 passos com semântica fixa por passo (400 = borda, 900 = texto secundário,
+        1000 = primário). Você nunca mais escolhe cinza no olho.</div>
+        <p class="ref__link"><a href="https://vercel.com/geist/grid">vercel.com/geist/grid</a></p>
+      </div>
+    </article>
+
+    <article class="ref">
+      <div class="ref__n">07</div>
+      <div>
+        <div class="ref__head"><span class="ref__name">Grafana 13 · Dynamic Dashboards</span><span class="ref__kind">dashboard</span></div>
+        <p class="ref__what">GA em abril de 2026. A mudança mais substantiva de layout de dashboard
+        do período — e vem com o racional publicado.</p>
+        <div class="ref__steal"><b>roubar</b>
+        <strong>Visibilidade condicional guiada por resultado de query</strong>: um painel de erro que
+        só existe quando há erro. Densidade adaptativa real em vez de dashboard sempre-cheio.
+        E <strong>auto-grid parametrizado</strong> (largura mínima de coluna + máximo de colunas)
+        em vez de posicionamento absoluto — responsividade sem media query. Detalhe honesto do teste
+        de usabilidade deles: as pessoas procuravam o botão "Add" <em>no topo</em>.</div>
+        <p class="ref__link"><a href="https://grafana.com/whats-new/2026-04-08-dynamic-dashboards-is-now-generally-available/">grafana.com · dynamic dashboards GA</a></p>
+      </div>
+    </article>
+
+    <article class="ref">
+      <div class="ref__n">08</div>
+      <div>
+        <div class="ref__head"><span class="ref__name">Netdata</span><span class="ref__kind">dashboard</span></div>
+        <p class="ref__what">Monitoramento com métricas por segundo, dashboards gerados
+        automaticamente. Demo público ao vivo.</p>
+        <div class="ref__steal"><b>roubar</b>
+        <strong>Densidade extrema deliberada</strong>: dezenas de gráficos por tela, cada um baixo
+        (80–120px) e largo, empilhados sem card e sem sombra, separados só por régua. E o
+        <strong>zoom/pan sincronizado entre todos</strong> — arrastar num gráfico move a janela de
+        todos, o que transforma a página num único instrumento em vez de uma coleção de widgets.</div>
+        <p class="ref__link"><a href="https://app.netdata.cloud/spaces/netdata-demo">app.netdata.cloud · demo</a></p>
+      </div>
+    </article>
+
+    <article class="ref">
+      <div class="ref__n">09</div>
+      <div>
+        <div class="ref__head"><span class="ref__name">Cal.com Status · OpenStatus</span><span class="ref__kind">dashboard</span></div>
+        <p class="ref__what">Status page em produção, e o explorador de temas do OpenStatus por trás
+        dela.</p>
+        <div class="ref__steal"><b>roubar</b>
+        O <strong>tracker de barras</strong>: ~45–90 barras verticais finas, uma por dia, gap de 2px,
+        altura fixa, cor sólida por estado. <em>Troque "dia" por "sessão do agente" e você tem o
+        histórico inteiro de execuções numa faixa de 40px.</em> Do OpenStatus, a arquitetura:
+        os quatro estados são <strong>tokens de primeira classe</strong> ao lado de foreground e
+        background — status é variável do design system, não um <code>if</code> espalhado.</div>
+        <p class="ref__link"><a href="https://status.cal.com/">status.cal.com</a> · <a href="https://themes.openstatus.dev/">themes.openstatus.dev</a></p>
+      </div>
+    </article>
+
+    <article class="ref">
+      <div class="ref__n">10</div>
+      <div>
+        <div class="ref__head"><span class="ref__name">OpenRouter · Rankings</span><span class="ref__kind">dashboard</span></div>
+        <p class="ref__what">Leaderboard ao vivo de uso de modelos, medido em tokens processados.</p>
+        <div class="ref__steal"><b>roubar</b>
+        A gramática de "vivo" <strong>sem animação gratuita</strong>: carimbo de frescor explícito
+        ("dados até 21 de ago"), toggle de janela, <strong>delta percentual em cada linha</strong>
+        e label "novo". E o híbrido de layout — <strong>top 5 como cards, do 6º em diante tabela
+        densa</strong>: hierarquia sem precisar de tamanhos de fonte diferentes.</div>
+        <p class="ref__link"><a href="https://openrouter.ai/rankings">openrouter.ai/rankings</a></p>
+      </div>
+    </article>
+
+    <article class="ref">
+      <div class="ref__n">11</div>
+      <div>
+        <div class="ref__head"><span class="ref__name">Langfuse · Agent Graphs</span><span class="ref__kind">agente</span></div>
+        <p class="ref__what">O melhor que existe hoje para desenhar execução de agente. GA em
+        novembro de 2025; infere o grafo dos timings, funciona com qualquer framework.</p>
+        <div class="ref__steal"><b>roubar</b>
+        <strong>Dois modos sobre o mesmo run.</strong> Agregado: passos de mesmo nome colapsam num
+        nó com contador — <code>retrieve_docs (3/3)</code> — e loops viram ciclos; você lê a
+        <em>arquitetura</em>. Expandido: um nó por chamada, loop desenrolado; você lê a
+        <em>execução literal</em>. Resolve o problema nº 1 do painel de agente: quem fez 40 chamadas
+        não pode virar uma lista de 40 linhas. Bônus: listar as ferramentas <em>disponíveis</em>
+        acima da chamada — mostra o espaço de escolha, não só a escolha.</div>
+        <p class="ref__link"><a href="https://langfuse.com/docs/observability/features/agent-graphs">langfuse.com · agent graphs</a></p>
+      </div>
+    </article>
+
+    <article class="ref">
+      <div class="ref__n">12</div>
+      <div>
+        <div class="ref__head"><span class="ref__name">Braintrust</span><span class="ref__kind">agente</span></div>
+        <p class="ref__what">Árvore de spans à esquerda, detalhe do span selecionado à direita.
+        Seis tipos de span com semântica própria.</p>
+        <div class="ref__steal"><b>roubar</b>
+        <strong>Tipar o span e deixar o tipo mudar o layout do painel de detalhe.</strong> Um span de
+        LLM e um de scoring não deveriam renderizar com o mesmo template — o de LLM mostra mensagens,
+        tokens e <em>time-to-first-token</em>; o de scoring mostra o score <em>e o raciocínio do
+        juiz</em>. É o mecanismo mais reaproveitável da lista.</div>
+        <p class="ref__link"><a href="https://www.braintrust.dev/foundations/how-to-read-a-trace">braintrust.dev · how to read a trace</a></p>
+      </div>
+    </article>
+
+    <article class="ref">
+      <div class="ref__n">13</div>
+      <div>
+        <div class="ref__head"><span class="ref__name">Honeycomb · BubbleUp</span><span class="ref__kind">dashboard</span></div>
+        <p class="ref__what">Você seleciona uma área anômala do gráfico e o sistema compara a seleção
+        contra a baseline, campo a campo.</p>
+        <div class="ref__steal"><b>roubar</b>
+        <strong>"Selecione o anômalo, o sistema te diz o que ele tem de diferente."</strong>
+        Barras amarelas = sua seleção, azuis = todo o resto, ordenadas pela diferença. Aplicado ao
+        megabrain: selecione as sessões que falharam e descubra que 80% delas passaram pela
+        ferramenta X, contra 4% da baseline. É o único mecanismo que encontramos capaz de responder
+        <em>o que os caminhos ruins têm em comum</em>.</div>
+        <p class="ref__link"><a href="https://docs.honeycomb.io/reference/honeycomb-ui/query/query-results">docs.honeycomb.io · query results</a></p>
+      </div>
+    </article>
+
+    <article class="ref">
+      <div class="ref__n">14</div>
+      <div>
+        <div class="ref__head"><span class="ref__name">Railway</span><span class="ref__kind">interação</span></div>
+        <p class="ref__what">Changelog de 31 de julho de 2026 — a fonte mais recente e concreta sobre
+        interação em dashboard de produto dev.</p>
+        <div class="ref__steal"><b>roubar</b>
+        <strong>Cursores sincronizados</strong>: passar o mouse em qualquer gráfico marca o mesmo
+        instante em todos os outros. Barato, e transforma N gráficos separados num instrumento
+        temporal único. Mais: <strong>drag-to-zoom global</strong> e <strong>time picker em linguagem
+        natural</strong> ("2 hours ago", <code>15m</code> ou calendário no mesmo campo).</div>
+        <p class="ref__link"><a href="https://railway.com/changelog/2026-07-31-railway-plugin-for-chatgpt">railway.com/changelog · 2026-07-31</a></p>
+      </div>
+    </article>
+
+    <article class="ref">
+      <div class="ref__n">15</div>
+      <div>
+        <div class="ref__head"><span class="ref__name">AgentGUI</span><span class="ref__kind">pesquisa</span></div>
+        <p class="ref__what">Paper de 2026 sobre observar e <em>redirecionar</em> agentes de longa
+        duração. Relevante porque <strong>rejeita a árvore</strong>.</p>
+        <div class="ref__steal"><b>roubar</b>
+        Usa <strong>timeline por evento</strong>, não grafo, com quatro níveis aninhados de detalhe
+        (progressive disclosure) e separação visual explícita entre <em>raciocínio</em>,
+        <em>chamada de ferramenta</em> e <em>resposta</em>. Reportam 38% mais rapidez de compreensão
+        contra dashboards baseline. A lição: para "o que está acontecendo agora", linha do tempo
+        ganha de grafo — o grafo serve para "que forma tem esse processo".</div>
+        <p class="ref__link"><a href="https://arxiv.org/html/2607.26300">arxiv.org/html/2607.26300</a></p>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<!-- ══════════════════ 02 · DIREÇÃO ══════════════════ -->
+<section id="direcao">
+  <div class="sechead">
+    <span class="idx">02</span>
+    <h2>A direção</h2>
+    <span class="sub">Substrato quente, um acento frio, malha por baixo. O oposto do dashboard
+    preto-com-neon que todo mundo faz.</span>
+  </div>
+
+  <p>O megabrain já tem uma identidade: papel quente e tinta quase preta. Jogar isso fora por mais
+  um near-black com um pop de verde ácido seria trocar algo seu por algo genérico. A proposta
+  mantém o substrato e muda o <em>registro</em>: de página editorial para
+  <strong>painel de instrumento serigrafado</strong>. O toque futurista vem da precisão — malha
+  milimetrada, tracking positivo nos micro-rótulos, mono tabular em todo número — e não de brilho.</p>
+
+  <div class="tokens">
+    <div class="tok"><div class="tok__chip" style="background:#EAE5D8"></div><div class="tok__meta">
+      <div class="tok__name">ground</div><div class="tok__hex num">#EAE5D8</div>
+      <div class="tok__use">substrato. Mais fundo que o papel atual — lê como painel, não como página.</div></div></div>
+    <div class="tok"><div class="tok__chip" style="background:#F6F3EA"></div><div class="tok__meta">
+      <div class="tok__name">panel</div><div class="tok__hex num">#F6F3EA</div>
+      <div class="tok__use">a placa sólida que oclui a malha. É a "elevação" — não há sombra.</div></div></div>
+    <div class="tok"><div class="tok__chip" style="background:#DDD7C6"></div><div class="tok__meta">
+      <div class="tok__name">sunk</div><div class="tok__hex num">#DDD7C6</div>
+      <div class="tok__use">rebaixo. Onde o dado está gravado no painel.</div></div></div>
+    <div class="tok"><div class="tok__chip" style="background:#131310"></div><div class="tok__meta">
+      <div class="tok__name">ink</div><div class="tok__hex num">#131310</div>
+      <div class="tok__use">tinta. Quase preto, com viés quente — nunca #000.</div></div></div>
+    <div class="tok"><div class="tok__chip" style="background:#0B5B66"></div><div class="tok__meta">
+      <div class="tok__name">accent</div><div class="tok__hex num">#0B5B66</div>
+      <div class="tok__use">o único acento. Teal frio contra o substrato quente: a tensão é o futurismo.</div></div></div>
+    <div class="tok"><div class="tok__chip" style="background:#2C6B45"></div><div class="tok__meta">
+      <div class="tok__name">ok</div><div class="tok__hex num">#2C6B45</div>
+      <div class="tok__use">estado, não acento. Nunca decora.</div></div></div>
+    <div class="tok"><div class="tok__chip" style="background:#8A5A0E"></div><div class="tok__meta">
+      <div class="tok__name">warn</div><div class="tok__hex num">#8A5A0E</div>
+      <div class="tok__use">espera. É a cor que mais aparece hoje — 16 projetos atrasados.</div></div></div>
+    <div class="tok"><div class="tok__chip" style="background:#A8321F"></div><div class="tok__meta">
+      <div class="tok__name">crit</div><div class="tok__hex num">#A8321F</div>
+      <div class="tok__use">travado. Racionado ao estilo Modal: um por viewport.</div></div></div>
+  </div>
+
+  <p style="margin-top:26px"><strong>Tipografia.</strong> Três papéis, dois arquivos.
+  <span class="mono">Instrument Serif</span> só nos títulos — a placa de identificação gravada
+  no equipamento, usada com parcimônia. <span class="mono">Instrument Sans</span> no corpo e na
+  interface. <span class="mono">IBM Plex Mono</span> em todo número, rótulo e caminho de arquivo,
+  sempre com <code>tabular-nums</code> para dígito não dançar. Micro-rótulos em caixa alta com
+  <strong>tracking positivo de 0.16em</strong> — o detalhe roubado do Gitness que dá cara de
+  serigrafia de painel.</p>
+
+  <div class="rules">
+    <div class="rule-col adopt">
+      <h3>Adotado</h3>
+      <ul>
+        <li><b>Elevação por escada de superfície</b> <span>— zero sombra, 3 tons + hairline (Raycast, Linear)</span></li>
+        <li><b>Malha de 1px que os painéis ocluem</b> <span>— o futurismo honesto (Geist)</span></li>
+        <li><b>Um acento só, semântica à parte</b> <span>— teal para navegação e foco; ok/warn/crit são estado (Warp, Modal)</span></li>
+        <li><b>Status como token de primeira classe</b> <span>— não um <code>if</code> espalhado (OpenStatus)</span></li>
+        <li><b>Barra de execuções</b> <span>— uma barra por sessão, histórico inteiro em 40px (Cal.com)</span></li>
+        <li><b>Sparkline atrás do número</b> <span>— e o número herda a cor do limiar (Grafana)</span></li>
+        <li><b>Carimbo de frescor + delta</b> <span>— "vivo" sem animação gratuita (OpenRouter)</span></li>
+        <li><b>Visibilidade condicional</b> <span>— o bloco de erro só existe quando há erro (Grafana 13, Warp)</span></li>
+      </ul>
+    </div>
+    <div class="rule-col reject">
+      <h3>Recusado, e por quê</h3>
+      <ul>
+        <li><b>Near-black com pop de neon</b> <span>— é o default de IA em 2026, e joga fora sua identidade quente</span></li>
+        <li><b>Glassmorphism, blur, gradiente roxo→azul</b> <span>— custa render e não informa nada</span></li>
+        <li><b>Card com sombra e raio de 8px em tudo</b> <span>— sombra em UI densa vira sujeira</span></li>
+        <li><b>Número animado em toda métrica</b> <span>— só onde o valor realmente muda ao vivo, e respeitando reduced-motion</span></li>
+        <li><b>Ícone ao lado de cada rótulo</b> <span>— a Linear <em>reduziu</em> ícones no refresh; nós nunca tivemos, e é uma vantagem</span></li>
+        <li><b>Grafo 3D / canvas WebGL de fundo</b> <span>— o brilho comeria a densidade, que é o ponto</span></li>
+        <li><b>Tudo centralizado</b> <span>— instrumento se lê alinhado à esquerda, em coluna</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ 03 · MOCKUP ══════════════════ -->
+<section id="mockup">
+  <div class="sechead">
+    <span class="idx">03</span>
+    <h2>A primeira dobra</h2>
+    <span class="sub">Tudo que importa acima da linha d'água, em quatro faixas. Dado real do
+    megabrain hoje — nada de <em>lorem</em>.</span>
+  </div>
+
+  <div class="mock">
+    <div class="mock__bar">
+      <span class="brand">MEGABRAIN</span>
+      <span>v6.6</span>
+      <span><i class="dot dot--ok"></i>834dde9 sincronizado</span>
+      <span><i class="dot dot--warn"></i>16 projetos atrás</span>
+      <span>trava livre</span>
+      <span class="num">14:59:12 · há 12s</span>
+    </div>
+
+    <div class="mock__kpi">
+      <div class="kpi">
+        <svg class="kpi__spark" viewBox="0 0 100 34" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0 30 L14 30 L28 24 L42 24 L56 16 L70 16 L84 8 L100 8" fill="none" stroke="var(--rule)" stroke-width="1.5"/>
+        </svg>
+        <div class="kpi__v">v6.6</div>
+        <div class="kpi__l">versão</div>
+        <div class="kpi__d">6 releases em 4 dias</div>
+      </div>
+      <div class="kpi kpi--ok">
+        <div class="kpi__v num">834dde9</div>
+        <div class="kpi__l">commit</div>
+        <div class="kpi__d">= origin/main</div>
+      </div>
+      <div class="kpi kpi--warn">
+        <svg class="kpi__spark" viewBox="0 0 100 34" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0 6 L20 6 L20 6 L45 6 L45 6 L70 6 L100 6" fill="none" stroke="var(--warn)" stroke-width="1.5" opacity=".5"/>
+        </svg>
+        <div class="kpi__v num">0<span style="color:var(--ink-faint)">/16</span></div>
+        <div class="kpi__l">projetos na atual</div>
+        <div class="kpi__d">parado há 4 dias</div>
+      </div>
+      <div class="kpi kpi--ok">
+        <div class="kpi__v num">25<span style="color:var(--ink-faint)">/25</span></div>
+        <div class="kpi__l">suíte</div>
+        <div class="kpi__d">2,1s <span class="kpi__delta g-ok">−0,4s</span></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi__v num">8</div>
+        <div class="kpi__l">mecânicas</div>
+        <div class="kpi__d">modelos/visuais/ <span class="kpi__delta g-ok">+8</span></div>
+      </div>
+      <div class="kpi kpi--crit">
+        <div class="kpi__v num">6</div>
+        <div class="kpi__l">esperando você</div>
+        <div class="kpi__d">publicar → push → sync</div>
+      </div>
+    </div>
+
+    <div class="mock__runs">
+      <div class="runs__head">
+        <span class="runs__t">últimas 40 sessões</span>
+        <span class="runs__legend">verde concluída · âmbar deixou pendência · vermelha falhou · vazada em aberto</span>
+      </div>
+      <div class="runs__bars" role="img" aria-label="Histórico das últimas 40 sessões: majoritariamente concluídas, com quatro deixando pendência e uma falha.">
+        <i style="height:70%;background:var(--ok)"></i><i style="height:55%;background:var(--ok)"></i>
+        <i style="height:80%;background:var(--ok)"></i><i style="height:45%;background:var(--ok)"></i>
+        <i style="height:62%;background:var(--warn)"></i><i style="height:90%;background:var(--ok)"></i>
+        <i style="height:50%;background:var(--ok)"></i><i style="height:74%;background:var(--ok)"></i>
+        <i style="height:38%;background:var(--ok)"></i><i style="height:66%;background:var(--ok)"></i>
+        <i style="height:95%;background:var(--warn)"></i><i style="height:58%;background:var(--ok)"></i>
+        <i style="height:42%;background:var(--ok)"></i><i style="height:71%;background:var(--ok)"></i>
+        <i style="height:60%;background:var(--ok)"></i><i style="height:35%;background:var(--crit)"></i>
+        <i style="height:78%;background:var(--ok)"></i><i style="height:52%;background:var(--ok)"></i>
+        <i style="height:64%;background:var(--ok)"></i><i style="height:88%;background:var(--ok)"></i>
+        <i style="height:47%;background:var(--ok)"></i><i style="height:69%;background:var(--warn)"></i>
+        <i style="height:56%;background:var(--ok)"></i><i style="height:83%;background:var(--ok)"></i>
+        <i style="height:40%;background:var(--ok)"></i><i style="height:75%;background:var(--ok)"></i>
+        <i style="height:61%;background:var(--ok)"></i><i style="height:49%;background:var(--ok)"></i>
+        <i style="height:92%;background:var(--ok)"></i><i style="height:57%;background:var(--ok)"></i>
+        <i style="height:44%;background:var(--ok)"></i><i style="height:72%;background:var(--ok)"></i>
+        <i style="height:65%;background:var(--warn)"></i><i style="height:53%;background:var(--ok)"></i>
+        <i style="height:86%;background:var(--ok)"></i><i style="height:48%;background:var(--ok)"></i>
+        <i style="height:70%;background:var(--ok)"></i><i style="height:59%;background:var(--ok)"></i>
+        <i style="height:81%;background:var(--ok)"></i>
+        <i style="height:68%;background:transparent;border:1px solid var(--accent)"></i>
+      </div>
+    </div>
+
+    <div class="mock__split">
+      <div class="mock__cell">
+        <div class="cellh">saúde</div>
+        <div class="health">
+          <i class="s-ok"><b class="g-ok">✓</b><b>git</b><span>834dde9</span></i>
+          <i class="s-ok"><b class="g-ok">✓</b><b>preflight</b><span>ok</span></i>
+          <i class="s-ok"><b class="g-ok">✓</b><b>suíte</b><span>25/25</span></i>
+          <i class="s-ok"><b class="g-ok">✓</b><b>plugin</b><span>1.4.0</span></i>
+          <i class="s-ok"><b class="g-run">●</b><b>cérebro</b><span>1 fonte</span></i>
+          <i class="s-ok"><b class="g-ok">✓</b><b>biblioteca</b><span>8 peças</span></i>
+          <i class="s-warn"><b class="g-warn">○</b><b>projetos</b><span>16 atrás</span></i>
+          <i class="s-crit"><b class="g-crit">✕</b><b>embeddings</b><span>vazio</span></i>
+        </div>
+      </div>
+      <div class="mock__cell">
+        <div class="cellh">o que trava, e só você destrava</div>
+        <ol class="todo">
+          <li><code>publicar-github.cmd</code> — regenera o export</li>
+          <li><code>push-github.cmd</code> — sempre depois do publicar</li>
+          <li><code>sincronizar-pipeline.cmd</code> — leva a v6.6 aos 16</li>
+          <li>instalar <code>megabrain-v1.4.0.plugin</code></li>
+          <li>Ollama de pé → reindexar lições e cérebro</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <p style="margin-top:22px"><strong>O que mudou de posição, e por quê.</strong> A barra preta no
+  topo é o único elemento de contraste máximo da página — ela responde
+  "está tudo certo?" antes de você ler qualquer número. A linha de KPI ganhou
+  <em>frescor</em> ("há 12s") e <em>delta</em>, porque monitoramento contínuo sem
+  sinal de recência mente por omissão. A faixa de execuções é nova: quarenta sessões numa tira de
+  40px dizem mais sobre a saúde do sistema que qualquer número isolado — e a última barra, vazada,
+  é a sessão em curso. E "o que trava" subiu para a primeira dobra, porque no megabrain a informação
+  mais acionável não é uma métrica: é a fila que só roda na sua máquina.</p>
+</section>
+
+<!-- ══════════════════ 04 · FLUXO VIVO ══════════════════ -->
+<section id="fluxo">
+  <div class="sechead">
+    <span class="idx">04</span>
+    <h2>O fluxo vivo</h2>
+    <span class="sub">Primeira versão. Espinha vertical do que já rodou, o passo atual marcado, o que
+    vem planejado — e os galhos que eu considerei e descartei, com o motivo.</span>
+  </div>
+
+  <p>Isto é a parte sem referência para copiar. Todo mundo desenha o <em>rastro</em>; ninguém desenha
+  o <em>plano</em>. O que dá para roubar são peças: o modo agregado × expandido do Langfuse, a
+  causalidade em vez de cronologia do Graph of Trace, e o endereço em forma de caminho do Helicone
+  (<code>/pesquisa/refs/fonte-3</code> — o endereço no plano, não na pilha de execução).</p>
+
+  <p>A leitura que proponho: <strong>uma espinha só</strong>, porque você quer entender rápido, não
+  navegar num canvas. Galho descartado não vira nó — vira um toco riscado ao lado do passo onde a
+  decisão aconteceu, com o motivo colado. Assim o "porquê" fica junto do "quando", e você lê a
+  sessão inteira de cima a baixo sem clicar em nada.</p>
+
+  <div class="flow">
+    <div class="flow__legend">
+      <i><span style="width:9px;height:9px;border-radius:50%;background:var(--ok);display:inline-block"></span> feito</i>
+      <i><span style="width:9px;height:9px;border-radius:50%;background:var(--accent);display:inline-block;box-shadow:0 0 0 3px var(--accent-soft)"></span> agora</i>
+      <i><span style="width:9px;height:9px;border-radius:50%;border:2px dashed var(--ink-faint);display:inline-block"></span> planejado</i>
+      <i>├─ <s>galho descartado</s></i>
+    </div>
+
+    <ol class="spine">
+      <li class="step step--done">
+        <div class="step__when">14:41</div>
+        <div class="step__body">
+          <div class="step__t">Gate 0 — assumir</div>
+          <p class="step__d">Preflight verde, li estado e handoff, travei o escopo. Sem isso eu
+          reconstruiria contexto do zero e reabriria decisão já fechada.</p>
+        </div>
+      </li>
+
+      <li class="step step--done">
+        <div class="step__when">14:44</div>
+        <div class="step__body">
+          <div class="step__t">Duas perguntas antes de codar</div>
+          <p class="step__d">Fundir os geradores de verdade, e biblioteca em HTML+CSS puro.
+          As duas mudavam muito código — perguntar custou menos que refazer.</p>
+          <ul class="branches">
+            <li class="branch"><span class="branch__arm">├─</span><span><s>só renomear o vivo para RELATORIO.html</s> — <em>barato, mas perderia a agregação dos .md</em></span></li>
+            <li class="branch"><span class="branch__arm">├─</span><span><s>dar --projeto ao vivo sem fundir</s> — <em>continuaria com dois arquivos por projeto</em></span></li>
+            <li class="branch"><span class="branch__arm">└─</span><span><s>Mermaid para os fluxos</s> — <em>barato de gerar, mas sem controle de layout e dependente de renderer</em></span></li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="step step--done">
+        <div class="step__when">14:52</div>
+        <div class="step__body">
+          <div class="step__t">Biblioteca visual — 8 mecânicas</div>
+          <p class="step__d">tokens.css + mecanicas/*.html + exemplos.json. Peça visual virou dado.</p>
+        </div>
+      </li>
+
+      <li class="step step--done">
+        <div class="step__when">14:56</div>
+        <div class="step__body">
+          <div class="step__t">Renderizador <code>mb_visual.py</code></div>
+          <p class="step__d">Mini-mustache de ~40 linhas com seções aninhadas. Testado com aninhamento
+          e cálculo de porcentagem antes de acoplar em qualquer coisa.</p>
+          <ul class="branches">
+            <li class="branch"><span class="branch__arm">└─</span><span><s>usar Jinja</s> — <em>dependência nova num sistema que roda em máquina alheia; 40 linhas resolvem</em></span></li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="step step--done">
+        <div class="step__when">14:58</div>
+        <div class="step__body">
+          <div class="step__t">Fusão dos dois relatórios</div>
+          <p class="step__d">O vivo carrega o outro por importlib e agrega os 25 .md. Composição,
+          não cópia — o conversor de markdown continua com um dono só.</p>
+          <ul class="branches">
+            <li class="branch"><span class="branch__arm">└─</span><span><s>copiar as 400 linhas do conversor</s> — <em>viraria fork silencioso na primeira correção de bug</em></span></li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="step step--done">
+        <div class="step__when">15:12</div>
+        <div class="step__body">
+          <div class="step__t">Figma v1 — planta fixa</div>
+          <p class="step__d">15 slots com texto real, 16 tokens em 2 modos. Dois bugs de layout achados
+          por screenshot e corrigidos.</p>
+          <ul class="branches">
+            <li class="branch"><span class="branch__arm">└─</span><span><s>gerar o Figma a partir do HTML</s> — <em>inverteria o sentido que você pediu e faria do arquivo um derivado descartável</em></span></li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="step step--now">
+        <div class="step__when">agora</div>
+        <div class="step__body">
+          <div class="step__t">Pesquisa + esta referência <span class="step__tag t-now">aqui</span></div>
+          <p class="step__d">Duas varreduras paralelas, 15 referências verificadas, direção proposta
+          e mockup da primeira dobra. Backup da v1 do Figma congelado, página v2 criada e vazia —
+          esperando sua reação antes de eu desenhar.</p>
+          <ul class="branches">
+            <li class="branch"><span class="branch__arm">└─</span><span><s>já refazer o Figma sem te mostrar</s> — <em>você pediu para analisar a referência primeiro; refazer antes seria trabalho jogado fora</em></span></li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="step step--next">
+        <div class="step__when">próximo</div>
+        <div class="step__body">
+          <div class="step__t">Retrabalho na página v2 do Figma <span class="step__tag t-next">espera você</span></div>
+          <p class="step__d">Só começa depois da sua reação às três perguntas abaixo. A v1 fica
+          congelada como backup.</p>
+        </div>
+      </li>
+
+      <li class="step step--next">
+        <div class="step__when">depois</div>
+        <div class="step__body">
+          <div class="step__t">Aplicar no HTML e nas mecânicas</div>
+          <p class="step__d">Trocar <code>tokens.css</code>, reescrever as 8 mecânicas no novo
+          registro, regenerar relatório e catálogo. Como a peça é dado, a troca acontece num lugar só.</p>
+        </div>
+      </li>
+
+      <li class="step step--next">
+        <div class="step__when">depois</div>
+        <div class="step__body">
+          <div class="step__t">Propagar aos 16 projetos</div>
+          <p class="step__d">Aí todo projeto da pipeline herda a estética — que é o objetivo que
+          você declarou.</p>
+        </div>
+      </li>
+    </ol>
+  </div>
+
+  <p style="margin-top:20px"><strong>Como isso evolui.</strong> A cada conversa, novos passos entram
+  na espinha e as decisões descartadas viram tocos. O que falta construir: gerar essa espinha
+  <em>a partir do</em> <code>DECISOES.md</code> e do <code>.mb-log/</code> em vez de eu escrever à
+  mão — as duas fontes já existem e já têm alternativa registrada. Vira a mecânica
+  <code>fluxo-vivo</code> da biblioteca, e entra no relatório logo abaixo da primeira dobra.</p>
+</section>
+
+<!-- ══════════════════ 05 · PERGUNTAS ══════════════════ -->
+<section id="asks">
+  <div class="sechead">
+    <span class="idx">05</span>
+    <h2>O que eu preciso de você</h2>
+    <span class="sub">Três reações e eu desenho a v2. Responda por cima, não precisa detalhar.</span>
+  </div>
+
+  <div class="asks">
+    <div class="ask">
+      <div class="ask__q">1. O substrato quente fica, ou vai para escuro?</div>
+      <p class="ask__o">Minha recomendação: <b>fica</b>, com o modo escuro bem-feito como segunda
+      pele (esta página tem os dois — troque o tema do seu sistema e veja). O quente é o que separa
+      o megabrain de todo dashboard de dev tool que existe. Mas se você quiser escuro por padrão,
+      é uma linha de token e eu inverto o par.</p>
+    </div>
+    <div class="ask">
+      <div class="ask__q">2. Teal frio como acento único — passa?</div>
+      <p class="ask__o">É a aposta mais arriscada aqui. O megabrain hoje usa vermelho ferrugem;
+      o teal cria tensão fria contra o papel e é o que faz a coisa ler como
+      <b>instrumento e não como impresso</b>. Alternativas se não colar: azul de blueprint
+      (<span class="mono">#1B4C8C</span>), ou manter a ferrugem e buscar o futurismo só na estrutura.</p>
+    </div>
+    <div class="ask">
+      <div class="ask__q">3. A primeira dobra tem a informação certa?</div>
+      <p class="ask__o">Hoje ela responde: <b>que versão</b>, <b>está sincronizado</b>,
+      <b>os projetos estão atrás</b>, <b>a suíte passa</b>, <b>o que trava e é seu</b>.
+      Falta alguma coisa que você olha sempre? Sobra alguma que você nunca olhou?
+      Esse é o único ajuste que precisa vir de você — o resto eu decido.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Pesquisa de 260822 · duas varreduras paralelas · todas as URLs verificadas por HTTP.
+  Galerias que bloquearam fetch automatizado: <span class="mono">lapa.ninja</span> (Cloudflare),
+  <span class="mono">siteinspire.com</span> (Vercel checkpoint), <span class="mono">refero.design</span>
+  (SPA sem SSR — o conteúdo veio do subdomínio <span class="mono">styles.refero.design</span>).
+  <span class="mono">navbar.gallery</span> e <span class="mono">codrops</span> carregaram, mas trazem
+  pouco de dashboard.</p>
+  <p>Figma: página <span class="mono">v1</span> congelada como backup, página <span class="mono">v2</span>
+  criada e vazia. Nada foi sobrescrito.</p>
+</footer>
+
+</div>

@@ -18,12 +18,12 @@
 - **Por quê:** `skills/megabrain/SKILL.md` e `MEGABRAIN.md` da central foram
   editados depois que o refresh do plugin rodou no subagente.
 - **Como:** `diff` seguido de `robocopy` das linhas 48–50 do
-  `05_scripts/sincronizar-pipeline.cmd` se necessário.
+  `01_acoes/260824_sincronizar-projetos.cmd` se necessário.
 - **RESOLVIDO:** não
 
 ## 260818 — identidade ainda não propagada pros agentes
 
-- **Checar:** se `05_scripts/260810_sincronizar-identidade.cmd` já foi rodado nesta
+- **Checar:** se `01_acoes/260824_sincronizar-identidade.cmd` já foi rodado nesta
   sessão e se os blocos AUTO-SYNC em `~/.claude/CLAUDE.md`,
   `~/.gemini/GEMINI.md`, `~/.kimi/AGENTS.md`, `~/.kimi-code/AGENTS.md` e
   `~/.codex/AGENTS.md` batem com `260810_memoria-pessoal.md`.
@@ -45,10 +45,38 @@
 
 ## 260818 — commits pendentes no repo local
 
-- **Checar:** status de `_github-repo-local` (3 commits à frente de
+- **Checar:** status de `_github/repo-local` (3 commits à frente de
   `origin/main`, 6 arquivos modificados, RELATORIO.html untracked).
 - **Por quê:** o repo público está desatualizado; a sanitização do
   gerenteneuron SKILL.md foi corrigida no working tree mas não commitada.
-- **Como:** `git -C _github-repo-local status --short` e decidir com o
+- **Como:** `git -C _github/repo-local status --short` e decidir com o
   usuário sobre commit/push (push em repo público exige autorização).
 - **RESOLVIDO:** não
+
+## 260822 — o relatório agora tem tema, e o tema mora fora do gerador
+- Checar: se o relatório abrir com cara diferente do esperado, olhe
+  `data-tema` no `<html>` e a chave `mb-relatorio:tema` no localStorage antes
+  de suspeitar do gerador.
+- Por quê: a cor não está mais em `tokens.css` — está em
+  `modelos/visuais/temas/NN-*.css`, e a escolha do leitor persiste entre
+  sessões. Editar `tokens.css` esperando mudar a aparência não funciona mais.
+- Como: `python bin/mb_visual.py --listar` e abrir
+  `modelos/visuais/temas/` para ver quais temas existem.
+
+## 260822 — 04_visuais/ é do humano; não trate movimentação como bagunça
+- Checar: antes de "organizar" `04_visuais/`, confirme que os arquivos em
+  `01_sim/` e `02_nao/` foram postos lá pelo <USUARIO>.
+- Por quê: a triagem dele É o dado. Um agente "arrumando" a pasta apaga a
+  única fonte que temos do gosto dele — e os `.txt` de motivo em `02_nao/`
+  valem mais que qualquer briefing.
+- Como: nenhum script lê essa pasta. Leia, nunca reorganize sem pedir.
+
+## 260822 — screenshot de site só pelo Chrome dele
+- Checar: antes de planejar captura de página web, lembre que o container
+  não alcança a web aberta.
+- Por quê: Playwright está instalado e funciona, mas todo host externo dá
+  `ERR_CONNECTION_RESET` (o proxy só libera npm/pypi). Perdi ~5 min
+  descobrindo isso.
+- Como: usar `mcp__claude-in-chrome__*` no navegador do <USUARIO>
+  (autorização permanente). Para render local, embutir fontes via
+  `@fontsource` do npm como data URI e usar `wait_until='load'`.

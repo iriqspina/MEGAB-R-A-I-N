@@ -20,3 +20,7 @@ gerenteneuron/data/
 gerenteneuron/vault/
 gerenteneuron/__pycache__/
 gerenteneuron/**/*.pyc
+
+# Obsidian (config local do vault) e DNA do usuario nunca sobem
+.obsidian/
+dna/usuario/

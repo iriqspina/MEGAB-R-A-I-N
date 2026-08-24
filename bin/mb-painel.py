@@ -34,15 +34,15 @@ EXTENSOES = {".md", ".txt"}
 IGNORAR = {".git", ".mb-backup", ".dna-backup", ".mb-aspirador", "__pycache__", ".mb-log"}
 
 GRUPOS = [
-    ("protocolo", ["skills/megabrain/SKILL.md", "MEGABRAIN.md", "00_nucleo/MEGABRAIN.md", "skills/codex-megabrain/SKILL.md", "skills/ingerir/SKILL.md"]),
-    ("porta de entrada", ["README.md", "VERSAO.txt", "OFFLINE.md", "00_nucleo/", "AUDITORIA.md"]),
-    ("estado", ["01_estado/"]),
-    ("cérebro", ["03_cerebro/"]),
-    ("relatórios", ["04_relatorios/"]),
-    ("scripts", ["05_scripts/"]),
-    ("instaláveis", ["06_dist/"]),
+    ("protocolo", ["skills/megabrain/SKILL.md", "MEGABRAIN.md", "memoria/nucleo/MEGABRAIN.md", "skills/codex-megabrain/SKILL.md", "skills/ingerir/SKILL.md"]),
+    ("porta de entrada", ["README.md", "VERSAO.txt", "OFFLINE.md", "memoria/nucleo/", "AUDITORIA.md"]),
+    ("estado", ["memoria/estado/"]),
+    ("cérebro", ["memoria/cerebro/"]),
+    ("relatórios", ["00_painel/"]),
+    ("scripts", ["01_acoes/"]),
+    ("instaláveis", ["dist/"]),
     ("referências", ["referencias/"]),
-    ("apoio", ["07_docs/", "modelos/", "dna/", "08_alteracoes-pendentes/"]),
+    ("apoio", ["03_docs/", "modelos/", "dna/", "memoria/pendencias/"]),
     ("arquivo", ["90_arquivo/"]),
 ]
 

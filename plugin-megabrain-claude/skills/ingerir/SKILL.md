@@ -16,7 +16,7 @@ Dois cérebros, sempre os dois:
 
 1. **Do projeto:** `<projeto>/cerebro/` — cliente, briefing, fontes deste
    trabalho. `mb-check-version.py` cria o esqueleto no Gate 0 se faltar.
-2. **Da central:** `<MEGABRAIN_ROOT>/03_cerebro/` — conhecimento que vale em
+2. **Da central:** `<MEGABRAIN_ROOT>/memoria/cerebro/` — conhecimento que vale em
    qualquer projeto (mercado, ferramentas, pessoas recorrentes, método).
 
 Regra de destino: *serviria num projeto completamente diferente?* Sim →
@@ -96,3 +96,9 @@ abertas que só ele responde (máx. 3).
 - Páginas sem fonte, sem atualização há 90+ dias, ou com 2+ páginas
   cobrindo o mesmo tópico → relatar e propor merge. Merge preserva todas as
   fontes e aposenta a página absorvida no INDICE.
+
+## Manutenção (rodar junto, sem custo de token extra)
+
+No começo de uma sessão de ingestão: `python bin/mb-manutencao-cerebro.py --auto`
+(silencioso se rodou há <7 dias). Fontes também podem chegar por `02_entrada/`
+na central: ingerir = mover o original pra `cerebro/raw/` e destilar normalmente.

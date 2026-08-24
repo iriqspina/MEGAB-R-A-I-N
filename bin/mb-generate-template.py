@@ -33,13 +33,13 @@ def detectar_central():
 
 
 CENTRAL_DEFAULT = detectar_central()
-DESTINO_DEFAULT = os.path.join(CENTRAL_DEFAULT, "260810_github-export")
+DESTINO_DEFAULT = os.path.join(CENTRAL_DEFAULT, "_github/export")
 
 # Não copiar: exclusivamente pessoais ou gerados (match por substring no caminho relativo)
 EXCLUIR = {
-    "cerebro", "03_cerebro",  # v6.2: conteúdo pessoal (wiki/pessoas/raw) nunca sai
+    "cerebro", "memoria/cerebro",  # v6.2: conteúdo pessoal (wiki/pessoas/raw) nunca sai
     "_arquivo", "90_arquivo",  # v6.2: histórico congelado
-    "dist", "06_dist", "04_relatorios",  # v6.2/v6.4 (05_scripts SAI como scripts/ — os .cmd fazem parte do pacote): instaláveis (.plugin/.skill)
+    "dist", "dist", "00_painel",  # v6.2/v6.4 (01_acoes SAI como scripts/ — os .cmd fazem parte do pacote): instaláveis (.plugin/.skill)
     "_to_delete",
     "260810_memoria-pessoal.md",
     "licoes-megabrain.md",
@@ -59,13 +59,13 @@ EXCLUIR = {
     "260810_backup-raiz-perfil",
     "260810_variantes",
     "260811_prompt-claude-handoff.txt",
-    "260810_github-export",
-    "_github-repo-local",
+    "_github/export",
+    "_github/repo-local",
     # Cópia derivada usada localmente por sincronização de projetos. O pacote
     # público já é a raiz portátil e não deve carregar esta árvore duplicada.
     "MEGABRAIN",
     "_to_delete", "99_to_delete",
-    "alteracoes-pendentes", "08_alteracoes-pendentes",
+    "alteracoes-pendentes", "memoria/pendencias",
     "referencias visuais",
     ".git",
     ".mb-aspirador",
@@ -77,7 +77,7 @@ EXCLUIR = {
     "__pycache__",
     "260810_VISAO-GERAL.md",
     "PIPELINE.md",
-    "sincronizar-pipeline.cmd",
+    "260824_sincronizar-projetos.cmd",
     "mb-sync-all.cmd",
     "260810_SKILL-divergente.bak.md",
     ".bak",
@@ -261,7 +261,7 @@ def gerar_template(central, destino):
         print(f"ERRO: central não encontrada em {central_path}")
         return False
 
-    # O destino deve ficar dentro da central (normalmente 260810_github-export).
+    # O destino deve ficar dentro da central (normalmente _github/export).
     try:
         u.resolve_within(destino_path, central_path)
     except ValueError as e:

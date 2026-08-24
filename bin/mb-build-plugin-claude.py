@@ -185,7 +185,7 @@ def main() -> int:
 
     if not args.sem_zip:
         nome = f"{dt.datetime.now():%y%m%d}_megabrain-v{versao_plugin(plugin)}.plugin"
-        destino = u.pasta(c, "dist") / nome   # v6.2: instaláveis em dist/ (v6.4: 06_dist/)
+        destino = u.pasta(c, "dist") / nome   # v6.2: instaláveis em dist/ (v6.4: dist/)
         destino.parent.mkdir(exist_ok=True)
         zipar(plugin, destino)
         print(f"pacote: {destino}")

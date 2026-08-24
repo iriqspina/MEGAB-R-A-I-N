@@ -44,7 +44,7 @@ u.utf8_console()
 TEXTO = {".md", ".txt", ".py", ".cmd", ".js", ".mjs", ".json", ".yaml", ".yml", ".html", ".css"}
 PULAR_DIRS = {".git", "node_modules", "__pycache__", ".venv", "venv", ".mb-backup",
               ".mb-aspirador", ".dna-backup", ".megabrain", ".mb-log", "_to_delete", "99_to_delete",
-              "260810_backup-raiz-perfil", "260810_variantes", "260810_github-export",
+              "260810_backup-raiz-perfil", "260810_variantes", "_github/export",
               ".orquestrador"}  # diálogos antigos do orquestrador: artefato de execução
 # Onde o nome antigo é reconhecimento deliberado (ler arquivo legado, registrar
 # a decisão de renomear, histórico). Fora daqui, é resíduo.
@@ -59,7 +59,7 @@ LEGADO_PERMITIDO = (
     # v6.6: o relatório passou a agregar os .md da instância (DECISOES, HANDOFF,
     # lições) — logo ele HERDA as menções históricas que já são permitidas na
     # fonte. Varrer o derivado por resíduo é acusar duas vezes o mesmo texto.
-    "04_relatorios/", "relatorios-antigos/", "RELATORIO.html", "CATALOGO-VISUAL.html",
+    "00_painel/", "relatorios-antigos/", "RELATORIO.html", "CATALOGO-VISUAL.html",
     "indice-licoes.json", "licoes-recorrencia.json",
     # congelados/backups: história, não fonte viva
     "PIPELINE.md", "260805_licoes-backup", "260811_prompt-claude-handoff", "mb-patch-v5.py",
@@ -85,7 +85,7 @@ def git(repo: Path, *args: str, timeout: int = 8) -> str | None:
 
 
 def achar_repo(base: Path) -> Path | None:
-    for cand in (base, base / "_github-repo-local"):
+    for cand in (base, base / "_github/repo-local"):
         if (cand / ".git").exists():
             return cand
     return None
@@ -93,9 +93,9 @@ def achar_repo(base: Path) -> Path | None:
 
 def achar_central(base: Path) -> Path:
     """--repo pode ser a central ou o repo-local dentro dela."""
-    if (u.achar(base, "VERSAO.txt")).is_file() and (base / "bin").is_dir() and (base / "_github-repo-local").is_dir():
+    if (u.achar(base, "VERSAO.txt")).is_file() and (base / "bin").is_dir() and (base / "_github/repo-local").is_dir():
         return base
-    if base.name == "_github-repo-local" and (u.achar(base.parent, "VERSAO.txt")).is_file():
+    if base.name == "_github/repo-local" and (u.achar(base.parent, "VERSAO.txt")).is_file():
         return base.parent
     return base
 
@@ -229,7 +229,7 @@ def cheque_legado(raizes: list[Path]) -> tuple[bool, str]:
 
 def main() -> int:
     p = argparse.ArgumentParser()
-    p.add_argument("--repo", required=True, help="central do megabrain ou _github-repo-local")
+    p.add_argument("--repo", required=True, help="central do megabrain ou _github/repo-local")
     p.add_argument("--agentes", action="store_true", help="varre também ~/.claude, ~/.kimi-code, ~/.gemini, ~/.codex")
     p.add_argument("--fetch", action="store_true", help="tenta git fetch antes de comparar (timeout 25s)")
     p.add_argument("--forcar", action="store_true", help="ignora o cache")

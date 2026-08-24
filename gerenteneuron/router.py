@@ -1,4 +1,12 @@
-"""Roteador de modelo por custo/capacidade.
+"""Roteador de modelo — v7.0 (260824): triagem por custo DESLIGADA.
+
+Decisão do <USUARIO> (DECISOES.md 260824b): o Neuron observa, não escolhe
+modelo. Toda mensagem vai pra classe de ponta ("deep"); a escolha fina de
+modelo é do processamento normal da sessão. O classificador antigo fica
+guardado abaixo, desligado, pra era das faixas. Cada resposta vira telemetria
+em ../.mb-log/neuron.jsonl (modelo, custo, tokens, duração).
+
+Texto original do roteador por custo/capacidade:
 
 Estratégias:
 - local_code: código, debug, refactor → modelo local primeiro (custo zero).
@@ -175,7 +183,9 @@ def route(
     boost: bool = False,
 ) -> dict:
     cfg = carregar_config()
-    estrategia = classificar_estrategia(mensagem)
+    # v7.0 (260824): triagem desligada — sempre classe de ponta. O
+    # classificar_estrategia() fica guardado pra quando as faixas voltarem.
+    estrategia = "deep"
 
     if modo == "manual" and modelo_forcado and modelo_forcado != "auto":
         provider_id, modelo_id = _parse_modelo(modelo_forcado)
@@ -187,4 +197,35 @@ def route(
             estrategia = BOOST_DE.get(estrategia, "deep")
         fila = montar_fila(cfg, estrategia)
 
-    return _executar_fila(mensagem, cfg, fila, modo, estrategia, historico)
+    import time as _t
+    _ini = _t.time()
+    resultado = _executar_fila(mensagem, cfg, fila, modo, estrategia, historico)
+    _telemetria(resultado, _t.time() - _ini)
+    return resultado
+
+
+def _telemetria(resultado: dict, duracao_s: float) -> None:
+    """Anexa 1 linha JSONL em ../.mb-log/neuron.jsonl — dado bruto local
+    (spec 03_docs/260824_spec-fase2.md §4). Valores nunca generalizados;
+    nada sobe pra lugar nenhum sem opt-in. Falha em silêncio."""
+    try:
+        import datetime as _dt, json as _j
+        from pathlib import Path as _P
+        log = _P(__file__).resolve().parent.parent / ".mb-log" / "neuron.jsonl"
+        log.parent.mkdir(exist_ok=True)
+        linha = {
+            "ts": _dt.datetime.now().isoformat(timespec="seconds"),
+            "modelo": resultado.get("modelo_usado"),
+            "provider": resultado.get("provider"),
+            "estrategia": resultado.get("estrategia"),
+            "modo": resultado.get("modo"),
+            "custo_usd": resultado.get("custo_estimado_usd"),
+            "tokens_in": resultado.get("tokens_entrada"),
+            "tokens_out": resultado.get("tokens_saida"),
+            "duracao_s": round(duracao_s, 2),
+            "erro": bool(resultado.get("erro")),
+        }
+        with log.open("a", encoding="utf-8") as f:
+            f.write(_j.dumps(linha, ensure_ascii=False) + "\n")
+    except Exception:
+        pass

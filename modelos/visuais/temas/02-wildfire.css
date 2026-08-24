@@ -1,0 +1,132 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   TEMA 02 · WILDFIRE                                            260822
+   Corpo neutro, dois fogos. Verde wildfire = o que está vivo;
+   vinho = o que trava e é seu. Nada mais tem cor.
+
+   Linha de pensamento: instrumento no escuro. O neutro é quase acromático
+   (C≈0.006) para que os dois acentos não tenham com o que competir — é a
+   disciplina de racionamento do Modal, com dois canais em vez de um.
+   "Espera" não ganha uma terceira cor: é o verde AINDA NÃO ACESO
+   (mesmo matiz, croma no chão). Todo estado mora no eixo verde→vinho.
+
+   Cor em OKLCH: L igual = brilho percebido igual em qualquer matiz, então
+   verde e vinho podem ter peso visual equivalente sem um berrar mais alto.
+   Suporte: Chrome 111+, Firefox 113+, Safari 15.4+ (widely available 2025).
+
+   Cascata (padrão Pico/Primer): os blocos são mutuamente exclusivos por
+   :not(), não por especificidade — a escolha explícita ganha do sistema NOS
+   DOIS SENTIDOS, sem !important e sem guerra de peso.
+   @nome: Wildfire
+   @amostra: #131614,#6ee87a,#8f2233
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── invariantes do tema: não mudam com claro/escuro ────────────────── */
+[data-tema="02-wildfire"]{
+  --sans: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+  --s1:.3rem; --s2:.62rem; --s3:1.05rem; --s4:1.8rem;   /* mais apertado que o editorial */
+  --r: 3px;
+  --tracking-rotulo: .17em;   /* rótulo caixa-alta serigrafado (Gitness) */
+  --peso-titulo: 650;
+  --malha: 0;                 /* wildfire não usa papel milimetrado */
+}
+
+/* ── CLARO — explícito, ou quando não há escolha ────────────────────── */
+[data-tema="02-wildfire"][data-modo="claro"],
+[data-tema="02-wildfire"]:not([data-modo="escuro"]){
+  --paper:        oklch(96.5% .004 150);
+  --paper-high:   oklch(99.4% .002 150);
+  --paper-sunk:   oklch(92.5% .006 150);
+  --ink:          oklch(17%   .012 150);
+  --ink-soft:     oklch(43%   .009 150);
+  --ink-faint:    oklch(57%   .008 150);
+  --line:         oklch(86%   .008 150);
+  --line-strong:  oklch(72%   .011 150);
+
+  --ok:           oklch(48%   .145 148);   /* wildfire cravado p/ contraste em papel */
+  --ok-soft:      oklch(93%   .055 148);
+  --info:         oklch(43%   .155 148);   /* o vivo/agora */
+  --info-soft:    oklch(91%   .070 148);
+  --warn:         oklch(58%   .030 148);   /* verde ainda não aceso = espera */
+  --warn-soft:    oklch(94%   .018 148);
+  --signal:       oklch(41%   .155 18);    /* vinho */
+  --signal-soft:  oklch(92%   .045 18);
+
+  --ok-dim:       oklch(56%   .085 148);   /* concluído em massa — não compete com o vivo */
+  --bar-bg:       oklch(17%   .010 150);   /* a barra é sempre escura: é leitura de instrumento */
+  --bar-ink:      oklch(93%   .010 150);
+  --bar-line:     oklch(34%   .020 150);
+  --brilho-vivo:  none;
+  color-scheme: light;
+}
+
+/* ── ESCURO automático: só quando não há atributo nenhum ────────────── */
+@media (prefers-color-scheme: dark){
+  [data-tema="02-wildfire"]:not([data-modo]){
+    --paper:        oklch(15.5% .006 150);
+    --paper-high:   oklch(19.5% .007 150);
+    --paper-sunk:   oklch(11.5% .005 150);
+    --ink:          oklch(94%   .008 150);
+    --ink-soft:     oklch(72%   .008 150);
+    --ink-faint:    oklch(56%   .008 150);
+    --line:         oklch(29%   .010 150);
+    --line-strong:  oklch(42%   .013 150);
+
+    --ok:           oklch(80%   .175 148);
+    --ok-soft:      oklch(26%   .055 148);
+    --info:         oklch(86%   .195 148);   /* o fogo — máximo brilho */
+    --info-soft:    oklch(28%   .070 148);
+    --warn:         oklch(54%   .028 148);
+    --warn-soft:    oklch(22%   .014 148);
+    --signal:       oklch(66%   .165 18);
+    --signal-soft:  oklch(26%   .060 18);
+
+    --ok-dim:       oklch(52%   .080 148);
+    --bar-bg:       oklch(10.5% .006 150);
+    --bar-ink:      oklch(78%   .010 150);
+    --bar-line:     oklch(26%   .014 150);
+    --brilho-vivo: 0 0 0 1px oklch(86% .195 148 / .35), 0 0 22px oklch(86% .195 148 / .22);
+    color-scheme: dark;
+  }
+}
+
+/* ── ESCURO explícito ───────────────────────────────────────────────── */
+[data-tema="02-wildfire"][data-modo="escuro"]{
+  --paper:        oklch(15.5% .006 150);
+  --paper-high:   oklch(19.5% .007 150);
+  --paper-sunk:   oklch(11.5% .005 150);
+  --ink:          oklch(94%   .008 150);
+  --ink-soft:     oklch(72%   .008 150);
+  --ink-faint:    oklch(56%   .008 150);
+  --line:         oklch(29%   .010 150);
+  --line-strong:  oklch(42%   .013 150);
+
+  --ok:           oklch(80%   .175 148);
+  --ok-soft:      oklch(26%   .055 148);
+  --info:         oklch(86%   .195 148);
+  --info-soft:    oklch(28%   .070 148);
+  --warn:         oklch(54%   .028 148);
+  --warn-soft:    oklch(22%   .014 148);
+  --signal:       oklch(66%   .165 18);
+  --signal-soft:  oklch(26%   .060 18);
+
+  --ok-dim:       oklch(52%   .080 148);
+  --bar-bg:       oklch(10.5% .006 150);
+  --bar-ink:      oklch(78%   .010 150);
+  --bar-line:     oklch(26%   .014 150);
+  --brilho-vivo: 0 0 0 1px oklch(86% .195 148 / .35), 0 0 22px oklch(86% .195 148 / .22);
+  color-scheme: dark;
+}
+
+/* ── o que o tema muda ALÉM da cor ──────────────────────────────────── */
+/* O elemento vivo é o único que brilha. Um por viewport, regra do Modal. */
+[data-tema="02-wildfire"] .mbv-etapa--ativo,
+[data-tema="02-wildfire"] .step--now .step__body::before{ box-shadow: var(--brilho-vivo); }
+/* Rótulo serigrafado: tracking positivo só em caixa-alta pequena. */
+[data-tema="02-wildfire"] .mbv-kpi__r,
+[data-tema="02-wildfire"] .mbv-camada__nome,
+[data-tema="02-wildfire"] .slot__tit,
+[data-tema="02-wildfire"] .faixa{ letter-spacing: var(--tracking-rotulo); }
+/* Espera é traço interrompido, não cor nova. */
+[data-tema="02-wildfire"] .mbv-item--espera,
+[data-tema="02-wildfire"] .mbv-sem__i--espera{ border-style: dashed; }

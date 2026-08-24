@@ -5,7 +5,7 @@ rem Sincroniza a identidade nos 6 destinos de uma vez.
 rem Edite SO a fonte. Nunca edite as copias.
 
 set "MB=%~dp0..\"
-set "FONTE=%MB%02_identidade\260810_memoria-pessoal.md"
+set "FONTE=%MB%memoria\identidade\260810_memoria-pessoal.md"
 set "SCRIPT=%MB%bin\mb-sync-memoria.py"
 
 rem Python: usa o do PATH. Se nao houver, pergunta uma vez.

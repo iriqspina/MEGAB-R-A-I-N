@@ -10,12 +10,12 @@ arquivo sem um servidor local, então o "ao vivo" é reload em intervalo fixo
 
 Fontes: PROGRESSO.json (etapas + notas, atualizado via --marcar/--nota),
 ESTADO.md, HANDOFF.md (trava + seção "PARA VOCÊ"), DECISOES.md (últimos
-títulos), .mb-log/ do dia, VERSAO.txt, git de _github-repo-local/ e os
+títulos), .mb-log/ do dia, VERSAO.txt, git de _github/repo-local/ e os
 VERSAO.txt das cópias MEGABRAIN/ dos projetos irmãos.
 
 v6.1 (260821) — bloco de VERSÃO no topo:
   · versão atual do megabrain (VERSAO.txt) + commit git local (HEAD de
-    _github-repo-local), remoto conhecido (origin/main) e quantos commits
+    _github/repo-local), remoto conhecido (origin/main) e quantos commits
     locais ainda não subiram;
   · versão ANTERIOR (a que estava no ar na última troca de versão/commit);
   · tabela dos projetos: qual versão cada MEGABRAIN/ puxou vs a atual.
@@ -56,12 +56,18 @@ try:
 except Exception:  # biblioteca visual ausente: relatório degrada, não quebra
     vis = None
 
+try:
+    import mb_workspace as ws  # v7.0: abas + workspace + feedback rail
+except Exception:  # sem o módulo: página degrada pro fluxo único antigo
+    ws = None
+
 u.utf8_console()
 
 
 # CSS do conteúdo agregado (.md) e dos slots fixos. Fica aqui, e não em
 # modelos/visuais/, porque descreve a PÁGINA — as mecânicas descrevem peças.
 CSS_CONTEUDO = """
+html.pre-carga *, html.pre-carga *::before { transition: none !important; }
 .faixa { margin:2.4rem 0 .2rem; padding:.35rem 0; border-top:2px solid var(--ink);
   border-bottom:1px solid var(--line); font:800 .7rem/1.3 var(--mono);
   text-transform:uppercase; letter-spacing:.14em; }
@@ -94,6 +100,9 @@ CSS_CONTEUDO = """
 @media (max-width: 720px) { .duo { grid-template-columns:1fr; } }
 """
 
+# Tema que abre por padrão. O usuário troca no seletor e a escolha persiste;
+# este valor só vale na primeira visita (ou quando o storage está bloqueado).
+TEMA_PADRAO = "02-wildfire"
 RELOAD_SEGUNDOS = 15
 STATUS_VALIDOS = {"pendente", "fazendo", "feito", "bloqueado"}
 ICONE = {"feito": "✓", "fazendo": "●", "pendente": "○", "bloqueado": "✕"}
@@ -125,8 +134,8 @@ def _git(repo: Path, *args: str) -> str | None:
 
 
 def repo_git(c: Path) -> Path | None:
-    """Onde está o git do megabrain: a central (se for repo) ou _github-repo-local/."""
-    for cand in (c, c / "_github-repo-local"):
+    """Onde está o git do megabrain: a central (se for repo) ou _github/repo-local/."""
+    for cand in (c, c / "_github/repo-local"):
         if (cand / ".git").exists():
             return cand
     return None
@@ -240,7 +249,7 @@ def indexar_arquivo(pasta: Path) -> None:
     arquivos = sorted((x for x in pasta.glob("*_RELATORIO*.html")), reverse=True)
     linhas = ["# Relatórios antigos", "",
               "Cada arquivo aqui é o relatório como ele estava ANTES de uma troca de",
-              "versão ou de commit. O relatório vivo (`04_relatorios/RELATORIO.html`) é",
+              "versão ou de commit. O relatório vivo (`00_painel/RELATORIO.html`) é",
               "sempre o atual; estes são o histórico. Guardados automaticamente pelo",
               "`bin/mb-relatorio-vivo.py`; os mais velhos são podados após "
               f"{SNAPSHOTS_MAX}.", "",
@@ -420,11 +429,11 @@ def fila_pendentes(c: Path) -> list[dict]:
 # derivado ou arquivo morto. Sem esta lista o rglob puxa referencias/,
 # github-export/ e repo-local/ e o HTML passa de 2 MB.
 IGNORAR_CENTRAL = {
-    "90_arquivo", "99_to_delete", "_github-repo-local", "260810_github-export",
-    "04_relatorios", "06_dist", "referencias", "modelos", "skills", "tests",
+    "90_arquivo", "99_to_delete", "_github/repo-local", "_github/export",
+    "00_painel", "dist", "referencias", "modelos", "skills", "tests",
     "bin", "dna", "plugin-megabrain", "plugin-megabrain-claude",
     "relatorio-megabrain", "gerenteneuron", ".claude", ".mb-backup", ".mb-log",
-    ".mb-aspirador", "__pycache__", ".git", "megabrain",
+    ".mb-aspirador", "__pycache__", ".git", "megabrain", "02_entrada",
 }
 
 
@@ -540,7 +549,7 @@ def pecas_visuais(c: Path, git: dict, versao: str, projetos: list,
         {"valor": (f"{len(projetos) - len(atrasados)}/{len(projetos)}" if projetos else "—"),
          "rotulo": "projetos na atual",
          "status": "ok" if projetos and not atrasados else "espera",
-         "det": "sincronizar-pipeline.cmd" if atrasados else ("nada a fazer" if projetos else "sem projetos irmãos")},
+         "det": "260824_sincronizar-projetos.cmd" if atrasados else ("nada a fazer" if projetos else "sem projetos irmãos")},
         {"valor": (f"{feitas}/{len(etapas)}" if etapas else "—"), "rotulo": "etapas",
          "status": "ok" if etapas and feitas == len(etapas) else "ativo",
          "det": "PROGRESSO.json"},
@@ -643,7 +652,9 @@ def gerar_html(c: Path, forcar_snapshot: bool = False) -> bool:
     bloco_para_voce = ""
     if para_voce:
         itens = "".join(
-            "<li>" + re.sub(r"`([^`]+)`", r"<code>\1</code>", e(x)) + "</li>" for x in para_voce)
+            "<li>" + re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>",
+                            re.sub(r"`([^`]+)`", r"<code>\1</code>", e(x))) + "</li>"
+            for x in para_voce)
         bloco_para_voce = (f'<section class="voce"><span class="label">👉 para você — o que fazer agora '
                            f'({len(para_voce)})</span><ol>{itens}</ol>'
                            f'<p class="det">fonte: seção "PARA VOCÊ" do HANDOFF.md — edite lá, não aqui.</p></section>')
@@ -685,13 +696,40 @@ def gerar_html(c: Path, forcar_snapshot: bool = False) -> bool:
     na_central = u.e_central(c) if hasattr(u, "e_central") else True
     pecas = pecas_visuais(c, git, versao, projetos, prog, na_central)
     navs_md, secoes_md = conteudo_md(c, na_central)
+
+    # --- v7.0: workspace (abas, controles, feedback rail) ---
+    if ws is not None:
+        modo = ws.modo_atual(c)
+        topbar = ws.html_topbar(modo)
+        tabnav = ws.tabs_nav()
+        rail = ws.html_rail()
+        js_ws = ws.js_workspace()
+        esquema_html = ws.html_esquema()
+        bloco_acoes = ws.html_acoes(ws.acoes_lista(c))
+        bloco_skills = ws.html_skills(ws.skills_lista(c))
+        pa, pf = ws.pane_abre, ws.pane_fecha
+    else:
+        topbar = tabnav = rail = js_ws = esquema_html = ""
+        bloco_acoes = bloco_skills = ""
+        pa = (lambda _ident: "")
+        pf = (lambda: "")
     css_extra = ""
+    antiflash = seletor_html = seletor_js = ""
     if vis is not None:
         try:
-            css_extra = vis.css()
+            # ordem importa: tokens (contrato) → mecânicas → TEMAS → seletor.
+            # [data-tema=...] tem a mesma especificidade que :root, então quem
+            # vem depois manda. Os blocos de modo usam :not() (padrão Pico),
+            # e por isso a escolha explícita ganha do sistema nos dois sentidos.
+            css_extra = vis.css() + "\n" + vis.css_temas() + "\n" + vis.css_seletor()
+            antiflash = vis.script_antiflash()
+            seletor_html = vis.html_seletor(TEMA_PADRAO)
+            seletor_js = vis.js_seletor()
         except Exception:
             css_extra = ""
     css_extra += CSS_CONTEUDO
+    if ws is not None:
+        css_extra += ws.CSS
     bloco_indice = ("".join(f'<a href="#{e(i)}">{e(tt)}</a>' for i, tt in navs_md)
                     if navs_md else '<span class="det">nenhum .md informacional encontrado</span>')
 
@@ -703,10 +741,12 @@ def gerar_html(c: Path, forcar_snapshot: bool = False) -> bool:
         return f'<section class="slot" id="{e(ident)}">{cab}{interno}</section>'
 
     pagina = f"""<!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-tema="{TEMA_PADRAO}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<script>{antiflash}</script>
 <title>MEGABRAIN — relatório vivo</title>
 <style>
 :root {{
@@ -722,7 +762,7 @@ body {{ margin:0; background:var(--paper); color:var(--ink); font:16px/1.5 var(-
 header {{ border-bottom:2px solid var(--ink); padding-bottom:1rem; margin-bottom:1.5rem; }}
 h1 {{ margin:.3rem 0 .2rem; font-size:clamp(1.8rem,5vw,2.8rem); line-height:.95; letter-spacing:-.05em; }}
 h2 {{ margin:2rem 0 .6rem; font-size:1.15rem; letter-spacing:-.03em; }}
-.eyebrow,.label {{ color:var(--signal); font:800 .66rem/1.3 var(--mono); letter-spacing:.1em; text-transform:uppercase; }}
+.eyebrow,.label {{ /* rótulo é hierarquia, não estado */ color:var(--ink-faint); font:800 .66rem/1.3 var(--mono); letter-spacing:.1em; text-transform:uppercase; }}
 .meta {{ color:var(--ink-faint); font:.68rem/1.5 var(--mono); }}
 .pulse {{ display:inline-flex; align-items:center; gap:.4rem; }}
 .pulse::before {{ content:""; width:.5rem; height:.5rem; border-radius:50%; background:#2e8c57; box-shadow:0 0 0 .22rem rgb(46 140 87 / 18%); }}
@@ -747,7 +787,7 @@ h2 {{ margin:2rem 0 .6rem; font-size:1.15rem; letter-spacing:-.03em; }}
 .notas li:last-child {{ border-bottom:0; }}
 table {{ width:100%; border-collapse:collapse; background:var(--paper-high); border:1px solid var(--line); }}
 th,td {{ padding:.4rem .6rem; border-bottom:1px solid var(--line); text-align:left; font-size:.8rem; }}
-th {{ font:800 .62rem/1.3 var(--mono); text-transform:uppercase; letter-spacing:.08em; color:var(--signal); }}
+th {{ font:800 .62rem/1.3 var(--mono); text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); }}
 .duo {{ display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; }}
 .cartao {{ border:1px solid var(--line); background:var(--paper-high); padding: .9rem 1rem; }}
 ul.simples {{ margin:.3rem 0 0; padding-left:1.1rem; font-size:.85rem; color:var(--ink-soft); }}
@@ -782,6 +822,12 @@ tr.proj--desatualizado td {{ background:var(--signal-soft); }}
     {f'<p class="det">{e(tldr)}</p>' if tldr else ""}
   </header>
 
+  {seletor_html}
+  {topbar}
+  {tabnav}
+  <div class="panes" id="panes" data-n="1">
+  {pa("painel")}
+
   <div class="versao">
     <div>
       <span class="label">versão ATUAL</span>
@@ -805,16 +851,9 @@ tr.proj--desatualizado td {{ background:var(--signal-soft); }}
   {slot("d2-kpi", "", pecas["kpi"], "biblioteca visual ausente — rode python bin/mb_visual.py")}
   {slot("d3-acao", "Para você — o que fazer agora", bloco_para_voce, "nada pendente do seu lado (seção PARA VOCÊ do HANDOFF.md está vazia)")}
   {slot("d4-saude", "", pecas["saude"])}
-  {slot("d5-distribuicao", "", pecas["distribuicao"] + f'<table><thead><tr><th>projeto</th><th>puxou</th><th>commit</th><th>quando</th><th>estado</th></tr></thead><tbody>{linhas_proj}</tbody></table><p class="det">fonte: <code>&lt;projeto&gt;/MEGABRAIN/VERSAO.txt</code> + <code>.mb-origem.json</code>. Desatualizado = rode <code>sincronizar-pipeline.cmd</code>.</p>' if projetos else pecas["distribuicao"], "nenhum projeto irmão com MEGABRAIN/ encontrado")}
+  {slot("d5-distribuicao", "", pecas["distribuicao"] + f'<table><thead><tr><th>projeto</th><th>puxou</th><th>commit</th><th>quando</th><th>estado</th></tr></thead><tbody>{linhas_proj}</tbody></table><p class="det">fonte: <code>&lt;projeto&gt;/MEGABRAIN/VERSAO.txt</code> + <code>.mb-origem.json</code>. Desatualizado = rode <code>260824_sincronizar-projetos.cmd</code>.</p>' if projetos else pecas["distribuicao"], "nenhum projeto irmão com MEGABRAIN/ encontrado")}
 
-  <!-- ═══ W · WORKFLOW — o desenho do sistema ═══ -->
-  <h2 class="faixa">Workflow <small>— dados em modelos/visuais/exemplos.json; mecânicas em modelos/visuais/mecanicas/</small></h2>
-  {slot("w1-gates", "", pecas["gates"])}
-  {slot("w2-trilha", "", pecas["trilha"])}
-  {slot("w3-camadas", "", pecas["camadas"])}
-  {slot("w4-historico", "", pecas["historico"], "VERSAO.txt sem linhas no formato 'AAAA-MM-DD · vX.Y — título'")}
-
-  <!-- ═══ E · ESTADO DA EXECUÇÃO ═══ -->
+  <!-- ═══ E · ESTADO DA EXECUÇÃO (segue na aba Painel) ═══ -->
   <h2 class="faixa">Estado da execução <small>— PROGRESSO.json · HANDOFF.md · DECISOES.md · .mb-log/</small></h2>
   <section class="slot" id="e1-progresso">
     <span class="label">progresso — {feitas}/{len(etapas)} etapas ({pct}%)</span>
@@ -834,7 +873,7 @@ tr.proj--desatualizado td {{ background:var(--signal-soft); }}
         <h3 class="slot__tit">Eventos de hoje</h3>
         <table><thead><tr><th>hora</th><th>agente</th><th>evento</th><th>resumo</th></tr></thead>
         <tbody>{linhas_ev}</tbody></table>
-        <h3 class="slot__tit" style="margin-top:1rem">Fila 08_alteracoes-pendentes</h3>
+        <h3 class="slot__tit" style="margin-top:1rem">Fila memoria/pendencias</h3>
         <table><thead><tr><th>nota</th><th>dono</th><th>idade</th></tr></thead>
         <tbody>{linhas_fila}</tbody></table>
         <p class="det">destaque = 7+ dias parada ou sem dono.</p>
@@ -842,17 +881,53 @@ tr.proj--desatualizado td {{ background:var(--signal-soft); }}
     </div>
   </div>
 
-  <!-- ═══ C · CONTEÚDO — os .md da instância, agregados (era o RELATORIO.html antigo) ═══ -->
+  {pf()}
+
+  {pa("esquema")}
+  <h2 class="faixa">O esquema do megabrain <small>— central · GitHub · usuários · projetos · o que desce e o que sobe</small></h2>
+  {esquema_html}
+  <h2 class="faixa">Workflow <small>— dados em modelos/visuais/exemplos.json; mecânicas em modelos/visuais/mecanicas/</small></h2>
+  {slot("w1-gates", "", pecas["gates"])}
+  {slot("w2-trilha", "", pecas["trilha"])}
+  {slot("w3-camadas", "", pecas["camadas"])}
+  {pf()}
+
+  {pa("acoes")}
+  <h2 class="faixa">Ações <small>— os botões da central: 01_acoes/*.cmd, com o que cada um faz</small></h2>
+  {bloco_acoes}
+  {pf()}
+
+  {pa("skills")}
+  <h2 class="faixa">Skills <small>— os poderes instalados: skills/*/SKILL.md</small></h2>
+  {bloco_skills}
+  {pf()}
+
+  {pa("docs")}
+  <!-- ═══ C · CONTEÚDO — os .md da instância, agregados ═══ -->
   <h2 class="faixa">Documentos <small>— {len(navs_md)} arquivo(s) .md desta instância, na íntegra</small></h2>
   <nav class="indice">{bloco_indice}</nav>
   <div class="doc">{secoes_md}</div>
+  {pf()}
+
+  {pa("historico")}
+  <h2 class="faixa">Histórico <small>— linha do tempo de versões e relatórios antigos</small></h2>
+  {slot("w4-historico", "", pecas["historico"], "VERSAO.txt sem linhas no formato 'AAAA-MM-DD · vX.Y — título'")}
+  <p class="det">Relatórios como estavam antes de cada troca de versão: <code>90_arquivo\\relatorios-antigos\\INDICE.md</code></p>
+  {pf()}
+  </div><!-- /panes -->
+  {rail}
 
   <!-- ═══ R · RODAPÉ ═══ -->
-  <p class="meta" style="margin-top:2.5rem">fonte: PROGRESSO.json · ESTADO.md · HANDOFF.md · DECISOES.md · VERSAO.txt · git de {e(git["repo"] or "—")} · .mb-log/ · os .md acima. Arquivo local, não sobe pro GitHub.<br>
+  <p class="meta" style="margin-top:2.5rem">fonte: PROGRESSO.json · ESTADO.md · HANDOFF.md · DECISOES.md · VERSAO.txt · git de {e("_github/repo-local" if git["repo"] else "—")} · .mb-log/ · os .md acima. Arquivo local, não sobe pro GitHub.<br>
   sem servidor local o navegador não detecta mudança de arquivo — por isso o reload em intervalo fixo, preservando o scroll.<br>
   planta fixa D1–D5 · W1–W4 · E1–E4 · C: cada bloco tem lugar reservado e aparece vazio quando não há dado, para o relatório de qualquer projeto ter a mesma leitura.</p>
 </div>
+<script>{seletor_js}</script>
+<script>{js_ws}</script>
 <script>
+requestAnimationFrame(function () {{ requestAnimationFrame(function () {{
+  document.documentElement.classList.remove("pre-carga");
+}}); }});
 (function () {{
   var KEY = "mb-vivo-scroll";
   var s = sessionStorage.getItem(KEY);

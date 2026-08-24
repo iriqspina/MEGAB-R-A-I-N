@@ -1,4 +1,8 @@
-/* modelos/visuais/tokens.css — 260822
+/* modelos/visuais/tokens.css — 260822 (v6.7: virou CONTRATO)
+   Desde os temas (260822), este arquivo declara os NOMES dos tokens e o
+   fallback do tema 01. Quem manda no valor é modelos/visuais/temas/NN-*.css,
+   carregado DEPOIS — [data-tema=...] tem a mesma especificidade que :root,
+   então ordem de fonte decide, e os blocos de modo usam :not() (padrão Pico).
    FONTE ÚNICA de cor, tipo e espaço do megabrain.
    Quem consome: bin/mb_visual.py (inlina no HTML gerado) e qualquer peça
    nova que precise parecer parte do sistema.
@@ -35,7 +39,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-tema="claro"]) {
+  :root:not([data-tema]) {
     --paper:      #16150f;
     --paper-high: #1f1e17;
     --paper-sunk: #100f0a;

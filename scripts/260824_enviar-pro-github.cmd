@@ -8,7 +8,7 @@ rem  Tudo que aparece aqui tambem vai pro log em .mb-log\push.log
 rem  (arquivo so ASCII e CRLF: acento + chcp quebra o cmd.exe).
 rem ============================================================
 set "RAIZ=%~dp0..\"
-set "CLONE=%RAIZ%_github-repo-local"
+set "CLONE=%RAIZ%_github\repo-local"
 set "LOG=%RAIZ%.mb-log\push.log"
 if not exist "%RAIZ%.mb-log" mkdir "%RAIZ%.mb-log"
 echo ==== %DATE% %TIME% ==== >> "%LOG%"
@@ -47,7 +47,7 @@ git rev-parse --short origin/main
 git rev-parse --short origin/main >> "%LOG%"
 echo.
 echo  Atualizando o relatorio vivo (bloco de versao)...
-python "%RAIZ%bin\mb-relatorio-vivo.py" --nota "push feito via 260821_push-github.cmd"
+python "%RAIZ%bin\mb-relatorio-vivo.py" --nota "push feito via 260824_enviar-pro-github.cmd"
 echo.
 echo  Pronto. Pode fechar.
 pause

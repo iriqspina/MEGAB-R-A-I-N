@@ -249,7 +249,7 @@ def gravar_origem(central: Path, mb_projeto: Path) -> None:
     import json
 
     repo = None
-    for cand in (central, central / "_github-repo-local"):
+    for cand in (central, central / "_github/repo-local"):
         if (cand / ".git").exists():
             repo = cand
             break
@@ -266,7 +266,7 @@ def gravar_origem(central: Path, mb_projeto: Path) -> None:
 
 
 def gate_drift(central: Path) -> int:
-    """Acusa drift entre central, 260810_github-export/ e _github-repo-local/.
+    """Acusa drift entre central, _github/export/ e _github/repo-local/.
 
     O export é SANITIZADO pelo mb-generate-template.py, então hash direto
     central↔export seria falso-positivo perpétuo. O que o gate compara:
@@ -276,8 +276,8 @@ def gate_drift(central: Path) -> int:
     """
     import hashlib
 
-    export = central / "260810_github-export"
-    repo = central / "_github-repo-local"
+    export = central / "_github/export"
+    repo = central / "_github/repo-local"
     chaves = ["MEGABRAIN.md", "skills/megabrain/SKILL.md", "VERSAO.txt",
               "bin/mb_utils.py", "bin/mb-sync.py", "bin/mb-check-version.py",
               # v6.1: o plugin Cowork/Claude é versionado — a cópia do repo tem
@@ -292,7 +292,7 @@ def gate_drift(central: Path) -> int:
         except OSError:
             return None
 
-    for lado, nome in ((export, "260810_github-export"), (repo, "_github-repo-local")):
+    for lado, nome in ((export, "_github/export"), (repo, "_github/repo-local")):
         if not lado.is_dir():
             drift.append(f"{nome}/ não existe")
     if not drift:

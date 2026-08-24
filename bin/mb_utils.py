@@ -264,12 +264,21 @@ IDENTIDADE_DEFAULT = "260810_memoria-pessoal.md"
 # pastas "de código" (bin, referencias, skills, dna, modelos, tests, plugins,
 # export, espelho) ficam sem número — caminho fixo em scripts e plugins.
 PASTAS_NUMERADAS = {
+    "nucleo": "memoria/nucleo", "estado": "memoria/estado", "identidade": "memoria/identidade",
+    "cerebro": "memoria/cerebro", "relatorios": "00_painel", "scripts": "01_acoes",
+    "dist": "dist", "docs": "03_docs", "alteracoes-pendentes": "memoria/pendencias",
+    "_arquivo": "90_arquivo", "_to_delete": "99_to_delete",
+}
+NOMES_ANTIGOS = {v: k for k, v in PASTAS_NUMERADAS.items()}
+
+# v7.0 (260824): layout humano/maquina. Fallback pro layout v6.4 (numerado
+# antigo) - centrais e copias antigas continuam legiveis sem sincronizar.
+PASTAS_V64 = {
     "nucleo": "00_nucleo", "estado": "01_estado", "identidade": "02_identidade",
     "cerebro": "03_cerebro", "relatorios": "04_relatorios", "scripts": "05_scripts",
     "dist": "06_dist", "docs": "07_docs", "alteracoes-pendentes": "08_alteracoes-pendentes",
     "_arquivo": "90_arquivo", "_to_delete": "99_to_delete",
 }
-NOMES_ANTIGOS = {v: k for k, v in PASTAS_NUMERADAS.items()}
 
 
 def pasta(raiz, nome: str) -> Path:
@@ -280,6 +289,9 @@ def pasta(raiz, nome: str) -> Path:
     num = base / PASTAS_NUMERADAS.get(nome, nome)
     if num.is_dir():
         return num
+    antiga = base / PASTAS_V64.get(nome, nome)
+    if antiga.is_dir():
+        return antiga
     plana = base / nome
     if plana.is_dir():
         return plana

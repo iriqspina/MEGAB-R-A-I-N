@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>megabrain do zero · 260824</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c0e11; --panel:#161a1f; --panel-2:#1d2229; --line:#2b323b;
+    --ink:#eeece6; --ink-2:#aeaba3; --ink-faint:#6f6d67;
+    --hot:#ff5a1f; --warm:#e8b800; --cold:#4aa3ff; --ok:#3ddc6a; --bad:#ff4d4d; --acc:#ff5a1f; --pur:#c084fc;
+    --fd:"Barlow Condensed","Arial Narrow","Roboto Condensed",Impact,sans-serif;
+    --ft:"Barlow","Segoe UI",Roboto,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-snap-type:y proximity;scroll-behavior:smooth;scroll-padding-top:72px}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ft);font-size:17px;line-height:1.5}
+  .top{position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 70%,transparent);padding:16px 40px 20px;display:flex;justify-content:space-between;align-items:center;gap:20px}
+  .top .t{font-family:var(--fd);font-weight:800;text-transform:uppercase;font-size:20px;letter-spacing:.02em}
+  .top .t span{color:var(--ink-faint);font-weight:600;margin-left:10px;font-size:14px;letter-spacing:.08em}
+  .top .hint{color:var(--ink-faint);font-size:13px}
+  .top .hint b{color:var(--ink-2);font-weight:600}
+
+  .board{scroll-snap-align:start;min-height:92vh;padding:40px 40px 56px;max-width:1240px;margin:0 auto;border-top:1px solid var(--line);display:flex;flex-direction:column;justify-content:flex-start}
+  .num{font-family:var(--fd);font-weight:600;color:var(--ink-faint);font-size:15px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:12px}
+  .num b{color:var(--acc);font-weight:800;font-size:22px;letter-spacing:0}
+  .num .part{background:var(--panel-2);border:1px solid var(--line);padding:2px 10px;color:var(--ink-2);font-size:12px}
+  h2{font-family:var(--fd);font-weight:800;font-size:44px;line-height:.98;text-transform:uppercase;margin:0 0 6px;max-width:1000px}
+  .sub{color:var(--ink-2);font-size:19px;margin:0 0 26px;max-width:900px}
+  .fig{background:var(--panel);border:1px solid var(--line);padding:28px;margin:0 0 22px;overflow-x:auto}
+  .txt{max-width:900px;color:var(--ink);font-size:18px}
+  .txt p{margin:0 0 10px}
+  .txt .est{color:var(--ink-faint);font-size:14px}
+  .txt b{font-weight:600;color:var(--ink)}
+  .k{font-family:ui-monospace,Consolas,monospace;font-size:.9em;background:var(--panel-2);border:1px solid var(--line);padding:1px 6px;border-radius:3px;color:var(--ink);white-space:nowrap}
+  .vocab{margin-top:14px;border-left:3px solid var(--pur);padding:10px 14px 12px;background:var(--panel);color:var(--ink-2);font-size:15px;max-width:900px}
+  .vocab>b:first-child{display:block;color:var(--pur);font-family:var(--fd);font-weight:800;text-transform:uppercase;letter-spacing:.12em;font-size:15px;margin:0 0 7px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+  .vocab b{color:var(--pur)}
+  .ask{border-left:3px solid var(--cold);padding:10px 14px 12px;background:var(--panel);color:var(--ink-2);font-size:15px;max-width:900px;margin:0 0 20px;font-style:italic}
+  .ask>b:first-child{display:block;font-style:normal;color:var(--cold);font-family:var(--fd);font-weight:800;text-transform:uppercase;letter-spacing:.12em;font-size:15px;margin:0 0 7px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+  .part.resp{border-color:var(--cold);color:var(--cold)}
+  .part.upd{border-color:var(--warm);color:var(--warm)}
+  .gloss{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .gloss .item{background:var(--panel-2);border:1px solid var(--line);padding:12px 14px}
+  .gloss .tm{display:block;font-family:var(--fd);font-weight:800;text-transform:uppercase;color:var(--pur);font-size:18px;margin-bottom:5px;padding-bottom:4px;border-bottom:1px solid var(--line)}
+  .gloss .df{color:var(--ink-2);font-size:14px;line-height:1.4}
+  .gloss .df b{color:var(--ink)}
+  @media (max-width:900px){.gloss{grid-template-columns:1fr}}
+
+  .row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .row.center{justify-content:center}
+  .col{display:flex;flex-direction:column;gap:12px}
+  .tile{background:var(--panel-2);border:1px solid var(--line);padding:16px 18px;min-width:150px;max-width:236px;display:flex;flex-direction:column;gap:8px;position:relative}
+  .tile.wide{max-width:none;min-width:260px}
+  .row.tight{flex-wrap:nowrap;gap:10px}
+  .row.tight .tile{flex:1 1 0;min-width:0;max-width:none;padding:14px 14px}
+  .row.tight .tile .lb{font-size:18px}
+  .row.tight .arr{width:36px}
+  @media (max-width:900px){.row.tight{flex-wrap:wrap}}
+  .tile .ic{width:34px;height:34px;color:var(--ink)}
+  .tile .ic.hot{color:var(--hot)} .tile .ic.warm{color:var(--warm)} .tile .ic.cold{color:var(--cold)} .tile .ic.ok{color:var(--ok)} .tile .ic.bad{color:var(--bad)} .tile .ic.acc{color:var(--acc)} .tile .ic.pur{color:var(--pur)}
+  .tile .lb{font-family:var(--fd);font-weight:800;text-transform:uppercase;font-size:20px;line-height:1;letter-spacing:.02em}
+  .tile .ds{color:var(--ink-2);font-size:14px;line-height:1.35}
+  .tile .ds b{color:var(--ink);font-weight:600}
+  .tile.hot{border-color:var(--hot)} .tile.warm{border-color:var(--warm)} .tile.cold{border-color:var(--cold)} .tile.ok{border-color:var(--ok)} .tile.bad{border-color:var(--bad)} .tile.pur{border-color:var(--pur)}
+  .tile.ghost{border-style:dashed;opacity:.85}
+  .tile .tag{position:absolute;top:-10px;right:10px;background:var(--bg);border:1px solid var(--line);color:var(--ink-faint);font-size:11px;padding:1px 8px;text-transform:uppercase;letter-spacing:.1em;font-family:var(--fd);font-weight:600}
+  .tile .tag.bad{color:var(--bad);border-color:var(--bad)} .tile .tag.ok{color:var(--ok);border-color:var(--ok)} .tile .tag.hot{color:var(--hot);border-color:var(--hot)}
+  .arr{width:54px;height:24px;flex:0 0 auto;color:var(--ink-faint)}
+  .arr.ok{color:var(--ok)} .arr.bad{color:var(--bad)} .arr.acc{color:var(--acc)}
+  .lbl{font-family:var(--fd);font-weight:600;text-transform:uppercase;letter-spacing:.1em;font-size:13px;color:var(--ink-faint)}
+  .vs{font-family:var(--fd);font-weight:800;font-size:26px;color:var(--ink-faint);padding:0 8px}
+  .stack{display:flex;flex-direction:column;gap:6px}
+  .mini{display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--line);padding:6px 10px;font-size:14px}
+  .mini svg{width:16px;height:16px;color:var(--ink-2);flex:0 0 auto}
+  .mini .kb{margin-left:auto;color:var(--ink-faint);font-size:12px;padding-left:10px}
+  .mini.fat{border-color:var(--hot)} .mini.fat .kb{color:var(--hot)}
+
+  .shelves{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .shelf{border:1px solid var(--line);background:var(--panel-2);padding:18px}
+  .shelf .hd{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+  .shelf .hd svg{width:36px;height:36px}
+  .shelf .hd .lb{font-family:var(--fd);font-weight:800;font-size:28px;text-transform:uppercase;line-height:1}
+  .shelf .when{color:var(--ink-2);font-size:14px;margin-bottom:12px;min-height:40px}
+  .shelf.hot .hd{color:var(--hot)} .shelf.warm .hd{color:var(--warm)} .shelf.cold .hd{color:var(--cold)}
+  .shelf.hot{border-color:var(--hot)} .shelf.warm{border-color:var(--warm)} .shelf.cold{border-color:var(--cold)}
+
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .step{background:var(--panel-2);border:1px solid var(--line);padding:14px 16px}
+  .step .n{font-family:var(--fd);font-weight:800;font-size:30px;color:var(--acc);line-height:1}
+  .step .lb{font-family:var(--fd);font-weight:800;font-size:19px;text-transform:uppercase;margin:4px 0}
+  .step .ds{color:var(--ink-2);font-size:14px;line-height:1.35}
+  .step .gt{color:var(--ink-faint);font-size:11px;text-transform:uppercase;letter-spacing:.1em;margin-top:6px;font-family:var(--fd);font-weight:600}
+
+  .map{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .fold{background:var(--panel-2);border:1px solid var(--line);padding:12px 14px;display:flex;gap:10px;align-items:flex-start}
+  .fold svg{width:22px;height:22px;flex:0 0 auto;margin-top:2px}
+  .fold .nm{font-family:ui-monospace,Consolas,monospace;font-size:14px;color:var(--ink);font-weight:600}
+  .fold .ds{color:var(--ink-2);font-size:13px;line-height:1.3}
+  .fold.h{border-color:var(--warm)} .fold.h svg{color:var(--warm)}
+  .fold.c svg{color:var(--ink-faint)}
+  .fold.g{border-color:var(--pur)} .fold.g svg{color:var(--pur)}
+  .legend{display:flex;gap:20px;margin-bottom:14px;flex-wrap:wrap}
+  .legend span{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink-2)}
+  .legend i{width:14px;height:14px;display:inline-block;border:1px solid var(--line)}
+
+  .modes{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .mode{border:1px solid var(--line);background:var(--panel-2);padding:18px}
+  .mode .lb{font-family:var(--fd);font-weight:800;font-size:30px;text-transform:uppercase;line-height:1;margin-bottom:2px}
+  .mode .ds{color:var(--ink-2);font-size:14px;margin-bottom:14px;min-height:40px}
+  .faders{display:flex;gap:18px;align-items:flex-end;height:150px;padding:0 6px}
+  .fader{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%}
+  .track{width:14px;flex:1;background:var(--bg);border:1px solid var(--line);position:relative}
+  .track i{position:absolute;left:0;right:0;bottom:0;background:var(--acc)}
+  .track i::after{content:"";position:absolute;left:-8px;right:-8px;top:-5px;height:10px;background:var(--ink);border:2px solid var(--bg)}
+  .fader .fl{font-family:var(--fd);font-weight:600;text-transform:uppercase;letter-spacing:.08em;font-size:12px;color:var(--ink-faint);text-align:center;line-height:1.1}
+  .mode.eco .track i{background:var(--ok)} .mode.fast .track i{background:var(--warm)} .mode.smart .track i{background:var(--cold)}
+  .mode .cost{margin-top:12px;font-family:var(--fd);font-weight:600;color:var(--ink-2);font-size:15px;letter-spacing:.04em}
+  .mode .cost b{color:var(--ink);font-weight:800;font-size:22px}
+
+  .axis{position:relative;height:120px;margin:10px 20px}
+  .axis .line{position:absolute;left:0;right:0;top:60px;height:2px;background:var(--line)}
+  .axis .end{position:absolute;top:70px;font-family:var(--fd);font-weight:600;text-transform:uppercase;letter-spacing:.08em;font-size:13px;color:var(--ink-faint)}
+  .axis .end.l{left:0} .axis .end.r{right:0;text-align:right}
+  .axis .pt{position:absolute;top:44px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px}
+  .axis .pt i{width:18px;height:18px;border-radius:50%;background:var(--acc);display:block;border:3px solid var(--bg)}
+  .axis .pt span{font-family:var(--fd);font-weight:800;text-transform:uppercase;font-size:18px;position:absolute;top:-34px;white-space:nowrap}
+  .axis .pt.eco i{background:var(--ok)} .axis .pt.fast i{background:var(--warm)} .axis .pt.smart i{background:var(--cold)}
+
+  .bars{display:flex;flex-direction:column;gap:8px;max-width:760px}
+  .bar{display:grid;grid-template-columns:220px 1fr 70px 30px;gap:12px;align-items:center}
+  .bar .l{font-size:15px;color:var(--ink-2)} .bar .b{height:16px;background:var(--bg);border:1px solid var(--line);position:relative}
+  .bar .b i{position:absolute;left:0;top:0;bottom:0;background:var(--ink-faint)} .bar .v{text-align:right;font-family:var(--fd);font-weight:600;color:var(--ink-faint)}
+  .bar.fat .b i{background:var(--hot)} .bar.fat .v{color:var(--hot)} .bar svg{width:22px;height:22px;color:var(--hot)}
+
+  .toc{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .toc a{display:block;background:var(--panel-2);border:1px solid var(--line);padding:14px 16px;color:var(--ink);text-decoration:none}
+  .toc a .p{font-family:var(--fd);font-weight:800;text-transform:uppercase;font-size:22px;color:var(--acc)}
+  .toc a .l{color:var(--ink-2);font-size:14px;line-height:1.4;margin-top:4px}
+  .toc a:hover{border-color:var(--acc)}
+
+  .choice{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .choice .tile{max-width:none;min-height:150px}
+  .choice .tile .lb{font-size:26px}
+
+  .dots{position:fixed;right:14px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:6px;z-index:6}
+  .dots a{width:7px;height:7px;border-radius:50%;background:var(--line);display:block}
+  .dots a.on{background:var(--acc);transform:scale(1.5)}
+
+  @media (max-width:900px){
+    .board{padding:20px 18px 40px} h2{font-size:34px}
+    .shelves,.modes,.choice,.toc{grid-template-columns:1fr} .steps,.map{grid-template-columns:1fr 1fr}
+    .top{padding:12px 18px}
+    .bar{grid-template-columns:120px 1fr 60px 24px}
+    .dots{display:none}
+  }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+  <symbol id="i-arrow" viewBox="0 0 54 24"><line x1="2" y1="12" x2="46" y2="12" stroke="currentColor" stroke-width="2.5" marker-end="url(#ah)"/></symbol>
+  <symbol id="i-brain" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 3a3 3 0 0 0-3 3v.5A3 3 0 0 0 4 9.5 3 3 0 0 0 5 12a3 3 0 0 0-1 2.5 3 3 0 0 0 3 3v.5a3 3 0 0 0 5 2V4a3 3 0 0 0-2.5-1z"/><path d="M14.5 3a3 3 0 0 1 3 3v.5a3 3 0 0 1 2.5 3 3 3 0 0 1-1 2.5 3 3 0 0 1 1 2.5 3 3 0 0 1-3 3v.5a3 3 0 0 1-5 2V4a3 3 0 0 1 2.5-1z"/><path d="M12 8h-2M12 13h2M12 17h-2"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></symbol>
+  <symbol id="i-wrench" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0 5 5L13 18a2 2 0 0 1-2.8 0l-.7-.7a2 2 0 0 1 0-2.8l6.7-6.7z"/><path d="M14.7 6.3 18 3l3 3-3.3 3.3"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-checklist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11"/><path d="m3 6 1.5 1.5L7 5M3 12l1.5 1.5L7 11M3 18l1.5 1.5L7 17"/></symbol>
+  <symbol id="i-chip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/><rect x="9.5" y="9.5" width="5" height="5"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5.4A8 8 0 1 1 21 12z"/></symbol>
+  <symbol id="i-weight" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21h12l2-12H4z"/><circle cx="12" cy="6" r="3"/><path d="M9.5 9 8 6M14.5 9 16 6"/></symbol>
+  <symbol id="i-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.5"/></symbol>
+  <symbol id="i-index" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h4M7 13h6M7 17h3M15 9l3 3-3 3"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 21h20z"/><path d="M12 10v5M12 18h.01"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-scissors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l9-4 9 4-9 4z"/><path d="M3 8v9l9 4 9-4V8M12 12v9"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4v16M12 4v16M19 4v16"/><rect x="3" y="12" width="4" height="4" fill="currentColor" stroke="none"/><rect x="10" y="7" width="4" height="4" fill="currentColor" stroke="none"/><rect x="17" y="14" width="4" height="4" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-switch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="10" rx="5"/><circle cx="16" cy="12" r="3" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-layout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></symbol>
+  <symbol id="i-pdf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M8.5 17v-5h1.8a1.5 1.5 0 0 1 0 3H8.5"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+  <symbol id="i-cloud" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 0 1-.5-8 6 6 0 0 1 11.5 2 3.5 3.5 0 0 1-.5 7z"/></symbol>
+  <symbol id="i-pc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></symbol>
+  <symbol id="i-page" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4z"/><path d="M20 4h-6a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h7z"/></symbol>
+  <symbol id="i-empty" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 3"><rect x="4" y="4" width="16" height="16" rx="2"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2 20a7 7 0 0 1 14 0"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.5a5 5 0 0 1 6 5"/></symbol>
+</svg>
+
+<div class="top">
+  <div class="t">megabrain do zero <span>260824 · 43 boards · um por vez</span></div>
+  <div class="hint">setas ↑↓ do teclado · <b>1 board = 1 ideia</b> · roxo = nome nos arquivos · <b style="color:var(--cold)">azul = resposta a você</b></div>
+</div>
+<nav class="dots" id="dots"></nav>
+
+<!-- ============ 00 ============ -->
+<section class="board" id="b0">
+  <div class="num"><b>00</b><span class="part">antes de tudo</span>o que eu entendi que você quer</div>
+  <h2>Entender o megabrain do zero, e depois a pergunta dos modos</h2>
+  <p class="sub">Confere se eu entendi. Você mesmo disse: mal entra nas pastas, só dá os pushs. Então vou partir de <b>nada</b>.</p>
+  <div class="fig">
+    <div class="row">
+      <div class="tile"><svg class="ic"><use href="#i-brain"/></svg><div class="lb">1 · O que é</div><div class="ds">O que o megabrain faz de verdade quando você usa a IA. Peça por peça, sem termo solto.</div></div>
+      <div class="tile"><svg class="ic"><use href="#i-folder"/></svg><div class="lb">2 · As pastas</div><div class="ds">O que cada pasta guarda e por que existe. Você não precisa entrar nelas pra entender.</div></div>
+      <div class="tile"><svg class="ic"><use href="#i-sliders"/></svg><div class="lb">3 · Modos</div><div class="ds">Dá pra ter um megabrain econômico, um rápido e um inteligente? E trocar entre eles?</div></div>
+      <div class="tile"><svg class="ic"><use href="#i-layout"/></svg><div class="lb">4 · Seu Figma</div><div class="ds">O que do seu desenho de pastas bate com a realidade e o que eu mudaria.</div></div>
+      <div class="tile"><svg class="ic"><use href="#i-check"/></svg><div class="lb">5 · Manter tudo</div><div class="ds">Skills, segundo cérebro (raw + wiki), lições: nada disso se perde.</div></div>
+    </div>
+  </div>
+  <div class="txt"><p>Ordem de leitura: <b>Parte A</b> (o básico, boards 01–03) → <b>Parte B</b> (as peças, 04–16) → <b>Parte C</b> (modos, 17–22) → <b>Parte D</b> (Figma, 23–26). Pula o que já souber.</p>
+  <p>Versão 260824: as perguntas que você mandou depois da primeira leitura foram respondidas <b>no lugar onde pertencem</b> — são os boards com etiqueta azul. A caixa azul no topo desses boards é a sua pergunta, resumida. A versão anterior virou foto: guardada em <span class="k">90_arquivo\</span>.</p>
+  <p>Segunda rodada do mesmo dia: seus "vai" e correções entraram nos boards 04, 05·B, 11·B, 12·C, 13, 15·B, 22 e 26 — termo oficial <b>megabrain do projeto</b>, Neuron como pet, DNA do usuário, inteligente-sem-desperdício, e a fila com as aprovações carimbadas.</p></div>
+  <div class="fig" style="margin-top:10px">
+    <div class="toc">
+      <a href="#b1"><div class="p">A · o básico</div><div class="l">A IA esquece tudo · alguém precisa entregar a memória · três momentos de leitura</div></a>
+      <a href="#b4"><div class="p">B · as peças</div><div class="l">central e megabrains de projeto · git e push · a skill · estado · lições · cérebro · identidade · scripts · relatório · Neuron · dois agentes · mapa das pastas</div></a>
+      <a href="#b17"><div class="p">C · modos</div><div class="l">ler custa · 3 faders · pegadinha · piso · trocar no meio · como trocar · minha ordem</div></a>
+      <a href="#b23"><div class="p">D · figma</div><div class="l">o que acertou · o que eu mudaria · raw: copiar ou apontar · e agora</div></a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 01 ============ -->
+<section class="board" id="b1">
+  <div class="num"><b>01</b><span class="part">A · o básico</span></div>
+  <h2>A IA não lembra de nada entre uma conversa e outra</h2>
+  <p class="sub">Toda conversa começa em branco. Ela não sabe quem você é, nem o que fez ontem, nem em que pé o projeto está.</p>
+  <div class="fig">
+    <div class="row center">
+      <div class="tile ghost"><svg class="ic"><use href="#i-chat"/></svg><div class="lb">Ontem</div><div class="ds">3 horas de trabalho, 40 decisões</div></div>
+      <div class="vs"><svg class="arr bad"><use href="#i-arrow"/></svg></div>
+      <div class="tile bad"><svg class="ic bad"><use href="#i-x"/></svg><div class="lb">Apagado</div><div class="ds">a conversa acabou, a memória foi junto</div></div>
+      <div class="vs"><svg class="arr"><use href="#i-arrow"/></svg></div>
+      <div class="tile"><svg class="ic"><use href="#i-empty"/></svg><div class="lb">Hoje</div><div class="ds">a IA abre em branco de novo</div></div>
+    </div>
+  </div>
+  <div class="txt">
+    <p>Isso é o problema que o megabrain resolve. Tudo que existe nele existe por causa desta frase: <b>o que não está escrito num arquivo, a IA não sabe</b>.</p>
+  </div>
+</section>
+
+<!-- ============ 02 ============ -->
+<section class="board" id="b2">
+  <div class="num"><b>02</b><span class="part">A · o básico</span></div>
+  <h2>Então alguém entrega a memória pra ela, toda vez</h2>
+  <p class="sub">O megabrain é isso: arquivos que dizem quem você é, onde o trabalho parou e como trabalhar, entregues à IA no começo de cada conversa.</p>
+  <div class="fig">
+    <div class="row center">
+      <div class="col">
+        <div class="tile"><svg class="ic"><use href="#i-user"/></svg><div class="lb">Quem é você</div><div class="ds">TL;DR primeiro, direto, gostos</div></div>
+        <div class="tile"><svg class="ic"><use href="#i-file"/></svg><div class="lb">Onde parou</div><div class="ds">o que foi feito, o que falta</div></div>
+        <div class="tile"><svg class="ic"><use href="#i-checklist"/></svg><div class="lb">Como trabalhar</div><div class="ds">regras, passos, conferências</div></div>
+      </div>
+      <svg class="arr acc"><use href="#i-arrow"/></svg>
+      <div class="tile hot" style="min-width:200px"><svg class="ic hot"><use href="#i-brain"/></svg><div class="lb">A IA</div><div class="ds">agora sabe de você e do projeto</div></div>
+      <svg class="arr"><use href="#i-arrow"/></svg>
+      <div class="tile"><svg class="ic"><use href="#i-chat"/></svg><div class="lb">Resposta</div><div class="ds">como se ela nunca tivesse esquecido</div></div>
+    </div>
+  </div>
+  <div class="txt">
+    <p>Tudo que vem nos próximos boards é só a resposta a três perguntas: <b>o que</b> vai nesses arquivos, <b>quem</b> entrega eles pra IA (você ou um script) e <b>quando</b>.</p>
+  </div>
+  <div class="vocab"><b>nome nos arquivos</b>o conjunto disso tudo (arquivos + regras + scripts em volta da IA) é o que a área chama de <b>harness</b>. Eu usei essa palavra antes sem explicar. É só isso.</div>
+</section>
+
+<!-- ============ 03 ============ -->
+<section class="board" id="b3">
+  <div class="num"><b>03</b><span class="part">A · o básico</span></div>
+  <h2>Três momentos em que a IA lê alguma coisa</h2>
+  <p class="sub">Eu tinha chamado isso de "quente / morno / frio". Esquece o nome. A ideia é só esta:</p>
+  <div class="fig">
+    <div class="shelves">
+      <div class="shelf hot">
+        <div class="hd"><svg><use href="#i-bolt"/></svg><div class="lb">Sempre</div></div>
+        <div class="when">No começo de <b>toda</b> conversa, sem você pedir. Por isso tem que ser pequeno: você paga por ele toda vez.</div>
+        <div class="stack">
+          <div class="mini"><svg><use href="#i-user"/></svg>quem é você</div>
+          <div class="mini"><svg><use href="#i-file"/></svg>onde o projeto parou</div>
+          <div class="mini"><svg><use href="#i-file"/></svg>qual é a meta do projeto</div>
+        </div>
+      </div>
+      <div class="shelf warm">
+        <div class="hd"><svg><use href="#i-chat"/></svg><div class="lb">Quando chamado</div></div>
+        <div class="when">Quando você digita <span class="k">/megabrain</span>, ou quando o assunto da sua mensagem <b>bate</b> com algo guardado.</div>
+        <div class="stack">
+          <div class="mini"><svg><use href="#i-checklist"/></svg>o roteiro de trabalho (a skill)</div>
+          <div class="mini"><svg><use href="#i-book"/></svg>lições parecidas com o assunto</div>
+          <div class="mini"><svg><use href="#i-brain"/></svg>páginas da wiki parecidas</div>
+        </div>
+      </div>
+      <div class="shelf cold">
+        <div class="hd"><svg><use href="#i-box"/></svg><div class="lb">Só se precisar</div></div>
+        <div class="when">A IA vai buscar sozinha no meio da tarefa, quando o passo exige. Você não paga se ela não abrir.</div>
+        <div class="stack">
+          <div class="mini"><svg><use href="#i-page"/></svg>textos longos de referência</div>
+          <div class="mini"><svg><use href="#i-pdf"/></svg>fontes brutas (PDF, artigo, print)</div>
+          <div class="mini"><svg><use href="#i-file"/></svg>histórico de decisões antigas</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="txt">
+    <p>Por que isso importa: cada coisa que a IA lê custa dinheiro e tempo. Organizar a pasta bem é, no fundo, <b>colocar cada arquivo no momento certo</b>: pouco no "sempre", o resto nos outros dois.</p>
+  </div>
+</section>
+
+<!-- ============ 04 ============ -->
+<section class="board" id="b4">
+  <div class="num"><b>04</b><span class="part">B · as peças</span></div>
+  <h2>Uma central, dezesseis megabrains de projeto, um GitHub</h2>
+  <p class="sub">A pasta <span class="k">MEGA B R A I N</span> no seu disco é a <b>fonte</b>. Cada projeto seu tem o seu <b>megabrain do projeto</b> dentro — uma cópia da central. O GitHub tem a versão pública.</p>
+  <div class="fig">
+    <div class="row center">
+      <div class="tile hot wide"><div class="tag hot">a fonte</div><svg class="ic hot"><use href="#i-folder"/></svg><div class="lb">Central</div><div class="ds"><span class="k">S:\…\MEGA B R A I N</span><br>É aqui que o megabrain é editado. Só aqui.</div></div>
+      <div class="col">
+        <div class="row"><svg class="arr"><use href="#i-arrow"/></svg><div class="tile"><svg class="ic"><use href="#i-copy"/></svg><div class="lb">16 projetos</div><div class="ds">cada um tem uma pasta <span class="k">MEGABRAIN\</span> dentro, que é uma <b>cópia</b> da central. Nunca se edita a cópia.</div></div></div>
+        <div class="row"><svg class="arr"><use href="#i-arrow"/></svg><div class="tile"><svg class="ic"><use href="#i-cloud"/></svg><div class="lb">GitHub</div><div class="ds">a mesma coisa, <b>sem nada pessoal</b> (sem sua identidade, sem cérebro). É o que seu push envia.</div></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="txt">
+    <p>Quando você muda algo na central, um script (<span class="k">01_acoes\260824_sincronizar-projetos.cmd</span>) copia a versão nova pros 16. Projeto com versão velha aparece no relatório como <b>"atrás"</b> — é a fila que você já viu lá.</p>
+  </div>
+  <div class="vocab"><b>nomes nos arquivos</b>central = a fonte · <b>megabrain do projeto</b> = a pasta MEGABRAIN\ dentro de cada projeto (termo oficial desde 260824; antes eu chamava de "cópia de projeto") · <b>export</b> = a versão sem coisa pessoal que vai pro GitHub (<span class="k">_github\export</span>)</div>
+</section>
+
+<!-- ============ 04B resposta ============ -->
+<section class="board" id="b4b">
+  <div class="num"><b>04·B</b><span class="part">B · as peças</span><span class="part resp">resposta · 260824</span></div>
+  <h2>No PC de outra pessoa nasce outra central, clonada do GitHub</h2>
+  <p class="sub">Cada usuário tem a própria <b>MEGA B R A I N</b>. A sua é especial por um único motivo: é a única que edita a matriz do mundo.</p>
+  <div class="ask"><b>você perguntou</b>existe uma pasta equivalente à central no PC dos outros? Ou o megabrain só existe dentro dos projetos, como referência de versão e base? Qual a função do megabrain dos projetos?</div>
+  <div class="fig">
+    <div class="row center tight">
+      <div class="tile hot"><div class="tag hot">a matriz · só a sua</div><svg class="ic hot"><use href="#i-folder"/></svg><div class="lb">Sua central</div><div class="ds">a única onde o megabrain do mundo é editado</div></div>
+      <svg class="arr acc"><use href="#i-arrow"/></svg>
+      <div class="tile pur"><svg class="ic pur"><use href="#i-cloud"/></svg><div class="lb">GitHub</div><div class="ds">a versão pública + todas as fotos antigas</div></div>
+      <svg class="arr"><use href="#i-arrow"/></svg>
+      <div class="tile"><div class="tag">no PC dele</div><svg class="ic"><use href="#i-folder"/></svg><div class="lb">Central do usuário</div><div class="ds">clone da sua — mas a identidade e o cérebro <b>dele</b> nascem vazios e são só dele</div></div>
+      <svg class="arr"><use href="#i-arrow"/></svg>
+      <div class="tile"><svg class="ic"><use href="#i-copy"/></svg><div class="lb">Projetos dele</div><div class="ds">cada um com o <b>megabrain do projeto</b> (<span class="k">MEGABRAIN\</span>) dentro, igual aos seus</div></div>
+    </div>
+  </div>
+  <div class="txt">
+    <p>Resposta direta: <b>as duas coisas</b>. A central existe em cada PC — uma por pessoa — e o <b>megabrain do projeto</b> existe dentro de cada projeto. Ele faz exatamente o que você descreveu, e só isso:</p>
+  </div>
+  <div class="fig" style="margin-top:0">
+    <div class="row">
+      <div class="tile"><svg class="ic"><use href="#i-tag"/></svg><div class="lb">1 · Trava a versão</div><div class="ds">o projeto sabe com qual regra foi feito (VERSAO.txt)</div></div>
+      <div class="tile"><svg class="ic"><use href="#i-bolt"/></svg><div class="lb">2 · Roda sozinho</div><div class="ds">o projeto abre e trabalha sem depender da central estar por perto</div></div>
+      <div class="tile"><svg class="ic"><use href="#i-checklist"/></svg><div class="lb">3 · Se atualiza</div><div class="ds">o script de versão compara com a central e puxa a nova — a "fila" do board 04</div></div>
+      <div class="tile ghost"><svg class="ic"><use href="#i-x"/></svg><div class="lb">Não é</div><div class="ds">backup do projeto, nem lugar de editar megabrain</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 04C resposta ============ -->
+<section class="board" id="b4c">
+  <div class="num"><b>04·C</b><span class="part">B · as peças</span><span class="part resp">resposta · 260824</span></div>
+  <h2>Seu esquema, conferido peça por peça: já é quase o que existe</h2>
+  <p class="sub">central + DNA → GitHub guardando versões → usuário sempre syncado → megabrain em cada projeto. Dois ajustes só.</p>
+  <div class="fig">
+    <div class="col">
+      <div class="row"><div class="tile wide"><svg class="ic"><use href="#i-folder"/></svg><div class="lb">"central com megabrain + DNA imaculado"</div></div><svg class="arr ok"><use href="#i-arrow"/></svg><div class="tile ok wide"><div class="tag ok">certo, com 1 ajuste</div><div class="ds" style="font-size:15px">O imaculado não é uma pasta: é a <b>foto com nome no git</b> (board 05). Pasta-backup a gente edita sem querer; foto com nome, ninguém edita. A pasta <span class="k">dna\</span> guarda outra coisa (board 05·B).</div></div></div>
+      <div class="row"><div class="tile wide"><svg class="ic"><use href="#i-cloud"/></svg><div class="lb">"o git salva as antigas e deixa a atual"</div></div><svg class="arr ok"><use href="#i-arrow"/></svg><div class="tile ok wide"><div class="tag ok">é isso mesmo</div><div class="ds" style="font-size:15px">Toda foto fica guardada pra sempre; a de cima é a atual. É o serviço que o git presta.</div></div></div>
+      <div class="row"><div class="tile wide"><svg class="ic"><use href="#i-user"/></svg><div class="lb">"o usuário baixa e mantém syncado"</div></div><svg class="arr ok"><use href="#i-arrow"/></svg><div class="tile ok wide"><div class="tag ok">um clique</div><div class="ds" style="font-size:15px">Puxar versão nova = o seu push ao contrário (<span class="k">git pull</span>). Vira um .cmd igual aos seus.</div></div></div>
+      <div class="row"><div class="tile wide"><svg class="ic"><use href="#i-copy"/></svg><div class="lb">"dentro dos projetos, outro megabrain — com DNA?"</div></div><svg class="arr ok"><use href="#i-arrow"/></svg><div class="tile ok wide"><div class="tag ok">sem DNA</div><div class="ds" style="font-size:15px">O megabrain do projeto leva só o <b>roteiro de trabalho</b>: regras, skill, scripts, referências. DNA, identidade e cérebro ficam na central de cada um — o projeto não precisa deles pra rodar.</div></div></div>
+    </div>
+  </div>
+  <div class="txt"><p>Dá pra enxugar mais? Nível, não: mundo → usuário → projeto é o mínimo que cumpre as três funções. O que tem pra enxugar é <b>gordura dentro dos arquivos</b> (board 22), não elo da corrente.</p></div>
+</section>
+
+<!-- ============ 04D resposta ============ -->
+<section class="board" id="b4d">
+  <div class="num"><b>04·D</b><span class="part">B · as peças</span><span class="part resp">resposta · 260824</span></div>
+  <h2>O caminho de volta: descer é automático, subir é peneirado</h2>
+  <p class="sub">Você quer que o usuário evolua o megabrain dele e devolva <b>dados que melhoram o geral</b> — nunca as coisas pessoais dele. O desenho:</p>
+  <div class="fig">
+    <div class="col">
+      <div class="row"><div class="lbl" style="min-width:90px">desce</div><svg class="arr ok"><use href="#i-arrow"/></svg><div class="tile ok wide"><div class="ds">regras, skill, scripts, referências: matriz → GitHub → central do usuário → projetos. Automático, no sync.</div></div></div>
+      <div class="row"><div class="lbl" style="min-width:90px">sobe</div><svg class="arr acc"><use href="#i-arrow"/></svg><div class="tile pur wide"><div class="tag">peneirado</div><div class="ds">lição do usuário → um script <b>limpa</b> (tira nome de cliente, caminho, dado pessoal) → vira <b>proposta</b> no GitHub → <b>você aprova</b> → entra na matriz.</div></div></div>
+      <div class="row"><div class="lbl" style="min-width:90px">nunca sobe</div><svg class="arr bad"><use href="#i-arrow"/></svg><div class="tile bad wide"><div class="ds">identidade dele, cérebro dele, pessoas, arquivos de projeto. Isso morre na máquina de cada um.</div></div></div>
+    </div>
+  </div>
+  <div class="txt">
+    <p>O GitHub já tem o mecanismo pronto pra "propor e o dono decide". O que falta construir é pequeno: um script "contribuir", que separa a lição do resto e monta a proposta. Status honesto: <b>planejado, não construído</b>. Entra na fila do board 26.</p>
+  </div>
+  <div class="vocab"><b>nome nos arquivos</b>pull request (PR) = proposta de mudança que o dono do repositório aceita ou recusa antes de entrar</div>
+</section>
+
+<!-- ============ 05 ============ -->
+<section class="board" id="b5">
+  <div class="num"><b>05</b><span class="part">B · as peças</span></div>
+  <h2>O que você está fazendo quando dá push</h2>
+  <p class="sub">Git é um álbum de fotos da pasta. Cada foto é um "commit". Push é mandar o álbum pro GitHub.</p>
+  <div class="fig">
+    <div class="row center tight">
+      <div class="tile"><svg class="ic"><use href="#i-pc"/></svg><div class="lb">Central mudou</div><div class="ds">alguém editou arquivos</div></div>
+      <svg class="arr"><use href="#i-arrow"/></svg>
+      <div class="tile"><div class="tag">1º clique</div><svg class="ic"><use href="#i-camera"/></svg><div class="lb">Commit</div><div class="ds">"tira uma foto" de como a pasta está agora. <span class="k">260824_publicar-e-fotografar.cmd</span> gera o export e tira a foto.</div></div>
+      <svg class="arr"><use href="#i-arrow"/></svg>
+      <div class="tile"><div class="tag">2º clique</div><svg class="ic"><use href="#i-cloud"/></svg><div class="lb">Push</div><div class="ds">manda as fotos novas pro GitHub. <span class="k">260824_enviar-pro-github.cmd</span>. Sempre depois do primeiro.</div></div>
+      <svg class="arr"><use href="#i-arrow"/></svg>
+      <div class="tile pur"><svg class="ic pur"><use href="#i-tag"/></svg><div class="lb">Versão</div><div class="ds">uma foto com nome (v6.7) é uma "tag". É isso que o seu Figma chamou de "DNA intocado".</div></div>
+    </div>
+  </div>
+  <div class="txt">
+    <p>Por que dois cliques e nessa ordem: o primeiro monta a versão pública (sem coisa pessoal) e fotografa; o segundo envia. Invertido, você envia a foto velha.</p>
+    <p>Detalhe que já deu problema: quando eu (Cowork, na nuvem) mexo na sua pasta, <b>eu não consigo dar push</b>. Por isso ele fica sempre na sua lista "PARA VOCÊ".</p>
+  </div>
+</section>
+
+<!-- ============ 05B resposta ============ -->
+<section class="board" id="b5b">
+  <div class="num"><b>05·B</b><span class="part">B · as peças</span><span class="part resp">resposta · 260824</span></div>
+  <h2>O que existe hoje com o nome "DNA": identidade + índices, não backup</h2>
+  <p class="sub">Abri a pasta <span class="k">dna\</span> hoje pra responder com o que está lá, não de memória. Quatro coisas:</p>
+  <div class="ask"><b>você perguntou</b>o que vai no DNA exatamente hoje?</div>
+  <div class="fig">
+    <div class="row">
+      <div class="tile wide"><svg class="ic"><use href="#i-page"/></svg><div class="lb">RELATORIO-DNA.html</div><div class="ds">a descrição do protocolo em uma página: o que o megabrain é, gate por gate. Gerada por script a partir das fontes.</div></div>
+      <div class="tile wide"><svg class="ic"><use href="#i-file"/></svg><div class="lb">dna.json</div><div class="ds">a mesma descrição em formato que máquina lê</div></div>
+      <div class="tile pur wide"><svg class="ic pur"><use href="#i-index"/></svg><div class="lb">indice-licoes.json</div><div class="ds">o índice que compara sua mensagem com as 126+ lições e acha as parecidas (board 08). Trabalha a cada mensagem.</div></div>
+      <div class="tile pur wide"><svg class="ic pur"><use href="#i-checklist"/></svg><div class="lb">licoes-recorrencia.json</div><div class="ds">o contador de repetição: lição que voltou 3× fica marcada candidata a virar regra</div></div>
+    </div>
+  </div>
+  <div class="txt">
+    <p>Resumo: o DNA de hoje é <b>"o que o megabrain é + como ele se acha"</b>. O backup imaculado que você imagina mora no git: cada versão fechada (v6.7, v6.6…) é uma foto com nome que ninguém altera. Renomear a pasta pra algo mais honesto dá — mas scripts apontam pra ela, então é mudança com teste, não no impulso.</p>
+    <p><b>Fechado com você (260824):</b> "imaculado" pra você sempre quis dizer <b>DNA = o que não se toca</b>. Então o nome ganhou dono: nasceu hoje o <span class="k">dna\usuario\</span> — backup local, datado e intocável das suas infos pessoais (identidade, cards de pessoas). Se algo crashar, ele existe; ele nunca sobe pro GitHub (já está no .gitignore). Papéis finais: <span class="k">dna\</span> = descrição do protocolo + índices · <b>foto no git</b> = versão imaculada do código · <span class="k">dna\usuario\</span> = versão imaculada de <b>você</b>. Primeiro backup: <span class="k">dna\usuario\260824\</span>, criado nesta sessão.</p>
+  </div>
+</section>
+
+<!-- ============ 06 ============ -->
+<section class="board" id="b6">
+  <div class="num"><b>06</b><span class="part">B · as peças</span></div>
+  <h2>A skill /megabrain é o roteiro de trabalho</h2>
+  <p class="sub">Quando você digita <span class="k">/megabrain</span>, a IA lê um arquivo com os passos que ela deve seguir numa entrega. Oito passos, com nome de "gate" (portão): só passa se cumpriu.</p>
+  <div class="fig">
+    <div class="steps">
+      <div class="step"><div class="n">0</div><div class="lb">Assumir</div><div class="ds">ler onde parou, ver se outro agente está mexendo, atualizar a cópia do projeto</div><div class="gt">gate 0</div></div>
+      <div class="step"><div class="n">1</div><div class="lb">Entender</div><div class="ds">o que vai ser entregue, pra quem, como saber se ficou bom. Se está vago, perguntar antes</div><div class="gt">gate 1 · enquadrar</div></div>
+      <div class="step"><div class="n">2</div><div class="lb">Não ler demais</div><div class="ds">abrir só o trecho que precisa; delegar varredura pra um ajudante</div><div class="gt">gate 2 · orçar contexto</div></div>
+      <div class="step"><div class="n">3</div><div class="lb">Fazer</div><div class="ds">estrutura antes de texto; número tem fonte ou marca [ESTIMATIVA]</div><div class="gt">gate 3 · gerar</div></div>
+      <div class="step"><div class="n">4</div><div class="lb">Reler e corrigir</div><div class="ds">caçar frase vazia, chavão, enrolação; reescrever 30% menor</div><div class="gt">gate 4 · auditar</div></div>
+      <div class="step"><div class="n">5</div><div class="lb">Conferir</div><div class="ds">arquivo abre? caminho existe? número bate? contradiz decisão antiga?</div><div class="gt">gate 5 · verificar</div></div>
+      <div class="step"><div class="n">6</div><div class="lb">Deixar o bilhete</div><div class="ds">reescrever "onde parou" e "o que falta" pro próximo (você ou outra IA)</div><div class="gt">gate 6 · passar o bastão</div></div>
+      <div class="step"><div class="n">7</div><div class="lb">Anotar a lição</div><div class="ds">o que deu errado ou surpreendeu vira uma nota pra próxima vez</div><div class="gt">gate 7 · aprender</div></div>
+    </div>
+  </div>
+  <div class="txt">
+    <p>Pergunta rápida ou papo: a skill manda <b>não rodar nada disso</b>. Entrega (peça, proposta, código, relatório): roda tudo. Existe um meio-termo, "modo leve", que roda só 1, 4 e 5.</p>
+  </div>
+  <div class="vocab"><b>nomes nos arquivos</b>skill = arquivo de roteiro que a IA lê quando chamado (<span class="k">skills\megabrain\SKILL.md</span>) · <b>gate</b> = um passo obrigatório desse roteiro · <b>modo leve / completo</b> = poucos gates / todos</div>
+</section>
+
+<!-- ============ 07 ============ -->
+<section class="board" id="b7">
+  <div class="num"><b>07</b><span class="part">B · as peças</span></div>
+  <h2>Os três arquivos de "onde estamos"</h2>
+  <p class="sub">Ficam em <span class="k">memoria\estado\</span>. São o que a IA lê no começo pra não começar do zero. Todo projeto tem os seus.</p>
+  <div class="fig">
+    <div class="row">
+      <div class="tile hot wide"><svg class="ic hot"><use href="#i-file"/></svg><div class="lb">ESTADO.md</div><div class="ds"><b>Foto de 5 linhas.</b> Onde estamos, o que trava, o que está protegido. Reescrito no fim de cada sessão.</div></div>
+      <div class="tile hot wide"><svg class="ic hot"><use href="#i-file"/></svg><div class="lb">HANDOFF.md</div><div class="ds"><b>O bilhete pro próximo.</b> O que fiz, o que ficou aberto, o próximo passo, sua lista "PARA VOCÊ", e a placa "ocupado" (quem está mexendo agora e até que horas).</div></div>
+      <div class="tile hot wide"><svg class="ic hot"><use href="#i-book"/></svg><div class="lb">DECISOES.md</div><div class="ds"><b>Diário de decisões.</b> Cada uma com <b>a alternativa descartada</b>, pra ninguém reabrir a discussão daqui a duas semanas. Só cresce, nunca se apaga.</div></div>
+    </div>
+  </div>
+  <div class="txt">
+    <p>Tem mais dois na mesma pasta: <span class="k">META.md</span> (a meta do projeto e o histórico do que você pediu × o que a IA entendeu) e <span class="k">PROGRESSO.json</span> (números que o relatório mostra).</p>
+    <p>Regra que vale ouro: <b>um bilhete que diz "continuar o projeto" não é bilhete</b>. Próximo passo tem verbo e objeto.</p>
+  </div>
+</section>
+
+<!-- ============ 08 ============ -->
+<section class="board" id="b8">
+  <div class="num"><b>08</b><span class="part">B · as peças</span></div>
+  <h2>Lições: o caderno do "da próxima vez, faça assim"</h2>
+  <p class="sub">Toda vez que algo dá errado ou surpreende, a IA escreve três linhas. Na próxima conversa, as lições parecidas com o assunto aparecem sozinhas.</p>
+  <div class="fig">
+    <div class="row center">
+      <div class="tile"><svg class="ic bad"><use href="#i-warn"/></svg><div class="lb">Deu errado</div><div class="ds">ex.: rodou git pela pasta montada e deixou um arquivo travado</div></div>
+      <svg class="arr"><use href="#i-arrow"/></svg>
+      <div class="tile wide"><svg class="ic"><use href="#i-book"/></svg><div class="lb">Vira 3 linhas</div><div class="ds"><b>GATILHO:</b> quando isso reaparece<br><b>LIÇÃO:</b> o que descobriu<br><b>ATALHO:</b> o que fazer direto</div></div>
+      <svg class="arr"><use href="#i-arrow"/></svg>
+      <div class="tile ok"><svg class="ic ok"><use href="#i-bolt"/></svg><div class="lb">Próxima vez</div><div class="ds">um script compara sua mensagem com as 126+ lições e mostra as 5 mais parecidas pra IA</div></div>
+    </div>
+  </div>
+  <div class="txt">
+    <p>Lição que se repete 3 vezes vira regra fixa (entra na skill ou vira script). Esse é o jeito do megabrain <b>melhorar sozinho</b> com o uso.</p>
+    <p>Lição é sobre <b>como trabalhar</b>. O que você descobre sobre cliente, mercado ou ferramenta não é lição, é conteúdo, e vai pro cérebro (próximo board).</p>
+  </div>
+  <div class="vocab"><b>nomes nos arquivos</b>as lições da central ficam em <span class="k">memoria\nucleo\licoes-megabrain.md</span>; cada projeto tem o seu <span class="k">LICOES.md</span> · o comando <span class="k">/registrar-licao</span> grava uma na hora</div>
+</section>
+
+<!-- ============ 08B resposta ============ -->
+<section class="board" id="b8b">
+  <div class="num"><b>08·B</b><span class="part">B · as peças</span><span class="part resp">resposta · 260824</span></div>
+  <h2>Lição sobe por mérito. Skill nunca vira "info pessoal".</h2>
+  <p class="sub">Duas perguntas suas no mesmo board, porque a régua é a mesma.</p>
+  <div class="ask"><b>você perguntou</b>as lições ficam presas nos projetos ou atualizam a central, pra ela aprender também? E as skills — são linkadas ao usuário e viram info pessoal?</div>
+  <div class="fig">
+    <div class="col">
+      <div class="row"><div class="tile"><svg class="ic"><use href="#i-book"/></svg><div class="lb">Lição no projeto</div></div><svg class="arr"><use href="#i-arrow"/></svg><div class="tile wide"><div class="tag">a régua</div><div class="ds">"serviria num projeto <b>completamente diferente</b>?" Sim → sobe pra central (<span class="k">memoria\nucleo\licoes-megabrain.md</span>). Não → fica no <span class="k">LICOES.md</span> do projeto.</div></div></div>
+      <div class="row"><div class="tile"><svg class="ic"><use href="#i-users"/></svg><div class="lb">Lição de outro usuário</div></div><svg class="arr"><use href="#i-arrow"/></svg><div class="tile wide"><div class="ds">mesma régua até a central <b>dele</b>. Da central dele pra sua matriz, só pela peneira do board 04·D: limpa → proposta → sua aprovação.</div></div></div>
+      <div class="row"><div class="tile pur"><svg class="ic pur"><use href="#i-checklist"/></svg><div class="lb">Skill</div></div><div class="vs">≠</div><div class="tile wide"><div class="ds">skill é <b>como trabalhar</b> — parte distribuída, igual pra todo mundo, desce no sync. Info pessoal é <b>quem você é e o que você sabe</b> (identidade, cérebro, pessoas) — nunca sai da máquina. Motor e passageiro não se misturam.</div></div></div>
+    </div>
+  </div>
+  <div class="txt"><p>Então nada fica preso: lição boa sobe degrau por degrau — projeto → central do dono → (peneira) → matriz. E o que é pessoal não sobe nunca, por desenho.</p></div>
+</section>
+
+<!-- ============ 09 ============ -->
+<section class="board" id="b9">
+  <div class="num"><b>09</b><span class="part">B · as peças</span></div>
+  <h2>O cérebro: seu segundo cérebro em três pastas</h2>
+  <p class="sub">Você joga uma fonte bruta numa pasta. A IA lê, resume em páginas por assunto e monta um índice. Depois, quando o assunto aparece, ela acha.</p>
+  <div class="fig">
+    <div class="row center">
+      <div class="tile"><div class="tag">você joga aqui</div><svg class="ic"><use href="#i-pdf"/></svg><div class="lb">raw\</div><div class="ds">PDF, artigo, print, briefing, e-mail. <b>Nunca é editado</b>: é a prova original.</div></div>
+      <svg class="arr acc"><use href="#i-arrow"/></svg>
+      <div class="tile hot"><svg class="ic hot"><use href="#i-brain"/></svg><div class="lb">/ingerir</div><div class="ds">a IA lê o que está pendente e destila</div></div>
+      <svg class="arr acc"><use href="#i-arrow"/></svg>
+      <div class="col">
+        <div class="tile"><svg class="ic"><use href="#i-page"/></svg><div class="lb">wiki\</div><div class="ds">uma página por assunto, com o caminho da fonte</div></div>
+        <div class="tile"><svg class="ic"><use href="#i-users"/></svg><div class="lb">pessoas\</div><div class="ds">um card por contato</div></div>
+        <div class="tile"><svg class="ic"><use href="#i-index"/></svg><div class="lb">INDICE.md</div><div class="ds">o mapa do que existe</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="txt">
+    <p>Existe um cérebro na central (<span class="k">memoria\cerebro\</span>, pro que vale em qualquer projeto) e um dentro de <b>cada projeto</b> (<span class="k">cerebro\</span>, pro que é daquele cliente). Quando o assunto da sua mensagem bate com uma página, o script mostra as 3 mais parecidas pra IA, com a regra "responda a partir delas e cite o caminho".</p>
+  </div>
+  <div class="vocab"><b>nomes nos arquivos</b>raw = bruto · <b>wiki</b> = destilado · <b>ingerir</b> = o comando que transforma um no outro · <b>índice</b> = a lista que permite achar</div>
+</section>
+
+<!-- ============ 09B resposta ============ -->
+<section class="board" id="b9b">
+  <div class="num"><b>09·B</b><span class="part">B · as peças</span><span class="part resp">resposta · 260824</span></div>
+  <h2>Raw é o negativo, wiki é a foto tratada — e negativo não vai pro lixo</h2>
+  <p class="sub">Mesma lógica do seu Lightroom: você não apaga o RAW da câmera depois de exportar o JPG.</p>
+  <div class="ask"><b>você perguntou</b>qual a diferença entre raw e wiki? Você joga fora o raw depois que ingere?</div>
+  <div class="fig">
+    <div class="row center">
+      <div class="tile"><div class="tag">prova</div><svg class="ic"><use href="#i-pdf"/></svg><div class="lb">raw\</div><div class="ds">o arquivo original, intocado: o PDF como chegou, o print como veio</div></div>
+      <svg class="arr acc"><use href="#i-arrow"/></svg>
+      <div class="tile hot"><svg class="ic hot"><use href="#i-brain"/></svg><div class="lb">/ingerir</div><div class="ds">destila</div></div>
+      <svg class="arr acc"><use href="#i-arrow"/></svg>
+      <div class="tile"><div class="tag">leitura</div><svg class="ic"><use href="#i-page"/></svg><div class="lb">wiki\</div><div class="ds">página curta por assunto, escrita pra achar rápido, com o caminho do raw no rodapé</div></div>
+      <div class="vs">·</div>
+      <div class="tile bad"><div class="tag bad">nunca</div><svg class="ic bad"><use href="#i-x"/></svg><div class="lb">Apagar o raw</div></div>
+    </div>
+  </div>
+  <div class="txt">
+    <p>Três motivos pra guardar o raw pra sempre: <b>1</b> é a prova — a wiki cita "fonte: raw\arquivo.pdf"; apagou, a citação aponta pro nada. <b>2</b> destilar perde detalhe de propósito — se amanhã a pergunta mudar, você re-destila do original. <b>3</b> raw não custa contexto: ninguém lê por padrão (prateleira "só se precisar", board 03). Custa disco, que é barato.</p>
+  </div>
+</section>
+
+<!-- ============ 09C resposta ============ -->
+<section class="board" id="b9c">
+  <div class="num"><b>09·C</b><span class="part">B · as peças</span><span class="part resp">resposta · 260824</span></div>
+  <h2>Categorias no cérebro: sim — rasas na pasta, ricas no índice</h2>
+  <p class="sub">Hoje ainda não é assim (a wiki tem 3 páginas, todas soltas). Vale adotar agora, enquanto é pequeno.</p>
+  <div class="ask"><b>você perguntou</b>dá pra ir categorizando por pastas e subpastas — refs de banner, de estrutura de site, de post — pra virar um repertório grande que se lê "só o necessário", como o de um humano?</div>
+  <div class="fig">
+    <div class="row">
+      <div class="tile wide warm"><div class="tag">pro humano achar</div><svg class="ic warm"><use href="#i-folder"/></svg><div class="lb">Pasta: 1 nível</div><div class="ds"><span class="k">wiki\visual\banners.md</span><br><span class="k">wiki\visual\sites.md</span><br><span class="k">wiki\mercado-imob\…</span><br>categoria rasa, nome que você clicaria</div></div>
+      <div class="tile wide pur"><div class="tag">pra IA achar</div><svg class="ic pur"><use href="#i-index"/></svg><div class="lb">Índice: etiquetas</div><div class="ds">cada página com assunto, tipo e projeto no <span class="k">INDICE.md</span>. A IA acha <b>por aqui</b>, comparando sua mensagem com as etiquetas — ela não navega pasta como a gente.</div></div>
+    </div>
+  </div>
+  <div class="txt">
+    <p>A regra que faz escalar: <b>pasta rasa, página pequena (1 assunto), etiqueta rica</b>. Subpasta funda ajuda pouco a IA e cansa você. E seu instinto está certo: quanto mais páginas etiquetadas, mais a busca se parece com memória de gente — puxa só o que o assunto pede.</p>
+    <p>Fronteira importante: seu acervo de <b>imagens</b> já tem casa própria (<span class="k">04_visuais</span>, com sua triagem sim/não, que nenhum script mexe). O cérebro guarda o <b>conhecimento em texto</b> — "o que funciona num banner e por quê" — citando as imagens de lá. Um guarda o olho, o outro guarda o porquê.</p>
+  </div>
+</section>
+
+<!-- ============ 09D resposta ============ -->
+<section class="board" id="b9d">
+  <div class="num"><b>09·D</b><span class="part">B · as peças</span><span class="part resp">resposta · 260824</span></div>
+  <h2>Ela para de puxar fonte quando a semelhança cai abaixo do corte</h2>
+  <p class="sub">Existe número e existe teto. Não é intuição: é régua.</p>
+  <div class="ask"><b>você perguntou</b>existe forma de saber o limite de quantas fontes do cérebro puxar até perceber que não tem mais nada útil? Qual é?</div>
+  <div class="fig">
+    <div class="bars">
+      <div class="bar"><div class="l">página A</div><div class="b"><i style="width:82%;background:var(--ok)"></i></div><div class="v" style="color:var(--ok)">0,82</div><span></span></div>
+      <div class="bar"><div class="l">página B</div><div class="b"><i style="width:74%;background:var(--ok)"></i></div><div class="v" style="color:var(--ok)">0,74</div><span></span></div>
+      <div class="bar"><div class="l">página C</div><div class="b"><i style="width:61%;background:var(--warm)"></i></div><div class="v" style="color:var(--warm)">0,61</div><span></span></div>
+      <div class="bar"><div class="l" style="color:var(--bad)">— linha de corte —</div><div class="b" style="border-color:var(--bad)"><i style="width:55%;background:var(--bad);opacity:.35"></i></div><div class="v" style="color:var(--bad)">0,55</div><span></span></div>
+      <div class="bar"><div class="l">página D · nem abre</div><div class="b"><i style="width:41%"></i></div><div class="v">0,41</div><span></span></div>
+    </div>
+  </div>
+  <div class="txt">
+    <p>Três freios, em ordem: <b>1 · o corte</b> — o índice dá nota de semelhança (0 a 1) entre sua mensagem e cada página; abaixo de 0,55 nem mostra, porque abaixo disso é ruído (número fixado nos scripts). <b>2 · o teto</b> — no automático entram no máximo 3 páginas de wiki e 5 lições por mensagem. <b>3 · o "e daí"</b> — no meio da tarefa, a IA para de abrir fonte quando a próxima não mudaria a resposta (regra do gate 2: ler sob demanda, não por completismo).</p>
+    <p>Ressalva honesta de hoje: o medidor está no modo simples (compara <b>palavras</b>), porque o programinha local que mede semelhança por <b>significado</b> (Ollama) estava desligado quando o índice foi gerado. Religar e reindexar está na fila do board 26 — até lá o corte funciona com régua pior.</p>
+  </div>
+</section>
+
+<!-- ============ 09E resposta ============ -->
+<section class="board" id="b9e">
+  <div class="num"><b>09·E</b><span class="part">B · as peças</span><span class="part resp">resposta · 260824</span></div>
+  <h2>Obsidian: boa janela pro cérebro — desde que seja janela, não motor</h2>
+  <p class="sub">O detalhe que muda tudo: o cérebro já é um monte de .md numa pasta — que é <b>exatamente</b> o que o Obsidian abre. Adotar custa 10 minutos, não uma migração.</p>
+  <div class="ask"><b>você perguntou</b>desenvolve o plano megabrain + second brain + Obsidian. Qual sua leitura, positiva e negativa?</div>
+  <div class="fig">
+    <div class="row">
+      <div class="tile ok wide"><div class="tag ok">a favor</div><svg class="ic ok"><use href="#i-bolt"/></svg><div class="lb">Zero migração</div><div class="ds">Obsidian abre pasta de .md do jeito que ela está. Aponta pro cérebro e pronto — nenhum script muda, a IA continua lendo os mesmos arquivos.</div></div>
+      <div class="tile ok wide"><div class="tag ok">a favor</div><svg class="ic ok"><use href="#i-index"/></svg><div class="lb">A janela humana que falta</div><div class="ds">busca instantânea, etiquetas, links entre páginas e o grafo de conexões — o "repertório que se aproxima do humano" do board 09·C, de graça, pra <b>você</b> navegar.</div></div>
+      <div class="tile ok wide"><div class="tag ok">a favor</div><svg class="ic ok"><use href="#i-lock"/></svg><div class="lb">Local e grátis</div><div class="ds">roda no seu PC, dado não sai da máquina — a regra "pessoal nunca sobe" fica intacta. E você edita a wiki num editor bom; a IA lê o mesmo arquivo. Uma fonte, dois leitores.</div></div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <div class="tile bad wide"><div class="tag bad">contra</div><svg class="ic bad"><use href="#i-warn"/></svg><div class="lb">É viewer, não motor</div><div class="ds">quem alimenta o cérebro continua sendo o <span class="k">/ingerir</span> + o índice. Instalar Obsidian não destila nada sozinho — o trabalho continua o mesmo.</div></div>
+      <div class="tile bad wide"><div class="tag bad">contra</div><svg class="ic bad"><use href="#i-copy"/></svg><div class="lb">Dialeto e config</div><div class="ds">links [[assim]] são dialeto do Obsidian — a citação oficial segue sendo caminho real. E a pasta de config <span class="k">.obsidian</span> nasce dentro do vault: não pode subir pro GitHub.</div></div>
+      <div class="tile bad wide"><div class="tag bad">contra</div><svg class="ic bad"><use href="#i-brain"/></svg><div class="lb">Armadilha da jardinagem</div><div class="ds">grafo bonito vicia. O valor está em <b>achar na hora do trabalho</b>, não em arrumar o jardim. Se virar hobby de organizar, é o megabrain pagando o pato.</div></div>
+    </div>
+  </div>
+  <div class="txt">
+    <p>Leitura fechada: <b>adotar como janela, manter o megabrain como motor.</b> Obsidian pra você ler, navegar e editar leve; <span class="k">/ingerir</span> + índice pra alimentar e achar. Uma regra de convivência: a estrutura quem manda é o megabrain (raw \ wiki \ pessoas + INDICE) — nada de daily notes e templates paralelos que os scripts não conhecem. Setup: abrir o vault no cérebro, <span class="k">.obsidian</span> no .gitignore. Entra na fila do board 26.</p>
+  </div>
+  <div class="vocab"><b>nome nos arquivos</b>vault = o nome que o Obsidian dá pra "pasta aberta nele" · Obsidian = app gratuito de ler/editar .md com busca, etiquetas e grafo</div>
+</section>
+
+<!-- ============ 10 ============ -->
+<section class="board" id="b10">
+  <div class="num"><b>10</b><span class="part">B · as peças</span></div>
+  <h2>Identidade: um arquivo diz quem você é pra todas as IAs</h2>
+  <p class="sub">É por isso que Claude, Kimi, Gemini e Codex respondem no mesmo formato: TL;DR primeiro, direto, sem enrolação.</p>
+  <div class="fig">
+    <div class="row center">
+      <div class="tile hot wide"><div class="tag hot">a fonte · só aqui se edita</div><svg class="ic hot"><use href="#i-user"/></svg><div class="lb">memoria\identidade\</div><div class="ds">nome, formato de resposta obrigatório, gostos, o que nunca fazer. <b>Nunca sai da sua máquina.</b></div></div>
+      <svg class="arr acc"><use href="#i-arrow"/></svg>
+      <div class="tile"><svg class="ic"><use href="#i-bolt"/></svg><div class="lb">1 clique</div><div class="ds"><span class="k">260810_sincronizar-identidade.cmd</span> copia um bloco pra cada IA</div></div>
+      <svg class="arr"><use href="#i-arrow"/></svg>
+      <div class="col">
+        <div class="mini"><svg><use href="#i-file"/></svg>Claude → <span class="k">CLAUDE.md</span></div>
+        <div class="mini"><svg><use href="#i-file"/></svg>Kimi / Codex → <span class="k">AGENTS.md</span></div>
+        <div class="mini"><svg><use href="#i-file"/></svg>Gemini → <span class="k">GEMINI.md</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="txt"><p>Se duas IAs respondem diferente ao mesmo pedido, o diagnóstico começa comparando esses blocos copiados. Editar a cópia em vez da fonte é o erro clássico: na próxima sincronização, a edição some.</p></div>
+</section>
+
+<!-- ============ 11 ============ -->
+<section class="board" id="b11">
+  <div class="num"><b>11</b><span class="part">B · as peças</span></div>
+  <h2>Scripts: o que acontece sozinho, sem depender da IA lembrar</h2>
+  <p class="sub">Regra escrita em texto é um <b>pedido</b>: a IA pode não seguir. Script é <b>garantia</b>: roda sempre. O megabrain tem os dois.</p>
+  <div class="fig">
+    <div class="row center">
+      <div class="tile"><svg class="ic"><use href="#i-chat"/></svg><div class="lb">Você manda a mensagem</div></div>
+      <svg class="arr"><use href="#i-arrow"/></svg>
+      <div class="tile pur wide"><div class="tag">roda sozinho no seu PC</div><svg class="ic pur"><use href="#i-bolt"/></svg><div class="lb">O script intercepta</div><div class="ds"><span class="k">bin\mb-contexto.py</span> cola na frente da sua mensagem: a meta do projeto, as 5 lições e as 3 páginas da wiki mais parecidas. Se não tem nada novo, cola nada (custo zero).</div></div>
+      <svg class="arr"><use href="#i-arrow"/></svg>
+      <div class="tile hot"><svg class="ic hot"><use href="#i-brain"/></svg><div class="lb">A IA recebe</div><div class="ds">sua mensagem + contexto já colado</div></div>
+    </div>
+  </div>
+  <div class="txt">
+    <p>Três tipos de script: <b>os que rodam sozinhos</b> a cada mensagem (esse aí, chamado de "hook"); <b>os que a IA chama</b> no meio do trabalho (<span class="k">bin\</span>, em Python: checar versão, travar o handoff, gerar relatório); e <b>os que você clica</b> (<span class="k">01_acoes\*.cmd</span>: publicar, push, sincronizar, refresh do plugin).</p>
+    <p>Ressalva importante pra você entender uma coisa que já aconteceu: <b>no Cowork (nuvem) o script que roda sozinho não roda</b>, porque a IA está num computador na nuvem e seus arquivos estão no seu PC. Lá eu faço o passo 0 na mão: abro os arquivos e leio.</p>
+  </div>
+  <div class="vocab"><b>nomes nos arquivos</b>hook = script que dispara sozinho num evento (mensagem enviada, sessão aberta) · <b>plugin</b> = o pacote (skills + hook) que você instala no Cowork ou no Kimi, gerado em <span class="k">dist\</span></div>
+</section>
+
+<!-- ============ 11B resposta ============ -->
+<section class="board" id="b11b">
+  <div class="num"><b>11·B</b><span class="part">B · as peças</span><span class="part resp">resposta · 260824</span></div>
+  <h2>"Roda sozinho" = encanamento. Quem pensa continua sendo o modelo grande.</h2>
+  <p class="sub">Sua preocupação com "um Qwen local mal otimizado piorando tudo" está coberta por desenho: nada local escreve resposta.</p>
+  <div class="ask"><b>você perguntou</b>esse "roda sozinho no seu PC" não pode acabar rodando um modelo local não otimizado e atrapalhar? É um agente local grátis? Como ter controle melhor disso?</div>
+  <div class="fig">
+    <div class="row">
+      <div class="tile wide"><div class="tag">seu PC · grátis</div><svg class="ic"><use href="#i-wrench"/></svg><div class="lb">Encanamento</div><div class="ds">scripts Python: colar contexto, checar versão, travar handoff, gerar relatório. <b>Não pensam</b> — fazem sempre a mesma coisa, como uma action do Photoshop.</div></div>
+      <div class="tile wide pur"><div class="tag">seu PC · grátis</div><svg class="ic pur"><use href="#i-index"/></svg><div class="lb">Régua de busca</div><div class="ds">um modelo minúsculo (nomic, via Ollama) que só dá <b>nota de semelhança</b> pra escolher o que te mostrar. Não escreve <b>uma palavra</b> da resposta.</div></div>
+      <div class="tile wide hot"><div class="tag hot">nuvem</div><svg class="ic hot"><use href="#i-brain"/></svg><div class="lb">A resposta</div><div class="ds">Claude / Kimi. 100% do texto que você lê nasce aqui. Sempre.</div></div>
+    </div>
+  </div>
+  <div class="txt">
+    <p>Pior caso se o Ollama estiver ruim ou desligado: a <b>busca</b> piora (te mostra lição menos certeira) — a inteligência da resposta não cai um milímetro. E fica de regra: <b>local ruim gerando resposta, nunca</b> — nem como fallback silencioso.</p>
+    <p><b>Refinado por você (260824): inteligente ≠ gastão.</b> Tarefa simples não roda no modelo topo — roda no <b>equivalente que dá conta</b> (Sonnet, Kimi, ou local que comprovadamente funciona). O topo fica pro julgamento, decisão, auditoria e entrega final — e <b>desenvolve sempre que a tarefa pede</b>: criar, escrever, projetar é trabalho dele; "revisar" é só uma das funções. Esse pacote ganhou nome seu: modo <b>otimizado</b>, o que está ligado hoje. Regra imediata, vale em toda sessão.</p>
+  </div>
+</section>
+
+<!-- ============ 12 ============ -->
+<section class="board" id="b12">
+  <div class="num"><b>12</b><span class="part">B · as peças</span></div>
+  <h2>O relatório: uma página que resume tudo, gerada por script</h2>
+  <p class="sub"><span class="k">00_painel\RELATORIO.html</span>. Você deixa aberto no navegador; ele se atualiza sozinho. Nunca se edita na mão.</p>
+  <div class="fig">
+    <div class="row center">
+      <div class="col">
+        <div class="mini"><svg><use href="#i-file"/></svg>ESTADO · HANDOFF · DECISOES</div>
+        <div class="mini"><svg><use href="#i-file"/></svg>versão atual × anterior · o que falta de push</div>
+        <div class="mini"><svg><use href="#i-file"/></svg>qual versão cada um dos 16 projetos tem</div>
+        <div class="mini"><svg><use href="#i-file"/></svg>lições recentes · fila de pendências com dono</div>
+      </div>
+      <svg class="arr acc"><use href="#i-arrow"/></svg>
+      <div class="tile pur"><svg class="ic pur"><use href="#i-bolt"/></svg><div class="lb">Script</div><div class="ds"><span class="k">bin\mb-relatorio-vivo.py</span> junta tudo</div></div>
+      <svg class="arr acc"><use href="#i-arrow"/></svg>
+      <div class="tile hot wide"><svg class="ic hot"><use href="#i-layout"/></svg><div class="lb">RELATORIO.html</div><div class="ds">um HTML só, com o card "PARA VOCÊ" no topo, 3 temas visuais × claro/escuro. A planta (posição de cada bloco) mora no seu arquivo <b>megabrain</b> no Figma.</div></div>
+    </div>
+  </div>
+  <div class="txt"><p>Regra: <b>gerado nunca se edita</b>. Quer mudar o relatório? Muda o arquivo de origem (o .md) ou o gerador, e roda de novo. Cada projeto pode gerar o seu próprio, com a mesma planta.</p></div>
+</section>
+
+<!-- ============ 12B resposta ============ -->
+<section class="board" id="b12b">
+  <div class="num"><b>12·B</b><span class="part">B · as peças</span><span class="part resp">resposta · 260824</span></div>
+  <h2>Por que quatro HTMLs na pasta — e o veredito de cada um</h2>
+  <p class="sub">Nenhum foi feito à mão; todos são gerados. Mas humano deve abrir <b>um</b>. Os outros viram anexo ou somem.</p>
+  <div class="ask"><b>você perguntou</b>por que na pasta relatórios tem 4 relatórios e não só o vivo, que pedi? Vale manter os outros ou podemos juntar todos?</div>
+  <div class="fig">
+    <div class="row">
+      <div class="tile ok wide"><div class="tag ok">fica · o único que você abre</div><svg class="ic ok"><use href="#i-layout"/></svg><div class="lb">RELATORIO.html</div><div class="ds">o vivo. Vira o painel único do board 12·C.</div></div>
+      <div class="tile bad wide"><div class="tag bad">some como página</div><svg class="ic bad"><use href="#i-file"/></svg><div class="lb">RELATORIO-AGENTES.html</div><div class="ds">estado de plugins e agentes. Cabe num card — vira um bloco <b>dentro</b> do painel.</div></div>
+      <div class="tile wide"><div class="tag">fica como anexo</div><svg class="ic"><use href="#i-book"/></svg><div class="lb">PAINEL-MEGABRAIN.html</div><div class="ds">a estante de leitura das referências — 2 MB. Engordar o painel com isso deixaria o vivo lento; fica a um clique.</div></div>
+      <div class="tile wide"><div class="tag">fica como anexo</div><svg class="ic"><use href="#i-layout"/></svg><div class="lb">CATALOGO-VISUAL.html</div><div class="ds">a vitrine dos modelos visuais. Mesmo caso: grande demais pra morar dentro.</div></div>
+    </div>
+  </div>
+  <div class="txt"><p>Registrado como decisão pro gerador: <b>um painel, dois anexos linkados, zero página redundante</b>. O AGENTES era a única redundância de verdade.</p></div>
+</section>
+
+<!-- ============ 12C resposta ============ -->
+<section class="board" id="b12c">
+  <div class="num"><b>12·C</b><span class="part">B · as peças</span><span class="part resp">resposta · 260824</span></div>
+  <h2>O painel vira dashboard: o que está rolando + o que você pode apertar</h2>
+  <p class="sub">Suas decisões de hoje viram esta planta da primeira dobra. Histórico vai pro fim, fechado — clica pra abrir.</p>
+  <div class="fig">
+    <div class="col">
+      <div class="row tight">
+        <div class="tile hot"><svg class="ic hot"><use href="#i-warn"/></svg><div class="lb">Para você</div><div class="ds">pendências com dono · push esquecido grita em vermelho</div></div>
+        <div class="tile cold"><svg class="ic cold"><use href="#i-sliders"/></svg><div class="lb">Modo: otimizado</div><div class="ds">o degrau atual, sempre visível (board 19·B)</div></div>
+        <div class="tile"><svg class="ic"><use href="#i-tag"/></svg><div class="lb">Versão · push</div><div class="ds">atual × anterior, o que falta enviar</div></div>
+      </div>
+      <div class="row tight">
+        <div class="tile wide"><div class="tag">ações</div><svg class="ic"><use href="#i-bolt"/></svg><div class="lb">Os .cmd como botões</div><div class="ds">Publicar e fotografar · Enviar pro GitHub · Sincronizar projetos · Refresh do plugin — cada um com "o que faz" em 1 linha</div></div>
+        <div class="tile wide pur"><div class="tag">poderes</div><svg class="ic pur"><use href="#i-checklist"/></svg><div class="lb">As skills à vista</div><div class="ds">/megabrain · /ingerir · /registrar-licao · … — 1 linha cada, pra você ver o que o bicho sabe fazer</div></div>
+      </div>
+      <div class="row tight">
+        <div class="tile wide"><svg class="ic"><use href="#i-file"/></svg><div class="lb">O projeto atual</div><div class="ds">meta, estado, últimas decisões</div></div>
+        <div class="tile ghost wide"><svg class="ic"><use href="#i-box"/></svg><div class="lb">Histórico</div><div class="ds">no fim, retrátil</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="txt">
+    <p>Uma verdade técnica antes de esperar mágica do botão: <b>página de navegador não tem permissão pra executar programa no seu PC</b> — proteção do sistema, e é bom que exista. Então os botões fazem hoje o segundo melhor: copiam o comando pronto e apontam o arquivo certo, com instrução de 1 linha. O clique-que-executa de verdade tem caminho natural: o <b>Neuron</b> é um app local, ele <b>pode</b> rodar script — ligar os botões do painel nele é a evolução planejada (board 13).</p>
+    <p><b>Você foi além (260824), e entrou pra planta:</b> scripts e skills viram <b>abas próprias</b>, fora do dashboard; abas abrem lado a lado em painéis, montando o <b>seu workspace</b> (como no Illustrator) — e o workspace se salva. Controles fixos de tamanho de elemento e de fonte, sem nada estourar da caixa. Dashboard com infográficos e ícones de estado, configurável na própria visão. E uma régua fixa à direita: <b>feedback</b> — like de 1 clique, anotação rápida, envio fácil, com o aviso de privacidade e consentimento do board 04·D. O esquema central→GitHub→usuário→projetos ganha aba própria, com os desenhos deste doc. Spec completa: <span class="k">03_docs\260824_spec-fase2.md</span>.</p>
+  </div>
+  <div class="vocab"><b>nome nos arquivos</b>dashboard = painel que mostra o estado atual na primeira tela · esta planta vira mudança no gerador <span class="k">bin\mb-relatorio-vivo.py</span></div>
+</section>
+
+<!-- ============ 13 ============ -->
+<section class="board" id="b13">
+  <div class="num"><b>13</b><span class="part">B · as peças</span><span class="part upd">atualizado · 260824</span></div>
+  <h2>Neuron: o pet local que sabe tudo do seu PC</h2>
+  <p class="sub">Um app seu, local (<span class="k">gerenteneuron\</span>). Fazia triagem de modelo por custo. <b>Redefinido por você (260824): ele não escolhe modelo — ele observa.</b></p>
+  <div class="fig">
+    <div class="row center">
+      <div class="tile"><svg class="ic"><use href="#i-chat"/></svg><div class="lb">Sua mensagem</div></div>
+      <svg class="arr"><use href="#i-arrow"/></svg>
+      <div class="tile pur"><svg class="ic pur"><use href="#i-brain"/></svg><div class="lb">Neuron observa</div><div class="ds">o pet que enxerga tudo, sem decidir por você</div></div>
+      <svg class="arr"><use href="#i-arrow"/></svg>
+      <div class="col">
+        <div class="mini"><svg><use href="#i-pc"/></svg>vê o PC e os projetos — a visão geral</div>
+        <div class="mini"><svg><use href="#i-checklist"/></svg>junta os números: skills mais usadas, tempos, modos (telemetria)</div>
+        <div class="mini"><svg><use href="#i-bolt"/></svg>segura os botões do painel e roda scripts — as mãos locais</div>
+        <div class="mini" style="border-color:var(--bad);opacity:.55;text-decoration:line-through"><svg><use href="#i-chip"/></svg>escolher modelo (cheap/standard/deep) — saiu</div>
+      </div>
+    </div>
+  </div>
+  <div class="txt">
+    <p><b>Redefinido por você (260824):</b> escolher modelo não é papel do Neuron — isso fica com o processamento normal da sessão (e com a regra do board 11·B: equivalente que dá conta). O papel dele é ser o <b>pet do PC</b>: enxergar tudo (projetos, arquivos, números), guardar a visão geral e emprestar as mãos locais — botões do painel (12·C), scripts, telemetria, o índice de "onde está cada coisa" (board 25). O roteador por custo fica desligado e guardado no código.</p>
+    <p><b>Contexto que você deu (260824):</b> o Gerente antigo escolhia modo E modelo — somado à inteligência que cada usuário seta no próprio client, virava variável demais, às vezes com modelo fraco no volante. Daí as duas regras: <b>uma escolha de modo só</b> no megabrain (menos coisa pra variar e errar) e o workflow se adaptando pra <b>fazer o melhor com o que tem</b>. O Neuron vira <b>suporte</b> dos projetos (o carry é você): ainda sem visual, mas <b>summonável</b> — chama e ele aparece com a visão geral. Evoluir o pet-suporte: anotado pra desenvolvermos.</p>
+  </div>
+</section>
+
+<!-- ============ 14 ============ -->
+<section class="board" id="b14">
+  <div class="num"><b>14</b><span class="part">B · as peças</span></div>
+  <h2>Duas IAs, um bastão</h2>
+  <p class="sub">Claude e Kimi trabalham no mesmo projeto, em turnos. O que impede uma de destruir o trabalho da outra é uma placa de "ocupado" e o bilhete.</p>
+  <div class="fig">
+    <div class="row center">
+      <div class="tile"><svg class="ic"><use href="#i-brain"/></svg><div class="lb">Claude</div><div class="ds">julgamento, decisão, texto final, auditoria</div></div>
+      <svg class="arr"><use href="#i-arrow"/></svg>
+      <div class="tile hot wide"><svg class="ic hot"><use href="#i-lock"/></svg><div class="lb">HANDOFF.md</div><div class="ds"><span class="k">TRAVADO_POR: claude · ATÉ: 17:47 · ESCOPO: bin\, memoria\estado\</span><br>"Estou mexendo nessas pastas até essa hora. Não entre."</div></div>
+      <svg class="arr"><use href="#i-arrow"/></svg>
+      <div class="tile"><svg class="ic"><use href="#i-brain"/></svg><div class="lb">Kimi</div><div class="ds">varredura, leitura longa, primeira passada, refactor mecânico</div></div>
+    </div>
+  </div>
+  <div class="txt">
+    <p>Divisão por custo, não por hierarquia: a IA barata de contexto grande lê e extrai; a IA de julgamento decide e entrega. Regra dura: <b>o que a outra IA deixou é rascunho</b>, confere antes de construir em cima.</p>
+    <p>O script <span class="k">bin\mb-sync.py</span> é quem coloca e tira a placa. Trava vencida = livre.</p>
+  </div>
+</section>
+
+<!-- ============ 15 ============ -->
+<section class="board" id="b15">
+  <div class="num"><b>15</b><span class="part">B · as peças</span><span class="part upd">atualizado · v7 aplicada hoje</span></div>
+  <h2>O mapa da central — o layout novo, já no seu disco</h2>
+  <p class="sub">Sua régua virou lei: <b>pasta numerada = feita pra sua mão</b>, com nome que você clicaria. O resto é casa de máquinas — você nunca precisa abrir.</p>
+  <div class="fig">
+    <div class="legend"><span><i style="border-color:var(--warm)"></i>você entra</span><span><i></i>casa de máquinas</span><span><i style="border-color:var(--pur)"></i>git</span></div>
+    <div class="map">
+      <div class="fold h"><svg><use href="#i-layout"/></svg><div><div class="nm">00_painel</div><div class="ds">o RELATORIO.html — a porta da frente: abre e está tudo lá</div></div></div>
+      <div class="fold h"><svg><use href="#i-bolt"/></svg><div><div class="nm">01_acoes</div><div class="ds">os cliques, agora com verbo: publicar-e-fotografar · enviar-pro-github · sincronizar-projetos · novo-projeto…</div></div></div>
+      <div class="fold h"><svg><use href="#i-pdf"/></svg><div><div class="nm">02_entrada</div><div class="ds">jogue fontes aqui (PDF, print, briefing) → o /ingerir leva pro cérebro</div></div></div>
+      <div class="fold h"><svg><use href="#i-file"/></svg><div><div class="nm">03_docs</div><div class="ds">documentos como este</div></div></div>
+      <div class="fold h"><svg><use href="#i-camera"/></svg><div><div class="nm">04_visuais</div><div class="ds">seu acervo de referências (entrada → sim/não). Nenhum script mexe</div></div></div>
+      <div class="fold h"><svg><use href="#i-box"/></svg><div><div class="nm">90_arquivo · 99_to_delete</div><div class="ds">memória morta (inclui o backup da migração de hoje) · lixeira que você esvazia</div></div></div>
+      <div class="fold c"><svg><use href="#i-brain"/></svg><div><div class="nm">memoria\</div><div class="ds">o que a IA lê pra lembrar: nucleo (regras, lições) · estado (onde paramos) · identidade · cerebro (raw→wiki) · pendencias</div></div></div>
+      <div class="fold c"><svg><use href="#i-wrench"/></svg><div><div class="nm">bin · skills · referencias · modelos · dna · tests · plugins · gerenteneuron · dist</div><div class="ds">a casa de máquinas, na raiz e sem número (a etapa 2 agrupa em motor\, em sessão com testes)</div></div></div>
+      <div class="fold c"><svg><use href="#i-lock"/></svg><div><div class="nm">dna\usuario\</div><div class="ds">o backup imaculado das SUAS infos — intocável, fora do git</div></div></div>
+      <div class="fold g"><svg><use href="#i-cloud"/></svg><div><div class="nm">_github\</div><div class="ds">export (a versão pública montada) + repo-local (o álbum de fotos que o push envia)</div></div></div>
+    </div>
+  </div>
+  <div class="txt"><p>Você não precisa decorar: <b>abrir = 00_painel · clicar = 01_acoes · jogar fonte = 02_entrada</b>. O resto a IA cuida. A migração rodou hoje com backup (<span class="k">90_arquivo\migracao-v7-260824</span>) e a suíte de testes passou 25/25.</p></div>
+</section>
+
+<!-- ============ 15B resposta ============ -->
+<section class="board" id="b15b">
+  <div class="num"><b>15·B</b><span class="part">B · as peças</span><span class="part resp">resposta · 260824</span></div>
+  <h2>Reorganizar a casa dá: porta da frente pro humano, casa de máquinas pra IA</h2>
+  <p class="sub">Sua régua vira o critério oficial: pasta numerada = feita pra mão humana, com nome que um leigo clicaria. O resto, só a IA abre.</p>
+  <div class="ask"><b>você perguntou</b>dá pra mudar a estrutura de pastas pra facilitar o uso e o entendimento humano — achar o relatório de cara, "ações" em vez de "scripts" — separando o que o humano toca do que a IA manipula?</div>
+  <div class="fig">
+    <div class="legend"><span><i style="border-color:var(--warm)"></i>você entra</span><span><i style="border-color:var(--cold)"></i>casa de máquinas — você nunca precisa abrir</span><span><i style="border-color:var(--pur)"></i>git</span></div>
+    <div class="map">
+      <div class="fold h"><svg><use href="#i-layout"/></svg><div><div class="nm">00_painel</div><div class="ds">o RELATORIO. A porta da frente: abre e está tudo lá</div></div></div>
+      <div class="fold h"><svg><use href="#i-bolt"/></svg><div><div class="nm">01_acoes</div><div class="ds">os cliques, com nome de verbo: enviar-pro-github.cmd, sincronizar-projetos.cmd</div></div></div>
+      <div class="fold h"><svg><use href="#i-pdf"/></svg><div><div class="nm">02_entrada</div><div class="ds">jogue fontes aqui (PDF, print, briefing) → a IA ingere pro cérebro</div></div></div>
+      <div class="fold h"><svg><use href="#i-file"/></svg><div><div class="nm">03_docs</div><div class="ds">documentos como este</div></div></div>
+      <div class="fold h"><svg><use href="#i-camera"/></svg><div><div class="nm">04_visuais</div><div class="ds">seu acervo de referências de imagem</div></div></div>
+      <div class="fold h"><svg><use href="#i-box"/></svg><div><div class="nm">90_arquivo · 99_to_delete</div><div class="ds">memória morta · lixeira que você esvazia</div></div></div>
+      <div class="fold c"><svg><use href="#i-wrench"/></svg><div><div class="nm">motor\</div><div class="ds">bin, skills, referencias, modelos, dna, plugins, tests</div></div></div>
+      <div class="fold c"><svg><use href="#i-brain"/></svg><div><div class="nm">memoria\</div><div class="ds">nucleo, estado, identidade, cerebro</div></div></div>
+      <div class="fold g"><svg><use href="#i-cloud"/></svg><div><div class="nm">_github\</div><div class="ds">export + álbum de fotos do git</div></div></div>
+    </div>
+  </div>
+  <div class="txt">
+    <p>Status: <b>EXECUTADA hoje mesmo (etapa 1)</b> — do jeito seguro que a sua condição pedia: mapeei todas as referências, movi 14 pastas, renomeei os 8 .cmd por verbo, reapontei 44 arquivos e rodei a suíte: <b>25/25</b>. Backup de tudo que foi editado em <span class="k">90_arquivo\migracao-v7-260824</span>. O que ficou pra etapa 2 (sessão dedicada): agrupar as pastas de código da raiz em <span class="k">motor\</span> — são ~170 referências ambíguas, mexer nelas no embalo violaria o seu "se não quebrar nada". Elas já são zona de máquina (sem número), então nada muda pro seu uso.</p>
+  </div>
+</section>
+
+<!-- ============ 16 ============ -->
+<section class="board" id="b16">
+  <div class="num"><b>16</b><span class="part">B · as peças</span></div>
+  <h2>Tudo junto: uma conversa, do começo ao fim</h2>
+  <p class="sub">Agora dá pra ver as peças no lugar. Uma sessão típica no seu PC:</p>
+  <div class="fig">
+    <div class="row center tight">
+      <div class="tile"><div class="tag">você</div><svg class="ic"><use href="#i-chat"/></svg><div class="lb">"/megabrain, faz a proposta X"</div></div>
+      <svg class="arr"><use href="#i-arrow"/></svg>
+      <div class="tile pur"><div class="tag">script</div><svg class="ic pur"><use href="#i-bolt"/></svg><div class="lb">Cola o contexto</div><div class="ds">identidade + meta + lições + wiki</div></div>
+      <svg class="arr"><use href="#i-arrow"/></svg>
+      <div class="tile hot"><div class="tag">IA</div><svg class="ic hot"><use href="#i-checklist"/></svg><div class="lb">Roda o roteiro</div><div class="ds">lê ESTADO/HANDOFF, pergunta se vago, faz, relê, confere</div></div>
+      <svg class="arr"><use href="#i-arrow"/></svg>
+      <div class="tile"><div class="tag">entrega</div><svg class="ic"><use href="#i-file"/></svg><div class="lb">Proposta</div><div class="ds">+ bilhete novo + lição, se houve</div></div>
+      <svg class="arr"><use href="#i-arrow"/></svg>
+      <div class="tile"><div class="tag">você</div><svg class="ic"><use href="#i-camera"/></svg><div class="lb">2 cliques</div><div class="ds">publicar + push</div></div>
+    </div>
+  </div>
+  <div class="txt"><p>É isso que o megabrain faz. Todo o resto (relatório, Neuron, Figma, temas) é conforto em volta desse ciclo.</p></div>
+</section>
+
+<!-- ============ 17 ============ -->
+<section class="board" id="b17">
+  <div class="num"><b>17</b><span class="part">C · modos</span></div>
+  <h2>Ler custa. Hoje ela lê muito antes de você pedir qualquer coisa</h2>
+  <p class="sub">Token = pedacinho de texto. Cada um custa dinheiro e tempo, tanto o que a IA lê quanto o que ela escreve.</p>
+  <div class="fig">
+    <div class="row center">
+      <div class="tile"><svg class="ic"><use href="#i-chat"/></svg><div class="lb">Você digita</div><div class="ds"><span class="k">/megabrain</span></div></div>
+      <svg class="arr"><use href="#i-arrow"/></svg>
+      <div class="tile wide hot"><svg class="ic hot"><use href="#i-weight"/></svg><div class="lb">Ela lê tudo isso primeiro</div>
+        <div class="stack" style="margin-top:6px">
+          <div class="mini fat"><svg><use href="#i-file"/></svg>a skill (o roteiro do board 06)<span class="kb">30 KB</span></div>
+          <div class="mini fat"><svg><use href="#i-file"/></svg>HANDOFF (o bilhete + histórico velho)<span class="kb">20 KB</span></div>
+          <div class="mini"><svg><use href="#i-book"/></svg>lições parecidas<span class="kb">7,5 KB</span></div>
+          <div class="mini"><svg><use href="#i-file"/></svg>META<span class="kb">3 KB</span></div>
+          <div class="mini"><svg><use href="#i-file"/></svg>ESTADO<span class="kb">1,2 KB</span></div>
+        </div>
+      </div>
+      <svg class="arr"><use href="#i-arrow"/></svg>
+      <div class="tile"><svg class="ic"><use href="#i-brain"/></svg><div class="lb">Só então responde</div></div>
+    </div>
+  </div>
+  <div class="txt">
+    <p>~62 KB, o equivalente a umas 25 páginas de texto, antes do seu primeiro pedido. <span class="est">[ESTIMATIVA — medido nos seus arquivos hoje]</span></p>
+    <p>Os dois em vermelho são metade do peso e carregam <b>histórico</b> que podia estar no arquivo morto. Volta no board 22.</p>
+  </div>
+</section>
+
+<!-- ============ 18 ============ -->
+<section class="board" id="b18">
+  <div class="num"><b>18</b><span class="part">C · modos</span><span class="part upd">atualizado · 260824</span></div>
+  <h2>Modo = 3 faders numa mesa de som</h2>
+  <p class="sub">Só três coisas mudam entre um modo e outro. A pasta não é uma delas. <b>Decidido 260824: por enquanto um modo só, batizado por você de "otimizado"</b> — o melhor resultado possível, gastando só onde o gasto muda o resultado. O desenho abaixo segue valendo como o mecanismo, pra quando você quiser faixas.</p>
+  <div class="fig">
+    <div class="modes">
+      <div class="mode eco">
+        <div class="lb" style="color:var(--ok)">Econômico</div>
+        <div class="ds">modelo barato ou local · lê o mínimo · confere uma vez</div>
+        <div class="faders">
+          <div class="fader"><div class="track"><i style="height:22%"></i></div><div class="fl">quanto<br>lê</div></div>
+          <div class="fader"><div class="track"><i style="height:22%"></i></div><div class="fl">qual<br>modelo</div></div>
+          <div class="fader"><div class="track"><i style="height:35%"></i></div><div class="fl">quanto<br>confere</div></div>
+        </div>
+        <div class="cost">custo <b>1×</b> · extrair, listar, tarefa repetida</div>
+      </div>
+      <div class="mode fast">
+        <div class="lb" style="color:var(--warm)">Rápido</div>
+        <div class="ds">modelo bom · lê pouco · quase não confere</div>
+        <div class="faders">
+          <div class="fader"><div class="track"><i style="height:35%"></i></div><div class="fl">quanto<br>lê</div></div>
+          <div class="fader"><div class="track"><i style="height:65%"></i></div><div class="fl">qual<br>modelo</div></div>
+          <div class="fader"><div class="track"><i style="height:10%"></i></div><div class="fl">quanto<br>confere</div></div>
+        </div>
+        <div class="cost">custo <b>~1×</b> · pergunta, "onde está X", conversa</div>
+      </div>
+      <div class="mode smart">
+        <div class="lb" style="color:var(--cold)">Inteligente</div>
+        <div class="ds">modelo de ponta · lê tudo que bate · confere duas vezes</div>
+        <div class="faders">
+          <div class="fader"><div class="track"><i style="height:100%"></i></div><div class="fl">quanto<br>lê</div></div>
+          <div class="fader"><div class="track"><i style="height:100%"></i></div><div class="fl">qual<br>modelo</div></div>
+          <div class="fader"><div class="track"><i style="height:100%"></i></div><div class="fl">quanto<br>confere</div></div>
+        </div>
+        <div class="cost">custo <b>3–4×</b> · cliente, dinheiro, entrega final <span class="est" style="color:var(--ink-faint);font-size:12px">[ESTIMATIVA]</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="txt">
+    <p>Cada fader é uma peça da Parte B: <b>quanto lê</b> = o script do board 11 (quantas lições e páginas ele cola); <b>qual modelo</b> = a regra do board 11·B (equivalente que dá conta; era papel do Gerente, saiu — board 13); <b>quanto confere</b> = o "modo leve / completo" da skill do board 06. Os três existem. O que não existe é <b>um botão que gira os três juntos</b>. Isso seria o "modo".</p>
+    <p>Sua pergunta "o inteligente teria uma organização mais completa?": não. Mesma pasta, mesmo cérebro, mesmas skills. Ele só puxa mais coisa dela e confere mais. Preset de exportação no Lightroom: mesma biblioteca, saída diferente.</p>
+  </div>
+</section>
+
+<!-- ============ 19 ============ -->
+<section class="board" id="b19">
+  <div class="num"><b>19</b><span class="part">C · modos</span></div>
+  <h2>Pegadinha: econômico e rápido são quase o mesmo lugar</h2>
+  <p class="sub">Ler menos e conferir menos é mais barato <b>e</b> mais rápido ao mesmo tempo. Não dá pra separar os dois.</p>
+  <div class="fig">
+    <div class="axis">
+      <div class="line"></div>
+      <div class="end l">barato · rápido · raso</div>
+      <div class="end r">caro · lento · fundo</div>
+      <div class="pt eco" style="left:14%"><span style="color:var(--ok)">Econômico</span><i></i></div>
+      <div class="pt fast" style="left:26%"><span style="color:var(--warm)">Rápido</span><i></i></div>
+      <div class="pt smart" style="left:88%"><span style="color:var(--cold)">Inteligente</span><i></i></div>
+    </div>
+  </div>
+  <div class="txt">
+    <p>A única diferença entre os dois é <b>o modelo</b>: rápido usa modelo bom sem ritual; econômico usa modelo barato ou o que roda no seu PC (Ollama).</p>
+    <p>Inteligente custa 3–4× porque faz as duas coisas caras: lê tudo que bate com o assunto e <b>reescreve e confere</b> o que gerou, às vezes com uma segunda IA olhando do zero. <span class="est">[ESTIMATIVA]</span></p>
+  </div>
+</section>
+
+<!-- ============ 19B resposta ============ -->
+<section class="board" id="b19b">
+  <div class="num"><b>19·B</b><span class="part">C · modos</span><span class="part resp">resposta · 260824</span></div>
+  <h2>A escada refeita: leve · padrão · otimizado</h2>
+  <p class="sub">Você viu o buraco entre "rápido" e "inteligente". A resposta: fundir os dois de baixo e criar o degrau do meio.</p>
+  <div class="ask"><b>você perguntou</b>econômico e rápido são quase iguais, e não tem nada entre rápido e inteligente. Como você planejaria e estruturaria isso? Pra que cada modo serviria?</div>
+  <div class="fig">
+    <div class="modes">
+      <div class="mode eco">
+        <div class="lb" style="color:var(--ok)">Leve</div>
+        <div class="ds">funde econômico + rápido — eles só diferiam no modelo, e modelo local gerando resposta saiu de cena (board 11·B). A diferença morreu; o degrau também.</div>
+        <div class="cost">pergunta, busca, tarefa mecânica, rascunho que morre na conversa<br><b style="font-size:15px">lê o piso · modelo bom · confere 1× (gates 1·4·5)</b></div>
+      </div>
+      <div class="mode fast">
+        <div class="lb" style="color:var(--warm)">Padrão</div>
+        <div class="ds">o degrau que faltava: trabalho de verdade que <b>fica</b> no projeto, mas não sai da máquina</div>
+        <div class="cost">organizar, documentar, iterar peça interna<br><b style="font-size:15px">piso + top-3 lições/wiki · modelo bom · roteiro completo, conferência simples</b></div>
+      </div>
+      <div class="mode smart">
+        <div class="lb" style="color:var(--cold)">Otimizado</div>
+        <div class="ds">o seu, hoje, em tudo — o melhor resultado, sem gasto à toa</div>
+        <div class="cost">cliente, dinheiro, sai da máquina — ou por escolha, seu caso<br><b style="font-size:15px">lê tudo que bate · topo no que decide, equivalente no mecânico (11·B) · conferência dupla em alto risco</b></div>
+      </div>
+    </div>
+  </div>
+  <div class="txt">
+    <p>A subida automática vale em qualquer degrau: cheirou entrega externa, sobe pro otimizado sozinho (board 20). A escolha nasce na <b>implantação</b> — o criar-projeto pergunta o modo, default otimizado — e muda quando quiser: a linha <span class="k">MODO:</span> no META ou uma palavra no chat (board 21). O painel mostra o degrau atual na primeira dobra (board 12·C), então nunca fica a dúvida de "em que modo isso foi feito".</p>
+  </div>
+</section>
+
+<!-- ============ 20 ============ -->
+<section class="board" id="b20">
+  <div class="num"><b>20</b><span class="part">C · modos</span></div>
+  <h2>Tem um piso, e trocar no meio não quebra nada</h2>
+  <p class="sub">Duas coisas que você perguntou, no mesmo board porque uma explica a outra.</p>
+  <div class="fig">
+    <div class="row center" style="border-bottom:3px solid var(--hot);padding-bottom:18px;margin-bottom:18px">
+      <div class="tile hot"><svg class="ic hot"><use href="#i-file"/></svg><div class="lb">ESTADO</div></div>
+      <div class="tile hot"><svg class="ic hot"><use href="#i-file"/></svg><div class="lb">HANDOFF</div></div>
+      <div class="tile hot"><svg class="ic hot"><use href="#i-user"/></svg><div class="lb">Quem é você</div></div>
+      <div class="lbl" style="margin-left:10px">↑ piso: nenhum modo tira. Sem isso a IA começa do zero, e recomeçar custa mais que os 5 KB economizados.</div>
+    </div>
+    <div class="row center">
+      <div class="tile"><svg class="ic"><use href="#i-switch"/></svg><div class="lb">Trocar de modo</div><div class="ds">muda como a IA se comporta <b>nesta conversa</b></div></div>
+      <div class="vs">≠</div>
+      <div class="tile ghost"><div class="tag ok">não muda</div><svg class="ic"><use href="#i-folder"/></svg><div class="lb">O projeto</div><div class="ds">ESTADO, decisões, cérebro, specs: iguais em qualquer modo</div></div>
+      <div class="vs">·</div>
+      <div class="tile cold"><svg class="ic cold"><use href="#i-warn"/></svg><div class="lb">Vai sair da máquina?</div><div class="ds">cliente, site no ar, repositório → vira <b>inteligente sozinho</b>. Descer no meio de entrega não existe.</div></div>
+    </div>
+  </div>
+  <div class="txt">
+    <p>Sua dúvida "se eu alterar no meio, muda a engenharia do projeto?": não. É como trocar a lente da câmera: a cena é a mesma, muda quanto você vê dela. O projeto nem sabe em que modo foi escrito; só sente se a conferência foi rasa. Por isso a trava de "vai sair da máquina", que a skill já tem hoje ("subir é barato, descer não").</p>
+  </div>
+</section>
+
+<!-- ============ 21 ============ -->
+<section class="board" id="b21">
+  <div class="num"><b>21</b><span class="part">C · modos</span><span class="part upd">atualizado · 260824</span></div>
+  <h2>Como você trocaria: uma linha no arquivo, ou uma palavra no chat</h2>
+  <p class="sub">Refinado hoje: o usuário escolhe na <b>implantação</b> (não a cada sessão) e muda quando quiser. Fica assim:</p>
+  <div class="fig">
+    <div class="row center">
+      <div class="tile wide"><div class="tag">padrão do projeto</div><svg class="ic"><use href="#i-file"/></svg><div class="lb">META.md de cada projeto</div>
+        <div class="stack" style="margin-top:6px">
+          <div class="mini"><svg><use href="#i-check"/></svg><span class="k">ALINHAMENTO: on</span><span class="kb">já existe hoje</span></div>
+          <div class="mini" style="border-color:var(--ok)"><svg><use href="#i-sliders"/></svg><span class="k">MODO: otimizado</span><span class="kb" style="color:var(--ok)">a linha nova</span></div>
+        </div>
+        <div class="ds">Hoje, por sua decisão: otimizado em tudo. Quando ligar as faixas: cliente = otimizado · dia a dia = padrão · consulta = leve.</div>
+      </div>
+      <div class="vs">+</div>
+      <div class="col">
+        <div class="tile"><div class="tag">na hora</div><svg class="ic"><use href="#i-chat"/></svg><div class="lb">No chat</div><div class="ds"><span class="k">/megabrain modo inteligente</span></div></div>
+        <div class="tile"><svg class="ic"><use href="#i-chat"/></svg><div class="lb">Ou só a palavra</div><div class="ds">"caprichar" = otimizado · "responde curto" = leve. A skill já entende as duas hoje.</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="txt">
+    <p>Três lugares leriam essa linha: o script que cola contexto (quanto lê), a skill (quanto confere) e a escolha de modelo da sessão (regra do board 11·B). No <b>Cowork (nuvem)</b> a IA obedece lendo o campo, como quem lê um bilhete; no <b>seu PC</b> o script aplica sozinho. Pedido × garantia, de novo.</p>
+  </div>
+</section>
+
+<!-- ============ 22 ============ -->
+<section class="board" id="b22">
+  <div class="num"><b>22</b><span class="part">C · modos</span><span class="part upd">atualizado · 260824</span></div>
+  <h2>Tirar peso: o que é esse peso, e por que nada se perde</h2>
+  <p class="sub">Peso = <b>leitura fixa repetida</b>: o que a IA relê no começo de toda sessão, antes do seu primeiro pedido. Não é feature, não é conteúdo, não é inteligência.</p>
+  <div class="ask"><b>você perguntou</b>eu não entendi muito bem o tirar peso, porque me preocupa o que é esse peso. Me explica melhor tudo isso.</div>
+  <div class="fig">
+    <div class="bars">
+      <div class="bar fat"><div class="l">a skill (roteiro)</div><div class="b"><i style="width:100%"></i></div><div class="v">30 KB</div><svg><use href="#i-scissors"/></svg></div>
+      <div class="bar fat"><div class="l">HANDOFF (com histórico)</div><div class="b"><i style="width:66%"></i></div><div class="v">20 KB</div><svg><use href="#i-scissors"/></svg></div>
+      <div class="bar"><div class="l">lições parecidas</div><div class="b"><i style="width:25%"></i></div><div class="v">7,5 KB</div><span></span></div>
+      <div class="bar"><div class="l">META</div><div class="b"><i style="width:10%"></i></div><div class="v">3 KB</div><span></span></div>
+      <div class="bar"><div class="l">ESTADO</div><div class="b"><i style="width:4%"></i></div><div class="v">1,2 KB</div><span></span></div>
+    </div>
+    <div class="row" style="margin-top:22px">
+      <div class="tile hot"><svg class="ic hot"><use href="#i-weight"/></svg><div class="lb">Hoje</div><div class="ds">~62 KB antes do 1º pedido</div></div>
+      <svg class="arr ok"><use href="#i-arrow"/></svg>
+      <div class="tile ok"><svg class="ic ok"><use href="#i-weight"/></svg><div class="lb">Depois do corte</div><div class="ds">~30 KB, mesmas features <span class="est" style="color:var(--ink-faint)">[ESTIMATIVA]</span></div></div>
+    </div>
+  </div>
+  <div class="txt">
+    <p><b>Corte 1 — a skill:</b> hoje o roteiro tem 556 linhas relidas toda vez (o limite que ela mesma fixa é 500). Vira um roteiro curto; as regras longas mudam de prateleira — saem do "sempre" e vão pro "só se precisar" (board 03), abertas quando o passo exige. <b>O texto continua existindo.</b> Muda o momento da leitura, não o conteúdo.</p>
+    <p><b>Corte 2 — o HANDOFF:</b> passa a guardar só o bilhete atual; o histórico de sessões vai pro arquivo morto (<span class="k">90_arquivo\</span>), onde continua legível pra sempre.</p>
+    <p><b>O que o corte NÃO toca:</b> identidade, estado, decisões, lições, cérebro, skills como função. Nada some, nada emburrece — ao contrário: com você rodando no otimizado, cada KB fixo cortado vira KB livre pra puxar mais cérebro e mais conferência na mesma conversa. Tirar peso é o que <b>financia</b> o otimizado.</p>
+    <p><b>Autorizado por você (260824): "vai lá e faça."</b> Vira o item 1 da fila — primeira coisa da próxima sessão de trabalho, sozinha, porque mexe na skill instalada e pede teste + rebuild do plugin. E respondendo sua outra pergunta: aumentar o roteiro <b>pioraria</b> — texto a mais na prateleira do "sempre" é atenção diluída e custo fixo repetido. O ganho está em roteiro curto + referências profundas abertas na hora certa. Comprimento não é inteligência.</p>
+  </div>
+</section>
+
+<!-- ============ 23 ============ -->
+<section class="board" id="b23">
+  <div class="num"><b>23</b><span class="part">D · seu figma</span></div>
+  <h2>Você acertou o "quem"</h2>
+  <p class="sub">As três pastas com carinha do seu desenho existem de verdade. Só não são pastas novas: já moram no disco (board 15).</p>
+  <div class="fig">
+    <div class="col">
+      <div class="row">
+        <div class="tile"><svg class="ic"><use href="#i-folder"/></svg><div class="lb">megabrain DNA</div><div class="ds">"versão validada, intocada"</div></div>
+        <svg class="arr ok"><use href="#i-arrow"/></svg>
+        <div class="tile ok wide"><svg class="ic ok"><use href="#i-tag"/></svg><div class="lb">memoria\nucleo + a foto com nome no git</div><div class="ds">O "intocado" é uma versão salva (tag, board 05), não uma cópia da pasta. Relatório e skills não moram dentro dele: são coisas que ele gera.</div></div>
+      </div>
+      <div class="row">
+        <div class="tile"><svg class="ic"><use href="#i-folder"/></svg><div class="lb">Gerente Neuron</div><div class="ds">"sabe onde tá tudo, busca geral"</div></div>
+        <svg class="arr ok"><use href="#i-arrow"/></svg>
+        <div class="tile ok wide"><svg class="ic ok"><use href="#i-index"/></svg><div class="lb">O índice + o app do board 13</div><div class="ds">A lista de onde está cada coisa. É ele que resolve o seu "atalho de arquivo" (board 25) e escolhe qual modelo responde.</div></div>
+      </div>
+      <div class="row">
+        <div class="tile"><svg class="ic"><use href="#i-folder"/></svg><div class="lb">Usuário</div><div class="ds">"dados sobre você, preferências"</div></div>
+        <svg class="arr ok"><use href="#i-arrow"/></svg>
+        <div class="tile ok wide"><svg class="ic ok"><use href="#i-user"/></svg><div class="lb">memoria\identidade + o META de cada projeto</div><div class="ds">Board 10. É aqui que entraria a linha do modo escolhido (board 21).</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="txt"><p>Seu raciocínio de "quem cuida de quê" está certo. O que o desenho não tinha era o <b>quando</b> a IA lê cada coisa (board 03).</p></div>
+</section>
+
+<!-- ============ 24 ============ -->
+<section class="board" id="b24">
+  <div class="num"><b>24</b><span class="part">D · seu figma</span></div>
+  <h2>Quatro coisas que eu mudaria</h2>
+  <p class="sub">Nenhuma é erro de gosto. São as quatro que quebram na prática.</p>
+  <div class="fig">
+    <div class="row">
+      <div class="tile bad"><div class="tag bad">aparece 3×</div><svg class="ic bad"><use href="#i-copy"/></svg><div class="lb">"Backup" como pasta</div><div class="ds">Backup não é pasta, é <b>foto com nome no git</b> (board 05). Três pastas "backup validado" viram três versões que ninguém sabe qual é a boa.</div></div>
+      <div class="tile bad"><div class="tag bad">aparece 2×</div><svg class="ic bad"><use href="#i-copy"/></svg><div class="lb">"Skills" duplicada</div><div class="ds">Duas caixas com o mesmo texto. Na primeira edição viram duas skills diferentes. Uma só, e o resto aponta pra ela.</div></div>
+      <div class="tile bad"><div class="tag bad">falta</div><svg class="ic bad"><use href="#i-brain"/></svg><div class="lb">O cérebro sem caixa</div><div class="ds">Você escreveu "PRINCIPAL FUNÇÃO: guardar no wiki" e o cérebro (board 09) não tem caixa no desenho. O mais importante ficou de fora.</div></div>
+      <div class="tile bad"><div class="tag bad">invertido</div><svg class="ic bad"><use href="#i-folder"/></svg><div class="lb">Projetos dentro de Usuário</div><div class="ds">É ao contrário: <b>você entra nos projetos</b> (sua identidade é lida em cada um, board 10); os projetos não moram dentro de você.</div></div>
+    </div>
+  </div>
+  <div class="txt"><p>Resumo: o desenho tem os donos e as saídas (relatório, skills). Falta a camada que faz a IA <b>lembrar</b>: estado (07), lições (08), cérebro (09).</p></div>
+</section>
+
+<!-- ============ 24B resposta ============ -->
+<section class="board" id="b24b">
+  <div class="num"><b>24·B</b><span class="part">D · seu figma</span><span class="part resp">resposta · 260824</span></div>
+  <h2>As mesmas quatro, agora termo por termo</h2>
+  <p class="sub">Seis definições e o board 24 se lê inteiro sem tradutor.</p>
+  <div class="ask"><b>você pediu</b>explica melhor essas 4 coisas, definindo melhor o que cada termo significa.</div>
+  <div class="fig">
+    <div class="gloss">
+      <div class="item"><span class="tm">backup</span><div class="df">cópia de segurança. No megabrain <b>não é pasta duplicada</b>: pasta-cópia a gente edita sem querer e vira "duas verdades". Backup de verdade é a foto no git.</div></div>
+      <div class="item"><span class="tm">tag · "foto com nome"</span><div class="df">um momento da pasta salvo no git e <b>batizado</b> (v6.7). Imutável: ninguém edita foto antiga. É exatamente o "DNA intocado" do seu desenho.</div></div>
+      <div class="item"><span class="tm">skill</span><div class="df">arquivo de roteiro que a IA lê quando chamada (<span class="k">/megabrain</span>, <span class="k">/ingerir</span>). <b>Uma fonte só</b>; qualquer outro lugar aponta pra ela em vez de copiar.</div></div>
+      <div class="item"><span class="tm">apontar</span><div class="df">escrever uma linha com <b>o caminho</b> da coisa em vez de copiar a coisa. O arquivo fica onde mora; quem precisa sabe onde. É o catálogo do Lightroom.</div></div>
+      <div class="item"><span class="tm">cérebro (raw / wiki)</span><div class="df">o arquivo original intocado + a página destilada por assunto (boards 09 e 09·B). No seu mapa do Figma, ganha caixa própria — era a peça que faltava.</div></div>
+      <div class="item"><span class="tm">identidade injetada</span><div class="df">quem você é mora em <b>um</b> lugar (<span class="k">memoria\identidade</span>) e é <b>colada</b> em cada projeto por script. Por isso projeto não mora "dentro do usuário": você é um carimbo que visita todos os projetos.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 25 ============ -->
+<section class="board" id="b25">
+  <div class="num"><b>25</b><span class="part">D · seu figma</span></div>
+  <h2>"Raw dos projetos copiado pro megabrain": copiar ou apontar?</h2>
+  <p class="sub">Exemplo real: o projeto Financeiro da Silva tem um <b>briefing.pdf</b> na pasta <span class="k">cerebro\raw</span> dele. O que acontece com esse arquivo na central?</p>
+  <div class="fig">
+    <div class="row center">
+      <div class="tile"><svg class="ic"><use href="#i-pdf"/></svg><div class="lb">briefing.pdf</div><div class="ds">em Financeiro da Silva \ cerebro \ raw</div></div>
+      <div class="col">
+        <div class="row">
+          <svg class="arr bad"><use href="#i-arrow"/></svg>
+          <div class="tile bad"><div class="tag bad">copiar</div><svg class="ic bad"><use href="#i-copy"/></svg><div class="lb">Dois PDFs iguais</div><div class="ds">Na primeira mexida viram <b>dois diferentes</b>. E a central passa a sugerir briefing de cliente pra qualquer assunto parecido: piora o que ela acha.</div></div>
+        </div>
+        <div class="row">
+          <svg class="arr ok"><use href="#i-arrow"/></svg>
+          <div class="tile ok"><div class="tag ok">apontar</div><svg class="ic ok"><use href="#i-index"/></svg><div class="lb">Uma linha na central</div><div class="ds"><span class="k">Financeiro da Silva → …\cerebro\raw\</span><br>O arquivo fica onde está. A central <b>sabe onde</b>.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="txt">
+    <p>É o catálogo do Lightroom: mostra a foto sem copiar a foto. Resolve os seus dois pedidos, "achar tudo de um lugar" e "temas que se tangenciam", sem duplicar nada.</p>
+    <p>Atalho do Windows (.lnk) a IA não lê. Linha com o caminho, ela lê. Quem cuida dessa lista é o Neuron (board 13).</p>
+  </div>
+</section>
+
+<!-- ============ 26A resposta ============ -->
+<section class="board" id="b26a">
+  <div class="num"><b>26·A</b><span class="part">e agora</span><span class="part resp">resposta · 260824</span></div>
+  <h2>Você perguntou o que EU sinto falta. Cinco coisas.</h2>
+  <p class="sub">Do meu lado do balcão. Nenhuma é feature nova pra você — são pra eu errar menos e gastar menos do seu contexto.</p>
+  <div class="ask"><b>você perguntou</b>existe algo que você "sente" falta no megabrain, do seu lado como trabalhador ativo nele?</div>
+  <div class="fig">
+    <div class="col">
+      <div class="mini"><svg><use href="#i-file"/></svg><b>1 ·</b>&nbsp;um "onde estamos" magro e padronizado que eu leia em segundos — hoje começo cada sessão na nuvem relendo arquivos gordos na mão. O peso do board 22 dói mais em mim que em você.</div>
+      <div class="mini"><svg><use href="#i-warn"/></svg><b>2 ·</b>&nbsp;aviso automático de "a skill instalada é mais velha que a fonte" — já trabalhei com regra defasada sem saber. Hoje é um script que preciso lembrar de rodar; queria que travasse sozinho.</div>
+      <div class="mini"><svg><use href="#i-index"/></svg><b>3 ·</b>&nbsp;o medidor de semelhança de pé (religar Ollama + reindexar) — sem ele eu busco lição por palavra, não por significado (board 09·D).</div>
+      <div class="mini"><svg><use href="#i-checklist"/></svg><b>4 ·</b>&nbsp;testes que me digam "não quebrou nada" quando mexo em script — a suíte existe (25 testes), mas não cobre o gerador do relatório nem os .cmd.</div>
+      <div class="mini"><svg><use href="#i-cloud"/></svg><b>5 ·</b>&nbsp;do push eu não reclamo — é sua trava de segurança, a foto final deve ser sua. Só quero que o painel grite quando tem push pendente, pra ele nunca dormir dias esquecido.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 26 ============ -->
+<section class="board" id="b26">
+  <div class="num"><b>26</b><span class="part">e agora</span><span class="part upd">atualizado · 260824</span></div>
+  <h2>A fila — placar do fim do dia 260824</h2>
+  <p class="sub">Você deu o "vai" nos itens 1–10 (menos 5, 6 e 8, que são sessões à parte). Placar: <b style="color:var(--ok)">7 entregues hoje</b>. Spec: <span class="k">03_docs\260824_spec-fase2.md</span>.</p>
+  <div class="fig">
+    <div class="col">
+      <div class="mini" style="border-color:var(--ok)"><svg><use href="#i-check"/></svg><b>1 · tirar peso</b>&nbsp;— <b style="color:var(--ok)">FEITO</b> · skill v6.0 virou roteiro de ~10 KB (era 31); texto integral guardado em referencias\; plugin 1.6.1 pronto em <span class="k">dist\</span> — <b>instalar no Cowork é o seu clique</b></div>
+      <div class="mini" style="border-color:var(--ok)"><svg><use href="#i-check"/></svg><b>2 · painel workspace</b>&nbsp;— <b style="color:var(--ok)">FEITO</b> · abas (Painel · Esquema · Ações · Skills · Documentos · Histórico), ＋ fixa abas lado a lado, workspace/fonte/densidade salvos, modo no topo, feedback na lateral</div>
+      <div class="mini" style="border-color:var(--ok)"><svg><use href="#i-check"/></svg><b>3 · Neuron</b>&nbsp;— <b style="color:var(--ok)">FEITO</b> · triagem de modelo desligada (guardada no código); telemetria ligada em <span class="k">.mb-log\neuron.jsonl</span></div>
+      <div class="mini" style="border-color:var(--ok)"><svg><use href="#i-check"/></svg><b>4 · planta nova de pastas</b>&nbsp;— <b style="color:var(--ok)">FEITA (etapa 1)</b> · 25/25 testes; etapa 2 (motor\) em sessão dedicada</div>
+      <div class="mini" style="border-color:var(--warm)"><svg><use href="#i-index"/></svg><b>5 · religar Ollama + reindexar</b>&nbsp;— <b style="color:var(--warm)">VOCÊ</b> liga, eu reindexo (sessão à parte)</div>
+      <div class="mini" style="border-color:var(--warm)"><svg><use href="#i-book"/></svg><b>6 · Obsidian</b>&nbsp;— <b style="color:var(--warm)">VOCÊ</b> instala (obsidian.md) → eu aponto o vault (sessão à parte)</div>
+      <div class="mini" style="border-color:var(--ok)"><svg><use href="#i-check"/></svg><b>7 · cérebro temporário × permanente</b>&nbsp;— <b style="color:var(--ok)">FEITO</b> · <span class="k">VALIDADE:</span> no front-matter + <span class="k">bin\mb-manutencao-cerebro.py</span> (avisa, nunca apaga; máx. 1x/semana)</div>
+      <div class="mini"><svg><use href="#i-sliders"/></svg><b>8 · pesquisa sobre modos</b>&nbsp;— sessão à parte; modos seguem pausados no otimizado</div>
+      <div class="mini"><svg><use href="#i-layout"/></svg><b>9 · Figma: as 4 correções do board 24</b>&nbsp;— fica pra sessão de Figma (mexer no seu arquivo pede a cabeça inteira lá)</div>
+      <div class="mini" style="border-color:var(--ok)"><svg><use href="#i-check"/></svg><b>10 · feedback multi-usuário</b>&nbsp;— <b style="color:var(--ok)">METADE FEITA</b> · o rail com like, rascunho e aviso de consentimento está no painel; o script "contribuir" (PR peneirado) fica pra quando o GitHub tiver gente</div>
+    </div>
+  </div>
+  <div class="txt"><p>Também de hoje: termo <b>megabrain do projeto</b> · <b>DNA do usuário</b> (<span class="k">dna\usuario\260824\</span>) · modo <b>otimizado</b> no META e no painel · nota do portfólio em <span class="k">memoria\pendencias\</span> · central agora é <b>v7.0</b>. E a regra de sempre: board que não fez sentido, me diz o número.</p></div>
+</section>
+
+<script>
+  (function(){
+    var boards=[].slice.call(document.querySelectorAll('.board'));
+    var nav=document.getElementById('dots');
+    boards.forEach(function(b,i){var a=document.createElement('a');a.href='#'+b.id;a.title=String(i).padStart(2,'0');nav.appendChild(a);});
+    var dots=[].slice.call(nav.children);
+    function cur(){var y=window.scrollY+window.innerHeight*0.4;var idx=0;boards.forEach(function(b,i){if(b.offsetTop<=y)idx=i;});dots.forEach(function(d,i){d.className=i===idx?'on':'';});return idx;}
+    window.addEventListener('scroll',cur);cur();
+    document.addEventListener('keydown',function(e){
+      if(e.key==='ArrowDown'||e.key==='PageDown'||e.key===' '){e.preventDefault();var i=Math.min(cur()+1,boards.length-1);boards[i].scrollIntoView({behavior:'smooth'});}
+      if(e.key==='ArrowUp'||e.key==='PageUp'){e.preventDefault();var j=Math.max(cur()-1,0);boards[j].scrollIntoView({behavior:'smooth'});}
+    });
+  })();
+</script>
+</body>
+</html>
