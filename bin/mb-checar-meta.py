@@ -132,7 +132,7 @@ def main() -> int:
     projeto = Path(args.projeto).resolve()
     meta = u.safe_read_text(u.achar(projeto, "META.md"))
     if meta is None:
-        print(f"ERRO: {projeto} não tem META.md — crie a partir de modelos/META.md")
+        print(f"ERRO: {projeto} não tem META.md — crie a partir de modelos/META.md (motor\\modelos\\META.md na central v7.1)")
         return 1
 
     evidencia = evidencia_git(projeto) or evidencia_mtime(projeto)

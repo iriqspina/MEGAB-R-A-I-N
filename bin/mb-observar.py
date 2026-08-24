@@ -190,7 +190,8 @@ def modo_importar_feedback(args) -> int:
     Incremental: um marcador guarda o último timestamp importado; só entra o
     que for mais novo. As linhas caem no .mb-log do próprio gerenteneuron.
     """
-    origem = Path(args.feedback) if args.feedback else central() / "gerenteneuron" / "data" / "feedback.jsonl"
+    origem = (Path(args.feedback) if args.feedback
+              else u.pasta(central(), "gerenteneuron") / "data" / "feedback.jsonl")
     if not origem.is_file():
         print(f"ERRO: feedback não encontrado em {origem}")
         return 1

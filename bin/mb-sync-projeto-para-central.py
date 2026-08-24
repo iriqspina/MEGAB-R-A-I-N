@@ -175,7 +175,7 @@ def main():
     print("sincronizando projeto -> central...")
     for src_rel, dst_rel in MAPEAMENTO:
         src = projeto / src_rel
-        dst = central / dst_rel
+        dst = u.achar(central, dst_rel)   # v7.1: resolve motor/ na central
         if not src.exists():
             print(f"  AVISO: {src} não existe no projeto, pulando")
             continue

@@ -21,7 +21,8 @@ from urllib.parse import urlparse
 import precos
 from config import carregar_config, raiz_app, caminho_env, CHAVES_CONHECIDAS
 from router import route
-from gerente import responder_como_gerente, carregar_projetos
+from gerente import (responder_como_gerente, carregar_projetos,
+                     telemetria_resumo, texto_observatorio)
 from connectors import testar_todos
 from eval import registrar_interacao, resumo_feedback, sugerir_melhorias, registrar_feedback
 from vault import Vault, aviso_recuperacao_exposta
@@ -210,6 +211,15 @@ class APIHandler(BaseHTTPRequestHandler):
             self._responder_json(200, {
                 "resumo": resumo_feedback(),
                 "sugestoes": sugerir_melhorias(),
+            })
+            return
+
+        if caminho == "/api/telemetria":
+            # v7.1: o Neuron observador serve o agregado local de .mb-log/
+            # (spec §4/§6). Só leitura, só local — nada sai daqui.
+            self._responder_json(200, {
+                "resumo": telemetria_resumo(),
+                "texto": texto_observatorio(),
             })
             return
 

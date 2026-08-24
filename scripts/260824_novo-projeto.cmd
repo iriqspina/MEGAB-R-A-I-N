@@ -39,11 +39,11 @@ for %%A in (%ARQ%) do (
   if exist "%FONTE%memoria\nucleo\%%A" copy "%FONTE%memoria\nucleo\%%A" "%DEST%\MEGABRAIN\%%A" >nul
 )
 robocopy "%FONTE%bin" "%DEST%\MEGABRAIN\bin" /E /NFL /NDL /NJH /NJS >nul
-robocopy "%FONTE%dna" "%DEST%\MEGABRAIN\dna" /E /NFL /NDL /NJH /NJS >nul
-robocopy "%FONTE%referencias" "%DEST%\MEGABRAIN\referencias" /E /NFL /NDL /NJH /NJS >nul
-robocopy "%FONTE%skills\megabrain" "%DEST%\MEGABRAIN\skills\megabrain" /E /NFL /NDL /NJH /NJS >nul
+robocopy "%FONTE%motor\dna" "%DEST%\MEGABRAIN\dna" /E /NFL /NDL /NJH /NJS >nul
+robocopy "%FONTE%motor\referencias" "%DEST%\MEGABRAIN\referencias" /E /NFL /NDL /NJH /NJS >nul
+robocopy "%FONTE%motor\skills\megabrain" "%DEST%\MEGABRAIN\skills\megabrain" /E /NFL /NDL /NJH /NJS >nul
 if exist "%FONTE%OFFLINE.md" copy "%FONTE%OFFLINE.md" "%DEST%\MEGABRAIN\OFFLINE.md" >nul
-if exist "%FONTE%modelos" robocopy "%FONTE%modelos" "%DEST%\MEGABRAIN" LEIAME-megabrain-do-projeto.txt /R:1 /W:1 >nul
+if exist "%FONTE%motor\modelos" robocopy "%FONTE%motor\modelos" "%DEST%\MEGABRAIN" LEIAME-megabrain-do-projeto.txt /R:1 /W:1 >nul
 
 echo.
 echo  Projeto criado em %DEST%

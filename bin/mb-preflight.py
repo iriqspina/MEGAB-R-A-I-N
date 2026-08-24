@@ -139,8 +139,8 @@ def locais_skill(agentes: bool) -> list[Path]:
 
 
 def cheque_skills(central: Path, agentes: bool) -> tuple[bool, str]:
-    fontes = {p: h(p) for p in (central / "skills/megabrain/SKILL.md",
-                                central / "plugin-megabrain-claude/skills/megabrain/SKILL.md") if p.is_file()}
+    fontes = {p: h(p) for p in (u.achar(central, "skills/megabrain/SKILL.md"),
+                                u.achar(central, "plugin-megabrain-claude/skills/megabrain/SKILL.md")) if p.is_file()}
     if not fontes:
         return False, "fonte skills/megabrain/SKILL.md não encontrada na central"
     aceitos = set(fontes.values())

@@ -8,8 +8,13 @@ description: Protocolo de execução multi-agente — gates de entrega anti-slop
 **v6.0 · 2026-08-24.** Base: v5.7. Mudou: a skill virou ROTEIRO (corte "tirar
 peso", decisão 260824) — 1 passo por linha, detalhe profundo em `referencias/`,
 aberto só quando o passo está em execução e há dúvida. Texto integral anterior:
-`referencias/260824_skill-completa-v5.md` (nada foi perdido). Layout v7.0 da
-central (memoria/ + 00_painel + 01_acoes). Modo único **otimizado**. Termo
+`referencias/260824_skill-completa-v5.md` (nada foi perdido). Layout v7.1 da
+central: humano na raiz (memoria/ + 00_painel + 01_acoes + 02_entrada +
+03_docs + 04_visuais) e a MÁQUINA em `motor/` — leia todo `referencias/x`,
+`modelos/x`, `dna/x` deste roteiro como `motor/referencias/x` etc. quando
+estiver na central; na cópia do projeto o caminho é plano, como está escrito.
+`bin/` fica na raiz. Em código: `u.pasta()`/`u.achar()`, nunca caminho na mão.
+Modo único **otimizado**. Termo
 oficial: **megabrain do projeto** (a pasta MEGABRAIN\ dentro de cada projeto).
 "megabrian" = megabrain.
 

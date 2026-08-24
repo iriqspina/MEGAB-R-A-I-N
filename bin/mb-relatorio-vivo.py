@@ -434,6 +434,7 @@ IGNORAR_CENTRAL = {
     "bin", "dna", "plugin-megabrain", "plugin-megabrain-claude",
     "relatorio-megabrain", "gerenteneuron", ".claude", ".mb-backup", ".mb-log",
     ".mb-aspirador", "__pycache__", ".git", "megabrain", "02_entrada",
+    "motor",  # v7.1: a máquina inteira mora aqui — nada dela entra no relatório
 }
 
 
@@ -707,10 +708,14 @@ def gerar_html(c: Path, forcar_snapshot: bool = False) -> bool:
         esquema_html = ws.html_esquema()
         bloco_acoes = ws.html_acoes(ws.acoes_lista(c))
         bloco_skills = ws.html_skills(ws.skills_lista(c))
+        bloco_cerebro = ws.html_cerebro(ws.cerebro_dados(c))
+        bloco_telemetria = ws.html_telemetria(ws.telemetria_dados(c))
+        ask = ws.html_ask
         pa, pf = ws.pane_abre, ws.pane_fecha
     else:
         topbar = tabnav = rail = js_ws = esquema_html = ""
-        bloco_acoes = bloco_skills = ""
+        bloco_acoes = bloco_skills = bloco_cerebro = bloco_telemetria = ""
+        ask = (lambda _p, rotulo="": "")
         pa = (lambda _ident: "")
         pf = (lambda: "")
     css_extra = ""
@@ -827,6 +832,7 @@ tr.proj--desatualizado td {{ background:var(--signal-soft); }}
   {tabnav}
   <div class="panes" id="panes" data-n="1">
   {pa("painel")}
+  {ask("em que pé está o megabrain agora — e o que depende de mim?")}
 
   <div class="versao">
     <div>
@@ -852,6 +858,8 @@ tr.proj--desatualizado td {{ background:var(--signal-soft); }}
   {slot("d3-acao", "Para você — o que fazer agora", bloco_para_voce, "nada pendente do seu lado (seção PARA VOCÊ do HANDOFF.md está vazia)")}
   {slot("d4-saude", "", pecas["saude"])}
   {slot("d5-distribuicao", "", pecas["distribuicao"] + f'<table><thead><tr><th>projeto</th><th>puxou</th><th>commit</th><th>quando</th><th>estado</th></tr></thead><tbody>{linhas_proj}</tbody></table><p class="det">fonte: <code>&lt;projeto&gt;/MEGABRAIN/VERSAO.txt</code> + <code>.mb-origem.json</code>. Desatualizado = rode <code>260824_sincronizar-projetos.cmd</code>.</p>' if projetos else pecas["distribuicao"], "nenhum projeto irmão com MEGABRAIN/ encontrado")}
+
+  {slot("d6-telemetria", "Telemetria — o caderninho local desta central", bloco_telemetria, "sem telemetria nesta instância")}
 
   <!-- ═══ E · ESTADO DA EXECUÇÃO (segue na aba Painel) ═══ -->
   <h2 class="faixa">Estado da execução <small>— PROGRESSO.json · HANDOFF.md · DECISOES.md · .mb-log/</small></h2>
@@ -884,6 +892,7 @@ tr.proj--desatualizado td {{ background:var(--signal-soft); }}
   {pf()}
 
   {pa("esquema")}
+  {ask("como as peças se ligam: minha central, o GitHub, as outras pessoas e os projetos?")}
   <h2 class="faixa">O esquema do megabrain <small>— central · GitHub · usuários · projetos · o que desce e o que sobe</small></h2>
   {esquema_html}
   <h2 class="faixa">Workflow <small>— dados em modelos/visuais/exemplos.json; mecânicas em modelos/visuais/mecanicas/</small></h2>
@@ -893,13 +902,20 @@ tr.proj--desatualizado td {{ background:var(--signal-soft); }}
   {pf()}
 
   {pa("acoes")}
+  {ask("quais botões existem e o que cada um faz quando eu clico?")}
   <h2 class="faixa">Ações <small>— os botões da central: 01_acoes/*.cmd, com o que cada um faz</small></h2>
   {bloco_acoes}
   {pf()}
 
   {pa("skills")}
+  {ask("que poderes o megabrain tem, e como eu chamo cada um?")}
   <h2 class="faixa">Skills <small>— os poderes instalados: skills/*/SKILL.md</small></h2>
   {bloco_skills}
+  {pf()}
+
+  {pa("cerebro")}
+  <h2 class="faixa">Cérebro <small>— memoria/cerebro: raw (fonte crua) · wiki (destilado) · pessoas · o que vence</small></h2>
+  {bloco_cerebro}
   {pf()}
 
   {pa("docs")}
@@ -910,6 +926,7 @@ tr.proj--desatualizado td {{ background:var(--signal-soft); }}
   {pf()}
 
   {pa("historico")}
+  {ask("o que mudou de versão pra versão, e onde estão os relatórios antigos?")}
   <h2 class="faixa">Histórico <small>— linha do tempo de versões e relatórios antigos</small></h2>
   {slot("w4-historico", "", pecas["historico"], "VERSAO.txt sem linhas no formato 'AAAA-MM-DD · vX.Y — título'")}
   <p class="det">Relatórios como estavam antes de cada troca de versão: <code>90_arquivo\\relatorios-antigos\\INDICE.md</code></p>
@@ -920,7 +937,7 @@ tr.proj--desatualizado td {{ background:var(--signal-soft); }}
   <!-- ═══ R · RODAPÉ ═══ -->
   <p class="meta" style="margin-top:2.5rem">fonte: PROGRESSO.json · ESTADO.md · HANDOFF.md · DECISOES.md · VERSAO.txt · git de {e("_github/repo-local" if git["repo"] else "—")} · .mb-log/ · os .md acima. Arquivo local, não sobe pro GitHub.<br>
   sem servidor local o navegador não detecta mudança de arquivo — por isso o reload em intervalo fixo, preservando o scroll.<br>
-  planta fixa D1–D5 · W1–W4 · E1–E4 · C: cada bloco tem lugar reservado e aparece vazio quando não há dado, para o relatório de qualquer projeto ter a mesma leitura.</p>
+  planta fixa D1–D6 · W1–W4 · E1–E4 · C · CB (cérebro): cada bloco tem lugar reservado e aparece vazio quando não há dado, para o relatório de qualquer projeto ter a mesma leitura.</p>
 </div>
 <script>{seletor_js}</script>
 <script>{js_ws}</script>

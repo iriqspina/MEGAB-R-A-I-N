@@ -584,7 +584,7 @@ def main():
                 caminho.write_text(novo_texto, encoding="utf-8", newline="")
 
     # Carrega documentacao embutida e informacionais do projeto para o relatorio
-    doc_path = Path(__file__).parent.parent / "referencias" / "260813_aspirador-codigo.md"
+    doc_path = u.achar(Path(__file__).resolve().parent.parent, "referencias/260813_aspirador-codigo.md")
     documentacao = "Documentacao nao encontrada."
     if doc_path.exists():
         doc_md = doc_path.read_text(encoding="utf-8")

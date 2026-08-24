@@ -3,7 +3,7 @@ setlocal enabledelayedexpansion
 chcp 65001 >nul
 rem ============================================================
 rem  MEGABRAIN v6 — refresh do plugin Kimi em 1 clique (260819)
-rem  Copia a FONTE (plugin-megabrain/ + skill megabrain da central)
+rem  Copia a FONTE (motor/plugin-megabrain/ + skill megabrain da central)
 rem  por cima do plugin instalado no Kimi Code CLI, com backup e
 rem  verificacao de hash do hook. A fonte manda; a copia nao se edita.
 rem ============================================================
@@ -15,7 +15,7 @@ set "DESKTOP=<USER_HOME>\AppData\Roaming\kimi-desktop\daimon-share\daimon\skills
 
 echo.
 echo  ================================================================
-echo   REFRESH DO PLUGIN KIMI — fonte: plugin-megabrain/ da central
+echo   REFRESH DO PLUGIN KIMI — fonte: motor/plugin-megabrain/ da central
 echo  ================================================================
 echo.
 type "%FONTE%\memoria\nucleo\VERSAO.txt" | findstr /n "^" | findstr "^1:"
@@ -38,27 +38,27 @@ robocopy "%PLUGIN%" "%BACKUP%" /E /R:1 /W:1 >nul
 if errorlevel 8 (echo        FALHOU & pause & exit /b 1) else (echo        OK)
 
 rem --- 2. plugin (manifesto, SYSTEM.md, hooks, commands, seed) ----
-echo  [2/4] copiando plugin-megabrain/ da central:
-robocopy "%FONTE%\plugin-megabrain" "%PLUGIN%" /E /XF LEIAME.txt /R:1 /W:1 >nul
+echo  [2/4] copiando motor/plugin-megabrain/ da central:
+robocopy "%FONTE%\motor\plugin-megabrain" "%PLUGIN%" /E /XF LEIAME.txt /R:1 /W:1 >nul
 if errorlevel 8 (echo        FALHOU & pause & exit /b 1) else (echo        OK)
 robocopy "%FONTE%\bin" "%PLUGIN%\bin" mb-sync.py mb-sync-memoria.py /R:1 /W:1 >nul
 
 rem --- 3. skill /megabrain (SKILL.md, MEGABRAIN.md, referencias) --
 echo  [3/4] copiando a skill /megabrain da central:
-robocopy "%FONTE%\skills\megabrain" "%SKILL_DEST%" SKILL.md /R:1 /W:1 >nul
+robocopy "%FONTE%\motor\skills\megabrain" "%SKILL_DEST%" SKILL.md /R:1 /W:1 >nul
 robocopy "%FONTE%\memoria\nucleo" "%SKILL_DEST%" MEGABRAIN.md /R:1 /W:1 >nul
-robocopy "%FONTE%\referencias" "%SKILL_DEST%\referencias" 26*_*.md /R:1 /W:1 >nul
+robocopy "%FONTE%\motor\referencias" "%SKILL_DEST%\referencias" 26*_*.md /R:1 /W:1 >nul
 if errorlevel 8 (echo        FALHOU & pause & exit /b 1) else (echo        OK)
 if exist "%DESKTOP%\.." (
-  robocopy "%FONTE%\skills\megabrain" "%DESKTOP%" SKILL.md /R:1 /W:1 >nul
+  robocopy "%FONTE%\motor\skills\megabrain" "%DESKTOP%" SKILL.md /R:1 /W:1 >nul
   robocopy "%FONTE%\memoria\nucleo" "%DESKTOP%" MEGABRAIN.md /R:1 /W:1 >nul
-  robocopy "%FONTE%\referencias" "%DESKTOP%\referencias" 26*_*.md /R:1 /W:1 >nul
+  robocopy "%FONTE%\motor\referencias" "%DESKTOP%\referencias" 26*_*.md /R:1 /W:1 >nul
   echo        OK ^(kimi-desktop tambem^)
 )
 
 rem --- 4. verificacao: o hook instalado E o da fonte? -------------
 echo  [4/4] verificando o hook (fc /b fonte x instalado):
-fc /b "%FONTE%\plugin-megabrain\hooks\260810_licoes-kimi.mjs" "%PLUGIN%\hooks\260810_licoes-kimi.mjs" >nul
+fc /b "%FONTE%\motor\plugin-megabrain\hooks\260810_licoes-kimi.mjs" "%PLUGIN%\hooks\260810_licoes-kimi.mjs" >nul
 if errorlevel 1 (
   echo        FALHOU — o hook instalado NAO bate com a fonte!
   pause

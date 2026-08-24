@@ -112,7 +112,8 @@ def extrair_zip(zip_path: Path, dst: Path, base: Path) -> bool:
             # Se o zip for de pasta central, extrair só o que seria MEGABRAIN/
             nomes = zf.namelist()
             # Verifica se o zip é de uma pasta central (tem bin/, referencias/ no root)
-            raiz_eh_central = any(n.startswith("bin/") for n in nomes) and any(n.startswith("referencias/") for n in nomes)
+            raiz_eh_central = any(n.startswith("bin/") for n in nomes) and any(
+                n.startswith("referencias/") or n.startswith("motor/referencias/") for n in nomes)
             if raiz_eh_central:
                 prefixo = ""
             else:
@@ -161,7 +162,7 @@ def normalizar_fonte(fonte: Path, central: Path) -> Path | None:
         return fonte
     if fonte.is_dir():
         # Se for central (tem bin/, referencias/ no root)
-        if (fonte / "bin").is_dir() and (fonte / "referencias").is_dir():
+        if (fonte / "bin").is_dir() and u.pasta(fonte, "referencias").is_dir():
             return fonte
         # Se já for MEGABRAIN/
         if (u.achar(fonte, "VERSAO.txt")).is_file():

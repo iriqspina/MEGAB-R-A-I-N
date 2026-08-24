@@ -6,71 +6,83 @@ ESCOPO: —
 
 ## PARA VOCÊ (<USUARIO>)
 
-1. **Teste do plugin:** abra uma sessão NOVA e rode `/megabrain`. Se a skill
-   carregar enxuta (roteiro curto, caminhos v7), a reinstalação do 1.6.1
-   pegou. Se vier a velha, o sync da conta falhou — reinstale o `.plugin`
-   de `dist\` de novo.
-2. **Quando quiser (sem pressa):** resíduo `metaprotocolo` nos diretórios
-   dos agentes — é plugin velho ainda registrado + dumps de memória
-   importados (2026-08-15). Plugin velho sai desinstalando; dumps de memória
-   não se reescrevem. É a única coisa segurando o `legado: limpo` do
-   preflight.
-3. Sessões à parte quando quiser: Ollama+reindex · Obsidian · pesquisa de
-   modos · Figma (board 24) · triagem de 04_visuais.
+1. **Reinstale o plugin 1.6.2** — `motor\dist\260824_megabrain-v1.6.2.plugin`.
+   A skill mudou: agora ela diz que a máquina está em `motor\` e como ler os
+   caminhos. Sem reinstalar, a IA vai procurar `referencias/` na raiz e não
+   achar. Critério de pronto: sessão nova, `/megabrain`, e o roteiro cita v7.1.
+2. **Instale o Obsidian** (obsidian.md). Depois é 2 cliques em
+   `01_acoes\260824_abrir-cerebro-obsidian.cmd` — o vault já está preparado e
+   o caminho vai pra área de transferência sozinho.
+3. **Olhe a aba Cérebro** no relatório (00_painel\RELATORIO.html) e me diga se
+   a leitura serve. É a aba nova, junto com a caixa "você perguntou".
+4. **Nota do portfólio**: `<PROJETOS_ROOT>\Portfolio\260824_nota_megabrain-como-case.md`
+   — decisões que são suas (case ou bastidor, quanto mostrar, formato).
+5. Sessões à parte quando quiser: Ollama+reindex · pesquisa de modos (item 7,
+   pausado por você) · triagem de 04_visuais · legado dos agentes.
 
-## O que mudou nesta sessão (260824 tarde/noite, claude · Cowork)
+## O que mudou nesta sessão (260824, 4ª — fila 2→6)
 
-- **Bug do painel RESOLVIDO:** `01_acoes/260824_enviar-pro-github.cmd`
-  reescrito — parêntese sem escape no bloco if abortava o batch depois do
-  push (". foi inesperado neste momento"); agora sem parênteses em blocos,
-  guard `where python`, relatório com errorlevel + saída no push.log.
-  Verificado: rodada 16:26 logou cf73db8 + "relatorio OK", painel regenerou.
-- `01_acoes/260824_novo-projeto.cmd`: corrigido bug fatal de expansão
-  (%PROJETOS% em bloco if → sempre cancelava na primeira rodada).
-- `01_acoes/260824_refresh-plugin-kimi.cmd`: parêntese cosmético escapado;
-  RODADO — skills do Kimi (CLI + desktop) voltaram a bater com a fonte.
-- Push v7 confirmado direto no remoto (ls-remote: GitHub = local = cf73db8).
-- Revisão geral: preflight git✓ skills✓ fatos✓ legado✗(só agentes/histórico),
-  suíte 25/25, demais 5 .cmd auditados e limpos.
+- **Painel** (item 2): 7ª aba **Cérebro** (wiki/pessoas/raw, validade das
+  páginas, fila de 02_entrada, ponteiro do Obsidian) e o componente `.ask`
+  no topo de cada aba.
+- **Telemetria + Neuron** (item 3): `bin/mb_telemetria.py` (JSONL genérico,
+  agrega neuron.jsonl e eventos-*.jsonl), slot D6 no painel, 1 linha por
+  sessão gravada pelo hook, e o Neuron respondendo "o que eu mais uso /
+  quanto custou" a partir do agregado — sem chamar modelo.
+- **Etapa 2 da reorg** (item 4): 9 pastas de máquina em `motor\`; caminho por
+  nome lógico; `bin/mb-migrar-motor.py` (dry-run, manifesto, `--desfazer`);
+  `bin/mb-mapa-refs.py` (mapa de referências antes de mover);
+  `bin/mb-testar.py` (roda a suíte ache ela onde estiver). 25 → **48 testes**.
+- **Obsidian** (item 5): `bin/mb-obsidian.py` + botão em 01_acoes.
+- **Figma** (item 6): as 4 correções do board 24 no `Planejamento-visual`,
+  mais a caixa XXXXX virando Telemetria e uma legenda do que mudou.
+- **Privacidade**: `.env` (chaves reais) e `dna/usuario/` fora do pacote
+  público; cópias soltas apagadas de export e repo-local.
 
 ## O que ficou aberto
 
-- Teste do plugin 1.6.1 (item 1 acima) — critério de pronto: sessão nova
-  carrega a skill v6.0 enxuta.
-- Etapa 2 da reorg (motor\): APROVADA em princípio; método = o da etapa 1 +
-  revisão das ~170 refs ambíguas linha a linha + 25 testes. bin\ NÃO sai da
-  raiz (hook local em ~/.claude/settings.json aponta pra ele).
-- Legado dos agentes (item 2 acima, decisão dele).
-- Agregador de telemetria no painel (neuron.jsonl + .mb-log → aba/slot) ·
-  script "contribuir" · /ingerir dos vídeos do YouTube (raw).
+- Reinstalação do plugin 1.6.2 e instalação do Obsidian (itens 1 e 2 acima).
+- Item 7 (modos) segue PAUSADO por decisão sua; a pesquisa de referências não
+  foi feita nesta sessão.
+- Item 8 (portfólio) parou na nota, como você pediu.
+- `_github/repo-local` recebe o layout novo (motor\) no próximo
+  **publicar e fotografar** — é robocopy /MIR, então a árvore antiga sai
+  sozinha.
 
 ## Próximo passo
 
-Na próxima sessão de TRABALHO: Gate 0 (conferir plugin == 1.6.1 pelo
-checklist de abertura), depois executar a **etapa 2 da reorg** (grep
-por-arquivo das refs de skills/modelos/dna/referencias/tests/plugins,
-revisar, mover pra motor\, reapontar, rodar 25 testes, atualizar board 15).
+Sessão de trabalho seguinte: escolher entre (a) compreensores de padrões
+(spec §7, agora que a telemetria existe), (b) pesquisa de referências de
+modos pra você estudar, ou (c) o case do portfólio.
 
 ## Arquivos tocados
 
-- `01_acoes/260824_enviar-pro-github.cmd` (reescrito, manhã)
-- `01_acoes/260824_novo-projeto.cmd` (reescrito, tarde)
-- `01_acoes/260824_refresh-plugin-kimi.cmd` (reescrito, tarde)
-- `memoria/estado/{ESTADO,HANDOFF,DECISOES,CHECKLIST-ABERTURA}.md`
-- `memoria/nucleo/licoes-megabrain.md`
-- `00_painel/RELATORIO.html` (regenerado pelo fluxo corrigido)
+- `bin/`: mb_telemetria.py · mb-mapa-refs.py · mb-migrar-motor.py ·
+  mb-testar.py · mb-obsidian.py (novos) · mb_utils.py · mb_workspace.py ·
+  mb-relatorio-vivo.py · mb-contexto.py · mb-check-version.py ·
+  mb-generate-template.py · mb-build-plugin-claude.py · mb-preflight.py ·
+  mb-indice-licoes.py · mb-aspirador.py · mb-observar.py ·
+  mb-orquestrador-ia.py · mb-patch-v5.py · mb-sync-projeto-para-central.py ·
+  mb-relatorio-dna.py · mb-recuperar-megabrain.py · mb-arrumar.py ·
+  mb_visual.py · mb-checar-meta.py
+- `motor/tests/`: test_mb_layout.py e test_mb_telemetria.py (novos) + os 4
+  antigos com raiz achada por subida
+- `01_acoes/`: 260824_abrir-cerebro-obsidian.cmd (novo) · sincronizar-projetos ·
+  novo-projeto · refresh-plugin-kimi (só os caminhos, por reescrita de bytes)
+- `motor/gerenteneuron/`: gerente.py · app.py · router.py · aspirar.cmd
+- `memoria/`: ESTADO · HANDOFF · DECISOES (+6) · licoes (+4) · VERSAO ·
+  CHECKLIST · MEGABRAIN.md · README.md · pendencias/260824_portfolio-megabrain
+- `03_docs/260824_megabrain-do-zero.html` (boards 15, 15B e o índice)
+- `.gitignore` · `.claude/CLAUDE.md` · `memoria/cerebro/.obsidian/`
 
 ## Risco pra próxima sessão
 
-- **NUNCA editar .cmd com edit_block/patch via bridge** — corrompe encoding/
-  CRLF (aconteceu hoje; lição registrada). Só reescrita completa via
-  container.
-- Skill carregada pode AINDA ser a velha se o sync do plugin falhou —
-  conferir plugin.json antes de confiar (checklist de abertura).
-- A pasta da central tem DOIS espaços antes do N (`MEGA B R A I  N`) —
-  caminho com um espaço dá ENOENT.
-- Git nunca pela pasta montada do bridge; .cmd/git/python nativos rodam bem
-  via Desktop Commander (pause estoura timeout do MCP — mandar Enter ou
-  force_terminate depois de checar por arquivo/log).
-- Layout v7: caminhos antigos morreram; usar mb_utils.achar()/pasta().
-  Tema 02 e 04_visuais intocáveis.
+- **Caminho de máquina não se escreve na mão.** `raiz / "skills"` está errado
+  desde hoje: use `u.pasta(raiz,"skills")` ou `u.achar(raiz,"skills/...")`.
+  Quem quebrar isso quebra a cópia de projeto, que continua plana.
+- A suíte agora roda por `python bin\mb-testar.py` (ela mora em motor\tests).
+- `.cmd` continua só por reescrita completa (nunca edit_block) — e os 3 desta
+  sessão foram por substituição de BYTES, preservando encoding e CRLF.
+- A pasta da central tem DOIS espaços antes do N.
+- Ao mexer no gerador do pacote público, auditar a saída atrás de `.env`,
+  `pyvenv.cfg`, `vault` e `dna/usuario` antes de publicar.

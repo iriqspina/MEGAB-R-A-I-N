@@ -11,7 +11,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-DESTINO = Path(__file__).resolve().parent.parent / "gerenteneuron" / "orquestrador.py"
+import mb_utils as u  # noqa: E402
+DESTINO = u.pasta(Path(__file__).resolve().parent.parent, "gerenteneuron") / "orquestrador.py"
 
 if __name__ == "__main__":
     if not DESTINO.exists():

@@ -2,8 +2,8 @@
   "@context": "https://schema.org",
   "@type": "TechArticle",
   "name": "MEGABRAIN — Relatório DNA",
-  "version": "v5.1 · 2026-08-16",
-  "dateCreated": "2026-08-16T16:17:03.569460",
+  "version": "v7.0 · 2026-08-24",
+  "dateCreated": "2026-08-24T17:27:37.163666",
   "description": "DNA completo do protocolo megabrain: gates, ferramentas, métodos e instruções para replicação.",
   "about": {
     "@type": "SoftwareApplication",
@@ -24,8 +24,7 @@
       "mb-sync-memoria.py",
       "Duplo Diamante",
       "6 · Passar o Bastão",
-      "7 · Aprender",
-      "GerenteNeuron"
+      "7 · Aprender"
     ]
   },
   "hasPart": [
@@ -108,11 +107,6 @@
       "@type": "Thing",
       "name": "7 · Aprender",
       "description": "Registra lição no formato GATILHO/LIÇÃO/ATALHO."
-    },
-    {
-      "@type": "Thing",
-      "name": "GerenteNeuron",
-      "description": "App local de chat multi-IA com roteamento por custo/capacidade."
     }
   ]
 }

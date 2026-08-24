@@ -146,11 +146,11 @@ def main() -> int:
     args = p.parse_args()
 
     c = central()
-    plugin = c / PLUGIN_DIR
+    plugin = u.pasta(c, PLUGIN_DIR)   # v7.1: motor/plugin-megabrain-claude
     fontes = {
-        "skills/megabrain/SKILL.md": (c / "skills/megabrain/SKILL.md", derivar_skill_megabrain),
-        "skills/registrar-licao/SKILL.md": (c / "plugin-megabrain/skills/registrar-licao/SKILL.md", derivar_skill_licao),
-        "skills/ingerir/SKILL.md": (c / "skills/ingerir/SKILL.md", lambda t: t),  # v6.2
+        "skills/megabrain/SKILL.md": (u.achar(c, "skills/megabrain/SKILL.md"), derivar_skill_megabrain),
+        "skills/registrar-licao/SKILL.md": (u.achar(c, "plugin-megabrain/skills/registrar-licao/SKILL.md"), derivar_skill_licao),
+        "skills/ingerir/SKILL.md": (u.achar(c, "skills/ingerir/SKILL.md"), lambda t: t),  # v6.2
     }
     drift = []
     for rel, (fonte, derivar) in fontes.items():
@@ -186,7 +186,7 @@ def main() -> int:
     if not args.sem_zip:
         nome = f"{dt.datetime.now():%y%m%d}_megabrain-v{versao_plugin(plugin)}.plugin"
         destino = u.pasta(c, "dist") / nome   # v6.2: instaláveis em dist/ (v6.4: dist/)
-        destino.parent.mkdir(exist_ok=True)
+        destino.parent.mkdir(parents=True, exist_ok=True)
         zipar(plugin, destino)
         print(f"pacote: {destino}")
     return 0

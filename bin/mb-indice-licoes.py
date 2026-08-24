@@ -61,7 +61,7 @@ def fonte_default() -> Path:
 
 
 def caminho_indice() -> Path:
-    return central() / "dna" / "indice-licoes.json"
+    return u.pasta(central(), "dna") / "indice-licoes.json"
 
 
 def dividir_entradas(texto: str) -> list[dict]:
@@ -259,7 +259,7 @@ def recontar() -> dict:
             })
     clusters.sort(key=lambda c: -c["n"])
     resultado = {"total_entradas": n, "clusters": clusters}
-    u.atomic_write_text(central() / "dna" / "licoes-recorrencia.json",
+    u.atomic_write_text(u.pasta(central(), "dna") / "licoes-recorrencia.json",
                         json.dumps(resultado, ensure_ascii=False, indent=2))
     return resultado
 

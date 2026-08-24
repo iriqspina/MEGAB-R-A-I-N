@@ -194,7 +194,7 @@ def main() -> int:
     args = ap.parse_args()
 
     raiz = Path(args.raiz).resolve()
-    alvos = [raiz / "SKILL.md", raiz / "skills" / "megabrain" / "SKILL.md"]
+    alvos = [raiz / "SKILL.md", u.achar(raiz, "skills/megabrain/SKILL.md")]
     alvos = [a for a in alvos if a.exists()]
     if not alvos:
         print("nenhuma SKILL.md encontrada em", raiz)

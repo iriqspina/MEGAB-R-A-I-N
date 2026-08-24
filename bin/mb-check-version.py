@@ -69,7 +69,7 @@ def garantir_cerebro(central, mb_projeto, dry_run=False):
     """v6.2: todo projeto aberto ganha cerebro/ (raw, wiki, pessoas, INDICE.md).
     Não toca no que já existe — só cria o que falta."""
     projeto = Path(mb_projeto).resolve().parent
-    modelo = Path(central).resolve() / "modelos" / "cerebro"
+    modelo = u.achar(Path(central).resolve(), "modelos") / "cerebro"
     criados = []
     for rel in ESQUELETO_CEREBRO:
         d = projeto / rel
@@ -297,7 +297,8 @@ def gate_drift(central: Path) -> int:
             drift.append(f"{nome}/ não existe")
     if not drift:
         for rel in chaves:
-            he, hr = h(export / rel), h(repo / rel)
+            # v7.1: achar() resolve motor/ no export e no repo-local
+            he, hr = h(u.achar(export, rel)), h(u.achar(repo, rel))
             if he != hr:
                 drift.append(f"export ≠ repo-local: {rel} ({he or 'ausente'} vs {hr or 'ausente'})")
         v_central = ler_versao(central)

@@ -211,7 +211,15 @@ def _telemetria(resultado: dict, duracao_s: float) -> None:
     try:
         import datetime as _dt, json as _j
         from pathlib import Path as _P
-        log = _P(__file__).resolve().parent.parent / ".mb-log" / "neuron.jsonl"
+        # v7.1: acha a central subindo (bin/mb_utils.py é a âncora) em vez de
+        # assumir "uma pasta acima" — sobrevive à mudança pra motor\.
+        aqui = _P(__file__).resolve()
+        raiz = aqui.parent.parent
+        for cand in [aqui.parent, *aqui.parents]:
+            if (cand / "bin" / "mb_utils.py").is_file():
+                raiz = cand
+                break
+        log = raiz / ".mb-log" / "neuron.jsonl"
         log.parent.mkdir(exist_ok=True)
         linha = {
             "ts": _dt.datetime.now().isoformat(timespec="seconds"),

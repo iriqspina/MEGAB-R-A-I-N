@@ -36,8 +36,14 @@ _CACHE: dict[str, dict] = {}
 
 
 def raiz() -> Path:
-    """modelos/visuais/ ao lado de bin/ — vale na central e na cópia de projeto."""
-    return Path(__file__).resolve().parent.parent / "modelos" / "visuais"
+    """modelos/visuais/: plano (cópia de projeto, central antiga) ou dentro de
+    motor/ (v7.1 — etapa 2 da reorg). Sem depender de mb_utils, que esta
+    biblioteca não importa de propósito."""
+    base = Path(__file__).resolve().parent.parent
+    for cand in (base / "modelos" / "visuais", base / "motor" / "modelos" / "visuais"):
+        if cand.is_dir():
+            return cand
+    return base / "modelos" / "visuais"
 
 
 def _carregar() -> dict[str, dict]:

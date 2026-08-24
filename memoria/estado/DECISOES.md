@@ -1387,3 +1387,71 @@ o próprio 01_acoes/260824_refresh-plugin-kimi.cmd (backup automático em
 ALTERNATIVA DESCARTADA: robocopy manual direto nos destinos, ou só reportar.
 POR QUÊ: o remédio desenhado já existia com backup e verificação; preflight
 voltou a ✓ na mesma hora e o caminho fica reproduzível.
+
+## 260824f — Etapa 2 da reorg: a máquina mora em motor\, bin fica na raiz
+DECISÃO: `skills, referencias, modelos, dna, tests, dist, plugin-megabrain,
+plugin-megabrain-claude, gerenteneuron` foram pra `motor/`. A raiz passa a
+mostrar só o que é do humano (00_painel, 01_acoes, 02_entrada, 03_docs,
+04_visuais, memoria, 90_arquivo, 99_to_delete) + `bin/`. Caminho resolve por
+nome lógico (`u.pasta`/`u.achar`, tabela em mb_utils), nunca na mão. O export
+público espelha o layout novo; a cópia de projeto (MEGABRAIN\) continua PLANA
+e o resolvedor cobre os dois. Migração por `bin/mb-migrar-motor.py` (dry-run
+por padrão, manifesto em 90_arquivo/migracao-motor-260824, `--desfazer`).
+ALTERNATIVA DESCARTADA: (a) levar `bin/` junto — o hook dos agentes aponta pra
+ele por caminho absoluto em ~/.claude/settings.json, e mover exigiria mexer em
+config fora da central; (b) reapontar as ~2.300 citações uma a uma — era a
+receita pra quebrar em silêncio, e a condição dele era "não quebrar nada".
+POR QUÊ: régua do <USUARIO> — raiz é a mão humana; o resto é casa de máquinas.
+Suíte foi de 25 pra 48 testes (novos: layout nos dois formatos, sync de central
+v7.1, telemetria) e passou verde antes e depois do move.
+
+## 260824g — Telemetria local: formato genérico, 1 linha por sessão, nada sobe
+DECISÃO: `bin/mb_telemetria.py` grava JSONL em `.mb-log/telemetria-YYMMDD.jsonl`
+e agrega junto o que já existia (neuron.jsonl, eventos-*.jsonl). Campos são
+livres (o formato recebe qualquer chave) e VALOR nunca é generalizado. O hook
+`mb-contexto.py` registra 1 linha por SESSÃO (não por prompt). O painel ganhou
+o slot D6 e o Neuron responde "o que eu mais uso / quanto custou" a partir do
+agregado, sem chamar modelo nenhum.
+ALTERNATIVA DESCARTADA: registrar por prompt — enche o log de ruído e não
+responde nenhuma pergunta melhor do que 1 linha por sessão.
+POR QUÊ: spec §4/§6. Dado local primeiro; envio só com opt-in e agregado.
+
+## 260824h — Painel: aba Cérebro e a caixa "você perguntou" em toda aba
+DECISÃO: 7ª aba (Cérebro) mostrando wiki/pessoas/raw, validade das páginas,
+fila de 02_entrada e o ponteiro do Obsidian; e o componente `.ask` (rótulo em
+linha própria + separador, lição do rótulo-que-lê-como-título) no topo de cada
+aba, dizendo qual pergunta aquela aba responde.
+ALTERNATIVA DESCARTADA: cérebro como slot dentro do Painel — ficava enterrado
+no dashboard e o conteúdo é de outra natureza (conhecimento, não execução).
+POR QUÊ: spec §1 pedia a aba Cérebro e o componente pergunta; ele validou o
+padrão .ask por elogio explícito ("isso me ajudou mt").
+
+## 260824i — Obsidian: vault em memoria/cerebro, config gerada e local
+DECISÃO: `bin/mb-obsidian.py` prepara `.obsidian/` dentro de memoria/cerebro
+(tema escuro, links relativos, anexo em raw/) sem sobrescrever config que já
+exista, escreve um leia-me e abre o vault por `obsidian://open`. Botão:
+`01_acoes/260824_abrir-cerebro-obsidian.cmd`. `.obsidian/` nunca sobe.
+ALTERNATIVA DESCARTADA: apontar o vault pra `memoria/` inteira — estado,
+núcleo e pendências são operação do protocolo, viram ruído no grafo.
+POR QUÊ: decisão de 260824 (ele instala o app, o megabrain aponta o vault).
+
+## 260824j — Figma: as 4 correções do board 24 aplicadas no Planejamento-visual
+DECISÃO: (1) as duas caixas de "backup" viraram foto no git — "megabrain DNA"
+= momento congelado, "megabrain do usuário" = a única central que se edita;
+(2) a Skills duplicada saiu e a que ficou diz que é fonte única; (3) o cérebro
+ganhou caixa (raw → wiki → pessoas) no lugar da Skills repetida; (4) o Usuário
+deixou de ser guarda-chuva dos projetos e virou o carimbo que visita todos.
+Bônus: a caixa "XXXXX" virou Telemetria. Legenda das correções acima do mapa.
+ALTERNATIVA DESCARTADA: apagar caixas e redesenhar o mapa — mexeria nos
+conectores e no traço dele; reescrever texto dentro das caixas existentes
+manteve o desenho intacto.
+POR QUÊ: fila aprovada 260824, item 6.
+
+## 260824k — Credencial e backup pessoal saem do pacote público por nome exato
+DECISÃO: `.env` entra em EXCLUIR_NOME_EXATO (match exato, preserva o
+.env.example) e `dna/usuario` entra em EXCLUIR do mb-generate-template.py. As
+cópias que já estavam em _github/export e _github/repo-local foram apagadas.
+ALTERNATIVA DESCARTADA: confiar no .gitignore — ele barrou o commit, mas o
+arquivo com 4 chaves de API já estava dentro do clone. Uma camada só não basta.
+POR QUÊ: achado da varredura da etapa 2. Histórico do git conferido: `.env`
+nunca foi rastreado nem commitado — só o .env.example.

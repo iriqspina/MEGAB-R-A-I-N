@@ -72,7 +72,9 @@ def ler_versao(central: Path) -> str:
 
 
 def ler_resumo_arquivo(central: Path, nome: str) -> str:
-    path = central / nome
+    # v7.1: achar() resolve pasta de máquina em motor/ (central nova) e plana
+    # (cópia de projeto / central antiga).
+    path = u.achar(central, nome)
     if not path.exists():
         return ""
     texto = path.read_text(encoding="utf-8")
@@ -593,7 +595,7 @@ def main():
     except ValueError as e:
         u.die(f"--central fora da central conhecida: {e}")
 
-    pasta_dna = central / DNA_DIR_NAME
+    pasta_dna = u.pasta(central, DNA_DIR_NAME)
     pasta_dna.mkdir(parents=True, exist_ok=True)
 
     migrar_arquivo_legado(central, pasta_dna)

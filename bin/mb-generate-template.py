@@ -82,6 +82,10 @@ EXCLUIR = {
     "260810_SKILL-divergente.bak.md",
     ".bak",
     "skills/conclusao-megabrain",
+    # 260824 (v7.1): o backup imaculado do usuário (dna/usuario/) É pessoal
+    # por definição — nunca sai no pacote público. Antes daqui, o card de
+    # pessoas copiado pro DNA vazava pro export.
+    "dna/usuario",
     "gerenteneuron/.venv",
     "gerenteneuron/vault",
     "gerenteneuron/data",
@@ -112,6 +116,11 @@ EXCLUIR_TOPO = {
 
 # Duplicatas legadas sem prefixo de data: match EXATO de nome de arquivo
 EXCLUIR_NOME_EXATO = {
+    # 260824 (v7.1): .env do GerenteNeuron tem CHAVE DE API de verdade e
+    # estava sendo copiado pro export (e daí pro repo-local pelo robocopy).
+    # O .gitignore segurou o commit, mas o arquivo não podia nem chegar lá.
+    # Match exato preserva o .env.example, que É útil no pacote público.
+    ".env",
     "anti-slop.md",
     "context-engineering.md",
     "design-duplo-diamante.md",
@@ -355,7 +364,7 @@ def gerar_template(central, destino):
             erros = True
 
     # SKILL.md canônico também na raiz do destino (o repo público o espera lá)
-    skill_src = central_path / "skills" / "megabrain" / "SKILL.md"
+    skill_src = u.achar(central_path, "skills/megabrain/SKILL.md")
     if skill_src.is_file():
         if not copiar_sanitizando(str(skill_src), str(destino_path / "SKILL.md")):
             erros = True

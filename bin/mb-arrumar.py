@@ -115,7 +115,8 @@ IGNORAR_NA_VARREDURA = ("bin/mb-arrumar.py", "docs/", "AUDITORIA-", "PAINEL-MEGA
                         "licoes-megabrain.md", "PROGRESSO.json", "alteracoes-pendentes/",
                         "_github/export/", "_github/repo-local/", "RELATORIO", "META.md",
                         "bin/mb-generate-template.py", "bin/mb-preflight.py", "VERSAO.txt", "HANDOFF.md", "ESTADO.md", "bin/mb-check-version.py",
-                        ".mb-aspirador/", ".venv/", "dna/indice-licoes.json", "site-packages/")
+                        ".mb-aspirador/", ".venv/", "dna/indice-licoes.json", "site-packages/",
+                        "motor/dna/indice-licoes.json")
 
 # nomes que nao podem sobrar referenciados depois da arrumacao
 ORFAOS = ["260810_MEGABRAIN.md", "260810_mb-sync.py", "LEIAME.md", "requirements.txt",
@@ -225,7 +226,7 @@ def verificar(raiz: Path) -> int:
             continue
         txt = f.read_text(encoding="utf-8", errors="ignore")
         for orfao in ORFAOS:
-            if orfao in txt and not (raiz / orfao).exists() and not (raiz / "referencias" / orfao).exists():
+            if orfao in txt and not (raiz / orfao).exists() and not (u.pasta(raiz, "referencias") / orfao).exists():
                 for n, linha in enumerate(txt.splitlines(), 1):
                     if orfao in linha and ("_arquivo/" + orfao) not in linha and ("_to_delete/" + orfao) not in linha and ("90_arquivo/" + orfao) not in linha and ("99_to_delete/" + orfao) not in linha:
                         print(f"  {f.relative_to(raiz)}:{n} → {orfao}")

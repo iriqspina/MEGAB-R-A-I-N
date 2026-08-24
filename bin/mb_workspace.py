@@ -27,6 +27,7 @@ ABAS = [
     ("esquema", "Esquema"),
     ("acoes", "Ações"),
     ("skills", "Skills"),
+    ("cerebro", "Cérebro"),
     ("docs", "Documentos"),
     ("historico", "Histórico"),
 ]
@@ -212,9 +213,13 @@ def html_acoes(itens: list[dict]) -> str:
 
 def skills_lista(c: Path) -> list[dict]:
     itens = []
-    base = c / "skills"
+    base = u.pasta(c, "skills")   # v7.1: motor/skills na central nova
     if not base.is_dir():
         return itens
+    try:
+        rel_base = base.relative_to(c).as_posix().replace("/", "\\")
+    except ValueError:
+        rel_base = "skills"
     for d in sorted(base.iterdir()):
         sk = d / "SKILL.md"
         if not sk.is_file():
@@ -225,7 +230,8 @@ def skills_lista(c: Path) -> list[dict]:
         ponto = desc.find(". ")
         if ponto > 40:
             desc = desc[:ponto + 1]
-        itens.append({"nome": d.name, "desc": desc[:220]})
+        itens.append({"nome": d.name, "desc": desc[:220],
+                      "rel": f"{rel_base}\\{d.name}\\SKILL.md"})
     return itens
 
 
@@ -235,7 +241,7 @@ def html_skills(itens: list[dict]) -> str:
     cards = "".join(
         f'<div class="skillcard"><b>/{_e(i["nome"])}</b>'
         f'<span class="desc">{_e(i["desc"] or "—")}</span>'
-        f'<span class="cam">skills\\{_e(i["nome"])}\\SKILL.md</span></div>'
+        f'<span class="cam">{_e(i["rel"])}</span></div>'
         for i in itens)
     return (f'<div class="skills-lista">{cards}</div>'
             '<p class="det" style="margin-top:.8rem">Os poderes do megabrain: digite o comando no chat '
@@ -263,13 +269,13 @@ def html_esquema() -> str:
     <span class="esq-rotulo">sobe</span>
     <div class="esq-tile ok"><b>peneirado</b><small>lição generalizada, SEM dados pessoais, como proposta que o dono aprova (opt-in)</small></div>
     <span class="esq-rotulo">nunca sobe</span>
-    <div class="esq-tile alerta"><b>o pessoal</b><small>identidade, cérebro, pessoas, dna\\usuario\\ — morre na máquina de cada um</small></div>
+    <div class="esq-tile alerta"><b>o pessoal</b><small>identidade, cérebro, pessoas, motor\\dna\\usuario\\ — morre na máquina de cada um</small></div>
   </div>
   <div class="esq-row">
     <div class="esq-tile"><b>memoria\\</b><small>o que a IA lê pra lembrar: nucleo (regras e lições) · estado (onde paramos) · identidade · cerebro (raw → wiki) · pendencias</small></div>
     <div class="esq-tile"><b>02_entrada\\</b><small>jogue fontes aqui (PDF, print, briefing) → /ingerir destila pro cérebro</small></div>
-    <div class="esq-tile"><b>máquina</b><small>bin, dna, skills, referencias, modelos, tests, plugins — você nunca precisa abrir</small></div>
-    <div class="esq-tile"><b>dna\\usuario\\</b><small>backup imaculado local das suas infos pessoais — intocável, fora do git</small></div>
+    <div class="esq-tile"><b>motor\\</b><small>a máquina numa caixa só: skills, referencias, modelos, dna, tests, dist, plugins, gerenteneuron — você nunca precisa abrir. Só <code>bin\\</code> ficou na raiz (hook externo aponta pra ela)</small></div>
+    <div class="esq-tile"><b>motor\\dna\\usuario\\</b><small>backup imaculado local das suas infos pessoais — intocável, fora do git</small></div>
   </div>
   <p class="det">A explicação completa, board por board: <code>03_docs\\260824_megabrain-do-zero.html</code> (43 boards, setas ↑↓).</p>
 </div>"""
@@ -400,3 +406,233 @@ def js_workspace() -> str:
   aplicar();
 })();
 """
+
+
+# ═══════════════════════════════════════════════════════════════════
+# v7.1 (260824) — componente pergunta (.ask) + aba Cérebro
+# spec 03_docs/260824_spec-fase2.md §1 (componente pergunta) e §5 (cérebro).
+# Lição 260824 do <USUARIO>: rótulo tem que LER como título — linha própria,
+# separador embaixo, espaçamento. Nunca inline no meio do texto.
+# ═══════════════════════════════════════════════════════════════════
+
+CSS += """
+/* ── componente pergunta (.ask): mostra a pergunta que a seção responde ── */
+.ask { border-left:3px solid var(--info); background:var(--paper-high);
+  padding:.6rem .9rem .7rem; margin:0 0 1.1rem; max-width:60rem;
+  color:var(--ink-soft); font-style:italic; font-size:.9rem; line-height:1.5; }
+.ask > b:first-child { display:block; font-style:normal; color:var(--info);
+  font:800 .78rem/1.4 var(--mono); text-transform:uppercase; letter-spacing:.12em;
+  margin:0 0 .45rem; padding-bottom:.35rem; border-bottom:1px solid var(--line); }
+
+/* ── aba Cérebro ──────────────────────────────────────────────── */
+.cer-tiles { display:grid; gap:.6rem; grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));
+  margin:0 0 1rem; }
+.cer-tile { border:1px solid var(--line); background:var(--paper-high); padding:.6rem .75rem; }
+.cer-tile .n { display:block; font:800 1.6rem/1.1 var(--mono); }
+.cer-tile .r { display:block; font:800 .66rem/1.4 var(--mono); color:var(--ink-faint);
+  text-transform:uppercase; letter-spacing:.1em; margin-top:.15rem; }
+.cer-tile.alerta { border-color:var(--signal); } .cer-tile.alerta .n { color:var(--signal); }
+.cer-tile.ok .n { color:var(--ok); }
+.val { font:700 .68rem/1.3 var(--mono); text-transform:uppercase; letter-spacing:.06em;
+  border:1px solid var(--line); padding:.1rem .4rem; white-space:nowrap; }
+.val--permanente { color:var(--ink-faint); }
+.val--vence { color:var(--info); border-color:var(--info); }
+.val--vencida { color:var(--signal); border-color:var(--signal); font-weight:800; }
+.cer-vault { border:1px solid var(--line); border-left:3px solid var(--ok);
+  background:var(--paper-high); padding:.7rem .9rem; margin:1rem 0 0; }
+.cer-vault b { display:block; font:800 .78rem/1.4 var(--mono); text-transform:uppercase;
+  letter-spacing:.1em; margin-bottom:.35rem; padding-bottom:.3rem; border-bottom:1px solid var(--line); }
+"""
+
+
+def html_ask(pergunta: str, rotulo: str = "você perguntou") -> str:
+    """Caixa que mostra a PERGUNTA que a seção abaixo responde (padrão .ask,
+    validado por ele em 260824: "isso me ajudou mt")."""
+    return f'<div class="ask"><b>{_e(rotulo)}</b>{_e(pergunta)}</div>'
+
+
+def _validade(texto: str):
+    """VALIDADE: YYMMDD | YYYY-MM | YYYY-MM-DD no front-matter → date|None.
+    Mesma convenção do bin/mb-manutencao-cerebro.py (spec §5)."""
+    import datetime as _dt
+    m = re.search(r"^VALIDADE:\s*([0-9]{2,4}[-/]?[0-9]{2}[-/]?[0-9]{0,2})\s*$",
+                  texto[:2000], re.I | re.M)
+    if not m:
+        return None
+    s = m.group(1).strip().replace("/", "-")
+    try:
+        if re.fullmatch(r"[0-9]{6}", s):
+            return _dt.date(2000 + int(s[:2]), int(s[2:4]), int(s[4:6]))
+        if re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", s):
+            return _dt.date.fromisoformat(s)
+        if re.fullmatch(r"[0-9]{4}-[0-9]{2}", s):
+            a, mes = int(s[:4]), int(s[5:7])
+            prox = _dt.date(a + (mes == 12), (mes % 12) + 1, 1)
+            return prox - _dt.timedelta(days=1)
+    except ValueError:
+        return None
+    return None
+
+
+def cerebro_dados(c: Path) -> dict:
+    """Retrato do cérebro: páginas do wiki (com validade), cards de pessoas,
+    fontes raw, o que está parado em 02_entrada e a última manutenção."""
+    import datetime as _dt
+    import json as _json
+    hoje = _dt.date.today()
+    cer = u.pasta(c, "cerebro")
+    d = {"wiki": [], "pessoas": 0, "raw": 0, "entrada": [], "vencidas": 0,
+         "a_vencer": 0, "ultima_manutencao": "—", "caminho": str(cer)}
+    if cer.is_dir():
+        w = cer / "wiki"
+        if w.is_dir():
+            for f in sorted(w.rglob("*.md")):
+                texto = u.safe_read_text(f) or ""
+                val = _validade(texto)
+                if val is None:
+                    estado, rotulo = "permanente", "permanente"
+                elif val < hoje:
+                    estado, rotulo = "vencida", f"vencida em {val.isoformat()}"
+                    d["vencidas"] += 1
+                else:
+                    dias = (val - hoje).days
+                    estado, rotulo = "vence", f"vence em {dias}d"
+                    if dias <= 14:
+                        d["a_vencer"] += 1
+                titulo = ""
+                for linha in texto.splitlines():
+                    if linha.startswith("# "):
+                        titulo = linha[2:].strip()
+                        break
+                d["wiki"].append({"arq": f.name, "titulo": titulo or f.stem,
+                                  "estado": estado, "rotulo": rotulo})
+        d["pessoas"] = len(list((cer / "pessoas").glob("*.md"))) if (cer / "pessoas").is_dir() else 0
+        d["raw"] = len(list((cer / "raw").glob("*.md"))) if (cer / "raw").is_dir() else 0
+    entrada = c / "02_entrada"
+    if entrada.is_dir():
+        for f in sorted(entrada.iterdir()):
+            if f.is_file() and f.name.lower() != "leiame.md":
+                idade = (hoje - _dt.date.fromtimestamp(f.stat().st_mtime)).days
+                d["entrada"].append({"nome": f.name, "idade": idade})
+    stamp = c / ".mb-log" / "manutencao-cerebro.json"
+    if stamp.is_file():
+        try:
+            d["ultima_manutencao"] = _json.loads(stamp.read_text(encoding="utf-8")).get("ultima", "—")
+        except (OSError, ValueError):
+            pass
+    return d
+
+
+def html_cerebro(d: dict) -> str:
+    esquecidas = [x for x in d["entrada"] if x["idade"] > 14]
+    tiles = (
+        f'<div class="cer-tile"><span class="n">{len(d["wiki"])}</span><span class="r">páginas no wiki</span></div>'
+        f'<div class="cer-tile"><span class="n">{d["pessoas"]}</span><span class="r">cards de pessoas</span></div>'
+        f'<div class="cer-tile"><span class="n">{d["raw"]}</span><span class="r">fontes guardadas (raw)</span></div>'
+        f'<div class="cer-tile{" alerta" if d["entrada"] else ""}"><span class="n">{len(d["entrada"])}</span>'
+        f'<span class="r">esperando na entrada</span></div>'
+        f'<div class="cer-tile{" alerta" if d["vencidas"] else " ok"}"><span class="n">{d["vencidas"]}</span>'
+        f'<span class="r">páginas vencidas</span></div>'
+    )
+    linhas = "".join(
+        f'<tr><td><code>{_e(x["arq"])}</code></td><td>{_e(x["titulo"])}</td>'
+        f'<td><span class="val val--{x["estado"]}">{_e(x["rotulo"])}</span></td></tr>'
+        for x in d["wiki"]) or '<tr><td colspan="3" class="det">wiki vazio — jogue uma fonte em 02_entrada e rode /ingerir</td></tr>'
+    linhas_ent = "".join(
+        f'<tr{" style=background:var(--signal-soft)" if x["idade"] > 14 else ""}>'
+        f'<td><code>{_e(x["nome"])}</code></td><td>{x["idade"]}d parada</td></tr>'
+        for x in d["entrada"]) or '<tr><td colspan="2" class="det">nada parado na entrada</td></tr>'
+    return (
+        html_ask("o que a IA já sabe dos meus assuntos — e o que está vencendo?") +
+        f'<div class="cer-tiles">{tiles}</div>'
+        '<h3 class="slot__tit">Páginas do wiki — permanente × temporário</h3>'
+        f'<table><thead><tr><th>arquivo</th><th>tópico</th><th>validade</th></tr></thead><tbody>{linhas}</tbody></table>'
+        '<p class="det">Página sem <code>VALIDADE:</code> é permanente. Com data, ela avisa antes de virar '
+        'informação velha — quem arquiva é você, rodando <code>bin\\mb-manutencao-cerebro.py --arquivar</code>. '
+        'Nunca apaga: vai pra <code>90_arquivo\\cerebro-vencido\\</code>.</p>'
+        '<h3 class="slot__tit" style="margin-top:1.2rem">Fila de entrada — fontes esperando /ingerir</h3>'
+        f'<table><thead><tr><th>arquivo</th><th>parado há</th></tr></thead><tbody>{linhas_ent}</tbody></table>'
+        f'<p class="det">{len(esquecidas)} fonte(s) esquecida(s) (mais de 14 dias). '
+        f'Última manutenção do cérebro: <b>{_e(d["ultima_manutencao"])}</b>.</p>'
+        '<div class="cer-vault"><b>abrir o cérebro no Obsidian</b>'
+        f'<span class="det">O vault já está apontado pra <code>{_e(d["caminho"])}</code>. '
+        'No Obsidian: <i>Open folder as vault</i> → escolha essa pasta (ou 2 cliques em '
+        '<code>01_acoes\\260824_abrir-cerebro-obsidian.cmd</code>). '
+        'A configuração do vault fica local e não sobe pro GitHub.</span></div>')
+
+
+# ═══════════════════════════════════════════════════════════════════
+# v7.1 (260824) — agregador de telemetria no painel (spec §4/§6)
+# Lê .mb-log/ pelo bin/mb_telemetria.py. Dado é LOCAL: o painel só mostra.
+# ═══════════════════════════════════════════════════════════════════
+
+CSS += """
+/* ── telemetria: barras de frequência ─────────────────────────── */
+.tel-barras { display:grid; gap:.35rem; margin:.2rem 0 .9rem; }
+.tel-linha { display:grid; grid-template-columns:11rem 1fr 3.2rem; align-items:center; gap:.5rem; }
+.tel-linha .k { font:700 .74rem/1.3 var(--mono); overflow:hidden; text-overflow:ellipsis;
+  white-space:nowrap; }
+.tel-linha .b { height:.7rem; background:var(--line); position:relative; }
+.tel-linha .b i { display:block; height:100%; background:var(--ink); }
+.tel-linha .v { font:.7rem/1.3 var(--mono); color:var(--ink-faint); text-align:right; }
+.tel-cols { display:grid; gap:1.1rem; grid-template-columns:repeat(auto-fit,minmax(17rem,1fr)); }
+.tel-cols h4 { margin:0 0 .35rem; font:800 .7rem/1.4 var(--mono); text-transform:uppercase;
+  letter-spacing:.1em; color:var(--ink-faint); border-bottom:1px solid var(--line);
+  padding-bottom:.25rem; }
+"""
+
+
+def telemetria_dados(c: Path) -> dict | None:
+    """Agregado de .mb-log/ — None se o módulo não existir nesta instância."""
+    try:
+        import mb_telemetria as tel
+    except ImportError:
+        return None
+    try:
+        return tel.resumo(c, dias=90)
+    except Exception:
+        return None
+
+
+def _barras(contagem: dict, limite: int = 6) -> str:
+    itens = list(contagem.items())[:limite]
+    if not itens:
+        return '<p class="det">— sem registro ainda</p>'
+    topo = max(v for _, v in itens) or 1
+    linhas = "".join(
+        f'<div class="tel-linha"><span class="k" title="{_e(k)}">{_e(k)}</span>'
+        f'<span class="b"><i style="width:{max(3, round(100 * v / topo))}%"></i></span>'
+        f'<span class="v">{v}</span></div>' for k, v in itens)
+    return f'<div class="tel-barras">{linhas}</div>'
+
+
+def html_telemetria(d: dict | None) -> str:
+    if d is None:
+        return ('<p class="slot__vazio">telemetria indisponível nesta instância '
+                '(falta bin/mb_telemetria.py)</p>')
+    if not d.get("eventos"):
+        return (html_ask("o que essa central mais usa?") +
+                '<p class="slot__vazio">nenhum evento registrado ainda — o caderninho '
+                'começa a encher assim que as sessões registrarem '
+                '(<code>bin\\mb_telemetria.py --evento sessao --skill ...</code>).</p>')
+    custo = d.get("custo_total_usd") or 0
+    tiles = (
+        f'<div class="cer-tile"><span class="n">{d["eventos"]}</span><span class="r">eventos registrados</span></div>'
+        f'<div class="cer-tile"><span class="n">{len(d.get("dias", {}))}</span><span class="r">dias com registro</span></div>'
+        f'<div class="cer-tile"><span class="n">{len(d["por"].get("skill", {}))}</span><span class="r">skills usadas</span></div>'
+        f'<div class="cer-tile"><span class="n">{len(d["por"].get("modelo", {}))}</span><span class="r">modelos vistos</span></div>'
+        f'<div class="cer-tile"><span class="n">{("US$ " + str(custo)) if custo else "—"}</span>'
+        f'<span class="r">custo somado (local)</span></div>')
+    cols = "".join(
+        f'<div><h4>{rot}</h4>{_barras(d["por"].get(ch, {}))}</div>'
+        for ch, rot in (("skill", "skills mais usadas"), ("agente", "quem trabalhou"),
+                        ("cliente", "por onde"), ("evento", "tipo de evento")))
+    dur = (f' · duração média {d["duracao_media_s"]}s' if d.get("duracao_media_s") else "")
+    return (
+        html_ask("o que essa central mais usa, quem trabalhou e quanto custou?") +
+        f'<div class="cer-tiles">{tiles}</div>'
+        f'<div class="tel-cols">{cols}</div>'
+        f'<p class="det">Janela: 90 dias · último registro {_e(str(d.get("ultimo") or "—"))}{dur}. '
+        'Fonte: <code>.mb-log\\telemetria-*.jsonl</code> + <code>neuron.jsonl</code> + '
+        '<code>eventos-*.jsonl</code>. <b>Fica tudo no seu PC</b> — nenhum número sai daqui sem '
+        'você ligar o envio, e o que sobe é sempre agregado e sem nome, caminho ou dado pessoal.</p>')

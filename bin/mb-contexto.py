@@ -121,6 +121,17 @@ def instrucao_alinhamento(meta_existe: bool) -> str:
     )
 
 
+def _modo_atual() -> str | None:
+    """Linha MODO: do META.md da central (v7.1, pra telemetria)."""
+    try:
+        import re
+        texto = u.safe_read_text(u.achar(central(), "META.md")) or ""
+        m = re.search(r"^MODO:\s*(\w+)", texto, re.MULTILINE | re.IGNORECASE)
+        return m.group(1).lower() if m else None
+    except Exception:
+        return None
+
+
 def montar(payload: dict, agente: str) -> str:
     prompt = payload.get("prompt") or payload.get("user_prompt") or ""
     session_id = str(payload.get("session_id") or "sem-id")
@@ -186,6 +197,18 @@ def montar(payload: dict, agente: str) -> str:
                 "responda a partir delas e cite o path; se não cobrem, diga "
                 "'não encontrado no cérebro')\n" + blocos)
             injetadas.update(e["chave"] for e in novas_p)
+
+    # v7.1: 1 linha de telemetria por SESSÃO (não por prompt) — spec §4.
+    # Fail-open igual ao resto do hook: telemetria nunca derruba sessão.
+    if primeira:
+        try:
+            import mb_telemetria as _tel
+            _tel.registrar("sessao", raiz=central(), agente=agente,
+                           cliente=os.environ.get("MEGABRAIN_CLIENTE") or "cli",
+                           projeto=(projeto.name if projeto else None),
+                           modo=_modo_atual(), so=None)
+        except Exception:
+            pass
 
     estado_novo = {
         "primeira": False,

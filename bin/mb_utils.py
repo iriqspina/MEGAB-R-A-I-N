@@ -266,10 +266,24 @@ IDENTIDADE_DEFAULT = "260810_memoria-pessoal.md"
 PASTAS_NUMERADAS = {
     "nucleo": "memoria/nucleo", "estado": "memoria/estado", "identidade": "memoria/identidade",
     "cerebro": "memoria/cerebro", "relatorios": "00_painel", "scripts": "01_acoes",
-    "dist": "dist", "docs": "03_docs", "alteracoes-pendentes": "memoria/pendencias",
+    "dist": "motor/dist", "docs": "03_docs", "alteracoes-pendentes": "memoria/pendencias",
     "_arquivo": "90_arquivo", "_to_delete": "99_to_delete",
+    # v7.1 (260824) — etapa 2 da reorg: a MÁQUINA mora em motor/. A raiz só
+    # mostra o que é do humano. bin/ é a exceção (hook externo aponta pra ele).
+    "skills": "motor/skills", "referencias": "motor/referencias",
+    "modelos": "motor/modelos", "dna": "motor/dna", "tests": "motor/tests",
+    "plugin-megabrain": "motor/plugin-megabrain",
+    "plugin-megabrain-claude": "motor/plugin-megabrain-claude",
+    "gerenteneuron": "motor/gerenteneuron",
 }
 NOMES_ANTIGOS = {v: k for k, v in PASTAS_NUMERADAS.items()}
+
+# Pastas de máquina: nome lógico == nome da pasta. Existem planas (centrais e
+# cópias de projeto antigas) OU dentro de motor/ (v7.1). Sempre resolver por
+# pasta()/achar() — nunca escrever raiz / "skills" no código.
+PASTAS_MAQUINA = ("skills", "referencias", "modelos", "dna", "tests", "dist",
+                  "plugin-megabrain", "plugin-megabrain-claude", "gerenteneuron")
+MOTOR = "motor"
 
 # v7.0 (260824): layout humano/maquina. Fallback pro layout v6.4 (numerado
 # antigo) - centrais e copias antigas continuam legiveis sem sincronizar.
@@ -314,11 +328,22 @@ def achar(raiz, nome: str) -> Path:
     """Caminho de um arquivo canônico na raiz dada, em qualquer layout.
     Ordem: existe na raiz → raiz/nome; existe na pasta → raiz/pasta/nome;
     nada existe → raiz/pasta/nome se a pasta existir (vai ser criado lá),
-    senão raiz/nome (layout plano de projeto/central antiga)."""
+    senão raiz/nome (layout plano de projeto/central antiga).
+
+    v7.1: nome que COMEÇA por pasta de máquina ("skills/megabrain/SKILL.md",
+    "dna", "referencias/x.md") resolve o primeiro pedaço por pasta() — é o que
+    faz a mesma chamada valer na central nova (motor/skills/...) e na cópia de
+    projeto antiga (skills/...) sem ninguém reescrever caminho."""
     base = Path(raiz)
     plano = base / nome
+    if plano.exists():
+        return plano
+    partes = str(nome).replace("\\", "/").split("/", 1)
+    if partes[0] in PASTAS_MAQUINA:
+        d = pasta(base, partes[0])
+        return (d / partes[1]) if len(partes) == 2 else d
     logica = PASTAS_RAIZ.get(nome)
-    if logica is None or plano.exists():
+    if logica is None:
         return plano
     d = pasta(base, logica)
     if d.is_dir():

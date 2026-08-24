@@ -801,7 +801,7 @@
 
 <!-- ============ 15 ============ -->
 <section class="board" id="b15">
-  <div class="num"><b>15</b><span class="part">B · as peças</span><span class="part upd">atualizado · v7 aplicada hoje</span></div>
+  <div class="num"><b>15</b><span class="part">B · as peças</span><span class="part upd">atualizado · v7.1 · motor\ aplicado</span></div>
   <h2>O mapa da central — o layout novo, já no seu disco</h2>
   <p class="sub">Sua régua virou lei: <b>pasta numerada = feita pra sua mão</b>, com nome que você clicaria. O resto é casa de máquinas — você nunca precisa abrir.</p>
   <div class="fig">
@@ -814,12 +814,13 @@
       <div class="fold h"><svg><use href="#i-camera"/></svg><div><div class="nm">04_visuais</div><div class="ds">seu acervo de referências (entrada → sim/não). Nenhum script mexe</div></div></div>
       <div class="fold h"><svg><use href="#i-box"/></svg><div><div class="nm">90_arquivo · 99_to_delete</div><div class="ds">memória morta (inclui o backup da migração de hoje) · lixeira que você esvazia</div></div></div>
       <div class="fold c"><svg><use href="#i-brain"/></svg><div><div class="nm">memoria\</div><div class="ds">o que a IA lê pra lembrar: nucleo (regras, lições) · estado (onde paramos) · identidade · cerebro (raw→wiki) · pendencias</div></div></div>
-      <div class="fold c"><svg><use href="#i-wrench"/></svg><div><div class="nm">bin · skills · referencias · modelos · dna · tests · plugins · gerenteneuron · dist</div><div class="ds">a casa de máquinas, na raiz e sem número (a etapa 2 agrupa em motor\, em sessão com testes)</div></div></div>
-      <div class="fold c"><svg><use href="#i-lock"/></svg><div><div class="nm">dna\usuario\</div><div class="ds">o backup imaculado das SUAS infos — intocável, fora do git</div></div></div>
+      <div class="fold c"><svg><use href="#i-wrench"/></svg><div><div class="nm">motor\</div><div class="ds">a casa de máquinas inteira numa caixa só: skills · referencias · modelos · dna · tests · dist · plugins · gerenteneuron. Você nunca precisa abrir</div></div></div>
+      <div class="fold c"><svg><use href="#i-wrench"/></svg><div><div class="nm">bin\</div><div class="ds">os scripts. Única peça de máquina que ficou na raiz: o hook dos agentes aponta pra ela por caminho fixo, fora da central</div></div></div>
+      <div class="fold c"><svg><use href="#i-lock"/></svg><div><div class="nm">motor\dna\usuario\</div><div class="ds">o backup imaculado das SUAS infos — intocável, fora do git</div></div></div>
       <div class="fold g"><svg><use href="#i-cloud"/></svg><div><div class="nm">_github\</div><div class="ds">export (a versão pública montada) + repo-local (o álbum de fotos que o push envia)</div></div></div>
     </div>
   </div>
-  <div class="txt"><p>Você não precisa decorar: <b>abrir = 00_painel · clicar = 01_acoes · jogar fonte = 02_entrada</b>. O resto a IA cuida. A migração rodou hoje com backup (<span class="k">90_arquivo\migracao-v7-260824</span>) e a suíte de testes passou 25/25.</p></div>
+  <div class="txt"><p>Você não precisa decorar: <b>abrir = 00_painel · clicar = 01_acoes · jogar fonte = 02_entrada</b>. O resto a IA cuida. As duas etapas rodaram no mesmo dia, cada uma com backup e testes: etapa 1 (<span class="k">90_arquivo\migracao-v7-260824</span>, 25/25) e etapa 2 — a máquina pra <span class="k">motor\</span> (<span class="k">90_arquivo\migracao-motor-260824</span>, 36/36). Desfazer é um comando: <span class="k">python bin\mb-migrar-motor.py --desfazer</span>.</p></div>
 </section>
 
 <!-- ============ 15B resposta ============ -->
@@ -843,7 +844,7 @@
     </div>
   </div>
   <div class="txt">
-    <p>Status: <b>EXECUTADA hoje mesmo (etapa 1)</b> — do jeito seguro que a sua condição pedia: mapeei todas as referências, movi 14 pastas, renomeei os 8 .cmd por verbo, reapontei 44 arquivos e rodei a suíte: <b>25/25</b>. Backup de tudo que foi editado em <span class="k">90_arquivo\migracao-v7-260824</span>. O que ficou pra etapa 2 (sessão dedicada): agrupar as pastas de código da raiz em <span class="k">motor\</span> — são ~170 referências ambíguas, mexer nelas no embalo violaria o seu "se não quebrar nada". Elas já são zona de máquina (sem número), então nada muda pro seu uso.</p>
+    <p>Status: <b>EXECUTADA hoje mesmo (etapa 1)</b> — do jeito seguro que a sua condição pedia: mapeei todas as referências, movi 14 pastas, renomeei os 8 .cmd por verbo, reapontei 44 arquivos e rodei a suíte: <b>25/25</b>. Backup de tudo que foi editado em <span class="k">90_arquivo\migracao-v7-260824</span>. A <b>etapa 2 também já rodou</b> (sessão dedicada, 260824): as 9 pastas de código foram pra <span class="k">motor\</span>, com mapa de referências arquivo a arquivo antes de mover (<span class="k">bin\mb-mapa-refs.py</span>), caminho resolvido por nome lógico (<span class="k">u.pasta()</span> / <span class="k">u.achar()</span>) em vez de caminho na mão, suíte <b>36/36</b>, manifesto em <span class="k">90_arquivo\migracao-motor-260824</span> e desfazer em um comando. <span class="k">bin\</span> ficou na raiz de propósito: o hook dos agentes aponta pra ele por caminho absoluto, fora da central.</p>
   </div>
 </section>
 
@@ -1185,7 +1186,7 @@
       <div class="mini" style="border-color:var(--ok)"><svg><use href="#i-check"/></svg><b>1 · tirar peso</b>&nbsp;— <b style="color:var(--ok)">FEITO</b> · skill v6.0 virou roteiro de ~10 KB (era 31); texto integral guardado em referencias\; plugin 1.6.1 pronto em <span class="k">dist\</span> — <b>instalar no Cowork é o seu clique</b></div>
       <div class="mini" style="border-color:var(--ok)"><svg><use href="#i-check"/></svg><b>2 · painel workspace</b>&nbsp;— <b style="color:var(--ok)">FEITO</b> · abas (Painel · Esquema · Ações · Skills · Documentos · Histórico), ＋ fixa abas lado a lado, workspace/fonte/densidade salvos, modo no topo, feedback na lateral</div>
       <div class="mini" style="border-color:var(--ok)"><svg><use href="#i-check"/></svg><b>3 · Neuron</b>&nbsp;— <b style="color:var(--ok)">FEITO</b> · triagem de modelo desligada (guardada no código); telemetria ligada em <span class="k">.mb-log\neuron.jsonl</span></div>
-      <div class="mini" style="border-color:var(--ok)"><svg><use href="#i-check"/></svg><b>4 · planta nova de pastas</b>&nbsp;— <b style="color:var(--ok)">FEITA (etapa 1)</b> · 25/25 testes; etapa 2 (motor\) em sessão dedicada</div>
+      <div class="mini" style="border-color:var(--ok)"><svg><use href="#i-check"/></svg><b>4 · planta nova de pastas</b>&nbsp;— <b style="color:var(--ok)">FEITA (etapas 1 e 2)</b> · máquina em motor\, suíte 36/36, desfazer em 1 comando</div>
       <div class="mini" style="border-color:var(--warm)"><svg><use href="#i-index"/></svg><b>5 · religar Ollama + reindexar</b>&nbsp;— <b style="color:var(--warm)">VOCÊ</b> liga, eu reindexo (sessão à parte)</div>
       <div class="mini" style="border-color:var(--warm)"><svg><use href="#i-book"/></svg><b>6 · Obsidian</b>&nbsp;— <b style="color:var(--warm)">VOCÊ</b> instala (obsidian.md) → eu aponto o vault (sessão à parte)</div>
       <div class="mini" style="border-color:var(--ok)"><svg><use href="#i-check"/></svg><b>7 · cérebro temporário × permanente</b>&nbsp;— <b style="color:var(--ok)">FEITO</b> · <span class="k">VALIDADE:</span> no front-matter + <span class="k">bin\mb-manutencao-cerebro.py</span> (avisa, nunca apaga; máx. 1x/semana)</div>

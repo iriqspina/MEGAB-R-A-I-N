@@ -13,6 +13,15 @@ __pycache__/
 licoes-megabrain.md
 
 # GerenteNeuron: dados locais, credenciais, ambiente virtual e cofre
+# v7.1 (260824): a maquina foi pra motor\ — os padroes valem nos dois lugares
+# (** cobre qualquer profundidade; as linhas antigas ficam pra copia antiga).
+**/gerenteneuron/.env
+**/gerenteneuron/.venv/
+**/gerenteneuron/projetos.json
+**/gerenteneuron/data/
+**/gerenteneuron/vault/
+**/gerenteneuron/__pycache__/
+**/gerenteneuron/**/*.pyc
 gerenteneuron/.env
 gerenteneuron/.venv/
 gerenteneuron/projetos.json
@@ -24,3 +33,5 @@ gerenteneuron/**/*.pyc
 # Obsidian (config local do vault) e DNA do usuario nunca sobem
 .obsidian/
 dna/usuario/
+motor/dna/usuario/
+**/dna/usuario/

@@ -20,7 +20,17 @@ import tempfile
 import unittest
 from pathlib import Path
 
-RAIZ = Path(__file__).resolve().parent.parent
+# v7.1: a suíte pode viver plana (tests/) ou dentro de motor/ (etapa 2 da
+# reorg). Achar a raiz subindo até bin/mb_utils.py vale nos dois casos.
+def _raiz() -> Path:
+    aqui = Path(__file__).resolve()
+    for cand in aqui.parents:
+        if (cand / "bin" / "mb_utils.py").is_file():
+            return cand
+    return aqui.parent.parent
+
+
+RAIZ = _raiz()
 CHECK_VERSION = RAIZ / "bin" / "mb-check-version.py"
 SYNC_PARA_CENTRAL = RAIZ / "bin" / "mb-sync-projeto-para-central.py"
 
@@ -79,6 +89,27 @@ class Base(unittest.TestCase):
         (c / "licoes-megabrain.md").write_text(LICOES_CENTRAL, encoding="utf-8")
         return c
 
+    def central_falsa_motor(self) -> Path:
+        """Central no layout v7.1: humano na raiz, máquina em motor/.
+        Prova que o sync continua entregando cópia PLANA no projeto."""
+        c = self.tmp("mb-central-motor-")
+        (c / "memoria" / "nucleo").mkdir(parents=True)
+        (c / "memoria" / "nucleo" / "VERSAO.txt").write_text(
+            "2026-08-24 · v7.1 — fixture motor\n", encoding="utf-8")
+        (c / "memoria" / "nucleo" / "MEGABRAIN.md").write_text("# MEGABRAIN fixture\n", encoding="utf-8")
+        (c / "memoria" / "nucleo" / "OFFLINE.md").write_text("# offline fixture\n", encoding="utf-8")
+        (c / "memoria" / "nucleo" / "licoes-megabrain.md").write_text(LICOES_CENTRAL, encoding="utf-8")
+        (c / "bin").mkdir()
+        (c / "bin" / "leia.md").write_text("bin fixture\n", encoding="utf-8")
+        (c / "motor" / "skills" / "megabrain").mkdir(parents=True)
+        (c / "motor" / "skills" / "megabrain" / "SKILL.md").write_text("# skill fixture\n", encoding="utf-8")
+        (c / "motor" / "referencias").mkdir(parents=True)
+        (c / "motor" / "referencias" / "ref-central.md").write_text("ref da central\n", encoding="utf-8")
+        (c / "motor" / "dna").mkdir(parents=True)
+        (c / "motor" / "dna" / "README.md").write_text("dna fixture\n", encoding="utf-8")
+        (c / "motor" / "modelos" / "cerebro").mkdir(parents=True)
+        return c
+
     def projeto_com_megabrain(self) -> Path:
         p = self.tmp("mb-projeto-")
         mb = p / "MEGABRAIN"
@@ -127,6 +158,19 @@ class TestCheckVersion(Base):
         for rel in ("MEGABRAIN.md", "VERSAO.txt", "skills/megabrain/SKILL.md",
                     "referencias/ref-central.md", "licoes-megabrain.md"):
             self.assertTrue((mb / rel).exists(), f"faltou {rel} apos sync")
+
+    def test_sync_de_central_v71_entrega_copia_plana(self):
+        """Etapa 2 da reorg: central com a máquina em motor/ tem que sincronizar
+        igual — e a cópia do projeto continua PLANA (skills/, referencias/)."""
+        central = self.central_falsa_motor()
+        projeto = self.tmp("mb-projeto-")
+        r = rodar(CHECK_VERSION, "--projeto", str(projeto), "--central", str(central), "--auto")
+        self.assertEqual(r.returncode, 0, f"sync devia concluir: {r.stdout}{r.stderr}")
+        mb = projeto / "MEGABRAIN"
+        for rel in ("MEGABRAIN.md", "VERSAO.txt", "skills/megabrain/SKILL.md",
+                    "referencias/ref-central.md", "dna/README.md"):
+            self.assertTrue((mb / rel).exists(), f"faltou {rel} apos sync de central v7.1")
+        self.assertFalse((mb / "motor").exists(), "a copia do projeto nao pode nascer com motor/")
 
     def test_projeto_igual_central_e_recusado(self):
         central = self.central_falsa()

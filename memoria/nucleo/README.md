@@ -15,6 +15,13 @@ assunto). O HTML não vem no pacote: edite a fonte e regenere.
 
 ## O que tem aqui
 
+> **Onde as coisas moram (v7.1, 260824):** a máquina vive em `motor/` —
+> `motor/skills/`, `motor/referencias/`, `motor/modelos/`, `motor/dna/`,
+> `motor/tests/`, `motor/dist/`, `motor/gerenteneuron/` e os dois plugins.
+> `bin/` ficou na raiz (hook externo aponta pra ele). Nos caminhos abaixo,
+> leia `skills/...` como `motor/skills/...` na central; na cópia de projeto
+> (`MEGABRAIN\`) o layout continua plano e o caminho vale como está escrito.
+
 - `skills/megabrain/SKILL.md` — o protocolo: gates de entrega (enquadrar → gerar → auditar →
   verificar → passar o bastão → aprender), o gate de assumir trabalho
   multi-agente, Duplo Diamante para projetos de design, roteamento de

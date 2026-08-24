@@ -22,7 +22,17 @@ import tempfile
 import unittest
 from pathlib import Path
 
-RAIZ = Path(__file__).resolve().parent.parent
+# v7.1: a suíte pode viver plana (tests/) ou dentro de motor/ (etapa 2 da
+# reorg). Achar a raiz subindo até bin/mb_utils.py vale nos dois casos.
+def _raiz() -> Path:
+    aqui = Path(__file__).resolve()
+    for cand in aqui.parents:
+        if (cand / "bin" / "mb_utils.py").is_file():
+            return cand
+    return aqui.parent.parent
+
+
+RAIZ = _raiz()
 OBSERVAR = RAIZ / "bin" / "mb-observar.py"
 
 
