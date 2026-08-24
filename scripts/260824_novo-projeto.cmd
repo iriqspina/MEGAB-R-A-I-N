@@ -2,6 +2,8 @@
 setlocal enabledelayedexpansion
 chcp 65001 >nul
 rem Cria um projeto novo ja no nivel 1 da pipeline megabrain.
+rem 260824: dentro do bloco if, %PROJETOS% expandia na leitura (vazio) e o
+rem script cancelava sozinho na primeira rodada; agora usa !PROJETOS!.
 
 set "FONTE=%~dp0..\"
 set "ARQ=MEGABRAIN.md VERSAO.txt licoes-megabrain.md"
@@ -15,8 +17,8 @@ echo.
 if "%PROJETOS%"=="" (
   echo  Onde ficam seus projetos? Ex.: C:\projetos
   set /p "PROJETOS=Pasta raiz dos projetos: "
-  if "%PROJETOS%"=="" (echo. & echo  Cancelado. & pause & exit /b 1)
-  > "%CFG%" echo set "PROJETOS=%PROJETOS%"
+  if "!PROJETOS!"=="" (echo. & echo  Cancelado. & pause & exit /b 1)
+  > "%CFG%" echo set "PROJETOS=!PROJETOS!"
   echo  Guardado em %CFG% - nao pergunto de novo.
   echo.
 )

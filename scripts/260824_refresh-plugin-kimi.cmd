@@ -53,7 +53,7 @@ if exist "%DESKTOP%\.." (
   robocopy "%FONTE%\skills\megabrain" "%DESKTOP%" SKILL.md /R:1 /W:1 >nul
   robocopy "%FONTE%\memoria\nucleo" "%DESKTOP%" MEGABRAIN.md /R:1 /W:1 >nul
   robocopy "%FONTE%\referencias" "%DESKTOP%\referencias" 26*_*.md /R:1 /W:1 >nul
-  echo        OK (kimi-desktop tambem)
+  echo        OK ^(kimi-desktop tambem^)
 )
 
 rem --- 4. verificacao: o hook instalado E o da fonte? -------------

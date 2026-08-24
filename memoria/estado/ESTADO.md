@@ -2,24 +2,27 @@
 
 MODO: otimizado
 
-TL;DR: v7.0 no disco e no export; a ÚNICA dúvida aberta é se o push da v7
-chegou no GitHub — o log de push para em 24/08 15:23 (pré-v7, com mensagem
-quebrada "='"). Conferir no painel (bloco git) e, se pendente, rodar
-publicar-e-fotografar (JÁ CORRIGIDO no logout) → enviar-pro-github.
+TL;DR: v7.0 no ar E no GitHub (cf73db8 confirmado no remoto); bug do painel
+morto; central revisada (preflight git✓ skills✓ fatos✓, suíte 25/25); falta
+só o teste do plugin 1.6.1 que ele reinstalou — sessão nova, rodar /megabrain.
 
-ONDE ESTAMOS: layout v7 aplicado (25/25 testes) · skill v6.0 + plugin 1.6.1
-em dist/ (ele diz que instalou; conferir na abertura) · painel workspace com
-6 abas no ar (00_painel/RELATORIO.html) · Neuron sem triagem + telemetria ·
-cérebro com VALIDADE + manutenção · export regenerado no formato v7 (o
-publicar novo rodou). Placar da fila do board 26: 7/10.
+ONDE ESTAMOS: push v7 CONFIRMADO via ls-remote · bug "painel não atualiza
+após push" resolvido (parêntese em bloco if abortava o batch; enviar-pro-
+github reescrito e verificado de ponta a ponta) · novo-projeto.cmd corrigido
+(expansão %V% em bloco — sempre cancelava na 1ª rodada) · refresh-plugin-kimi
+corrigido e RODADO (skills do Kimi sincronizadas, backup plugin-kimi-
+20260824-1638) · painel regenerando · plugin Cowork reinstalado por ele no
+fim do dia (não testado ainda).
 
-BLOQUEIO: confirmar o push da v7 (dele, 2 cliques). Depois disso, nenhum.
+BLOQUEIO: nenhum. (Teste do plugin 1.6.1 é o primeiro gesto da próxima
+sessão, não um bloqueio.)
 
 SEGURADO: Tema 02 Wildfire · Figma v1 · 04_visuais/00_entrada (triagem é
 dado) · dna/usuario/ (imaculado) · 90_arquivo/migracao-v7-260824 (backup da
 migração) · doc 260823 em 90_arquivo.
 
-ÚLTIMA AÇÃO (logout 260824): corrigido o publicar-e-fotografar.cmd (VERSAO
-mudou pra memoria/nucleo/ na v7 e o cmd ainda lia a raiz do clone — era isso
-que quebrava a mensagem de commit) + fallback pra mensagem vazia; lições e
-checklist de abertura atualizados.
+ÚLTIMA AÇÃO (logout 260824, 2ª sessão do dia): revisão geral da central —
+preflight --forcar --agentes, suíte 25/25, auditoria dos 8 .cmd (3 corrigidos
+por reescrita completa via container), skills Kimi ressincronizadas, legado
+diagnosticado (33 resíduos = homes dos agentes/histórico, decisão dele);
+estado/decisões/lições/checklist atualizados e foto nova publicada.

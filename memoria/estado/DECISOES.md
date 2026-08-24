@@ -1370,3 +1370,20 @@ ALTERNATIVA DESCARTADA: manter os nomes técnicos antigos. Rejeitada pela
 régua de UX dele: "nome que conecta no cérebro de um leigo".
 POR QUÊ: o clique é a interface do humano com o sistema; verbo diz o que
 acontece.
+
+## 260824d — Blindagem do enviar-pro-github: log em vez de dump na tela
+DECISÃO: no 260824_enviar-pro-github.cmd reescrito, a saída do python vai pro
+.mb-log/push.log com checagem de errorlevel (relatorio OK / relatorio FALHOU
+codigo N) e guard where python; o `type %LOG% | findstr | more` foi removido.
+ALTERNATIVA DESCARTADA: manter o dump do log na tela — despejava o histórico
+inteiro (linhas de commit gigantes) a cada rodada e paginava com more.
+POR QUÊ: o dump não acrescentava nada e escondia o abort; falha de qualquer
+etapa agora fica visível na janela E gravada no log.
+
+## 260824e — Skills do Kimi divergentes: rodar o refresh oficial, não copiar na mão
+DECISÃO: com o preflight acusando 2/2 cópias divergentes, a correção foi rodar
+o próprio 01_acoes/260824_refresh-plugin-kimi.cmd (backup automático em
+.mb-backup/plugin-kimi-20260824-1638, verificação de hash do hook).
+ALTERNATIVA DESCARTADA: robocopy manual direto nos destinos, ou só reportar.
+POR QUÊ: o remédio desenhado já existia com backup e verificação; preflight
+voltou a ✓ na mesma hora e o caminho fica reproduzível.

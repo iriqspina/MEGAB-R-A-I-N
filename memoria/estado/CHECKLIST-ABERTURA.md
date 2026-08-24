@@ -90,6 +90,9 @@
 - Como: abrir 00_painel\RELATORIO.html; se pendente, rodar
   01_acoes\260824_publicar-e-fotografar.cmd → 260824_enviar-pro-github.cmd.
 
+- RESOLVIDO: 260824 (tarde) — push confirmado direto no remoto via git
+  ls-remote no container: GitHub = repo-local = cf73db8; painel regenerando.
+
 ## 260824 — plugin instalado pode não ser o 1.6.1
 - Checar: /root/.claude/plugins/synced/megabrain/.claude-plugin/plugin.json
   == 1.6.1? (nesta sessão ainda constava 1.3.0 depois de ele dizer que
@@ -106,3 +109,12 @@
   existe; hook local aponta pra bin\ (bin fica na raiz — não mover).
 - Como: na dúvida, ls na raiz + mb_utils; o mapa real está no board 15 do
   03_docs\260824_megabrain-do-zero.html.
+
+## 260824b — plugin Cowork reinstalado no fim do dia; confirmar 1.6.1
+- Checar: /root/.claude/plugins/synced/megabrain/.claude-plugin/plugin.json
+  == 1.6.1 E a skill megabrain carregada é a v6.0 enxuta (~10 KB).
+- Por quê: ele desinstalou/reinstalou em 260824 à noite justamente pra isso;
+  se ainda constar 1.3.0, o sync da conta falhou de novo e a skill carregada
+  é velha (caminhos v6).
+- Como: cat no plugin.json acima logo na abertura; conferir tamanho/gatilhos
+  da SKILL.md que o plugin serviu.
