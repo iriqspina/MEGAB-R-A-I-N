@@ -80,3 +80,29 @@
 - Como: usar `mcp__claude-in-chrome__*` no navegador do <USUARIO>
   (autorização permanente). Para render local, embutir fontes via
   `@fontsource` do npm como data URI e usar `wait_until='load'`.
+
+## 260824 — push da v7 não confirmado
+- Checar: `.mb-log\push.log` tem entrada DEPOIS de 24/08 18:30? Painel (bloco
+  git) mostra "nada pendente de push"?
+- Por quê: o log parava em 15:23 (pré-v7) com mensagem quebrada "='"; o
+  publicar foi corrigido no logout, mas o push pode não ter rodado — o GitHub
+  pode estar sem a v7 inteira.
+- Como: abrir 00_painel\RELATORIO.html; se pendente, rodar
+  01_acoes\260824_publicar-e-fotografar.cmd → 260824_enviar-pro-github.cmd.
+
+## 260824 — plugin instalado pode não ser o 1.6.1
+- Checar: /root/.claude/plugins/synced/megabrain/.claude-plugin/plugin.json
+  == 1.6.1? (nesta sessão ainda constava 1.3.0 depois de ele dizer que
+  instalou — o sync da conta pode demorar/ter falhado)
+- Por quê: skill velha carregada = regras antigas (31 KB, caminhos v6).
+- Como: cat no arquivo acima no começo da sessão; se velho, pedir pra ele
+  reinstalar dist\260824_megabrain-v1.6.1.plugin.
+
+## 260824 — layout v7: caminhos antigos morreram
+- Checar: antes de citar caminho, resolver via bin/mb_utils.achar()/pasta()
+  (04_relatorios→00_painel · 05_scripts→01_acoes · 0X_→memoria/ · cmds com
+  prefixo 260824 e nome de verbo).
+- Por quê: instrução com caminho velho manda o humano pra pasta que não
+  existe; hook local aponta pra bin\ (bin fica na raiz — não mover).
+- Como: na dúvida, ls na raiz + mb_utils; o mapa real está no board 15 do
+  03_docs\260824_megabrain-do-zero.html.

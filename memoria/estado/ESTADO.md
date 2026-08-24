@@ -2,31 +2,24 @@
 
 MODO: otimizado
 
-TL;DR: **v7.0 no ar** (260824, 3ª rodada — a da execução). Central reorganizada
-no layout humano/máquina (00_painel · 01_acoes com verbos · 02_entrada ·
-03_docs · 04_visuais · memoria/ · _github/), migração com backup e suíte
-25/25. Skill v6.0 enxuta (31→~10 KB) com plugin **1.6.1 pronto em dist/ —
-falta ele instalar**. Painel virou workspace com abas + feedback rail. Neuron
-sem triagem de modelo, com telemetria. Cérebro com VALIDADE + manutenção
-semanal. Placar da fila: 7/10 entregues; 5·6·8 são sessões à parte; 9 (Figma)
-e o script "contribuir" pendentes.
+TL;DR: v7.0 no disco e no export; a ÚNICA dúvida aberta é se o push da v7
+chegou no GitHub — o log de push para em 24/08 15:23 (pré-v7, com mensagem
+quebrada "='"). Conferir no painel (bloco git) e, se pendente, rodar
+publicar-e-fotografar (JÁ CORRIGIDO no logout) → enviar-pro-github.
 
-ONDE ESTAMOS: relatório novo gerado em `00_painel/RELATORIO.html` (abas:
-Painel · Esquema · Ações · Skills · Documentos · Histórico; modo visível;
-＋ fixa abas lado a lado; fonte/densidade/workspace salvos por navegador;
-rail de feedback com aviso de consentimento). Doc de compreensão atualizado
-pro layout novo em `03_docs/260824_megabrain-do-zero.html`.
+ONDE ESTAMOS: layout v7 aplicado (25/25 testes) · skill v6.0 + plugin 1.6.1
+em dist/ (ele diz que instalou; conferir na abertura) · painel workspace com
+6 abas no ar (00_painel/RELATORIO.html) · Neuron sem triagem + telemetria ·
+cérebro com VALIDADE + manutenção · export regenerado no formato v7 (o
+publicar novo rodou). Placar da fila do board 26: 7/10.
 
-BLOQUEIO (<USUARIO>): instalar `dist/260824_megabrain-v1.6.1.plugin` no
-Cowork · publicar + push (agora `01_acoes/260824_publicar-e-fotografar.cmd`
-→ `260824_enviar-pro-github.cmd`) · sincronizar projetos · Ollama e Obsidian
-(sessões à parte).
+BLOQUEIO: confirmar o push da v7 (dele, 2 cliques). Depois disso, nenhum.
 
-SEGURADO: Tema 02 Wildfire · Figma v1 · 04_visuais/00_entrada (era 09_visuais)
-· `dna/usuario/` (imaculado) · `90_arquivo/migracao-v7-260824` (backup da
-migração — não limpar) · doc 260823 em 90_arquivo.
+SEGURADO: Tema 02 Wildfire · Figma v1 · 04_visuais/00_entrada (triagem é
+dado) · dna/usuario/ (imaculado) · 90_arquivo/migracao-v7-260824 (backup da
+migração) · doc 260823 em 90_arquivo.
 
-ÚLTIMA AÇÃO: migração v7 (14 moves, 8 renomes de .cmd, 44 arquivos
-reapontados), skill v6.0 + plugin 1.6.1, mb-manutencao-cerebro.py,
-Neuron router sem faixas + neuron.jsonl, mb_workspace.py + gerador v7,
-relatório regenerado, doc e spec atualizados (260824, claude · Cowork).
+ÚLTIMA AÇÃO (logout 260824): corrigido o publicar-e-fotografar.cmd (VERSAO
+mudou pra memoria/nucleo/ na v7 e o cmd ainda lia a raiz do clone — era isso
+que quebrava a mensagem de commit) + fallback pra mensagem vazia; lições e
+checklist de abertura atualizados.

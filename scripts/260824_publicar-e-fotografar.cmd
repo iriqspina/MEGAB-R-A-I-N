@@ -39,10 +39,12 @@ robocopy "%FONTE%" "%CLONE%" /MIR /XD .git /NFL /NDL /NJH /NJS >nul
 cd /d "%CLONE%"
 git add -A
 
-for /f "usebackq delims=" %%V in ("%CLONE%\VERSAO.txt") do (set "MBVER=%%V" & goto :temversao)
+for /f "usebackq delims=" %%V in ("%CLONE%\memoria\nucleo\VERSAO.txt") do (set "MBVER=%%V" & goto :temversao)
 :temversao
 rem 260822: aspas na primeira linha do VERSAO.txt quebravam o -m (commit falhava em silencio)
 set "MBVER=%MBVER:"='%"
+if "%MBVER%"=="" set "MBVER=megabrain v7"
+if "%MBVER%"=="='" set "MBVER=megabrain v7"
 git commit -m "megabrain: %MBVER%"
 if errorlevel 1 (
   echo.
