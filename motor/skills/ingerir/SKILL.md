@@ -54,12 +54,21 @@ central. Não → projeto. Na dúvida, projeto (subir depois é barato).
   passagem (autor de artigo) **não** vira card — vai em Fontes.
 - Linke: toda página cita as páginas vizinhas em **Relações**, nos dois
   sentidos.
+- **Wikilink, não só caminho (260824).** Caminho entre crase (`wiki/x.md`) é
+  para humano ler; `[[x]]` (nome do arquivo SEM extensão, entre colchetes
+  duplos) é o que vira aresta no grafo do Obsidian. Em toda página nova:
+  wikilink da fonte em **Fontes**, das vizinhas em **Relações**, e um
+  `[[260824_mapa-do-cerebro]]`. Depois de ingerir, acrescente a página nova
+  ao mapa e rode `python bin/mb-obsidian.py --conferir` — ele acusa link
+  quebrado, que no grafo vira nó fantasma.
 
 ### 4. Atualizar o INDICE.md
 - Tabela Páginas: uma linha por página criada/atualizada.
 - Tabela Pessoas: idem para cards.
 - Tabela Fontes processadas: `raw/arquivo` · hash · YYMMDD · lista do que
   gerou/atualizou.
+- Atualize também `260824_mapa-do-cerebro.md` (a porta de entrada do vault):
+  o INDICE é tabela pra IA ler, o mapa é o grafo pro humano navegar.
 - Nunca apague linha; página aposentada ganha `(aposentada)` no tópico.
 
 ### 5. Indexar

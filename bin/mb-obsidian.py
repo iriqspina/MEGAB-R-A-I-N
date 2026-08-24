@@ -14,9 +14,14 @@ O que este script faz:
   --preparar (padrão)  cria memoria/cerebro/.obsidian/ com uma config inicial
                        (tema escuro, links relativos, anexos em raw/) SEM
                        sobrescrever nada que já exista, e escreve o leia-me.
-  --abrir              abre o vault no Obsidian (obsidian://open?path=...).
-                       Na PRIMEIRA vez o Obsidian pode pedir "Open folder as
-                       vault" — o caminho fica na área de transferência.
+  --registrar          registra o vault na config do Obsidian
+                       (%APPDATA%/obsidian/obsidian.json), com backup. Precisa
+                       do app FECHADO — ele reescreve esse arquivo ao sair.
+  --abrir              registra (se preciso) e abre o vault no Obsidian.
+
+LIÇÃO 260824: `obsidian://open?path=...` só abre vault JÁ REGISTRADO. Com a
+pasta desconhecida o app responde "Vault not found" — foi o que aconteceu na
+primeira tentativa. Por isso --abrir passou a registrar antes de chamar a URI.
 
 A pasta `.obsidian/` é config LOCAL: já está no .gitignore e nunca sobe.
 """
@@ -24,6 +29,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -99,6 +105,96 @@ GitHub — inclusive porque guarda o layout da SUA tela.
 """
 
 
+def config_obsidian() -> Path | None:
+    """obsidian.json — a lista de vaults conhecidos pelo app."""
+    import os
+    if os.name == "nt":
+        base = os.environ.get("APPDATA")
+        if base:
+            return Path(base) / "obsidian" / "obsidian.json"
+        return None
+    caseiro = Path.home()
+    for cand in (caseiro / ".config" / "obsidian" / "obsidian.json",
+                 caseiro / "Library" / "Application Support" / "obsidian" / "obsidian.json"):
+        if cand.parent.is_dir():
+            return cand
+    return None
+
+
+def obsidian_rodando() -> bool:
+    import os
+    try:
+        if os.name == "nt":
+            r = subprocess.run(["tasklist", "/fi", "imagename eq Obsidian.exe", "/nh"],
+                               capture_output=True, text=True, timeout=15, check=False)
+            return "Obsidian.exe" in (r.stdout or "")
+        r = subprocess.run(["pgrep", "-f", "[Oo]bsidian"], capture_output=True,
+                           text=True, timeout=15, check=False)
+        return bool((r.stdout or "").strip())
+    except (OSError, subprocess.SubprocessError):
+        return False
+
+
+def registrar(central: Path, forcar: bool = False) -> int:
+    """Põe o vault do cérebro na lista de vaults do Obsidian.
+
+    Sem isso, `obsidian://open?path=` responde "Vault not found" — a URI só
+    abre vault que o app já conhece.
+    """
+    import datetime as _dt
+    import secrets
+    v = vault(central)
+    if not v.is_dir():
+        print(f"ERRO: não achei o cérebro em {v}")
+        return 1
+    cfg = config_obsidian()
+    if cfg is None or not cfg.parent.is_dir():
+        print("Obsidian ainda não rodou nesta máquina (sem obsidian.json).")
+        print("Abra o app uma vez e rode de novo — ou use Open folder as vault:")
+        print(f"  {v}")
+        return 1
+    if obsidian_rodando() and not forcar:
+        print("O Obsidian está ABERTO. Ele reescreve a config ao sair e apagaria")
+        print("o registro. Feche o app e rode de novo (ou use --forcar).")
+        return 1
+
+    alvo = str(v.resolve())
+    dados = {"vaults": {}}
+    if cfg.is_file():
+        try:
+            dados = json.loads(cfg.read_text(encoding="utf-8")) or {"vaults": {}}
+        except (OSError, ValueError):
+            print(f"AVISO: {cfg.name} ilegível — vou escrever um novo.")
+            dados = {"vaults": {}}
+        backup = central / ".mb-backup" / f"obsidian-json-{_dt.datetime.now():%y%m%d-%H%M%S}.json"
+        backup.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            backup.write_text(cfg.read_text(encoding="utf-8"), encoding="utf-8")
+            print(f"  backup da config: {backup}")
+        except OSError:
+            pass
+
+    vaults = dados.setdefault("vaults", {})
+    ja = [k for k, val in vaults.items() if str(val.get("path", "")).rstrip("\\/") == alvo.rstrip("\\/")]
+    agora_ms = int(_dt.datetime.now().timestamp() * 1000)
+    for val in vaults.values():
+        val["open"] = False
+    if ja:
+        vaults[ja[0]].update({"ts": agora_ms, "open": True})
+        print(f"  vault já estava registrado ({ja[0]}) — marquei como o que abre.")
+    else:
+        novo = secrets.token_hex(8)
+        vaults[novo] = {"path": alvo, "ts": agora_ms, "open": True}
+        print(f"  vault registrado: {novo}")
+    cfg.write_text(json.dumps(dados, ensure_ascii=False), encoding="utf-8")
+    outros = [val.get("path") for k, val in vaults.items() if val.get("path") != alvo]
+    print(f"  config: {cfg}")
+    if outros:
+        print("  outros vaults na lista (intocados, só não abrem sozinhos): "
+              + " · ".join(str(o) for o in outros))
+    return 0
+
+
 def vault(central: Path) -> Path:
     return u.pasta(central, "cerebro")
 
@@ -131,12 +227,28 @@ def preparar(central: Path) -> int:
     return 0
 
 
+def vault_registrado(v: Path) -> bool:
+    cfg = config_obsidian()
+    if cfg is None or not cfg.is_file():
+        return False
+    try:
+        dados = json.loads(cfg.read_text(encoding="utf-8")) or {}
+    except (OSError, ValueError):
+        return False
+    alvo = str(v.resolve()).rstrip("\\/")
+    return any(str(val.get("path", "")).rstrip("\\/") == alvo
+               for val in (dados.get("vaults") or {}).values())
+
+
 def abrir(central: Path) -> int:
     v = vault(central)
     if not v.is_dir():
         print(f"ERRO: não achei o cérebro em {v}")
         return 1
     preparar(central)
+    # a URI só abre vault CONHECIDO: registrar antes evita o "Vault not found"
+    if not vault_registrado(v):
+        registrar(central)
     caminho = str(v.resolve())
     try:  # deixa o caminho pronto pra colar, caso o Obsidian peça a pasta
         subprocess.run("clip", input=caminho, text=True, shell=True, check=False)
@@ -156,13 +268,59 @@ def abrir(central: Path) -> int:
     return 0
 
 
+def conferir(central: Path) -> int:
+    """Todo [[wikilink]] do vault aponta pra arquivo que existe?
+
+    Link quebrado é nó fantasma no grafo: aparece como bolinha vazia e some
+    quando alguém limpa. Vale rodar depois de cada /ingerir.
+    """
+    v = vault(central)
+    if not v.is_dir():
+        print(f"ERRO: não achei o cérebro em {v}")
+        return 1
+    arquivos = {f.stem: f for f in v.rglob("*.md") if ".obsidian" not in f.parts}
+    quebrados, total = [], 0
+    for f in sorted(arquivos.values()):
+        texto = u.safe_read_text(f) or ""
+        # [[x]] dentro de crase é EXEMPLO, não link — o Obsidian também não
+        # desenha aresta pra código. Tirar antes de contar.
+        texto = re.sub(r"```.*?```", " ", texto, flags=re.S)
+        texto = re.sub(r"`[^`\n]*`", " ", texto)
+        for m in re.finditer(r"\[\[([^\]|#]+)", texto):
+            alvo = m.group(1).strip()
+            if alvo.upper().startswith("YYMMDD"):
+                continue  # placeholder dos MODELOs, de propósito
+            total += 1
+            if alvo not in arquivos:
+                quebrados.append((str(f.relative_to(v)), alvo))
+    print(f"vault: {v}")
+    print(f"  {len(arquivos)} arquivo(s) · {total} wikilink(s) reais")
+    if not quebrados:
+        print("  todos os links resolvem — o grafo não tem nó fantasma.")
+        return 0
+    print(f"  {len(quebrados)} link(s) QUEBRADO(s):")
+    for onde, alvo in quebrados:
+        print(f"    {onde} → [[{alvo}]]")
+    return 1
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dir", default=None)
     ap.add_argument("--abrir", action="store_true")
     ap.add_argument("--preparar", action="store_true")
+    ap.add_argument("--registrar", action="store_true")
+    ap.add_argument("--conferir", action="store_true",
+                    help="checa se todo [[wikilink]] do vault aponta pra arquivo existente")
+    ap.add_argument("--forcar", action="store_true",
+                    help="registra mesmo com o Obsidian aberto (ele pode desfazer ao sair)")
     args = ap.parse_args()
     central = Path(args.dir).resolve() if args.dir else Path(__file__).resolve().parent.parent
+    if args.conferir:
+        return conferir(central)
+    if args.registrar:
+        preparar(central)
+        return registrar(central, forcar=args.forcar)
     return abrir(central) if args.abrir else preparar(central)
 
 

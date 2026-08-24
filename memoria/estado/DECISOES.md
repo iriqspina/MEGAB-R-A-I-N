@@ -1455,3 +1455,18 @@ ALTERNATIVA DESCARTADA: confiar no .gitignore — ele barrou o commit, mas o
 arquivo com 4 chaves de API já estava dentro do clone. Uma camada só não basta.
 POR QUÊ: achado da varredura da etapa 2. Histórico do git conferido: `.env`
 nunca foi rastreado nem commitado — só o .env.example.
+
+## 260824l — Obsidian: registrar o vault na config, e o cérebro ganha grafo
+DECISÃO: `bin/mb-obsidian.py` ganhou `--registrar` (escreve o vault em
+%APPDATA%/obsidian/obsidian.json, com backup e recusando rodar com o app
+aberto), `--conferir` (todo [[wikilink]] aponta pra arquivo que existe?) e
+`--abrir` passou a registrar antes de chamar a URI. No cérebro nasceu
+`260824_mapa-do-cerebro.md` — página-hub com wikilink pra tudo — e as páginas
+existentes ganharam wikilink de fonte e vizinha. A skill `/ingerir` passa a
+exigir wikilink além do caminho e a manter o mapa. Plugin vai a 1.6.3.
+ALTERNATIVA DESCARTADA: (a) pedir pra ele clicar em "Open folder as vault" —
+a URI dava "Vault not found" e o onboarding já tinha registrado a pasta
+Downloads por engano; (b) trocar a convenção de caminho-entre-crase por
+wikilink — os dois convivem: crase pra humano e pra IA ler, colchete pro grafo.
+POR QUÊ: vault que abre vazio e grafo sem aresta entregam a sensação de app
+quebrado. O grafo é o motivo de ter Obsidian aqui.

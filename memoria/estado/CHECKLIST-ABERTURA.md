@@ -93,13 +93,13 @@
 - RESOLVIDO: 260824 (tarde) — push confirmado direto no remoto via git
   ls-remote no container: GitHub = repo-local = cf73db8; painel regenerando.
 
-## 260824 — plugin instalado pode não ser o 1.6.2
+## 260824 — plugin instalado pode não ser o 1.6.3
 - Checar: /root/.claude/plugins/synced/megabrain/.claude-plugin/plugin.json
-  == 1.6.2? (nesta sessão ainda constava 1.3.0 depois de ele dizer que
+  == 1.6.3? (nesta sessão ainda constava 1.3.0 depois de ele dizer que
   instalou — o sync da conta pode demorar/ter falhado)
 - Por quê: skill velha carregada = regras antigas (31 KB, caminhos v6).
 - Como: cat no arquivo acima no começo da sessão; se velho, pedir pra ele
-  reinstalar motor\dist\260824_megabrain-v1.6.2.plugin.
+  reinstalar motor\dist\260824_megabrain-v1.6.3.plugin.
 
 - RESOLVIDO: 260824 (noite) — ver item 260824b abaixo (mesma causa, resolvido junto).
 
@@ -112,9 +112,9 @@
 - Como: na dúvida, ls na raiz + mb_utils; o mapa real está no board 15 do
   03_docs\260824_megabrain-do-zero.html.
 
-## 260824b — plugin Cowork reinstalado no fim do dia; confirmar 1.6.2
+## 260824b — plugin Cowork reinstalado no fim do dia; confirmar 1.6.3
 - Checar: /root/.claude/plugins/synced/megabrain/.claude-plugin/plugin.json
-  == 1.6.2 E a skill megabrain carregada é a v6.0 enxuta (~10 KB).
+  == 1.6.3 E a skill megabrain carregada é a v6.0 enxuta (~10 KB).
 - Por quê: ele desinstalou/reinstalou em 260824 à noite justamente pra isso;
   se ainda constar 1.3.0, o sync da conta falhou de novo e a skill carregada
   é velha (caminhos v6).
@@ -122,5 +122,5 @@
   da SKILL.md que o plugin serviu.
 
 - RESOLVIDO: 260824 (noite, sessao Cowork) — plugin.json no synced do
-  container = 1.6.2 e /megabrain carregou a SKILL.md v6.0 enxuta (10.2 KB,
+  container = 1.6.3 e /megabrain carregou a SKILL.md v6.0 enxuta (10.2 KB,
   roteiro curto, caminhos v7). Reinstalacao pegou; sync da conta OK.

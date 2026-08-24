@@ -4,8 +4,9 @@ MODO: otimizado
 
 TL;DR: v7.1 no disco — a máquina inteira mudou pra motor\ e a raiz ficou só
 com o que é seu; telemetria local ligada; painel com aba Cérebro; Obsidian
-apontado; Figma do board 24 corrigido. Suíte 48/48. Falta você reinstalar o
-plugin 1.6.2 e instalar o Obsidian.
+INSTALADO por ele, vault registrado, aberto e com grafo de verdade (mapa +
+wikilinks); Figma do board 24 corrigido. Suíte 48/48. Falta só ele reinstalar
+o plugin 1.6.3.
 
 ONDE ESTAMOS: fila 2→6 executada em uma sessão (o 7 ficou pausado por decisão
 sua e o 8 virou nota na pasta do Portfolio). Painel: 7ª aba Cérebro + caixa
@@ -30,4 +31,7 @@ SEGURADO: Tema 02 Wildfire · Figma v1 (arquivo megabrain) · 04_visuais/00_entr
 
 ÚLTIMA AÇÃO (260824, 4ª sessão): itens 2 a 6 da fila aprovada, cada um com
 teste próprio; suíte verde antes e depois do move; export e painel
-regenerados; plugin 1.6.2 empacotado em motor/dist.
+regenerados. Depois que ele instalou o Obsidian: vault do cérebro registrado
+na config do app (a URI sozinha dava "Vault not found"), mapa-do-cerebro
+criado com wikilinks, /ingerir passou a exigir wikilink, verificador de link
+quebrado (mb-obsidian.py --conferir) e plugin 1.6.3.

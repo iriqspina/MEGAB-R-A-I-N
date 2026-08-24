@@ -6,13 +6,16 @@ ESCOPO: —
 
 ## PARA VOCÊ (<USUARIO>)
 
-1. **Reinstale o plugin 1.6.2** — `motor\dist\260824_megabrain-v1.6.2.plugin`.
-   A skill mudou: agora ela diz que a máquina está em `motor\` e como ler os
-   caminhos. Sem reinstalar, a IA vai procurar `referencias/` na raiz e não
-   achar. Critério de pronto: sessão nova, `/megabrain`, e o roteiro cita v7.1.
-2. **Instale o Obsidian** (obsidian.md). Depois é 2 cliques em
-   `01_acoes\260824_abrir-cerebro-obsidian.cmd` — o vault já está preparado e
-   o caminho vai pra área de transferência sozinho.
+1. **Reinstale o plugin 1.6.3** — `motor\dist\260824_megabrain-v1.6.3.plugin`
+   (substitui o 1.6.2, que nasceu e morreu na mesma tarde). Mudou a skill
+   megabrain (layout motor\) e a /ingerir (wikilink + mapa do cérebro). Sem
+   reinstalar, a IA procura `referencias/` na raiz e não acha. Critério de
+   pronto: sessão nova, `/megabrain`, e o roteiro cita v7.1.
+2. **Obsidian: FEITO** — instalado por você, vault registrado e aberto no
+   cérebro. Abra o grafo (ícone de grafo na lateral ou Ctrl+G) e me diga se a
+   leitura serve. Duas coisas pra você resolver quando quiser: o onboarding
+   registrou `<USER_HOME>\Downloads` como vault (dá pra remover na tela
+   de vaults) e deixou um `.obsidian\` lá dentro, que você pode apagar.
 3. **Olhe a aba Cérebro** no relatório (00_painel\RELATORIO.html) e me diga se
    a leitura serve. É a aba nova, junto com a caixa "você perguntou".
 4. **Nota do portfólio**: `<PROJETOS_ROOT>\Portfolio\260824_nota_megabrain-como-case.md`
