@@ -1470,3 +1470,33 @@ Downloads por engano; (b) trocar a convenção de caminho-entre-crase por
 wikilink — os dois convivem: crase pra humano e pra IA ler, colchete pro grafo.
 POR QUÊ: vault que abre vazio e grafo sem aresta entregam a sensação de app
 quebrado. O grafo é o motivo de ter Obsidian aqui.
+
+## 260824m — compreensor de padrões: um detector só, e a régua é o produto
+DECISÃO: `bin/mb-compreensor.py` v1 entrega UM compreensor — templatizar. Ele
+cruza pendências × cérebro × docs × estado × visuais × entrada × telemetria e
+só reporta tema que apareça em ≥2 tipos de lugar, com ao menos um deles sendo
+coisa que ele faz e guarda, e que não tenha modelo, skill, script em `bin/` ou
+botão em `01_acoes/` cobrindo. Saída em `00_painel/AAMMDD_padroes.md` +
+`.mb-log/padroes.json`, com bloco no slot de telemetria do painel.
+ALTERNATIVA DESCARTADA: (a) os quatro compreensores de uma vez (parado, órfão,
+ritmo) — ele escolheu escopo estreito; (b) painel estatístico de telemetria —
+com 101 eventos em 6 dias, gráfico ali é enfeite; (c) afrouxar a régua até a
+seção 2 encher: o primeiro rascunho devolvia "claude", "nota", "file" e
+"markdown", e o certo foi apertar a régua e aceitar que hoje só os 2
+declarados aparecem.
+POR QUÊ: §7 da spec destravou quando a telemetria (§4) passou a existir. E o
+compreensor é script em `bin/`, não skill — não aumenta a distância do plugin
+1.6.4, que ele ainda não instalou.
+
+## 260824n — data do evento é o relógio da central, não o de quem roda
+DECISÃO: `mb_telemetria` ganhou `agora()`/`hoje()` fixados em
+America/Sao_Paulo (zoneinfo, `-03:00` de reserva). A escrita usa isso pro `ts`
+e pro nome do arquivo do dia; a leitura converte ts com fuso antes de contar.
+`--corrigir-fuso [--aplicar]` conserta retroativamente com backup, guardando o
+valor antigo em `ts_original` e sem tocar em log de hook.
+ALTERNATIVA DESCARTADA: (a) `datetime.now()` local — é o bug: devolve o
+relógio de quem roda, e a VM da ponte é UTC; (b) só registrar a lição e seguir
+— o compreensor agrupa por dia e nasceria com 5 eventos deslocados em 3 horas.
+POR QUÊ: entre 21h e meia-noite em SP, a ponte enxerga o dia seguinte.
+`telemetria-260825.jsonl` nasceu às 22h38 de 260824. Mesma raiz da lição de
+carimbo de arquivo do mesmo dia, agora fechada no código em vez de na regra.

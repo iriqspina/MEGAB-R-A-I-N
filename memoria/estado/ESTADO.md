@@ -31,9 +31,24 @@ SEGURADO: Tema 02 Wildfire · Figma v1 (arquivo megabrain) · 04_visuais/00_entr
 · motor/dna/usuario/ (imaculado) · 90_arquivo/migracao-v7-260824 e
 90_arquivo/migracao-motor-260824 (backups das duas etapas).
 
-ÚLTIMA AÇÃO (260824, 4ª sessão): itens 2 a 6 da fila aprovada, cada um com
+AÇÃO ANTERIOR (260824, 4ª sessão): itens 2 a 6 da fila aprovada, cada um com
 teste próprio; suíte verde antes e depois do move; export e painel
 regenerados. Depois que ele instalou o Obsidian: vault do cérebro registrado
 na config do app (a URI sozinha dava "Vault not found"), mapa-do-cerebro
 criado com wikilinks, /ingerir passou a exigir wikilink, verificador de link
 quebrado (mb-obsidian.py --conferir) e plugin 1.6.3.
+
+ÚLTIMA AÇÃO (260824, 5ª sessão): §7 da spec — compreensor de padrões. Nasceu
+`bin/mb-compreensor.py` (v1, um detector só: templatizar), com saída em
+`00_painel/260824_padroes.md` + `.mb-log/padroes.json`, bloco no slot de
+telemetria do painel e botão `01_acoes/260824_compreender-padroes.cmd`. O
+primeiro rascunho devolveu slop ("claude", "nota", "file", "markdown") e a
+régua foi apertada três vezes até só sobrar verdade — hoje ele aponta as 2
+pendências `templatizar-*` paradas há 6 dias e diz honestamente que nada mais
+passou. Junto veio o conserto do relógio: a telemetria gravava em UTC quando o
+script rodava pela ponte, e 3 linhas tinham caído em `telemetria-260825.jsonl`
+criado às 22h38 de 260824; `mb_telemetria` agora força America/Sao_Paulo na
+escrita e converte na leitura, e `--corrigir-fuso --aplicar` consertou o que
+já estava gravado (backup em `.mb-log/_backup-fuso-260824-2328`). Suíte 48 →
+70. Plugin 1.6.4 SEGUE pendente de instalação por ele — nada nesta sessão
+mexeu em skill, então o pacote continua válido.

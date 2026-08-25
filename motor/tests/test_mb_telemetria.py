@@ -137,5 +137,58 @@ class TestAgregacao(Base):
         self.assertIsNone(r["duracao_media_s"])
 
 
+class TestFuso(Base):
+    """O bug de 260824: a ponte roda em UTC, então entre 21h e meia-noite o log
+    ia pro arquivo do dia SEGUINTE (telemetria-260825.jsonl nasceu às 22h38 de
+    260824) e o ts saía com 3 horas de erro. Data é sempre o relógio dele."""
+
+    def test_agora_e_sempre_sao_paulo(self):
+        self.assertEqual(tel.agora().utcoffset(), dt.timedelta(hours=-3))
+
+    def test_ts_gravado_ignora_o_fuso_da_maquina(self):
+        tel.registrar("sessao", raiz=self.raiz)
+        self.assertTrue(self._linhas()[0]["ts"].endswith("-03:00"))
+
+    def test_arquivo_do_dia_usa_o_relogio_da_central(self):
+        self.assertTrue(tel.arquivo_do_dia(self.raiz).name.endswith(f"{tel.hoje():%y%m%d}.jsonl"))
+
+    def test_ts_em_utc_conta_no_dia_certo_na_leitura(self):
+        # 01:38 UTC do dia 25 = 22:38 do dia 24 em SP
+        d = tel._data_do_evento({"ts": "2026-08-25T01:38:50+00:00"})
+        self.assertEqual(d, dt.date(2026, 8, 24))
+
+    def test_ts_sem_fuso_e_tratado_como_local(self):
+        d = tel._data_do_evento({"ts": "2026-08-25T01:38:50"})
+        self.assertEqual(d, dt.date(2026, 8, 25))
+
+    def test_corrigir_fuso_devolve_a_linha_pro_dia_certo(self):
+        errado = self.raiz / ".mb-log" / "telemetria-260825.jsonl"
+        errado.write_text(
+            '{"ts": "2026-08-25T01:38:50+00:00", "evento": "slop_visual"}\n', encoding="utf-8")
+        seco = tel.corrigir_fuso(self.raiz)
+        self.assertEqual(seco["reescritas"], 1)
+        self.assertEqual(seco["movidas"], 1)
+        self.assertFalse(seco["aplicado"])
+        self.assertTrue(errado.is_file())      # sem --aplicar não toca em nada
+
+        r = tel.corrigir_fuso(self.raiz, aplicar=True)
+        self.assertTrue(r["aplicado"])
+        certo = self.raiz / ".mb-log" / "telemetria-260824.jsonl"
+        self.assertTrue(certo.is_file())
+        linha = json.loads(certo.read_text(encoding="utf-8").strip())
+        self.assertEqual(linha["ts"], "2026-08-24T22:38:50-03:00")
+        self.assertEqual(linha["ts_original"], "2026-08-25T01:38:50+00:00")
+        self.assertFalse(errado.is_file())     # migrou pro saco de backup
+        self.assertTrue((self.raiz / ".mb-log" / r["backup"]).is_dir())
+
+    def test_corrigir_fuso_nao_toca_em_log_de_hook(self):
+        alheio = self.raiz / ".mb-log" / "eventos-260824.jsonl"
+        alheio.write_text('{"ts": "2026-08-24T18:39:16-03:00", "evento": "prompt"}\n',
+                          encoding="utf-8")
+        antes = alheio.read_text(encoding="utf-8")
+        tel.corrigir_fuso(self.raiz, aplicar=True)
+        self.assertEqual(alheio.read_text(encoding="utf-8"), antes)
+
+
 if __name__ == "__main__":
     unittest.main()

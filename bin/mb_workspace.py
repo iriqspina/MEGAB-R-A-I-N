@@ -589,9 +589,53 @@ def telemetria_dados(c: Path) -> dict | None:
     except ImportError:
         return None
     try:
-        return tel.resumo(c, dias=90)
+        d = tel.resumo(c, dias=90)
     except Exception:
         return None
+    d["padroes"] = padroes_dados(c)
+    return d
+
+
+def padroes_dados(c: Path) -> dict | None:
+    """Última saída de bin/mb-compreensor.py (spec §7). O painel só MOSTRA:
+    quem calcula é o compreensor, e nada aqui roda script."""
+    import json as _json
+    arq = c / ".mb-log" / "padroes.json"
+    if not arq.is_file():
+        return None
+    try:
+        return _json.loads(arq.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+
+
+def html_padroes(p: dict | None) -> str:
+    if p is None:
+        return ('<h3 class="slot__tit" style="margin-top:1.4rem">Padrões — o que já se repete</h3>'
+                '<p class="det">Ainda não rodou. Dois cliques em '
+                '<code>01_acoes\\260824_compreender-padroes.cmd</code> — ele cruza pendências, '
+                'cérebro, docs e visuais e aponta o tema que merece virar modelo.</p>')
+    decl, ach = p.get("declarados") or [], p.get("achados") or []
+    linhas = "".join(
+        f'<tr><td><code>{_e(x["caminho"])}</code></td><td>{_e(x.get("titulo") or x["assunto"])}</td>'
+        f'<td>{_e(str(x.get("dias_parado") if x.get("dias_parado") is not None else "—"))}d</td>'
+        f'<td><span class="val val--{"ok" if x.get("ja_existe") else "alerta"}">'
+        f'{"modelo feito" if x.get("ja_existe") else "sem modelo"}</span></td></tr>' for x in decl)
+    linhas += "".join(
+        f'<tr><td><code>{_e(a.get("modelo_sugerido", ""))}</code></td><td>{_e(a["termo"])}</td>'
+        f'<td>—</td><td><span class="val val--alerta">achado</span></td></tr>' for a in ach)
+    if not linhas:
+        linhas = ('<tr><td colspan="4" class="det">nada passou da régua — nenhuma pendência '
+                  'pedindo template e nenhum tema repetido em tipos diferentes de lugar</td></tr>')
+    resumo = p.get("resumo") or {}
+    return (
+        '<h3 class="slot__tit" style="margin-top:1.4rem">Padrões — o que já se repete e não virou modelo</h3>'
+        '<table><thead><tr><th>modelo</th><th>tema</th><th>parado</th><th>estado</th></tr></thead>'
+        f'<tbody>{linhas}</tbody></table>'
+        f'<p class="det">{resumo.get("itens", 0)} itens varridos · gerado em '
+        f'{_e(str(p.get("gerado_em") or "—")[:16].replace("T", " "))} por '
+        '<code>bin\\mb-compreensor.py</code>. Relatório completo em '
+        '<code>00_painel\\AAMMDD_padroes.md</code>.</p>')
 
 
 def _barras(contagem: dict, limite: int = 6) -> str:
@@ -614,7 +658,7 @@ def html_telemetria(d: dict | None) -> str:
         return (html_ask("o que essa central mais usa?") +
                 '<p class="slot__vazio">nenhum evento registrado ainda — o caderninho '
                 'começa a encher assim que as sessões registrarem '
-                '(<code>bin\\mb_telemetria.py --evento sessao --skill ...</code>).</p>')
+                '(<code>bin\\mb_telemetria.py --evento sessao --skill ...</code>).</p>' + html_padroes(d.get("padroes")))
     custo = d.get("custo_total_usd") or 0
     tiles = (
         f'<div class="cer-tile"><span class="n">{d["eventos"]}</span><span class="r">eventos registrados</span></div>'
@@ -635,4 +679,5 @@ def html_telemetria(d: dict | None) -> str:
         f'<p class="det">Janela: 90 dias · último registro {_e(str(d.get("ultimo") or "—"))}{dur}. '
         'Fonte: <code>.mb-log\\telemetria-*.jsonl</code> + <code>neuron.jsonl</code> + '
         '<code>eventos-*.jsonl</code>. <b>Fica tudo no seu PC</b> — nenhum número sai daqui sem '
-        'você ligar o envio, e o que sobe é sempre agregado e sem nome, caminho ou dado pessoal.</p>')
+        'você ligar o envio, e o que sobe é sempre agregado e sem nome, caminho ou dado pessoal.</p>'
+        + html_padroes(d.get("padroes")))

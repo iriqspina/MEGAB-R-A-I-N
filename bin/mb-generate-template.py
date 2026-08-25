@@ -100,7 +100,7 @@ EXCLUIR = {
 
 # Pacotes binários gerados (zip do plugin Claude): o validador de privacidade
 # não lê dentro do zip, então eles nunca sobem — o repo leva a pasta-fonte.
-EXCLUIR_SUFIXO = (".plugin",)
+EXCLUIR_SUFIXO = (".plugin", "_padroes.md")  # relatorio local do compreensor
 
 # Estado operacional da central privada. Projetos clonados criam os próprios
 # arquivos; publicar estes documentos vaza contexto, nomes e decisões locais.
@@ -121,6 +121,10 @@ EXCLUIR_NOME_EXATO = {
     # O .gitignore segurou o commit, mas o arquivo não podia nem chegar lá.
     # Match exato preserva o .env.example, que É útil no pacote público.
     ".env",
+    # 260824 (v7.4): a mensagem de commit e escrita em _github/ (o PowerShell
+    # 5.1 mete BOM, entao ela vem do python). O gerador espelhava _github/ e
+    # ela entrava no export -> robocopy -> indice do repo publico.
+    ".commitmsg.tmp",
     "anti-slop.md",
     "context-engineering.md",
     "design-duplo-diamante.md",
