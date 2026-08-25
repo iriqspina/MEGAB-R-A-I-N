@@ -1,9 +1,9 @@
 {
-  "gerado_em": "2026-08-24T18:08:27-03:00",
+  "gerado_em": "2026-08-24T22:53:08-03:00",
   "hash_fonte": {
-    "MEGABRAIN.md": "b89f042f4b07",
-    "skills/megabrain/SKILL.md": "4b76f95cd0a8",
-    "VERSAO.txt": "21574028b613",
+    "MEGABRAIN.md": "fc1094538de0",
+    "skills/megabrain/SKILL.md": "8182cd75b4ae",
+    "VERSAO.txt": "c6c0c567df96",
     "plugin-megabrain-claude/scripts/260821_session-start.js": "1aaddf4d2e10"
   }
 }

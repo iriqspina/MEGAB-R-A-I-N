@@ -150,6 +150,8 @@ def id_extra(relativo: str) -> str:
 def _inline(texto: str) -> str:
     texto = html.escape(texto)
     texto = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", texto)
+    # 260825: ~~riscado~~ — a regra de ouro 11 manda riscar o achado derrubado
+    texto = re.sub(r"~~(.+?)~~", r"<del>\1</del>", texto)
     texto = re.sub(r"`([^`]+?)`", r"<code>\1</code>", texto)
     texto = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r'<a href="\2">\1</a>', texto)
     return texto
@@ -400,6 +402,7 @@ ul.chk .mk{font-family:var(--m)}
 blockquote{border-left:3px solid var(--edge);padding:4px 14px;color:var(--ink3);margin:10px 0}
 code{font-family:var(--m);font-size:13px;color:var(--acc);background:#F4F8F9;padding:1px 5px;border-radius:5px}
 a{color:var(--acc)}
+del{color:var(--ink3);text-decoration-thickness:1px;text-underline-offset:2px}
 hr{border:0;border-top:1px solid var(--edge);margin:18px 0}
 .card-ai{background:#0E1B1F;color:#DCE7EA;border-radius:16px;padding:18px 22px;margin:10px 0}
 .card-ai code{background:rgba(255,255,255,.08);color:#7dd3fc}
@@ -417,7 +420,153 @@ footer code{background:var(--surf);padding:3px 8px;border-radius:7px}
 details{background:var(--surf);border-radius:14px;padding:2px 18px;margin:10px 0;box-shadow:0 6px 18px rgba(11,60,70,.05)}
 summary{cursor:pointer;font-family:var(--m);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--acc);padding:12px 0}
 """
-    return base + (css_megabrain() if tema == "megabrain" else "")
+    if tema == "megabrain":
+        return base + css_megabrain()
+    if tema == "console":
+        return base + css_console()
+    return base
+
+
+def css_console() -> str:
+    """Tema console — padrao dos relatorios vivos desde 260825.
+
+    Fundo escuro, hairlines, rotulos monoespacados e um acento so. Neutro de
+    marca de proposito: o mesmo modelo serve qualquer projeto megabrain.
+    Corrige tambem o contraste da lista de acao imediata na origem, o que
+    dispensa o remendo de CSS que os .ps1 de projeto injetavam depois.
+    """
+    return """
+/* ── tema console · relatório vivo (260825) ─────────────────────────────
+   Fundo escuro, hairlines, rótulos monoespaçados, um acento só.
+   Neutro de marca: serve qualquer projeto megabrain.                     */
+:root{
+  --bg:#0b0e13; --surf:#11161d; --surf2:#161c25; --edge:#232c38; --edge2:#2f3b4a;
+  --ink:#e8eef4; --ink2:#a3b1c0; --ink3:#6f7f90;
+  --acc:#5fd0e6; --acc-dim:#1d3f49;
+  --ok:#4ad295; --warn:#f0b429; --bad:#ff6b5e;
+  --m:ui-monospace,"SFMono-Regular","JetBrains Mono",Consolas,"Liberation Mono",monospace;
+  --s:Inter,-apple-system,"Segoe UI",system-ui,sans-serif;
+  --rail:15.5rem;
+}
+html{background:var(--bg)}
+body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--s);padding:0;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:none;min-height:100svh;margin:0 0 0 var(--rail);
+  padding:4rem clamp(1.1rem,3.4vw,3.2rem) 5rem;background:var(--bg)}
+
+/* cabeçalho ---------------------------------------------------------- */
+.wrap>h1{max-width:18ch;margin:0 0 .5rem;font-family:var(--s);
+  font-size:clamp(2.1rem,4.6vw,3.7rem);font-weight:800;line-height:.98;letter-spacing:-.04em;color:var(--ink)}
+.sub{margin:0 0 1.8rem;color:var(--ink3);font-family:var(--m);font-size:.66rem;letter-spacing:.13em}
+
+/* faixa de versão ---------------------------------------------------- */
+.wrap .versao-mb{grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));
+  border:1px solid var(--edge2);background:var(--surf);margin:0 0 1.4rem}
+.wrap .versao-mb>div{padding:.85rem 1.05rem;border-right:1px solid var(--edge)}
+.wrap .versao-mb>div:last-child{border-right:0}
+.wrap .versao-mb .k{font-family:var(--m);font-size:.6rem;letter-spacing:.12em;color:var(--ink3);opacity:1}
+.wrap .versao-mb .v{font-family:var(--m);font-size:1rem;font-weight:700;color:var(--ink);letter-spacing:-.01em}
+.wrap .versao-mb .d{font-family:var(--m);font-size:.63rem;color:var(--ink3);opacity:1}
+.wrap .versao-mb--ok{background:var(--surf)} .wrap .versao-mb--ok .estado{color:var(--ok)}
+.wrap .versao-mb--ruim{background:var(--surf);border-color:var(--bad)} .wrap .versao-mb--ruim .estado{color:var(--bad)}
+.wrap .versao-mb--atencao{background:var(--surf);border-color:var(--warn)} .wrap .versao-mb--atencao .estado{color:var(--warn)}
+
+/* TL;DR -------------------------------------------------------------- */
+.tldr{max-width:74rem;margin:0 0 1.4rem;padding:1.15rem 1.35rem;border:1px solid var(--edge2);
+  border-left:3px solid var(--ok);border-radius:0;background:var(--surf);box-shadow:none;
+  color:var(--ink);font-size:clamp(1rem,1.35vw,1.12rem);line-height:1.5}
+.tldr.atencao{border-left-color:var(--warn)} .tldr.ruim{border-left-color:var(--bad)}
+
+/* ação imediata — o elemento mais forte da página --------------------- */
+.hero-acao{max-width:74rem;margin:0 0 2.2rem;padding:1.3rem 1.5rem 1.5rem;border-radius:0;
+  border:1px solid var(--acc-dim);border-top:3px solid var(--acc);
+  background:linear-gradient(180deg,#101a20 0%,var(--surf) 100%);box-shadow:none;color:var(--ink)}
+.hero-acao h2{margin:0 0 .2rem;color:var(--acc);font-family:var(--m);font-size:.68rem;
+  letter-spacing:.15em;text-transform:uppercase}
+.hero-acao .section-file{margin:0;color:var(--ink3);font-size:.66rem}
+.hero-acao ol{margin:1rem 0 0}
+.hero-acao ol>li{color:var(--ink);border-bottom:1px solid var(--edge);font-size:.98rem;padding:.62rem 0 .62rem 2.5rem}
+.hero-acao ol>li::before{top:.55rem;width:1.5rem;height:1.5rem;border-radius:0;background:var(--acc-dim);
+  color:var(--acc);font-size:.7rem;border:1px solid var(--acc)}
+.hero-acao p{color:var(--ink2)} .hero-acao strong{color:#fff}
+.hero-acao code{background:var(--acc-dim);color:var(--acc)}
+.acoes-rapidas{margin-top:1.1rem}
+.acao-btn{border-radius:0;background:transparent;border:1px solid var(--acc);color:var(--acc);
+  font-size:.63rem;letter-spacing:.1em;min-height:2.1rem;padding:.35rem .85rem}
+.acao-btn:hover{background:var(--acc);color:#06222a}
+
+/* rail de navegação --------------------------------------------------- */
+nav{position:fixed;z-index:40;inset:0 auto 0 0;display:flex;flex-direction:column;flex-wrap:nowrap;gap:0;
+  width:var(--rail);margin:0;padding:5.6rem .85rem 1.2rem;background:var(--surf);
+  border:0;border-right:1px solid var(--edge2);overflow-y:auto;backdrop-filter:none}
+nav::before{content:"megabrain\A relatório vivo";position:absolute;inset:1.5rem 1.1rem auto;
+  padding-bottom:1.1rem;border-bottom:1px solid var(--edge2);white-space:pre-line;color:var(--ink);
+  font:700 .95rem/1.25 var(--s);letter-spacing:-.02em}
+nav::after{content:"fonte: markdown do projeto\A o HTML nunca se edita";margin-top:auto;padding-top:1.3rem;
+  border-top:1px solid var(--edge);white-space:pre-line;color:var(--ink3);font:.58rem/1.6 var(--m)}
+nav a{display:grid;grid-template-columns:1.15rem 1fr;align-items:center;min-height:2.3rem;padding:0;
+  border:0;border-radius:0;background:transparent;color:var(--ink2);
+  font:.66rem/1.2 var(--m);letter-spacing:.09em;text-decoration:none}
+nav a::before{content:"·";color:var(--ink3)}
+nav a:hover{color:var(--acc)} nav a:hover::before{content:"›";color:var(--acc)}
+
+/* seções -------------------------------------------------------------- */
+section{max-width:74rem;margin:0 0 1px;padding:1.5rem 1.6rem;border:1px solid var(--edge);background:var(--surf)}
+h2{margin:0 0 .9rem;color:var(--ink);font-family:var(--s);font-weight:800;
+  font-size:clamp(1.1rem,2.1vw,1.55rem);letter-spacing:-.03em;text-transform:none;scroll-margin-top:1rem}
+h3{margin:1.8rem 0 .6rem;padding-top:.9rem;border-top:1px solid var(--edge);color:var(--acc);font-size:1.12rem;font-weight:700;letter-spacing:-.015em}
+section>h3:first-of-type{margin-top:.6rem;padding-top:0;border-top:0}
+h4{margin:1.6rem 0 .5rem;padding-top:.8rem;border-top:1px solid var(--edge);color:var(--ink);font-size:1.04rem;font-weight:700;letter-spacing:-.01em}
+section>h4:first-of-type{margin-top:.4rem;padding-top:0;border-top:0}
+h5{margin:1.15rem 0 .3rem;color:var(--acc);font-family:var(--m);font-size:.7rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+h6{margin:.9rem 0 .25rem;color:var(--ink3);font-size:.82rem;font-weight:600}
+p{color:var(--ink2)} li{color:var(--ink2)}
+.section-file{margin:-.6rem 0 1rem;color:var(--ink3);font-size:.63rem}
+strong,b{color:var(--ink)}
+a{color:var(--acc);text-underline-offset:.18em}
+
+/* tabelas ------------------------------------------------------------- */
+table{background:var(--surf2);border:1px solid var(--edge2);border-radius:0;box-shadow:none}
+th{color:var(--ink3);border-bottom:1px solid var(--edge2);font-size:.62rem;letter-spacing:.11em;padding:.7rem .9rem}
+td{color:var(--ink2);border-bottom:1px solid var(--edge);padding:.7rem .9rem;font-size:.92rem}
+
+/* blocos diversos ------------------------------------------------------ */
+code{border-radius:2px;color:var(--acc);background:var(--acc-dim);font-size:.82em;padding:.1em .35em}
+blockquote{border-left:2px solid var(--edge2);color:var(--ink3)}
+del{color:var(--ink3);text-decoration-color:var(--bad)}
+hr{border-top:1px solid var(--edge)}
+.di{background:var(--surf2);border:1px solid var(--edge2);border-radius:0;box-shadow:none;padding:.2rem 1.1rem}
+.di div{border-bottom:1px solid var(--edge)}
+.pend{border-bottom:1px solid var(--edge)} .pend .src{color:var(--ink3)}
+ul.chk li.done{color:var(--ink3)}
+.card-ai{background:var(--surf2);border:1px solid var(--edge2);border-left:3px solid var(--acc);
+  border-radius:0;color:var(--ink2)}
+.card-ai code{background:var(--acc-dim);color:var(--acc)}
+details{background:var(--surf2);border:1px solid var(--edge2);border-radius:0;box-shadow:none;padding:0 1.1rem}
+summary{color:var(--acc);font-size:.63rem;letter-spacing:.11em}
+.cp{border-radius:0;border:1px solid var(--edge2);background:transparent;color:var(--ink3);font-size:.58rem}
+.cp:hover{border-color:var(--acc);color:var(--acc);background:transparent}
+footer{max-width:74rem;margin-top:2rem;padding:1.5rem 1.6rem;border:1px solid var(--edge);border-top:0;
+  background:var(--surf);color:var(--ink3);font-size:.85rem}
+footer code{background:var(--acc-dim);color:var(--acc);border-radius:2px}
+
+/* responsivo ----------------------------------------------------------- */
+@media(max-width:62rem){
+  .wrap{margin:0;padding:4.4rem 1rem 3rem}
+  nav{inset:0 0 auto;flex-direction:row;width:100%;height:3.4rem;padding:.5rem .6rem;
+    border-right:0;border-bottom:1px solid var(--edge2);overflow-x:auto;overflow-y:hidden}
+  nav::before,nav::after{display:none}
+  nav a{display:flex;min-width:max-content;padding:0 .65rem}
+  .wrap>h1{max-width:none;font-size:clamp(1.9rem,8vw,2.8rem)}
+  .wrap .versao-mb>div{border-right:0;border-bottom:1px solid var(--edge)}
+}
+/* impressão ------------------------------------------------------------ */
+@media print{
+  :root{--bg:#fff;--surf:#fff;--surf2:#fff;--edge:#ccc;--edge2:#999;--ink:#000;--ink2:#333;--ink3:#666;--acc:#06626f;--acc-dim:#eef6f8}
+  nav{display:none} .wrap{margin:0;padding:0}
+  section,footer,.hero-acao,.tldr,table,.di,details{break-inside:avoid}
+}
+"""
 
 
 def css_megabrain() -> str:
@@ -1005,7 +1154,7 @@ def _main_legado():
     ap.add_argument("--skill", default=None, help="SKILL.md do router do projeto (opcional)")
     ap.add_argument("--tldr", default=None, help="uma frase; default: 1º parágrafo do --plano")
     ap.add_argument("--tldr-classe", default="atencao", choices=["ok", "atencao", "ruim"])
-    ap.add_argument("--tema", default="padrao", choices=["padrao", "megabrain"],
+    ap.add_argument("--tema", default="console", choices=["console", "padrao", "megabrain"],
                     help="linguagem visual do HTML; 'megabrain' usa o console editorial")
     ap.add_argument("--megabrain-central", default=None, help="pasta central do megabrain, para puxar o contexto geral real")
     ap.add_argument("--saida", default=None, help="caminho do HTML de saída (default: RELATORIO.html na raiz do projeto)")

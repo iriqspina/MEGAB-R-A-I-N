@@ -6,16 +6,13 @@ ESCOPO: —
 
 ## PARA VOCÊ (<USUARIO>)
 
-1. **Reinstale o plugin 1.6.3** — `motor\dist\260824_megabrain-v1.6.3.plugin`
-   (substitui o 1.6.2, que nasceu e morreu na mesma tarde). Mudou a skill
-   megabrain (layout motor\) e a /ingerir (wikilink + mapa do cérebro). Sem
-   reinstalar, a IA procura `referencias/` na raiz e não acha. Critério de
-   pronto: sessão nova, `/megabrain`, e o roteiro cita v7.1.
+1. ~~**Reinstale o plugin 1.6.3**~~ — FEITO (260824, confirmado por ele ao
+   Kimi). Mudou a skill
+   megabrain (layout motor\) e a /ingerir (wikilink + mapa do cérebro).
 2. **Obsidian: FEITO** — instalado por você, vault registrado e aberto no
-   cérebro. Abra o grafo (ícone de grafo na lateral ou Ctrl+G) e me diga se a
-   leitura serve. Duas coisas pra você resolver quando quiser: o onboarding
-   registrou `<USER_HOME>\Downloads` como vault (dá pra remover na tela
-   de vaults) e deixou um `.obsidian\` lá dentro, que você pode apagar.
+   cérebro. Vault `Downloads` removido por você (260824). Sobrou só decidir se
+   apaga o `.obsidian\` que ficou dentro de `<USER_HOME>\Downloads`.
+   Quando quiser, abra o grafo (Ctrl+G) e me diga se a leitura serve.
 3. **Olhe a aba Cérebro** no relatório (00_painel\RELATORIO.html) e me diga se
    a leitura serve. É a aba nova, junto com a caixa "você perguntou".
 4. **Nota do portfólio**: `<PROJETOS_ROOT>\Portfolio\260824_nota_megabrain-como-case.md`
@@ -44,7 +41,6 @@ ESCOPO: —
 
 ## O que ficou aberto
 
-- Reinstalação do plugin 1.6.2 e instalação do Obsidian (itens 1 e 2 acima).
 - Item 7 (modos) segue PAUSADO por decisão sua; a pesquisa de referências não
   foi feita nesta sessão.
 - Item 8 (portfólio) parou na nota, como você pediu.

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 mb-build-plugin-claude.py — regenera e empacota o plugin Cowork/Claude do
-megabrain (plugin-megabrain-claude/) a partir das fontes da central. v6.1 (260821)
+megabrain (plugin-megabrain-claude/) a partir das fontes da central. v6.3 (260824)
 
 Por que existe: a skill `megabrain` do plugin é cópia da skill central e a
 `registrar-licao` é cópia da versão Kimi — cópia editada à mão drifta (lição
@@ -10,6 +10,7 @@ recorrente do projeto: "registrado != disco"). Aqui as edições são código.
 O que faz:
   1. skills/megabrain/SKILL.md   ← <central>/skills/megabrain/SKILL.md
      (remove os gatilhos legados "/metaprotocolo" e "metaclaude" da description)
+  1b. skills/ingerir/SKILL.md e skills/grelhar/SKILL.md ← cópia literal da central
   2. skills/registrar-licao/SKILL.md ← <central>/plugin-megabrain/skills/registrar-licao/SKILL.md
      (/megabrain:licao → /registrar-licao; ~/.kimi-code/SYSTEM.md → genérico;
       aviso de que o hook pode não rodar)
@@ -95,7 +96,8 @@ def validar(plugin: Path) -> list[str]:
             json.loads((plugin / rel).read_text(encoding="utf-8"))
         except (OSError, ValueError) as e:
             erros.append(f"{rel}: {e}")
-    for rel in ("skills/megabrain/SKILL.md", "skills/registrar-licao/SKILL.md", "skills/ingerir/SKILL.md"):
+    for rel in ("skills/megabrain/SKILL.md", "skills/registrar-licao/SKILL.md",
+                "skills/ingerir/SKILL.md", "skills/grelhar/SKILL.md"):
         t = u.safe_read_text(plugin / rel) or ""
         if not frontmatter_ok(t):
             erros.append(f"{rel}: frontmatter sem name/description")
@@ -151,6 +153,7 @@ def main() -> int:
         "skills/megabrain/SKILL.md": (u.achar(c, "skills/megabrain/SKILL.md"), derivar_skill_megabrain),
         "skills/registrar-licao/SKILL.md": (u.achar(c, "plugin-megabrain/skills/registrar-licao/SKILL.md"), derivar_skill_licao),
         "skills/ingerir/SKILL.md": (u.achar(c, "skills/ingerir/SKILL.md"), lambda t: t),  # v6.2
+        "skills/grelhar/SKILL.md": (u.achar(c, "skills/grelhar/SKILL.md"), lambda t: t),  # v6.3 (260824)
     }
     drift = []
     for rel, (fonte, derivar) in fontes.items():

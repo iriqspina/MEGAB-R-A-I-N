@@ -62,6 +62,16 @@ MAPEAMENTO = [
     ("modelos", "modelos"),                                  # v6.2 — esqueleto do cerebro/
 ]
 
+# 260824: dna/usuario e o backup imaculado do dono da central (identidade e
+# cards de pessoas). Nunca sai da central: copiar pra dentro de um projeto o
+# coloca em pasta que vira zip/export. __pycache__ so gera ruido.
+def _ignorar(diretorio, nomes):
+    bloqueados = {n for n in nomes if n == "__pycache__"}
+    if Path(diretorio).name == "dna":
+        bloqueados |= {n for n in nomes if n == "usuario"}
+    return bloqueados
+
+
 ESQUELETO_CEREBRO = ("cerebro/raw", "cerebro/wiki", "cerebro/pessoas")
 
 
@@ -149,7 +159,8 @@ def copiar(src, dst, dry_run=False, base=None):
             # ao puxar a versão central). dirs_exist_ok sobrescreve arquivos com
             # o mesmo nome (a central ainda é a fonte da verdade pro que ela de
             # fato tem) mas preserva o que só existe no projeto.
-            shutil.copytree(src_path, dst_path, dirs_exist_ok=True)
+            shutil.copytree(src_path, dst_path, dirs_exist_ok=True,
+                            ignore=_ignorar)
         else:
             shutil.copy2(src_path, dst_path)
         print(f"  copiado {src_path.name} -> {dst_path}")

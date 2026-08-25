@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>a grelha e as skills do matt · 260824</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c0e11; --panel:#161a1f; --panel-2:#1d2229; --line:#2b323b;
+    --ink:#eeece6; --ink-2:#aeaba3; --ink-faint:#6f6d67;
+    --hot:#ff5a1f; --warm:#e8b800; --cold:#4aa3ff; --ok:#3ddc6a; --bad:#ff4d4d; --acc:#ff5a1f; --pur:#c084fc;
+    --fd:"Barlow Condensed","Arial Narrow","Roboto Condensed",Impact,sans-serif;
+    --ft:"Barlow","Segoe UI",Roboto,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-snap-type:y proximity;scroll-behavior:smooth;scroll-padding-top:72px}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ft);font-size:17px;line-height:1.5}
+  .top{position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 70%,transparent);padding:16px 40px 20px;display:flex;justify-content:space-between;align-items:center;gap:20px}
+  .top .t{font-family:var(--fd);font-weight:800;text-transform:uppercase;font-size:20px;letter-spacing:.02em}
+  .top .t span{color:var(--ink-faint);font-weight:600;margin-left:10px;font-size:14px;letter-spacing:.08em}
+  .top .hint{color:var(--ink-faint);font-size:13px}
+  .top .hint b{color:var(--ink-2);font-weight:600}
+
+  .board{scroll-snap-align:start;min-height:92vh;padding:40px 40px 56px;max-width:1240px;margin:0 auto;border-top:1px solid var(--line);display:flex;flex-direction:column;justify-content:flex-start}
+  .num{font-family:var(--fd);font-weight:600;color:var(--ink-faint);font-size:15px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:12px}
+  .num b{color:var(--acc);font-weight:800;font-size:22px;letter-spacing:0}
+  .num .part{background:var(--panel-2);border:1px solid var(--line);padding:2px 10px;color:var(--ink-2);font-size:12px}
+  h2{font-family:var(--fd);font-weight:800;font-size:44px;line-height:.98;text-transform:uppercase;margin:0 0 6px;max-width:1000px}
+  .sub{color:var(--ink-2);font-size:19px;margin:0 0 26px;max-width:900px}
+  .fig{background:var(--panel);border:1px solid var(--line);padding:28px;margin:0 0 22px;overflow-x:auto}
+  .txt{max-width:900px;color:var(--ink);font-size:18px}
+  .txt p{margin:0 0 10px}
+  .txt .est{color:var(--ink-faint);font-size:14px}
+  .txt b{font-weight:600;color:var(--ink)}
+  .k{font-family:ui-monospace,Consolas,monospace;font-size:.9em;background:var(--panel-2);border:1px solid var(--line);padding:1px 6px;border-radius:3px;color:var(--ink);white-space:nowrap}
+  .vocab{margin-top:14px;border-left:3px solid var(--pur);padding:10px 14px 12px;background:var(--panel);color:var(--ink-2);font-size:15px;max-width:900px}
+  .vocab>b:first-child{display:block;color:var(--pur);font-family:var(--fd);font-weight:800;text-transform:uppercase;letter-spacing:.12em;font-size:15px;margin:0 0 7px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+  .vocab b{color:var(--pur)}
+  .ask{border-left:3px solid var(--cold);padding:10px 14px 12px;background:var(--panel);color:var(--ink-2);font-size:15px;max-width:900px;margin:0 0 20px;font-style:italic}
+  .ask>b:first-child{display:block;font-style:normal;color:var(--cold);font-family:var(--fd);font-weight:800;text-transform:uppercase;letter-spacing:.12em;font-size:15px;margin:0 0 7px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+  .part.resp{border-color:var(--cold);color:var(--cold)}
+  .part.upd{border-color:var(--warm);color:var(--warm)}
+  .gloss{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .gloss .item{background:var(--panel-2);border:1px solid var(--line);padding:12px 14px}
+  .gloss .tm{display:block;font-family:var(--fd);font-weight:800;text-transform:uppercase;color:var(--pur);font-size:18px;margin-bottom:5px;padding-bottom:4px;border-bottom:1px solid var(--line)}
+  .gloss .df{color:var(--ink-2);font-size:14px;line-height:1.4}
+  .gloss .df b{color:var(--ink)}
+  @media (max-width:900px){.gloss{grid-template-columns:1fr}}
+
+  .row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .row.center{justify-content:center}
+  .col{display:flex;flex-direction:column;gap:12px}
+  .tile{background:var(--panel-2);border:1px solid var(--line);padding:16px 18px;min-width:150px;max-width:236px;display:flex;flex-direction:column;gap:8px;position:relative}
+  .tile.wide{max-width:none;min-width:260px}
+  .row.tight{flex-wrap:nowrap;gap:10px}
+  .row.tight .tile{flex:1 1 0;min-width:0;max-width:none;padding:14px 14px}
+  .row.tight .tile .lb{font-size:18px}
+  .row.tight .arr{width:36px}
+  @media (max-width:900px){.row.tight{flex-wrap:wrap}}
+  .tile .ic{width:34px;height:34px;color:var(--ink)}
+  .tile .ic.hot{color:var(--hot)} .tile .ic.warm{color:var(--warm)} .tile .ic.cold{color:var(--cold)} .tile .ic.ok{color:var(--ok)} .tile .ic.bad{color:var(--bad)} .tile .ic.acc{color:var(--acc)} .tile .ic.pur{color:var(--pur)}
+  .tile .lb{font-family:var(--fd);font-weight:800;text-transform:uppercase;font-size:20px;line-height:1;letter-spacing:.02em}
+  .tile .ds{color:var(--ink-2);font-size:14px;line-height:1.35}
+  .tile .ds b{color:var(--ink);font-weight:600}
+  .tile.hot{border-color:var(--hot)} .tile.warm{border-color:var(--warm)} .tile.cold{border-color:var(--cold)} .tile.ok{border-color:var(--ok)} .tile.bad{border-color:var(--bad)} .tile.pur{border-color:var(--pur)}
+  .tile.ghost{border-style:dashed;opacity:.85}
+  .tile .tag{position:absolute;top:-10px;right:10px;background:var(--bg);border:1px solid var(--line);color:var(--ink-faint);font-size:11px;padding:1px 8px;text-transform:uppercase;letter-spacing:.1em;font-family:var(--fd);font-weight:600}
+  .tile .tag.bad{color:var(--bad);border-color:var(--bad)} .tile .tag.ok{color:var(--ok);border-color:var(--ok)} .tile .tag.hot{color:var(--hot);border-color:var(--hot)}
+  .arr{width:54px;height:24px;flex:0 0 auto;color:var(--ink-faint)}
+  .arr.ok{color:var(--ok)} .arr.bad{color:var(--bad)} .arr.acc{color:var(--acc)}
+  .lbl{font-family:var(--fd);font-weight:600;text-transform:uppercase;letter-spacing:.1em;font-size:13px;color:var(--ink-faint)}
+  .vs{font-family:var(--fd);font-weight:800;font-size:26px;color:var(--ink-faint);padding:0 8px}
+  .stack{display:flex;flex-direction:column;gap:6px}
+  .mini{display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--line);padding:6px 10px;font-size:14px}
+  .mini svg{width:16px;height:16px;color:var(--ink-2);flex:0 0 auto}
+  .mini .kb{margin-left:auto;color:var(--ink-faint);font-size:12px;padding-left:10px}
+  .mini.fat{border-color:var(--hot)} .mini.fat .kb{color:var(--hot)}
+
+  .shelves{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .shelf{border:1px solid var(--line);background:var(--panel-2);padding:18px}
+  .shelf .hd{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+  .shelf .hd svg{width:36px;height:36px}
+  .shelf .hd .lb{font-family:var(--fd);font-weight:800;font-size:28px;text-transform:uppercase;line-height:1}
+  .shelf .when{color:var(--ink-2);font-size:14px;margin-bottom:12px;min-height:40px}
+  .shelf.hot .hd{color:var(--hot)} .shelf.warm .hd{color:var(--warm)} .shelf.cold .hd{color:var(--cold)}
+  .shelf.hot{border-color:var(--hot)} .shelf.warm{border-color:var(--warm)} .shelf.cold{border-color:var(--cold)}
+
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .step{background:var(--panel-2);border:1px solid var(--line);padding:14px 16px}
+  .step .n{font-family:var(--fd);font-weight:800;font-size:30px;color:var(--acc);line-height:1}
+  .step .lb{font-family:var(--fd);font-weight:800;font-size:19px;text-transform:uppercase;margin:4px 0}
+  .step .ds{color:var(--ink-2);font-size:14px;line-height:1.35}
+  .step .gt{color:var(--ink-faint);font-size:11px;text-transform:uppercase;letter-spacing:.1em;margin-top:6px;font-family:var(--fd);font-weight:600}
+
+  .map{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .fold{background:var(--panel-2);border:1px solid var(--line);padding:12px 14px;display:flex;gap:10px;align-items:flex-start}
+  .fold svg{width:22px;height:22px;flex:0 0 auto;margin-top:2px}
+  .fold .nm{font-family:ui-monospace,Consolas,monospace;font-size:14px;color:var(--ink);font-weight:600}
+  .fold .ds{color:var(--ink-2);font-size:13px;line-height:1.3}
+  .fold.h{border-color:var(--warm)} .fold.h svg{color:var(--warm)}
+  .fold.c svg{color:var(--ink-faint)}
+  .fold.g{border-color:var(--pur)} .fold.g svg{color:var(--pur)}
+  .legend{display:flex;gap:20px;margin-bottom:14px;flex-wrap:wrap}
+  .legend span{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink-2)}
+  .legend i{width:14px;height:14px;display:inline-block;border:1px solid var(--line)}
+
+  .modes{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .mode{border:1px solid var(--line);background:var(--panel-2);padding:18px}
+  .mode .lb{font-family:var(--fd);font-weight:800;font-size:30px;text-transform:uppercase;line-height:1;margin-bottom:2px}
+  .mode .ds{color:var(--ink-2);font-size:14px;margin-bottom:14px;min-height:40px}
+  .faders{display:flex;gap:18px;align-items:flex-end;height:150px;padding:0 6px}
+  .fader{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%}
+  .track{width:14px;flex:1;background:var(--bg);border:1px solid var(--line);position:relative}
+  .track i{position:absolute;left:0;right:0;bottom:0;background:var(--acc)}
+  .track i::after{content:"";position:absolute;left:-8px;right:-8px;top:-5px;height:10px;background:var(--ink);border:2px solid var(--bg)}
+  .fader .fl{font-family:var(--fd);font-weight:600;text-transform:uppercase;letter-spacing:.08em;font-size:12px;color:var(--ink-faint);text-align:center;line-height:1.1}
+  .mode.eco .track i{background:var(--ok)} .mode.fast .track i{background:var(--warm)} .mode.smart .track i{background:var(--cold)}
+  .mode .cost{margin-top:12px;font-family:var(--fd);font-weight:600;color:var(--ink-2);font-size:15px;letter-spacing:.04em}
+  .mode .cost b{color:var(--ink);font-weight:800;font-size:22px}
+
+  .axis{position:relative;height:120px;margin:10px 20px}
+  .axis .line{position:absolute;left:0;right:0;top:60px;height:2px;background:var(--line)}
+  .axis .end{position:absolute;top:70px;font-family:var(--fd);font-weight:600;text-transform:uppercase;letter-spacing:.08em;font-size:13px;color:var(--ink-faint)}
+  .axis .end.l{left:0} .axis .end.r{right:0;text-align:right}
+  .axis .pt{position:absolute;top:44px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px}
+  .axis .pt i{width:18px;height:18px;border-radius:50%;background:var(--acc);display:block;border:3px solid var(--bg)}
+  .axis .pt span{font-family:var(--fd);font-weight:800;text-transform:uppercase;font-size:18px;position:absolute;top:-34px;white-space:nowrap}
+  .axis .pt.eco i{background:var(--ok)} .axis .pt.fast i{background:var(--warm)} .axis .pt.smart i{background:var(--cold)}
+
+  .bars{display:flex;flex-direction:column;gap:8px;max-width:760px}
+  .bar{display:grid;grid-template-columns:220px 1fr 70px 30px;gap:12px;align-items:center}
+  .bar .l{font-size:15px;color:var(--ink-2)} .bar .b{height:16px;background:var(--bg);border:1px solid var(--line);position:relative}
+  .bar .b i{position:absolute;left:0;top:0;bottom:0;background:var(--ink-faint)} .bar .v{text-align:right;font-family:var(--fd);font-weight:600;color:var(--ink-faint)}
+  .bar.fat .b i{background:var(--hot)} .bar.fat .v{color:var(--hot)} .bar svg{width:22px;height:22px;color:var(--hot)}
+
+  .toc{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .toc a{display:block;background:var(--panel-2);border:1px solid var(--line);padding:14px 16px;color:var(--ink);text-decoration:none}
+  .toc a .p{font-family:var(--fd);font-weight:800;text-transform:uppercase;font-size:22px;color:var(--acc)}
+  .toc a .l{color:var(--ink-2);font-size:14px;line-height:1.4;margin-top:4px}
+  .toc a:hover{border-color:var(--acc)}
+
+  .choice{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .choice .tile{max-width:none;min-height:150px}
+  .choice .tile .lb{font-size:26px}
+
+  .dots{position:fixed;right:14px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:6px;z-index:6}
+  .dots a{width:7px;height:7px;border-radius:50%;background:var(--line);display:block}
+  .dots a.on{background:var(--acc);transform:scale(1.5)}
+
+  @media (max-width:900px){
+    .board{padding:20px 18px 40px} h2{font-size:34px}
+    .shelves,.modes,.choice,.toc{grid-template-columns:1fr} .steps,.map{grid-template-columns:1fr 1fr}
+    .top{padding:12px 18px}
+    .bar{grid-template-columns:120px 1fr 60px 24px}
+    .dots{display:none}
+  }
+
+  table.cmp{border-collapse:collapse;width:100%;font-size:15px}
+  table.cmp th{font-family:var(--fd);font-weight:800;text-transform:uppercase;font-size:16px;letter-spacing:.03em;text-align:left;padding:10px 12px;border-bottom:2px solid var(--line);color:var(--ink);vertical-align:bottom;line-height:1.15}
+  table.cmp td{padding:9px 12px;border-bottom:1px solid var(--line);color:var(--ink-2);vertical-align:top}
+  table.cmp td.rw{font-family:var(--fd);font-weight:600;text-transform:uppercase;letter-spacing:.08em;font-size:13px;color:var(--ink-faint);white-space:nowrap}
+  table.cmp td.y{color:var(--ok)} table.cmp td.n{color:var(--bad)} table.cmp td.m{color:var(--warm)}
+  table.cmp tr:last-child td{border-bottom:none}
+  @media (max-width:900px){table.cmp{font-size:13px} table.cmp th,table.cmp td{padding:7px 6px}}
+
+  .stamp{display:flex;gap:16px;align-items:flex-start;border:2px solid var(--acc);background:var(--panel);padding:18px 20px;margin:0 0 22px;max-width:1000px}
+  .stamp svg{width:32px;height:32px;flex:0 0 auto;color:var(--acc);margin-top:2px}
+  .stamp>div>b:first-child{display:block;font-family:var(--fd);font-weight:800;text-transform:uppercase;letter-spacing:.06em;font-size:22px;color:var(--acc);line-height:1;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  .stamp span{display:block;color:var(--ink);font-size:16px;line-height:1.45}
+  .stamp span b{display:inline;font-family:var(--ft);font-size:inherit;text-transform:none;letter-spacing:0;color:var(--ink);font-weight:600;margin:0;padding:0;border:none;line-height:inherit}
+  .stamp.hot{border-color:var(--hot)} .stamp.hot svg,.stamp.hot>div>b:first-child{color:var(--hot)}
+
+  .qmock{display:flex;flex-direction:column;gap:12px;max-width:960px}
+  .qr{background:var(--bg);border:1px solid var(--line);border-left:3px solid var(--cold);padding:12px 16px;color:var(--ink-2);font-size:16px;line-height:1.45}
+  .qr b{color:var(--ink);font-weight:600}
+  .qr .rec{display:block;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);color:var(--ok);font-size:15px}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+  <symbol id="i-arrow" viewBox="0 0 54 24"><line x1="2" y1="12" x2="46" y2="12" stroke="currentColor" stroke-width="2.5" marker-end="url(#ah)"/></symbol>
+  <symbol id="i-brain" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 3a3 3 0 0 0-3 3v.5A3 3 0 0 0 4 9.5 3 3 0 0 0 5 12a3 3 0 0 0-1 2.5 3 3 0 0 0 3 3v.5a3 3 0 0 0 5 2V4a3 3 0 0 0-2.5-1z"/><path d="M14.5 3a3 3 0 0 1 3 3v.5a3 3 0 0 1 2.5 3 3 3 0 0 1-1 2.5 3 3 0 0 1 1 2.5 3 3 0 0 1-3 3v.5a3 3 0 0 1-5 2V4a3 3 0 0 1 2.5-1z"/><path d="M12 8h-2M12 13h2M12 17h-2"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></symbol>
+  <symbol id="i-wrench" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0 5 5L13 18a2 2 0 0 1-2.8 0l-.7-.7a2 2 0 0 1 0-2.8l6.7-6.7z"/><path d="M14.7 6.3 18 3l3 3-3.3 3.3"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-checklist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11"/><path d="m3 6 1.5 1.5L7 5M3 12l1.5 1.5L7 11M3 18l1.5 1.5L7 17"/></symbol>
+  <symbol id="i-chip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/><rect x="9.5" y="9.5" width="5" height="5"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5.4A8 8 0 1 1 21 12z"/></symbol>
+  <symbol id="i-weight" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21h12l2-12H4z"/><circle cx="12" cy="6" r="3"/><path d="M9.5 9 8 6M14.5 9 16 6"/></symbol>
+  <symbol id="i-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.5"/></symbol>
+  <symbol id="i-index" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h4M7 13h6M7 17h3M15 9l3 3-3 3"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 21h20z"/><path d="M12 10v5M12 18h.01"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-scissors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l9-4 9 4-9 4z"/><path d="M3 8v9l9 4 9-4V8M12 12v9"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4v16M12 4v16M19 4v16"/><rect x="3" y="12" width="4" height="4" fill="currentColor" stroke="none"/><rect x="10" y="7" width="4" height="4" fill="currentColor" stroke="none"/><rect x="17" y="14" width="4" height="4" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-switch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="10" rx="5"/><circle cx="16" cy="12" r="3" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-layout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></symbol>
+  <symbol id="i-pdf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M8.5 17v-5h1.8a1.5 1.5 0 0 1 0 3H8.5"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+  <symbol id="i-cloud" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 0 1-.5-8 6 6 0 0 1 11.5 2 3.5 3.5 0 0 1-.5 7z"/></symbol>
+  <symbol id="i-pc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></symbol>
+  <symbol id="i-page" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4z"/><path d="M20 4h-6a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h7z"/></symbol>
+  <symbol id="i-empty" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 3"><rect x="4" y="4" width="16" height="16" rx="2"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2 20a7 7 0 0 1 14 0"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.5a5 5 0 0 1 6 5"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.2 9.3a3 3 0 0 1 5.6 1.4c0 2-2.8 2.4-2.8 4"/><path d="M12 17.5h.01"/></symbol>
+  <symbol id="i-plug" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2v6M15 2v6"/><path d="M6 8h12v3a6 6 0 0 1-6 6 6 6 0 0 1-6-6z"/><path d="M12 17v5"/></symbol>
+</svg>
+
+<div class="top">
+  <div class="t">a grelha · e as skills do matt <span>260824 · 21 boards · um por vez</span></div>
+  <div class="hint">setas ↑↓ do teclado · <b>1 board = 1 ideia</b> · roxo = nome nos arquivos · <b style="color:var(--cold)">azul = resposta a você</b></div>
+</div>
+<nav class="dots" id="dots"></nav>
+
+<!-- ============ 00 ============ -->
+<section class="board" id="b0">
+  <div class="num"><b>00</b><span class="part">índice</span></div>
+  <h2>Duas escolhas suas. Nada foi feito ainda.</h2>
+  <div class="ask">
+    <b>você perguntou</b>
+    «qual a dif das opcoes? sou leigo» &nbsp;·&nbsp; «me explique os 3»
+  </div>
+  <p class="sub">O que eu entendi que você quer: entender a diferença <b>de verdade</b> antes de escolher — sem nome técnico, sem eu decidir por você. Então este doc só explica. Eu não mexi em nada do megabrain.</p>
+  <div class="fig">
+    <div class="toc">
+      <a href="#b1"><span class="p">01–04</span><span class="l">O que é a grelha, e por que ela é melhor que o limite de 2 perguntas que existe hoje</span></a>
+      <a href="#b5"><span class="p">05–09</span><span class="l"><b style="color:var(--acc)">ESCOLHA 1</b> — de onde vêm as receitas do Matt pro seu computador</span></a>
+      <a href="#b10"><span class="p">10–14</span><span class="l"><b style="color:var(--acc)">ESCOLHA 2</b> — em quais situações a grelha liga</span></a>
+      <a href="#b15"><span class="p">15–18</span><span class="l">O ECC: existe, tá vivo — e o veredito de tudo que tem dentro</span></a>
+    </div>
+  </div>
+  <div class="txt"><p>No board <b>19</b> tem o carimbo com o que eu preciso de você. Board que não fizer sentido, me diz o número.</p></div>
+</section>
+
+<!-- ============ 01 ============ -->
+<section class="board" id="b1">
+  <div class="num"><b>01</b><span class="part">o problema</span></div>
+  <h2>Hoje eu tenho um teto de 2 perguntas</h2>
+  <p class="sub">Está escrito na sua skill: quando o pedido está vago, <b>perguntar antes — máximo 2</b>. A regra nasceu pra eu não te encher o saco. O preço apareceu depois.</p>
+  <div class="fig">
+    <div class="row tight">
+      <div class="tile"><svg class="ic" viewBox="0 0 24 24"><use href="#i-chat"/></svg><span class="lb">você pede</span><span class="ds">"faz um deck pro cliente"</span></div>
+      <svg class="arr"><use href="#i-arrow"/></svg>
+      <div class="tile warm"><svg class="ic warm" viewBox="0 0 24 24"><use href="#i-help"/></svg><span class="lb">2 perguntas</span><span class="ds">e acabou a cota</span></div>
+      <svg class="arr bad"><use href="#i-arrow"/></svg>
+      <div class="tile bad"><span class="tag bad">o buraco</span><svg class="ic bad" viewBox="0 0 24 24"><use href="#i-empty"/></svg><span class="lb">eu chuto o resto</span><span class="ds">formato, tom, quem lê, quanto tempo, o que não pode aparecer</span></div>
+      <svg class="arr bad"><use href="#i-arrow"/></svg>
+      <div class="tile bad"><svg class="ic bad" viewBox="0 0 24 24"><use href="#i-x"/></svg><span class="lb">retrabalho</span><span class="ds">você conserta na entrega, não no briefing</span></div>
+    </div>
+  </div>
+  <div class="txt"><p>Duas perguntas cobrem um pedido simples. Não cobrem uma entrega. O que sobra eu preencho com o palpite mais provável — que é exatamente a definição de <b>slop</b> que a sua própria skill combate no Gate 4.</p></div>
+</section>
+
+<!-- ============ 02 ============ -->
+<section class="board" id="b2">
+  <div class="num"><b>02</b><span class="part">a ideia</span></div>
+  <h2>A grelha: perguntas em rodadas, com a resposta já sugerida</h2>
+  <p class="sub">Em vez de 2 perguntas soltas, eu desenho as decisões numa árvore e pergunto por camada. Cada pergunta vem <b>numerada e com a resposta que eu recomendo</b> — você confirma ou corrige, não precisa redigir.</p>
+  <div class="fig">
+    <div class="qmock">
+      <div class="qr"><b>❓ Q1 — Formato do deck:</b> apresentado ao vivo por você, ou mandado por e-mail pra pessoa ler sozinha? Muda densidade de texto e se cabe animação.<span class="rec">➡️ apresentado ao vivo — foi o que você fez nos 3 últimos</span></div>
+      <div class="qr"><b>❓ Q2 — Quem decide do outro lado:</b> quem aprova é quem vai ver, ou vai passar por um chefe que não estava na call?<span class="rec">➡️ passa por um chefe — então o slide 1 tem que se explicar sozinho</span></div>
+      <div class="qr"><b>❓ Q3 — O que NÃO pode aparecer:</b> preço? nome de outro cliente? tecnologia usada?<span class="rec">➡️ preço fica fora, vai em proposta separada</span></div>
+    </div>
+  </div>
+  <div class="txt"><p>Você responde <b>"1 sim, 2 muda pra e-mail, 3 tanto faz"</b>. Cada resposta sua abre a camada seguinte de perguntas — as que só faziam sentido depois de saber isso. Acaba quando não sobra nenhuma decisão no escuro.</p></div>
+</section>
+
+<!-- ============ 03 ============ -->
+<section class="board" id="b3">
+  <div class="num"><b>03</b><span class="part">o detalhe</span></div>
+  <h2>Ela nunca te pergunta o que eu mesmo posso descobrir</h2>
+  <p class="sub">Essa é a parte que separa a grelha de um interrogatório chato. A regra é dura: <b>fato é trabalho meu, decisão é sua.</b></p>
+  <div class="fig">
+    <div class="choice">
+      <div class="tile ok"><span class="tag ok">trabalho meu</span><svg class="ic ok" viewBox="0 0 24 24"><use href="#i-wrench"/></svg><span class="lb">fato</span><span class="ds">"que fonte tem no arquivo do cliente?" · "esse projeto já tem logo?" · "quanto custa esse plano hoje?"<br><br><b>Eu abro, olho e pesquiso.</b> Se demora, eu mando um ajudante buscar e sigo perguntando o resto enquanto isso.</span></div>
+      <div class="tile cold"><span class="tag">seu</span><svg class="ic cold" viewBox="0 0 24 24"><use href="#i-user"/></svg><span class="lb">decisão</span><span class="ds">"vai ao vivo ou por e-mail?" · "pode aparecer preço?" · "prefere sóbrio ou agressivo?"<br><br><b>Isso só você sabe.</b> Aqui eu paro e espero.</span></div>
+    </div>
+  </div>
+  <div class="txt"><p>Ou seja: a grelha aumenta o número de perguntas <b>sobre gosto e limite</b>, e derruba a zero as perguntas do tipo "e aí, qual é o caminho da pasta mesmo?".</p></div>
+</section>
+
+<!-- ============ 04 ============ -->
+<section class="board" id="b4">
+  <div class="num"><b>04</b><span class="part">vocabulário</span></div>
+  <h2>Agora o nome</h2>
+  <p class="sub">Depois da ideia, o rótulo — pra quando você ver escrito por aí e reconhecer.</p>
+  <div class="fig">
+    <div class="gloss">
+      <div class="item"><span class="tm">grill-me</span><span class="df">O nome do Matt Pocock. <b>Grill</b> em inglês é grelhar, mas também é o verbo de "interrogar sem dó". Foi a receita dele que viralizou — o repositório passou de 9 mil estrelas por causa dela.</span></div>
+      <div class="item"><span class="tm">grilling</span><span class="df">O arquivo onde o método mora de verdade. O <b>grill-me</b> é só o botão que chama ele. Duas peças pro mesmo trabalho: uma é o gatilho, a outra é o conteúdo.</span></div>
+      <div class="item"><span class="tm">/grelhar</span><span class="df">O nome em português que eu proponho pro seu megabrain, se você mandar traduzir. Você digitaria <span class="k">/grelhar</span> pra puxar de propósito, fora do briefing automático.</span></div>
+      <div class="item"><span class="tm">Gate 1</span><span class="df">O briefing, dentro do seu megabrain. É o passo onde eu tenho que descobrir o que é a entrega antes de produzir. É lá dentro que a grelha entra.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 05 ============ -->
+<section class="board" id="b5">
+  <div class="num"><b>05</b><span class="part upd">escolha 1</span></div>
+  <h2>De onde vêm as receitas: é igual fonte tipográfica</h2>
+  <p class="sub">As 37 receitas do Matt já existem prontas. A escolha não é <i>quais</i> — é <b>por onde elas chegam no seu computador</b>. E esse problema você já resolveu mil vezes com fonte.</p>
+  <div class="fig">
+    <div class="choice">
+      <div class="tile"><svg class="ic cold" viewBox="0 0 24 24"><use href="#i-cloud"/></svg><span class="lb">Adobe Fonts</span><span class="ds">Você <b>ativa</b> e usa. Quando a fundição corrige o kerning, chega sozinho.<br><br>Em troca: o arquivo não é seu. Não dá pra abrir e mudar.</span></div>
+      <div class="tile"><svg class="ic warm" viewBox="0 0 24 24"><use href="#i-file"/></svg><span class="lb">.otf no seu HD</span><span class="ds">O arquivo é <b>seu</b>. Abre no Glyphs, renomeia, tira um glifo, faz o que quiser.<br><br>Em troca: saiu versão 2.0? Ninguém te avisa. Você fica na 1.0 pra sempre.</span></div>
+    </div>
+  </div>
+  <div class="txt"><p>É exatamente a mesma escolha. Nos próximos 3 boards, as 3 opções — só que com receita no lugar de fonte.</p></div>
+  <div class="vocab"><b>nome nos arquivos</b> A "fonte ativada" chama <b>plugin</b>: um pacote que o Claude baixa e mantém atualizado sozinho. O ".otf no seu HD" é <b>portar</b>: copiar o conteúdo pra dentro do seu megabrain e virar dono dele.</div>
+</section>
+
+<!-- ============ 06 ============ -->
+<section class="board" id="b6">
+  <div class="num"><b>06</b><span class="part">opção A</span></div>
+  <h2>A — Ativa as 37 · e eu traduzo só a grelha</h2>
+  <p class="sub">O pacote oficial do Matt entra como plugin (atualiza sozinho, em inglês). Em paralelo, eu escrevo a grelha em português dentro do seu megabrain, ligada no Gate 1 e sabendo ler seu ESTADO, HANDOFF e DECISÕES.</p>
+  <div class="fig">
+    <div class="col">
+      <div class="mini" style="border-color:var(--ok)"><svg><use href="#i-check"/></svg><b>37 receitas</b>&nbsp;— chegam prontas e se atualizam sozinhas quando o Matt melhora alguma</div>
+      <div class="mini" style="border-color:var(--ok)"><svg><use href="#i-check"/></svg><b>a grelha em português</b>&nbsp;— e conhecendo o seu projeto, não genérica</div>
+      <div class="mini" style="border-color:var(--warm)"><svg><use href="#i-warn"/></svg><b>receita repetida</b>&nbsp;— o <span class="k">handoff</span>, o <span class="k">retro</span> e o <span class="k">code-review</span> dele fazem o mesmo que os seus Gates 6, 7 e 4. Dois botões pro mesmo trabalho, e a IA escolhe um na sorte</div>
+      <div class="mini" style="border-color:var(--ok)"><svg><use href="#i-check"/></svg><b>como eu resolvo o repetido</b>&nbsp;— escrevo na sua skill quem manda: nos seus projetos, vale o seu Gate; fora deles, vale o do Matt</div>
+      <div class="mini" style="border-color:var(--cold)"><svg><use href="#i-user"/></svg><b>seu clique</b>&nbsp;— um comando só: <span class="k">/plugin install mattpocock-skills</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 07 ============ -->
+<section class="board" id="b7">
+  <div class="num"><b>07</b><span class="part">opção B</span></div>
+  <h2>B — Eu traduzo e adapto tudo pra dentro do megabrain</h2>
+  <p class="sub">Nada de plugin. Eu pego receita por receita, traduzo, troco os exemplos de programação por exemplos de design, e ponho com nome em português na sua pasta de skills.</p>
+  <div class="fig">
+    <div class="col">
+      <div class="mini" style="border-color:var(--ok)"><svg><use href="#i-check"/></svg><b>tudo em português</b>&nbsp;— <span class="k">/grelhar</span>, <span class="k">/diagnosticar</span>, <span class="k">/pesquisar</span>, <span class="k">/virar-spec</span>, com seus nomes de pasta</div>
+      <div class="mini" style="border-color:var(--ok)"><svg><use href="#i-check"/></svg><b>zero repetição</b>&nbsp;— eu descarto na hora o que o seu Gate já faz melhor</div>
+      <div class="mini" style="border-color:var(--ok)"><svg><use href="#i-check"/></svg><b>versionado no seu git</b>&nbsp;— vai junto no seu .plugin, igual as outras três</div>
+      <div class="mini" style="border-color:var(--bad)"><svg><use href="#i-x"/></svg><b>congela no dia de hoje</b>&nbsp;— o Matt mexeu nesse repositório ontem. Quando ele melhorar uma receita, a sua fica velha e ninguém te avisa</div>
+      <div class="mini" style="border-color:var(--bad)"><svg><use href="#i-weight"/></svg><b>custo</b>&nbsp;— a sessão de hoje inteira, e você vira o dono da manutenção</div>
+      <div class="mini" style="border-color:var(--warm)"><svg><use href="#i-scissors"/></svg><b>e 12 das 37 são inúteis pra você</b>&nbsp;— tem receita pra converter tipo de TypeScript, pra montar exercício de curso, pra configurar gancho de commit. Eu descartaria de saída</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 08 ============ -->
+<section class="board" id="b8">
+  <div class="num"><b>08</b><span class="part">opção C</span></div>
+  <h2>C — Só ativa o plugin. Eu não traduzo nada.</h2>
+  <p class="sub">O caminho mais curto: instala o pacote, e o seu Gate 1 deixa de ter regra própria — passa a só apontar pro <span class="k">/grill-me</span> do Matt.</p>
+  <div class="fig">
+    <div class="col">
+      <div class="mini" style="border-color:var(--ok)"><svg><use href="#i-bolt"/></svg><b>pronto hoje</b>&nbsp;— um comando, sem eu escrever uma linha</div>
+      <div class="mini" style="border-color:var(--bad)"><svg><use href="#i-x"/></svg><b>a grelha não conhece o seu projeto</b>&nbsp;— ela não sabe que existe ESTADO.md, HANDOFF.md, DECISOES.md. Vai te perguntar coisa genérica de software, não do seu job</div>
+      <div class="mini" style="border-color:var(--bad)"><svg><use href="#i-x"/></svg><b>em inglês</b>&nbsp;— as perguntas chegam em inglês, e o vocabulário é de engenheiro</div>
+      <div class="mini" style="border-color:var(--warm)"><svg><use href="#i-warn"/></svg><b>e o buraco continua</b>&nbsp;— tirar a regra do Gate 1 sem pôr nada no lugar deixa o seu protocolo com um passo oco</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 09 ============ -->
+<section class="board" id="b9">
+  <div class="num"><b>09</b><span class="part">escolha 1 · veredito</span></div>
+  <h2>Lado a lado</h2>
+  <div class="fig">
+    <table class="cmp">
+      <tr><th></th><th>A · plugin + grelha traduzida</th><th>B · traduzir tudo</th><th>C · só o plugin</th></tr>
+      <tr><td class="rw">atualiza sozinho</td><td class="y">sim, as 37</td><td class="n">não</td><td class="y">sim, as 37</td></tr>
+      <tr><td class="rw">grelha em português</td><td class="y">sim</td><td class="y">sim</td><td class="n">não</td></tr>
+      <tr><td class="rw">conhece o seu projeto</td><td class="y">sim</td><td class="y">sim</td><td class="n">não</td></tr>
+      <tr><td class="rw">receita repetida</td><td class="m">sim — resolvida por regra</td><td class="y">nenhuma</td><td class="m">sim — não resolvida</td></tr>
+      <tr><td class="rw">quem mantém</td><td class="y">o Matt</td><td class="n">você</td><td class="y">o Matt</td></tr>
+      <tr><td class="rw">trabalho meu hoje</td><td class="m">~1 skill</td><td class="n">~10 skills</td><td class="y">nenhum</td></tr>
+      <tr><td class="rw">seu clique</td><td class="m">1 comando</td><td class="y">1 clique no .plugin</td><td class="m">1 comando</td></tr>
+    </table>
+  </div>
+  <div class="stamp acc"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg><div><b>eu recomendo A</b><span>Você fica com as 37 sempre atualizadas sem virar mantenedor, e a única peça que precisa falar a sua língua e conhecer o seu projeto — a grelha — é a que eu traduzo. B só compensa se você quiser mesmo ser dono do texto de todas elas.</span></div></div>
+</section>
+
+<!-- ============ 10 ============ -->
+<section class="board" id="b10">
+  <div class="num"><b>10</b><span class="part upd">escolha 2</span></div>
+  <h2>Agora: quando a grelha liga?</h2>
+  <p class="sub">Tirar o teto de 2 perguntas resolve <i>quantas</i>. Falta resolver <b>quando</b> — porque grelhar tudo, inclusive papo, tem um custo real.</p>
+  <div class="fig">
+    <div class="row tight">
+      <div class="tile"><svg class="ic" viewBox="0 0 24 24"><use href="#i-chat"/></svg><span class="lb">papo</span><span class="ds">"que horas são" · "isso é bom?" · "me explica X"</span></div>
+      <div class="tile warm"><svg class="ic warm" viewBox="0 0 24 24"><use href="#i-page"/></svg><span class="lb">rascunho</span><span class="ds">explorar uma ideia, ver como ficaria, testar um caminho</span></div>
+      <div class="tile ok"><svg class="ic ok" viewBox="0 0 24 24"><use href="#i-box"/></svg><span class="lb">entrega</span><span class="ds">arquivo, peça, código, análise — coisa que <b>sai da conversa</b></span></div>
+      <div class="tile cold"><svg class="ic cold" viewBox="0 0 24 24"><use href="#i-folder"/></svg><span class="lb">projeto novo</span><span class="ds">abrir ou retomar um projeto inteiro</span></div>
+    </div>
+  </div>
+  <div class="txt"><p>Essas quatro caixas já existem na sua skill hoje. A escolha é só <b>em quais delas a grelha entra</b>.</p></div>
+</section>
+
+<!-- ============ 11 ============ -->
+<section class="board" id="b11">
+  <div class="num"><b>11</b><span class="part">escopo 1</span></div>
+  <h2>1 — Só em entrega e projeto novo</h2>
+  <p class="sub">A grelha completa liga quando tem coisa saindo pra fora ou quando um projeto abre. Nas outras duas caixas, versão reduzida ou nada.</p>
+  <div class="fig">
+    <div class="col">
+      <div class="mini" style="border-color:var(--ok)"><svg><use href="#i-box"/></svg><b>entrega / projeto novo</b>&nbsp;— grelha completa, rodada após rodada, <b>sem teto de perguntas</b></div>
+      <div class="mini" style="border-color:var(--warm)"><svg><use href="#i-page"/></svg><b>rascunho</b>&nbsp;— uma rodada curta só, pra não travar exploração</div>
+      <div class="mini"><svg><use href="#i-chat"/></svg><b>papo</b>&nbsp;— nenhuma pergunta. Eu respondo</div>
+      <div class="mini" style="border-color:var(--cold)"><svg><use href="#i-check"/></svg><b>e continua valendo</b>&nbsp;— subir de rascunho pra entrega no meio do caminho é barato: eu abro a grelha na hora que virar entrega</div>
+    </div>
+  </div>
+  <div class="txt"><p>Isso respeita a regra que <b>você</b> já escreveu na skill: <i>"rodar protocolo em papo é o próprio slop"</i>.</p></div>
+</section>
+
+<!-- ============ 12 ============ -->
+<section class="board" id="b12">
+  <div class="num"><b>12</b><span class="part">escopo 2</span></div>
+  <h2>2 — Sempre, com botão de escape</h2>
+  <p class="sub">Qualquer tarefa que não seja trivial abre grelha. Se você cansar, corta com <span class="k">/chega</span> ou digitando "toca".</p>
+  <div class="fig">
+    <div class="col">
+      <div class="mini" style="border-color:var(--ok)"><svg><use href="#i-check"/></svg><b>máximo de contexto</b>&nbsp;— é o que mais reduz retrabalho, na teoria</div>
+      <div class="mini" style="border-color:var(--bad)"><svg><use href="#i-weight"/></svg><b>rodada até em coisa pequena</b>&nbsp;— "muda essa cor pra laranja" vira 3 perguntas sobre contexto de marca</div>
+      <div class="mini" style="border-color:var(--bad)"><svg><use href="#i-warn"/></svg><b>o escape só funciona se você lembrar dele</b>&nbsp;— e no meio do trabalho, com pressa, ninguém lembra de comando de escape. Na prática vira atrito</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 13 ============ -->
+<section class="board" id="b13">
+  <div class="num"><b>13</b><span class="part">escopo 3</span></div>
+  <h2>3 — Sempre, sem exceção nenhuma</h2>
+  <p class="sub">É o que "tirar o limite" significa ao pé da letra: grelha em tudo, inclusive conversa.</p>
+  <div class="fig">
+    <div class="row tight">
+      <div class="tile bad"><span class="tag bad">o que acontece</span><svg class="ic bad" viewBox="0 0 24 24"><use href="#i-chat"/></svg><span class="lb">"e aí, o que acha?"</span><span class="ds">vira 3 perguntas numeradas sobre critério de avaliação antes de eu responder qualquer coisa</span></div>
+      <svg class="arr bad"><use href="#i-arrow"/></svg>
+      <div class="tile bad"><svg class="ic bad" viewBox="0 0 24 24"><use href="#i-x"/></svg><span class="lb">você para de perguntar</span><span class="ds">e o megabrain vira uma coisa que você evita usar</span></div>
+    </div>
+  </div>
+  <div class="txt"><p>Aviso honesto: <b>não recomendo</b>. É a única das três que contradiz uma regra que você mesmo escreveu. Mas é sua chamada — se for isso que você quer, eu implemento sem discutir de novo.</p></div>
+</section>
+
+<!-- ============ 14 ============ -->
+<section class="board" id="b14">
+  <div class="num"><b>14</b><span class="part">escolha 2 · veredito</span></div>
+  <h2>Lado a lado</h2>
+  <div class="fig">
+    <table class="cmp">
+      <tr><th></th><th>1 · entrega e projeto novo</th><th>2 · sempre, com escape</th><th>3 · sempre, sem exceção</th></tr>
+      <tr><td class="rw">teto de perguntas</td><td class="y">nenhum, onde importa</td><td class="y">nenhum</td><td class="y">nenhum</td></tr>
+      <tr><td class="rw">papo continua papo</td><td class="y">sim</td><td class="m">só se você cortar</td><td class="n">não</td></tr>
+      <tr><td class="rw">atrito no dia a dia</td><td class="y">baixo</td><td class="m">médio</td><td class="n">alto</td></tr>
+      <tr><td class="rw">bate com sua regra anti-slop</td><td class="y">sim</td><td class="m">mais ou menos</td><td class="n">contradiz</td></tr>
+      <tr><td class="rw">risco de você largar de usar</td><td class="y">baixo</td><td class="m">médio</td><td class="n">alto</td></tr>
+    </table>
+  </div>
+  <div class="stamp acc"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg><div><b>eu recomendo 1</b><span>Você pediu "mais contexto, mais clareamento" — e é em entrega e abertura de projeto que a falta de contexto custa caro. Em papo, pergunta não clareia nada: só adia a resposta.</span></div></div>
+</section>
+
+<!-- ============ 15 ============ -->
+<section class="board" id="b15">
+  <div class="num"><b>15</b><span class="part resp">ecc · resposta a você</span></div>
+  <h2>O ECC tá vivo — e eu te dei um número errado</h2>
+  <p class="sub">Você escolheu "auditar antes de mexer". Eu auditei. Primeira coisa: <b>correção do que eu te falei na resposta anterior.</b></p>
+  <div class="fig">
+    <div class="col">
+      <div class="mini" style="border-color:var(--ok)"><svg><use href="#i-check"/></svg><b>vivo</b>&nbsp;— versão 2.2.0, último commit em <b>19/08</b> (seis dias atrás). Site ecc.tools no ar, com camada paga de $19 por pessoa</div>
+      <div class="mini" style="border-color:var(--bad)"><svg><use href="#i-x"/></svg><b>eu disse 898 receitas e 367 agentes</b>&nbsp;— <b style="color:var(--bad)">errado</b>. Eu contei arquivo, não receita: 68% são <b>tradução</b> pro japonês e pro chinês do mesmo texto</div>
+      <div class="mini" style="border-color:var(--ok)"><svg><use href="#i-index"/></svg><b>o número real</b>&nbsp;— <b>286 receitas · 68 agentes · 94 comandos</b>. Continua sendo muito, mas é um terço do que eu falei</div>
+      <div class="mini" style="border-color:var(--cold)"><svg><use href="#i-lock"/></svg><b>licença MIT</b>&nbsp;— pode copiar e usar comercialmente; só tem que manter o aviso de autoria do arquivo copiado</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 16 ============ -->
+<section class="board" id="b16">
+  <div class="num"><b>16</b><span class="part">ecc · veredito</span></div>
+  <h2>O que tem lá dentro, em quatro pilhas</h2>
+  <p class="sub">Cada família do ECC caiu numa dessas quatro. A pilha vermelha é a maior de longe.</p>
+  <div class="fig">
+    <div class="shelves">
+      <div class="shelf" style="border-color:var(--bad)"><div class="hd" style="color:var(--bad)"><svg><use href="#i-scissors"/></svg><span class="lb">bloat</span></div><div class="when">Não serve pra você — é de time de engenharia ou de setor que não é o seu.</div>
+        <div class="stack">
+          <div class="mini"><svg><use href="#i-chip"/></svg>76 receitas de linguagem de programação (Django, Spring, Cisco)</div>
+          <div class="mini"><svg><use href="#i-users"/></svg>41 verticais corporativas (saúde, energia, aduana)</div>
+          <div class="mini"><svg><use href="#i-file"/></svg>68 agentes revisores e 94 comandos, quase todos por linguagem</div>
+        </div>
+      </div>
+      <div class="shelf warm"><div class="hd" style="color:var(--warm)"><svg><use href="#i-copy"/></svg><span class="lb">já é seu</span></div><div class="when">O megabrain já faz, com outro nome. Instalar duplica.</div>
+        <div class="stack">
+          <div class="mini"><svg><use href="#i-weight"/></svg>orçamento de contexto → seu Gate 2</div>
+          <div class="mini"><svg><use href="#i-checklist"/></svg>laço de verificação → seu Gate 5</div>
+          <div class="mini"><svg><use href="#i-index"/></svg>memória e lição → seu Gate 7 e o <span class="k">/registrar-licao</span></div>
+        </div>
+      </div>
+      <div class="shelf" style="border-color:var(--ok)"><div class="hd" style="color:var(--ok)"><svg><use href="#i-check"/></svg><span class="lb">vale puxar</span></div><div class="when">Resolve algo que o megabrain não resolve, e é do seu ofício.</div>
+        <div class="stack">
+          <div class="mini fat"><svg><use href="#i-layout"/></svg>a família de design e interface — <b>a melhor parte do repositório pra você</b></div>
+          <div class="mini"><svg><use href="#i-tag"/></svg>voz de marca a partir do material do cliente</div>
+          <div class="mini"><svg><use href="#i-brain"/></svg>higiene: auditar o que come contexto</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 17 ============ -->
+<section class="board" id="b17">
+  <div class="num"><b>17</b><span class="part">ecc · o que salvar</span></div>
+  <h2>Os 5 que eu puxaria — e onde cada um encaixa</h2>
+  <div class="fig">
+    <div class="col">
+      <div class="mini fat"><svg><use href="#i-warn"/></svg><b>1 · vigia de slop visual</b>&nbsp;— um script que reclama sozinho quando a saída tem fonte Inter no automático, gradiente roxo, grade de 3 colunas e botão "Get Started" centralizado. <b>Hoje o seu anti-slop só pega texto.</b> → entra no <b>Gate 4</b></div>
+      <div class="mini" style="border-color:var(--ok)"><svg><use href="#i-layout"/></svg><b>2 · interface que "sente" melhor</b>&nbsp;— raio concêntrico (o externo = o interno + o respiro), alinhamento óptico, sombra em camadas, estado de vazio e de foco. → vira <b>critério verificável</b> no seu Gate 1</div>
+      <div class="mini" style="border-color:var(--ok)"><svg><use href="#i-camera"/></svg><b>3 · aprovação apontando</b>&nbsp;— abre a peça no navegador e <b>você clica no elemento</b> pra aprovar ou pedir mudança, em vez de descrever por texto. É literalmente como cliente aprova arte. → <b>Gate 1</b></div>
+      <div class="mini" style="border-color:var(--ok)"><svg><use href="#i-tag"/></svg><b>4 · voz de marca</b>&nbsp;— monta o perfil de voz do cliente a partir do material real dele, e guarda pra reusar. → fase <b>Descobrir</b> do Duplo Diamante, e depois pro cérebro via <span class="k">/ingerir</span></div>
+      <div class="mini" style="border-color:var(--warm)"><svg><use href="#i-lock"/></svg><b>5 · exigir fato antes de editar</b>&nbsp;— trava que pede o dado concreto em vez de perguntar "tem certeza?". → <b>Gate 3</b>. <b>Ressalva:</b> a versão completa é de terceiro e pede instalação à parte</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 18 ============ -->
+<section class="board" id="b18">
+  <div class="num"><b>18</b><span class="part">ecc · riscos</span></div>
+  <h2>Por que eu não instalaria o ECC inteiro</h2>
+  <p class="sub">Cinco coisas que a auditoria achou. A primeira é a séria.</p>
+  <div class="fig">
+    <div class="col">
+      <div class="mini" style="border-color:var(--bad)"><svg><use href="#i-warn"/></svg><b>4 receitas são do patrocinador</b>&nbsp;— e uma delas, segundo o próprio arquivo de configuração do repositório, <b>manda um pedido de cotação real e autenticado</b> quando roda. Não é demonstração. Não instalar</div>
+      <div class="mini" style="border-color:var(--bad)"><svg><use href="#i-lock"/></svg><b>58 receitas pedem chave de API paga</b>&nbsp;— serviços comerciais de terceiros, cobrança por uso</div>
+      <div class="mini" style="border-color:var(--bad)"><svg><use href="#i-pc"/></svg><b>10 scripts escrevem fora da pasta</b>&nbsp;— em <span class="k">~/.claude</span>, no seu perfil do Windows. Eles rastreiam custo e avaliam sessão — <b>exatamente o que a sua telemetria e o seu painel já fazem</b>. Duas coisas escrevendo o mesmo número em lugares diferentes</div>
+      <div class="mini" style="border-color:var(--warm)"><svg><use href="#i-weight"/></svg><b>93 MB</b>&nbsp;— instalar inteiro estoura o seu orçamento de contexto sozinho, antes de você pedir qualquer coisa</div>
+      <div class="mini" style="border-color:var(--ok)"><svg><use href="#i-check"/></svg><b>o que veio limpo</b>&nbsp;— procurei chamada de rede escondida nos scripts de custo e de avaliação: <b>não achei nenhuma</b>. Esse ponto do repositório é honesto</div>
+    </div>
+  </div>
+  <div class="txt"><p class="est">Não consegui verificar uma coisa: se o site ecc.tools e o app de GitHub deles coletam dado. Essa parte não está no repositório aberto — então fica como <b>não verificado</b>, não como "é seguro".</p></div>
+</section>
+
+<!-- ============ 19 ============ -->
+<section class="board" id="b19">
+  <div class="num"><b>19</b><span class="part upd">seu clique</span><span class="part resp">respondido · vai pro 20</span></div>
+  <h2>O que eu preciso de você</h2>
+  <div class="stamp hot">
+    <svg viewBox="0 0 24 24"><use href="#i-user"/></svg>
+    <div><b>duas letras e um número</b><span>Me responde tipo <b>"A1"</b>. Ou escreve do seu jeito — misturar também vale (ex: "opção A, mas escopo 2").</span></div>
+  </div>
+  <div class="fig">
+    <div class="choice">
+      <div class="tile acc" style="border-color:var(--acc)"><span class="tag hot">escolha 1</span><svg class="ic acc" viewBox="0 0 24 24"><use href="#i-plug"/></svg><span class="lb">A · B · C</span><span class="ds"><b>A</b> = plugin do Matt + grelha traduzida <i>(recomendo)</i><br><b>B</b> = eu traduzo tudo<br><b>C</b> = só o plugin, nada traduzido</span></div>
+      <div class="tile acc" style="border-color:var(--acc)"><span class="tag hot">escolha 2</span><svg class="ic acc" viewBox="0 0 24 24"><use href="#i-sliders"/></svg><span class="lb">1 · 2 · 3</span><span class="ds"><b>1</b> = grelha em entrega e projeto novo <i>(recomendo)</i><br><b>2</b> = sempre, com escape<br><b>3</b> = sempre, sem exceção</span></div>
+    </div>
+  </div>
+  <div class="txt"><p>Assim que você responder, eu: <b>escrevo a grelha em português</b> → <b>tiro o teto de 2 perguntas do Gate 1</b> → <b>subo o plugin do megabrain pra 1.6.4</b> → e aí sim tem um clique seu pra instalar. O ECC eu deixo parado: os 5 itens do board 17 viram fila, um de cada vez, não pacote.</p></div>
+  <div class="vocab"><b>ainda pendente de antes</b> O plugin <b>1.6.3</b> continua esperando você reinstalar — ele já está pronto em <span class="k">motor\dist\</span>. Se você for esperar o 1.6.4, tudo bem: aí instala só uma vez.</div>
+</section>
+
+
+<!-- ============ 20 ============ -->
+<section class="board" id="b20">
+  <div class="num"><b>20</b><span class="part resp">feito · resposta a você</span></div>
+  <h2>Entregue — e um achado sobre a data dos seus arquivos</h2>
+  <div class="ask">
+    <b>você respondeu</b>
+    «aceito a recomendacao» · «a grelha serve pra deixar o briefing robusto, tem q ser na hora que está se criando o projeto, pode ter várias perguntas, sem problema» · «quero poder usar a skill pra clarear as coisas e continuar desenvolvendo» · «pode ter em entrega pra ter certeza que finalize» · «sobre o ecc, pega oq vale puxar»
+  </div>
+  <p class="sub">Tudo isso está no disco. Os três momentos que você pediu viraram regra escrita, não intenção.</p>
+  <div class="fig">
+    <div class="col">
+      <div class="mini" style="border-color:var(--ok)"><svg><use href="#i-check"/></svg><b>skill /grelhar</b>&nbsp;— <span class="k">motor\skills\grelhar\SKILL.md</span> · fronteira, rodadas, pergunta numerada com recomendação, fato é meu × decisão é sua, escape com suposição registrada</div>
+      <div class="mini" style="border-color:var(--ok)"><svg><use href="#i-check"/></svg><b>Gate 1 sem teto</b>&nbsp;— skill megabrain <b>v6.1</b>. Projeto novo <b>e</b> entrega rodam grelha completa · <span class="k">/grelhar</span> a qualquer momento pra clarear e seguir · rascunho = 1 rodada · papo = nenhuma</div>
+      <div class="mini" style="border-color:var(--ok)"><svg><use href="#i-check"/></svg><b>ECC · interface que sente</b>&nbsp;— <span class="k">motor\referencias\260824_interface-que-sente.md</span> · raio concêntrico, alinhamento óptico, sombra em camadas, tabular-nums, área de toque. Ligado no Gate 1 como critério verificável</div>
+      <div class="mini" style="border-color:var(--ok)"><svg><use href="#i-check"/></svg><b>ECC · vigia de slop visual</b>&nbsp;— <span class="k">bin\mb-slop-visual.py</span>, reescrito pro seu stack (o do ECC era Tailwind). Pega 9 de 9 num arquivo forjado; no doc que você está lendo achou 1 sinal fraco. Ligado no Gate 4</div>
+      <div class="mini" style="border-color:var(--ok)"><svg><use href="#i-check"/></svg><b>ECC · exigir fato antes de editar</b>&nbsp;— virou regra no Gate 3: antes de mexer em tema, mecânica, script ou skill, listar QUEM CONSOME (<span class="k">mb-mapa-refs.py</span>) e citar na resposta</div>
+      <div class="mini" style="border-color:var(--bad)"><svg><use href="#i-x"/></svg><b>ECC · recusei: plan-canvas</b>&nbsp;— precisa de pacote npm + servidor na porta 4517, e briga com o seu painel vivo. Virou pendência minha, não item de hoje</div>
+      <div class="mini" style="border-color:var(--bad)"><svg><use href="#i-x"/></svg><b>ECC · recusei: voz de marca</b>&nbsp;— você já tem melhor. O plugin brand-voice instalado no Cowork faz descoberta, geração e enforcement; o do ECC é focado em X/LinkedIn</div>
+      <div class="mini" style="border-color:var(--ok)"><svg><use href="#i-checklist"/></svg><b>48/48 testes</b>&nbsp;— suíte passou depois de todas as mudanças</div>
+      <div class="mini fat"><svg><use href="#i-user"/></svg><b>plugin 1.6.4 pronto</b>&nbsp;— <span class="k">motor\dist\260824_megabrain-v1.6.4.plugin</span> · 4 skills (megabrain, grelhar, ingerir, registrar-licao). <b>Instalar é o seu clique</b> — e substitui o 1.6.3 que estava na fila</div>
+    </div>
+  </div>
+  <div class="vocab"><b>achado do dia — a data dos seus arquivos</b> O seu PC marca <b>24/08, 22h40</b>. A sessão na nuvem marca <b>25/08</b> (fuso UTC). Resultado: um arquivo criado hoje mais cedo pela nuvem saiu <span class="k">260825_relatorio-vivo-modelo.md</span>, e os seus scripts, que leem o relógio do PC, geram <span class="k">260824_</span>. <b>Eu alinhei tudo o que fiz hoje no relógio do seu PC (260824)</b> — que é o que o <span class="k">mb-build-plugin-claude.py</span> usa. Isso vai se repetir toda noite entre 21h e meia-noite. Já registrei como lição.</div>
+</section>
+
+<script>
+  (function(){
+    var boards=[].slice.call(document.querySelectorAll('.board'));
+    var nav=document.getElementById('dots');
+    boards.forEach(function(b,i){var a=document.createElement('a');a.href='#'+b.id;a.title=String(i).padStart(2,'0');nav.appendChild(a);});
+    var dots=[].slice.call(nav.children);
+    function cur(){var y=window.scrollY+window.innerHeight*0.4;var idx=0;boards.forEach(function(b,i){if(b.offsetTop<=y)idx=i;});dots.forEach(function(d,i){d.className=i===idx?'on':'';});return idx;}
+    window.addEventListener('scroll',cur);cur();
+    document.addEventListener('keydown',function(e){
+      if(e.key==='ArrowDown'||e.key==='PageDown'||e.key===' '){e.preventDefault();var i=Math.min(cur()+1,boards.length-1);boards[i].scrollIntoView({behavior:'smooth'});}
+      if(e.key==='ArrowUp'||e.key==='PageUp'){e.preventDefault();var j=Math.max(cur()-1,0);boards[j].scrollIntoView({behavior:'smooth'});}
+    });
+  })();
+</script>
+</body>
+</html>

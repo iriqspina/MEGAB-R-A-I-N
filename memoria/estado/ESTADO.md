@@ -5,8 +5,10 @@ MODO: otimizado
 TL;DR: v7.1 no disco — a máquina inteira mudou pra motor\ e a raiz ficou só
 com o que é seu; telemetria local ligada; painel com aba Cérebro; Obsidian
 INSTALADO por ele, vault registrado, aberto e com grafo de verdade (mapa +
-wikilinks); Figma do board 24 corrigido. Suíte 48/48. Falta só ele reinstalar
-o plugin 1.6.3.
+wikilinks); Figma do board 24 corrigido. Suíte 48/48. Plugin 1.6.3 reinstalado
+no Claude (260824, confirmado por ele); vault Downloads removido do Obsidian.
+Lado Kimi verificado na mesma sessão: plugin em sync com a fonte, hook íntegro,
+suíte 48/48.
 
 ONDE ESTAMOS: fila 2→6 executada em uma sessão (o 7 ficou pausado por decisão
 sua e o 8 virou nota na pasta do Portfolio). Painel: 7ª aba Cérebro + caixa

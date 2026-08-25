@@ -5,7 +5,10 @@ description: Protocolo de execução multi-agente — gates de entrega anti-slop
 
 # megabrain — protocolo operacional (roteiro curto)
 
-**v6.0 · 2026-08-24.** Base: v5.7. Mudou: a skill virou ROTEIRO (corte "tirar
+**v6.1 · 2026-08-24.** Base: v6.0. Mudou: o Gate 1 perdeu o teto de 2 perguntas
+e ganhou a **grelha** (`/grelhar`); Gate 3 exige mapa de consumidores antes de
+editar peça compartilhada; Gate 4 ganhou vigia de slop VISUAL. Antes: a skill
+virou ROTEIRO (corte "tirar
 peso", decisão 260824) — 1 passo por linha, detalhe profundo em `referencias/`,
 aberto só quando o passo está em execução e há dúvida. Texto integral anterior:
 `referencias/260824_skill-completa-v5.md` (nada foi perdido). Layout v7.1 da
@@ -63,21 +66,37 @@ agente não começa do zero). Detalhe passo a passo, quando precisar:
   de construir em cima. Caminhos e repos novos: confirmar com o usuário antes.
 - **1 ENQUADRAR** — artefato e app de destino? leitor e decisão dele? 3 critérios
   verificáveis? restrição dura? contraexemplo genérico nomeado (o slop esperado)?
-  Vago → perguntar antes (máx. 2). Design → Duplo Diamante, fase declarada no
+  **Não existe teto de perguntas** (decisão 260824, revoga o "máx. 2"): abrir/
+  retomar projeto e **ENTREGA** rodam a grelha completa — skill `/grelhar`
+  (fronteira, rodadas, pergunta numerada **com recomendação**, fato é seu ×
+  decisão é dele; o que já está em ESTADO/DECISOES/LICOES/cérebro/DNA nunca vira
+  pergunta). Rascunho = 1 rodada curta · papo = nenhuma. Ele chama `/grelhar` a
+  qualquer momento pra clarear e seguir desenvolvendo. Fecha com espelho do
+  entendimento + confirmação dele + registro em DECISOES/ESTADO — fronteira
+  vazia não é autorização. Design → Duplo Diamante, fase declarada no
   ESTADO, referência antes de adjetivo: `referencias/260810_design-projects.md`
-  (+ `260810_galerias-referencia.md`, `260810_impeccable-routing.md` se vira código).
+  (+ `260810_galerias-referencia.md`, `260810_impeccable-routing.md` se vira
+  código); peça de interface → critérios verificáveis em
+  `referencias/260824_interface-que-sente.md`.
 - **2 ORÇAR CONTEXTO** — orçamento compartilhado: ler sob demanda (Glob→Grep→
   trecho), checkpoint em .md, delegar varredura pro modelo barato, exemplos
   canônicos e não exaustivos; >85% de contexto → HANDOFF + commit + recomeçar.
   `referencias/260810_context-engineering.md`.
 - **3 GERAR** — estrutura antes de prosa; uma afirmação por parágrafo; fato do
   mundo atual → buscar, nunca de memória; número/data/preço verificado ou
-  `[ESTIMATIVA]`; específico > geral. WordPress/Figma/builders: o que o usuário
+  `[ESTIMATIVA]`; específico > geral. **Antes de editar peça compartilhada**
+  (tema, mecânica visual, script de `bin/`, componente, skill): liste QUEM
+  CONSOME (`python bin\mb-mapa-refs.py NOME`) e cite os consumidores na
+  resposta — "tem certeza?" não é verificação, lista de quem quebra é.
+  WordPress/Figma/builders: o que o usuário
   tocou é versão final — mudança cirúrgica, nunca recriar sem avisar o custo.
 - **4 AUDITAR** — reler e REESCREVER (anúncio sem mudança = teatro): léxico e
   estrutura banidos + testes de substância ("e daí?", troca de marca, trade-off,
   fonte) em `referencias/260810_anti-slop.md`; reescrever 30% menor e entregar a
-  menor se nada se perdeu; peça visual → léxico visual banido (mesmo arquivo);
+  menor se nada se perdeu; peça visual → léxico visual banido (mesmo arquivo) +
+  `python bin\mb-slop-visual.py <arquivo>` (gradiente de estoque, grade
+  uniforme, tudo centralizado, `transition: all`, sombra de template, CTA
+  genérico, raio não-concêntrico) — o vigia aponta, quem reescreve é você;
   material de outro agente → premissas verificadas? decisão não registrada?
   **1 reparo só** — se ainda está ruim, o erro é do Gate 1.
 - **5 VERIFICAR** — abre no app? caminho existe (TESTAR, não confiar)? número
@@ -135,6 +154,14 @@ fora do sandbox (home, delete, SO) → `/kimi`
 (`referencias/260811_kimi-handoff.md`). Skill/AGENTS = pedido; hook/script =
 garantia. Arquitetura em detalhe: `referencias/260810_workflow-architecture.md`.
 
+**Precedência contra skills de terceiros** (plugin `mattpocock-skills` e
+similares, decisão 260824): dentro de projeto com megabrain, o Gate vence a
+skill de fora quando as duas fazem o mesmo trabalho — `handoff` → **Gate 6** ·
+`retro` → **Gate 7** / `/registrar-licao` · `code-review` → **Gate 4** ·
+`grill-me`/`grilling` → **`/grelhar`** (é a porta em PT-BR do mesmo método).
+Fora de projeto, use a de fora à vontade. Nunca rode as duas pelo mesmo pedido:
+duas passadas no mesmo texto é teatro, não auditoria.
+
 ## Referências — abrir só quando o passo pedir
 
 `260810_gates-entrega.md` gates em detalhe · `260810_anti-slop.md` léxico/
@@ -145,6 +172,7 @@ construir prompt/brief · `260810_context-engineering.md` contexto ·
 referência visual · `260810_impeccable-routing.md` UI que vira código ·
 `260810_evaluation-gates.md` rubricas · `260810_PROMPT-PORTATIL.md` protocolo
 sem skills · `260810_sync-memoria.md` identidade multi-agente ·
+`260824_interface-que-sente.md` detalhe de interface que vira critério ·
 `260818_padrao-resposta.md` voz e níveis N0–N3 · `260811_kimi-handoff.md` parede
 de sandbox · `260815_pipeline-governanca-aprendizado.md` cliente/dinheiro/
 governança · `260824_skill-completa-v5.md` texto integral pré-corte.
@@ -154,4 +182,7 @@ governança · `260824_skill-completa-v5.md` texto integral pré-corte.
 Gate como teatro (anunciar ✅ sem reescrever) · pular o Gate 0 · handoff vago
 ("continuar o projeto" não é próximo passo) · herdar premissa do outro agente
 sem verificar · loop de crítica além de 1 reparo · auditar o repo achando que
-auditou a cópia carregada. Lista completa: `referencias/260824_skill-completa-v5.md`.
+auditou a cópia carregada · **grelhar papo** (ele pergunta as horas e leva 3
+perguntas numeradas) · **pergunta sem recomendação** (vira formulário — ele te
+quer com opinião) · **grelha sem registro** (DECISOES.md intacto = a próxima
+sessão pergunta tudo de novo). Lista completa: `referencias/260824_skill-completa-v5.md`.
