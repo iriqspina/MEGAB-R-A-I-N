@@ -567,6 +567,32 @@ def secao_rotina(c: Path) -> str:
             + "".join(linhas))
 
 
+def secao_agente(c: Path) -> str:
+    """Os comandos que a IA roda nos gates. Aparecem no painel dele NÃO pra ele
+    rodar, mas porque comando que não está declarado em lugar nenhum não
+    acontece: `mb-mapa-refs.py` tinha 4 citações em SKILL.md e zero execuções
+    em 6 dias de log. Ver é a primeira condição de cobrar."""
+    try:
+        import mb_registro as reg
+    except ImportError:
+        return ""
+    if not getattr(reg, "AGENTE", None):
+        return ""
+    linhas = []
+    for cmd, gate, faz, quebra in reg.AGENTE:
+        linhas.append(f"""<details class="acao acao--rotina">
+<summary><span class="acao__nome"><code>{e(cmd)}</code></span>
+<span class="acao__faz"><b>{e(gate)}</b> — {e(faz)}</span></summary>
+<div class="acao__corpo"><p><strong>Se não rodar:</strong> {e(quebra)}</p>
+<button class="copiar" data-copiar="{e(cmd)}">copiar comando</button></div>
+</details>""")
+    return ('<p class="det">Isto <b>não é pra você rodar</b> — é o que a IA deve '
+            'rodar sozinha nos gates. Está aqui porque comando que não aparece em '
+            'lugar nenhum é comando que não acontece: em 260825 o do Gate 3 tinha '
+            '4 citações nas skills e zero execuções em 6 dias.</p>'
+            + "".join(linhas))
+
+
 def secao_skills(c: Path) -> str:
     """As skills DELE, expansíveis. As de plugin de terceiro ficam de fora —
     são 30+, ele não escreveu nem mantém, e listá-las é o próprio problema
@@ -599,6 +625,88 @@ def secao_skills(c: Path) -> str:
             + "".join(partes))
 
 
+def _estado_json(c: Path) -> dict:
+    """O relatório passa a RENDERIZAR dados/estado.json em vez de recalcular.
+
+    260825 (decisão 260825t): uma fonte, duas renderizações. O mesmo JSON que
+    alimenta este HTML é o que qualquer IA lê — Claude, Kimi, GPT, Gemini,
+    Codex — sem parsear markdown de prosa. Foi o que permitiu o relatório de
+    agentes e o de padrões morrerem: eles não tinham dado próprio, tinham
+    leitura própria do mesmo dado.
+    """
+    import json
+    arq = c / "dados" / "estado.json"
+    txt = u.safe_read_text(arq)
+    if not txt:
+        return {}
+    try:
+        return json.loads(txt)
+    except (json.JSONDecodeError, ValueError):
+        return {}
+
+
+def secao_agentes(c: Path) -> str:
+    """Absorve o RELATORIO-AGENTES.html (aposentado em 260825)."""
+    d = _estado_json(c).get("agentes") or {}
+    if not d.get("eventos"):
+        return ""
+    linhas = "".join(f"<tr><td>{e(k)}</td><td>{v}</td></tr>"
+                     for k, v in list((d.get("por_agente") or {}).items())[:8])
+    evs = "".join(f"<tr><td>{e(k)}</td><td>{v}</td></tr>"
+                  for k, v in list((d.get("por_evento") or {}).items())[:8])
+    return (f'<p class="det">{d["eventos"]} evento(s) em {d.get("dias_com_registro", "?")} '
+            f'dia(s). Fonte: <code>{e(d.get("_fonte", ""))}</code></p>'
+            f'<div class="duo"><div><table><thead><tr><th>agente</th><th>eventos</th></tr>'
+            f'</thead><tbody>{linhas}</tbody></table></div>'
+            f'<div><table><thead><tr><th>tipo de evento</th><th>n</th></tr></thead>'
+            f'<tbody>{evs}</tbody></table></div></div>')
+
+
+def secao_padroes(c: Path) -> str:
+    """Absorve o AAMMDD_padroes.md (o compreensor continua rodando)."""
+    d = _estado_json(c).get("padroes") or {}
+    temas = d.get("temas") or []
+    if not temas:
+        return (f'<p class="det">Nada passou da régua — e isso é informação, não vazio. '
+                f'Régua: {e(str(d.get("regua", ""))[:200])}</p>')
+    itens = "".join(f"<li>{e(str(x)[:200])}</li>" for x in temas)
+    return f'<ul>{itens}</ul><p class="det">Régua: {e(str(d.get("regua", ""))[:200])}</p>'
+
+
+def secao_copias(c: Path) -> str:
+    """Os megabrains de projeto — absorve a auditoria de cópias."""
+    d = _estado_json(c).get("copias") or {}
+    itens = d.get("itens") or []
+    if not itens:
+        return ""
+    linhas = "".join(
+        f'<tr><td>{e(i["projeto"])}</td><td>{e(i["versao"])}</td>'
+        f'<td>{"✓" if i["em_dia"] else "✕ desatualizada"}</td>'
+        f'<td>{i["licoes"]}</td><td>{e(i["layout"])}</td></tr>' for i in itens)
+    return (f'<p class="det">{d.get("em_dia")}/{d.get("total")} em dia · '
+            f'{d.get("com_morto")} com arquivo aposentado. '
+            f'Desatualizada = rode a ação <b>5</b>.</p>'
+            f'<table><thead><tr><th>projeto</th><th>versão</th><th>estado</th>'
+            f'<th>lições</th><th>layout</th></tr></thead><tbody>{linhas}</tbody></table>')
+
+
+def secao_para_ia(c: Path) -> str:
+    """O bloco que fecha o ciclo: a IA não lê este HTML, lê o JSON."""
+    d = _estado_json(c)
+    if not d:
+        return ""
+    return (
+        '<p>Este HTML é a renderização <b>humana</b>. A renderização de máquina é '
+        '<code>dados/estado.json</code> — mesmo dado, mesma geração, sem prosa. '
+        'Qualquer IA (Claude, Kimi, GPT, Gemini, Codex, Qwen local) lê aquele arquivo '
+        'em vez de parsear cinco markdowns em cinco formatos.</p>'
+        f'<p class="det">schema {d.get("schema")} · gerado {e(str(d.get("gerado_em", "")))} · '
+        'cada número lá dentro carrega o <code>_fonte</code> de onde veio, e campo que '
+        'não pôde ser medido vem <code>null</code> — nunca zero.</p>'
+        '<button class="copiar" data-copiar="python bin/mb-estado.py --stdout">'
+        'copiar comando que gera o JSON</button>')
+
+
 def _titulo_md(relativo: str, texto: str) -> str:
     for linha in texto.splitlines():
         if linha.startswith("# "):
@@ -607,6 +715,46 @@ def _titulo_md(relativo: str, texto: str) -> str:
 
 
 def conteudo_md(inst: Path, na_central: bool) -> tuple[list[tuple[str, str]], str]:
+    """ÍNDICE dos .md — não mais o conteúdo deles.
+
+    260825 (decisão 260825v): esta função embutia os 31 documentos inteiros no
+    HTML — 471 KB, 76% do arquivo. Ela existia porque uma IA precisava do texto
+    e o único jeito era o relatório agregar. Com `dados/estado.json` carregando
+    o índice (caminho, título, tamanho, quando mudou), a IA lê o arquivo de que
+    precisa e o painel volta a ser painel: uma lista de links, não um despejo.
+
+    O leitor humano ganha também — ele clicava e caía num poço de 31 seções
+    sem navegação. Agora vê o que existe e abre o que quer.
+    """
+    import json as _json
+    dados = _json.loads(u.safe_read_text(inst / "dados" / "estado.json") or "{}")
+    docs = (dados.get("documentos") or {}).get("itens") or []
+    if not docs:
+        return [], ('<p class="slot__vazio">índice ausente — rode '
+                    '<code>python bin/mb-estado.py</code></p>')
+    grupos: dict[str, list] = {}
+    for d in docs:
+        raiz = d["caminho"].split("/")[0] if "/" in d["caminho"] else "raiz"
+        grupos.setdefault(raiz, []).append(d)
+    partes = [f'<p class="det">{len(docs)} documento(s). Clique pra abrir o arquivo. '
+              'O texto não é embutido aqui de propósito: 76% deste relatório era '
+              'despejo de markdown que existia só pra IA ler — hoje ela lê '
+              '<code>dados/estado.json</code>.</p>']
+    navs = []
+    for raiz in sorted(grupos):
+        partes.append(f'<h4 class="skills__grupo">{e(raiz)}</h4><table>'
+                      '<thead><tr><th>documento</th><th>tamanho</th><th>mudou</th></tr></thead><tbody>')
+        for d in sorted(grupos[raiz], key=lambda x: x["caminho"]):
+            href = "../" + d["caminho"]
+            kb = f'{d["bytes"] // 1024} KB' if d["bytes"] >= 1024 else f'{d["bytes"]} B'
+            partes.append(f'<tr><td><a href="{e(href)}">{e(d["titulo"])}</a>'
+                          f'<br><code class="det">{e(d["caminho"])}</code></td>'
+                          f'<td>{e(kb)}</td><td>{e(str(d.get("modificado") or "—"))}</td></tr>')
+        partes.append("</tbody></table>")
+    return navs, "".join(partes)
+
+
+def _conteudo_md_antigo(inst: Path, na_central: bool) -> tuple[list[tuple[str, str]], str]:
     """Todo o .md informacional da instância vira seção navegável.
 
     É a metade que vinha do RELATORIO.html antigo. Retorna (índice, html).
@@ -890,8 +1038,10 @@ def gerar_html(c: Path, forcar_snapshot: bool = False) -> bool:
     css_extra += CSS_CONTEUDO
     if ws is not None:
         css_extra += ws.CSS
+    # 260825: navs_md ficou vazio de propósito — o conteúdo virou índice com
+    # link pro arquivo, então não há âncora interna pra listar.
     bloco_indice = ("".join(f'<a href="#{e(i)}">{e(tt)}</a>' for i, tt in navs_md)
-                    if navs_md else '<span class="det">nenhum .md informacional encontrado</span>')
+                    if navs_md else "")
 
     def slot(ident: str, titulo: str, corpo: str, vazio: str = "sem dado nesta instância") -> str:
         """Slot de posição fixa: existe sempre, mesmo vazio. É o que garante
@@ -1019,8 +1169,16 @@ tr.proj--desatualizado td {{ background:var(--signal-soft); }}
   {slot("d7-acoes", "", secao_acoes(c), "registro de ações ausente (bin/mb_registro.py)")}
   {slot("d8-rotina", "Comandos de manutenção", secao_rotina(c), "sem comandos de rotina declarados")}
   {slot("d9-skills", "Suas skills — clique pra ver o que cada uma faz", secao_skills(c), "sem skills declaradas")}
+  {slot("d10-agente", "O que a IA roda nos gates (não é pra você clicar)", secao_agente(c), "sem comandos de gate declarados")}
 
   {slot("d6-telemetria", "Telemetria — o caderninho local desta central", bloco_telemetria, "sem telemetria nesta instância")}
+
+  <!-- ═══ D11-D14 · o que era artefato separado e agora mora aqui ═══ -->
+  <h2 class="faixa">O resto <small>— o que antes eram 5 arquivos separados</small></h2>
+  {slot("d11-agentes", "Uso por agente", secao_agentes(c), "sem eventos em .mb-log/")}
+  {slot("d12-padroes", "O que já se repete e não virou modelo", secao_padroes(c), "compreensor não rodou ainda — ação 2")}
+  {slot("d13-copias", "Os megabrains dos seus projetos", secao_copias(c), "nenhuma cópia de projeto encontrada")}
+  {slot("d14-para-ia", "Para a IA — este HTML não é a fonte", secao_para_ia(c), "dados/estado.json ausente — rode python bin/mb-estado.py")}
 
   <!-- ═══ E · ESTADO DA EXECUÇÃO (segue na aba Painel) ═══ -->
   <h2 class="faixa">Estado da execução <small>— PROGRESSO.json · HANDOFF.md · DECISOES.md · .mb-log/</small></h2>
@@ -1084,8 +1242,8 @@ tr.proj--desatualizado td {{ background:var(--signal-soft); }}
 
   {pa("docs")}
   <!-- ═══ C · CONTEÚDO — os .md da instância, agregados ═══ -->
-  <h2 class="faixa">Documentos <small>— {len(navs_md)} arquivo(s) .md desta instância, na íntegra</small></h2>
-  <nav class="indice">{bloco_indice}</nav>
+  <h2 class="faixa">Documentos <small>— o que existe nesta instância, com link pro arquivo</small></h2>
+  {bloco_indice}
   <div class="doc">{secoes_md}</div>
   {pf()}
 

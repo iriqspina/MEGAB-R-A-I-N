@@ -11,8 +11,9 @@ css  = v.css()                                    # tokens + estilo
 ```
 
 Formas prontas de dados: `modelos/visuais/exemplos.json` (copie e troque os
-valores). Galeria renderizada: `00_painel/CATALOGO-VISUAL.html`
-(`python bin/mb_visual.py --catalogo`).
+valores). Este .md É o catálogo — o gêmeo HTML foi aposentado em
+260825 (mesmo dado, mesmo gerador, nenhum leitor). Renderizado sob
+demanda: `python bin/mb_visual.py --catalogo --catalogo-html X.html`.
 
 Status aceitos em toda mecânica: `ok` ✓ · `ativo` ● · `espera` ○ · `trava` ✕.
 O glifo é derivado pelo renderizador — não passe.

@@ -21,6 +21,14 @@ where python >nul 2>&1
 if errorlevel 1 goto :sempython
 
 echo.
+echo   Medindo o estado (dados\estado.json)...
+echo.
+rem 260825: a fonte e o JSON; o HTML e a renderizacao humana dele. Gerar nesta
+rem ordem garante que o que voce le e o que a IA le sao o mesmo dado.
+rem --sem-suite porque a suite roda em ~4s mas o botao tem que abrir rapido;
+rem quem quiser o verde roda a rotina "python bin\mb-testar.py".
+python bin\mb-estado.py --sem-suite
+echo.
 echo   Regenerando o relatorio...
 echo.
 python bin\mb-relatorio-vivo.py

@@ -76,12 +76,56 @@ ROTINA = [
     ("python bin/mb-relatorio-dna.py",
      "Regenera o relatório que explica o PROTOCOLO para quem chega de fora.",
      "Quando o protocolo mudar de forma, não a cada sessão."),
+    ("python bin/mb-estado.py --campo versao.atual",
+     "Lê um campo do estado por caminho pontilhado, sem abrir o JSON inteiro.",
+     "Quando você (ou uma IA) quer UM número: versao.atual, suite.testes, copias.em_dia."),
     ("python bin/mb-numerar-acoes.py",
      "Confere se os números dos botões batem com este registro (dry-run).",
      "Depois de acrescentar um botão em 01_acoes/."),
     ("python bin/mb-recuperar-megabrain.py",
      "Utilitário de desastre: restaura a central a partir de backup.",
      "Só quando algo se perdeu. Leia o cabeçalho dele antes."),
+    ("python bin/mb-backup-central.py",
+     "Zipa a central inteira num backup datado em .mb-backup/.",
+     "Antes de mexida grande. Com a central em git, é a rede pro que o git não pega."),
+    ("python bin/mb-build-plugin-claude.py",
+     "Regenera o .plugin do Claude a partir das fontes da central.",
+     "Depois de mexer em qualquer SKILL.md. Sem isso o agente carrega a skill velha."),
+    ("python bin/mb-sync-projeto-para-central.py --projeto CAMINHO",
+     "Sobe lição e mudança de um projeto para a central — a mão dupla do sync.",
+     "Quando você registrou lição dentro de um projeto e ela precisa valer em todos."),
+    ("python bin/mb-manutencao-cerebro.py",
+     "Ciclo de vida do cérebro: página vencida, link quebrado, fila de raw/.",
+     "De vez em quando, ou quando o painel acusar página velha."),
+    ("python bin/mb-estado.py",
+     "Mede a central inteira e grava dados/estado.json — a fonte única, legível por máquina.",
+     "É o que o botão 1 roda antes de abrir. Rode direto quando quiser o dado sem o HTML."),
+    ("python bin/mb-magra.py --todos",
+     "Confere se as cópias de projeto estão no formato magro (dry-run; --aplicar converte).",
+     "Depois de criar projeto novo, ou se desconfiar que alguma cópia engordou de volta."),
+    ("python bin/mb-auditar-copias.py",
+     "Audita as cópias de megabrain dos projetos: versão, arquivo aposentado, nome velho.",
+     "Depois de bump na central, ou quando desconfiar que um projeto ficou pra trás."),
+]
+
+
+# O que a IA roda por conta nos GATES. Não é botão (você não clica) nem rotina
+# (você não chama) — mas se não estiver declarado em lugar nenhum, o gate não
+# acontece. Medido em 260825: `mb-mapa-refs.py` tem 4 citações em SKILL.md e
+# ZERO execuções registradas em 6 dias de log. É a melhor regra do Gate 3
+# ("lista de quem quebra é verificação; 'tem certeza?' não é") e ninguém roda.
+# Comando que não aparece em lugar nenhum é comando que não acontece.
+#   (comando, gate, o que faz, o que quebra se não rodar)
+AGENTE = [
+    ("python bin/mb-preflight.py --repo .", "Gate 0",
+     "git, skills instaladas × fonte, fatos vencidos, resíduo de nome antigo, CRLF dos .cmd.",
+     "A sessão começa em cima de estado que ninguém leu."),
+    ("python bin/mb-mapa-refs.py NOME", "Gate 3",
+     "Lista QUEM CONSOME uma peça compartilhada antes de editá-la.",
+     "A IA edita tema, script ou skill sem saber o que quebra."),
+    ("python bin/mb-slop-visual.py ARQUIVO", "Gate 4",
+     "Vigia de slop visual: gradiente de estoque, grade uniforme, transition all, CTA genérico.",
+     "Peça visual sai com cara de template."),
 ]
 
 # Skills DELE. As de plugin de terceiro (cloudflare, figma, adobe, wordpress,
@@ -104,6 +148,9 @@ SKILLS_DELE = [
     ("conclusao-megabrain", "central",
      "Ponteiro para o Gate 6. Fecha ESTADO/HANDOFF/DECISOES e esgota execução autônoma antes de te perguntar algo.",
      "/conclusao-megabrain · \"fecha isso\""),
+    ("leigolanguage", "central",
+     "Explica uma decisão técnica pra você poder decidir: o que é (no seu mundo), como está hoje (medido), os caminhos, o que dói se der errado, e a recomendação.",
+     "/leigolanguage · \"não entendi\" · \"isso é bom ou ruim?\" · automático quando a pergunta exige um conceito que você não usou primeiro"),
     ("registrar-licao", "plugin",
      "Grava uma lição no formato GATILHO / LIÇÃO / ATALHO.",
      "/registrar-licao · depois de errar e descobrir por quê"),

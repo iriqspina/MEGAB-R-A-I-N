@@ -1,0 +1,126 @@
+{
+  "schema": 1,
+  "atualizado_em": "2026-08-25T11:37:50",
+  "epics": [
+    {
+      "id": "djinn-mec2",
+      "titulo": "Fila de tasks com dependências e ondas",
+      "status": "feito",
+      "origem": "djinnai.io — mecânica 2 adaptada"
+    },
+    {
+      "id": "djinn-mec3",
+      "titulo": "AI reviewer contra acceptance criteria",
+      "status": "em_progresso",
+      "origem": "djinnai.io — mecânica 3 adaptada"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "m2-t1",
+      "epic": "djinn-mec2",
+      "titulo": "Criar schema de fila em dados/fila.json",
+      "descricao": "JSON com epics e tasks, campos de dependência, prioridade, dono e estado.",
+      "blocked_by": [],
+      "prioridade": 1,
+      "dono": "codex",
+      "estado": "feito"
+    },
+    {
+      "id": "m2-t2",
+      "epic": "djinn-mec2",
+      "titulo": "Criar bin/mb-fila.py",
+      "descricao": "CLI que lista tasks, calcula ondas, mostra próxima pronta e avança estado.",
+      "blocked_by": [
+        "m2-t1"
+      ],
+      "prioridade": 1,
+      "dono": "codex",
+      "estado": "feito"
+    },
+    {
+      "id": "m2-t3",
+      "epic": "djinn-mec2",
+      "titulo": "Adicionar testes para mb-fila.py",
+      "descricao": "Testar cálculo de ondas, detecção de ciclo e avanço de estado.",
+      "blocked_by": [
+        "m2-t2"
+      ],
+      "prioridade": 2,
+      "dono": "codex",
+      "estado": "feito"
+    },
+    {
+      "id": "m2-t4",
+      "epic": "djinn-mec2",
+      "titulo": "Integrar fila ao estado.json",
+      "descricao": "mb-estado.py exporta resumo do board: total, prontas, ondas, bloqueios.",
+      "blocked_by": [
+        "m2-t2"
+      ],
+      "prioridade": 2,
+      "dono": "codex",
+      "estado": "feito"
+    },
+    {
+      "id": "m2-t5",
+      "epic": "djinn-mec2",
+      "titulo": "Documentar decisão e fechar pendência",
+      "descricao": "Registrar em DECISOES.md e atualizar arquivo de pendências do djinnai.",
+      "blocked_by": [
+        "m2-t3",
+        "m2-t4"
+      ],
+      "prioridade": 3,
+      "dono": "codex",
+      "estado": "feito"
+    },
+    {
+      "id": "m3-t1",
+      "epic": "djinn-mec3",
+      "titulo": "Template de spec com acceptance criteria",
+      "descricao": "Criar modelos/spec.md com seções problema, meta e acceptance criteria checklist.",
+      "blocked_by": [],
+      "prioridade": 1,
+      "dono": "codex",
+      "estado": "feito"
+    },
+    {
+      "id": "m3-t2",
+      "epic": "djinn-mec3",
+      "titulo": "Criar bin/mb-review-criteria.py",
+      "descricao": "Ler spec, extrair acceptance criteria, comparar com diff do git e gerar parecer.",
+      "blocked_by": [
+        "m3-t1"
+      ],
+      "prioridade": 1,
+      "dono": "codex",
+      "estado": "feito"
+    },
+    {
+      "id": "m3-t3",
+      "epic": "djinn-mec3",
+      "titulo": "Adicionar testes para mb-review-criteria.py",
+      "descricao": "Testar extração de critérios, matching heurístico e relatório.",
+      "blocked_by": [
+        "m3-t2"
+      ],
+      "prioridade": 2,
+      "dono": "codex",
+      "estado": "feito"
+    },
+    {
+      "id": "m3-t4",
+      "epic": "djinn-mec3",
+      "titulo": "Documentar decisão da mecânica 3",
+      "descricao": "Registrar em DECISOES.md e atualizar pendência do djinnai.",
+      "blocked_by": [
+        "m3-t2",
+        "m3-t3"
+      ],
+      "prioridade": 3,
+      "dono": "codex",
+      "estado": "feito"
+    }
+  ]
+}

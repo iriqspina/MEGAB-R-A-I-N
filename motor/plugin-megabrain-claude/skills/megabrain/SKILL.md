@@ -57,8 +57,15 @@ agente não começa do zero). Detalhe passo a passo, quando precisar:
 `referencias/260810_gates-entrega.md`.
 
 - **0 ASSUMIR** — 1º pedido da sessão: `python bin/mb-preflight.py --repo <ROOT>`.
-  `git pull`. Ler `ESTADO.md → HANDOFF.md → fim de DECISOES.md → LICOES.md`
-  (o que o hook já injetou, não reler). Trava: `TRAVADO_POR:` no HANDOFF —
+  **Estado em uma leitura: `python bin/mb-estado.py --sem-suite` → `dados/estado.json`**
+  (v7.5). É a fonte legível por máquina — versão, meta, bloqueio, trava, memória,
+  decisões, cópias de projeto, registro de ações/skills, tudo com `_fonte` e com
+  `null` onde não foi medido. **Vale igual pra Claude, Kimi, GPT, Gemini, Codex e
+  Qwen local**: ninguém precisa parsear cinco markdowns em cinco formatos, nem
+  saber em que layout a central está. Um campo só:
+  `python bin/mb-estado.py --campo estado.bloqueio`.
+  Prosa (o *porquê*) continua em `ESTADO.md → HANDOFF.md → fim de DECISOES.md →
+  LICOES.md` — leia **depois** do JSON e só o que o hook não injetou. Trava: `TRAVADO_POR:` no HANDOFF —
   `bin/mb-sync.py` lock/release. Versão: `bin/mb-check-version.py --projeto <p>`
   (cria/atualiza o megabrain do projeto e o `cerebro/`; projeto mais novo que a
   central = parar e perguntar). Fonte que o usuário trouxe → `02_entrada` ou

@@ -90,7 +90,11 @@ EXCLUIR = {
     "gerenteneuron/vault",
     "gerenteneuron/data",
     "gerenteneuron/.mb-aspirador",
-    "gerenteneuron/projetos.json",
+    # 260825: match por SUBSTRING mata o `.example` junto — é o espelho exato
+    # do caso .env/.env.example de 260824, na direção oposta: aqui a substring
+    # remove o arquivo ÚTIL. O `projetos.json` real (dados locais) sai por
+    # EXCLUIR_NOME_EXATO logo abaixo; o exemplo fica, que é o ponto dele.
+    "gerenteneuron/projetos.json.NAO-USAR-SUBSTRING",
     # Fonte local do plugin Kimi (SYSTEM.md, hooks, skills internas). Publicar
     # o wrapper do plugin é decisão pendente — até lá, fica fora do pacote.
     # 260821 (v6.1): com a barra final, pra NÃO casar com plugin-megabrain-claude/
@@ -121,6 +125,9 @@ EXCLUIR_NOME_EXATO = {
     # O .gitignore segurou o commit, mas o arquivo não podia nem chegar lá.
     # Match exato preserva o .env.example, que É útil no pacote público.
     ".env",
+    # 260825: dados locais de projeto. Aqui por NOME EXATO pra preservar o
+    # projetos.json.example, que é documentação do formato.
+    "projetos.json",
     # 260824 (v7.4): a mensagem de commit e escrita em _github/ (o PowerShell
     # 5.1 mete BOM, entao ela vem do python). O gerador espelhava _github/ e
     # ela entrava no export -> robocopy -> indice do repo publico.

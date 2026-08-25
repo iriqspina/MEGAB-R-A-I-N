@@ -204,7 +204,55 @@ def hash_commit_local(pasta):
         return None
 
 
+def e_copia_magra(mb_projeto) -> bool:
+    """A cópia declarou formato magro no `.mb-origem.json`?
+
+    260825 (decisão 260825aa): sem esta checagem o sync ENGORDA de volta as 19
+    cópias no primeiro `--auto`, e a conversão inteira se desfaz em silêncio.
+    É a lição "melhoria que para na fronteira" aplicada ao contrário: quem
+    muda o formato tem que ensinar o sync a respeitar o formato novo.
+    """
+    import json as _j
+    txt = u.safe_read_text(Path(mb_projeto) / ".mb-origem.json")
+    if not txt:
+        return False
+    try:
+        return (_j.loads(txt) or {}).get("formato") == "magra"
+    except (ValueError, TypeError):
+        return False
+
+
+def sincronizar_magra(central, mb_projeto, dry_run=False) -> bool:
+    """Cópia magra: o sync atualiza o PONTEIRO, não copia máquina.
+
+    A máquina vive na central. O que a cópia precisa saber é onde ela está, de
+    qual commit veio e quando foi conferida — e isso é `gravar_origem`.
+    """
+    central_path = Path(central).resolve()
+    mb_path = Path(mb_projeto).resolve()
+    print("cópia MAGRA — atualizando o ponteiro, sem copiar máquina")
+    if dry_run:
+        print("dry-run: gravaria .mb-origem.json com formato=magra")
+        return True
+    gravar_origem(central_path, mb_path)
+    # gravar_origem não conhece o campo `formato`; preserva ele aqui.
+    import json as _j
+    arq = mb_path / ".mb-origem.json"
+    try:
+        d = _j.loads(u.safe_read_text(arq) or "{}")
+        d["formato"] = "magra"
+        d.setdefault("como_usar", "A máquina está na central; rode os scripts de lá "
+                                  "apontando pra este projeto.")
+        arq.write_text(_j.dumps(d, ensure_ascii=False, indent=2), encoding="utf-8")
+    except (ValueError, OSError):
+        pass
+    print("sync concluído com sucesso")
+    return True
+
+
 def sincronizar_central_para_projeto(central, mb_projeto, dry_run=False):
+    if e_copia_magra(mb_projeto):
+        return sincronizar_magra(central, mb_projeto, dry_run)
     print("sincronizando central -> projeto...")
     central_path = Path(central).resolve()
     mb_projeto_path = Path(mb_projeto).resolve()
@@ -264,13 +312,31 @@ def gravar_origem(central: Path, mb_projeto: Path) -> None:
         if (cand / ".git").exists():
             repo = cand
             break
+    # 260825: a linha de versão da central tem ~3,5 KB de changelog. Escrevê-la
+    # inteira aqui fazia o PONTEIRO — que na cópia magra é o arquivo mais
+    # importante do projeto — carregar mais texto que informação. Guarda-se a
+    # versão curta; o changelog inteiro tem um lugar só, e é o VERSAO.txt.
+    linha = ler_versao(central) or ""
+    curta = linha.split("—")[0].strip() if "—" in linha else linha[:40]
+
+    anterior = {}
+    try:
+        anterior = json.loads(u.safe_read_text(mb_projeto / ".mb-origem.json") or "{}")
+    except (ValueError, TypeError):
+        anterior = {}
+
     dados = {
-        "versao": ler_versao(central),
+        "versao_curta": curta,
         "commit_central": hash_commit_local(str(repo)) if repo else None,
         "repo_central": str(repo) if repo else None,
         "sincronizado_em": dt.datetime.now().astimezone().isoformat(timespec="seconds"),
         "central": str(central),
     }
+    # campos do formato magro sobrevivem ao sync — se sumirem, o sync engorda
+    # a cópia de volta no próximo --auto.
+    for chave in ("formato", "como_usar", "restaurar_copia_cheia"):
+        if anterior.get(chave):
+            dados[chave] = anterior[chave]
     if not u.atomic_write_text(mb_projeto / ".mb-origem.json",
                                json.dumps(dados, ensure_ascii=False, indent=2) + "\n"):
         print("  AVISO: não gravei MEGABRAIN/.mb-origem.json (versão puxada fica só no VERSAO.txt)")

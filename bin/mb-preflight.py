@@ -57,6 +57,11 @@ TEXTO = {".md", ".txt", ".py", ".cmd", ".js", ".mjs", ".json", ".yaml", ".yml", 
 PULAR_DIRS = {".git", "node_modules", "__pycache__", ".venv", "venv", ".mb-backup",
               ".mb-aspirador", ".dna-backup", ".megabrain", ".mb-log", "_to_delete", "99_to_delete",
               "260810_backup-raiz-perfil", "260810_variantes", "_github", "90_arquivo",
+              # 260825: dados/ é DERIVADO — `mb-estado.py` monta o índice a
+              # partir dos .md, então qualquer resíduo ali já foi contado na
+              # fonte. Acusar o derivado é contar o mesmo texto duas vezes e
+              # treinar a ignorar o gate (lição 260822).
+              "dados",
               ".orquestrador"}  # diálogos antigos do orquestrador: artefato de execução
 assert not any("/" in d or "\\" in d for d in PULAR_DIRS), (
     "PULAR_DIRS casa por nome de pasta: entrada composta nunca casa")

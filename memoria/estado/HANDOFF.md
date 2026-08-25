@@ -6,21 +6,32 @@ ESCOPO: —
 
 ## PARA VOCÊ (<USUARIO>)
 
-1. ~~**Reinstale o plugin 1.6.3**~~ — FEITO (260824, confirmado por ele ao
-   Kimi). Mudou a skill
-   megabrain (layout motor\) e a /ingerir (wikilink + mapa do cérebro).
-2. **Obsidian: FEITO** — instalado por você, vault registrado e aberto no
-   cérebro. Vault `Downloads` removido por você (260824). Sobrou só decidir se
-   apaga o `.obsidian\` que ficou dentro de `<USER_HOME>\Downloads`.
-   Quando quiser, abra o grafo (Ctrl+G) e me diga se a leitura serve.
-3. **Olhe a aba Cérebro** no relatório (00_painel\RELATORIO.html) e me diga se
-   a leitura serve. É a aba nova, junto com a caixa "você perguntou".
-4. **Nota do portfólio**: `<PROJETOS_ROOT>\Portfolio\260824_nota_megabrain-como-case.md`
-   — decisões que são suas (case ou bastidor, quanto mostrar, formato).
-5. Sessões à parte quando quiser: Ollama+reindex · pesquisa de modos (item 7,
-   pausado por você) · triagem de 04_visuais · legado dos agentes.
+1. **Push.** O `repo-local` tem 1 commit sem push (`ee84eca`, rodado pelo
+   auditor com autorização dele) e a central ganhou mais commits depois — o
+   `10_publicar-e-fotografar` precisa rodar de novo pra convergir, e o
+   `11_enviar-pro-github` sobe. Nenhum dos dois roda sozinho.
+2. **Fase 3** — os 18 megabrains de projeto contra a central.
+3. **Mecânica 1 do djinnai.io** (specs vivas com sign-off obsoleto): está na
+   fila como próxima. Quer implementar, arquivar como referência ou descartar?
+4. **Resíduo histórico no git público**: `pyvenv.cfg` e 3 caminhos pessoais em
+   commits antigos do clone. Sem chave; revela usuário e caminho local.
+   Recomendação da auditoria: deixar como está e documentar.
 
-## O que mudou nesta sessão (260824, 4ª — fila 2→6)
+## O que mudou nesta sessão (260825, 5ª — fila do djinnai.io)
+
+- **Fila de tasks** (mecânica 2 do djinnai.io): `dados/fila.json` com epics,
+  tasks, `blocked_by`, prioridade, dono e estado; `bin/mb-fila.py` calcula
+  ondas, lista prontas e avança estado; `motor/tests/test_mb_fila.py` (10
+  casos); integração via `col_fila()` em `bin/mb-estado.py`.
+- **AI reviewer** (mecânica 3 do djinnai.io): `modelos/SPEC.md` e
+  `bin/mb-review-criteria.py` leem acceptance criteria da spec ou do
+  `META.md`, comparam com diff/status do git e geram parecer Markdown/JSON
+  antes de handoff; `motor/tests/test_mb_review_criteria.py` (9 casos).
+- **Aposentadoria do `bin/mb-specimen.py`**: movido para
+  `90_arquivo/scripts-uso-unico-260825/mb-specimen.py` com LEIAME atualizado.
+  Uso único de 260822, sem chamador vivo, escrevia `/tmp/spec/out` no import.
+
+## O que mudou na sessão anterior (260824, 4ª — fila 2→6)
 
 - **Painel** (item 2): 7ª aba **Cérebro** (wiki/pessoas/raw, validade das
   páginas, fila de 02_entrada, ponteiro do Obsidian) e o componente `.ask`
@@ -47,32 +58,36 @@ ESCOPO: —
 - `_github/repo-local` recebe o layout novo (motor\) no próximo
   **publicar e fotografar** — é robocopy /MIR, então a árvore antiga sai
   sozinha.
+- Resposta do auditor sobre o resíduo no histórico do git: recomendado deixar
+  como está e documentar. Aguardando sua decisão.
 
 ## Próximo passo
 
-Sessão de trabalho seguinte: escolher entre (a) compreensores de padrões
-(spec §7, agora que a telemetria existe), (b) pesquisa de referências de
-modos pra você estudar, ou (c) o case do portfólio.
+Sessão de trabalho seguinte: decidir sobre a **mecânica 1 do djinnai.io**
+(specs vivas com sign-off obsoleto) — implementar, arquivar como referência no
+`cerebro/wiki/`, ou descartar. Depois disso: push da central, Fase 3 dos
+megabrains de projeto, e trava por escopo com histórico.
 
 ## Arquivos tocados
 
-- `bin/`: mb_telemetria.py · mb-mapa-refs.py · mb-migrar-motor.py ·
-  mb-testar.py · mb-obsidian.py (novos) · mb_utils.py · mb_workspace.py ·
-  mb-relatorio-vivo.py · mb-contexto.py · mb-check-version.py ·
-  mb-generate-template.py · mb-build-plugin-claude.py · mb-preflight.py ·
-  mb-indice-licoes.py · mb-aspirador.py · mb-observar.py ·
-  mb-orquestrador-ia.py · mb-patch-v5.py · mb-sync-projeto-para-central.py ·
-  mb-relatorio-dna.py · mb-recuperar-megabrain.py · mb-arrumar.py ·
-  mb_visual.py · mb-checar-meta.py
-- `motor/tests/`: test_mb_layout.py e test_mb_telemetria.py (novos) + os 4
-  antigos com raiz achada por subida
-- `01_acoes/`: 03_abrir-cerebro-obsidian.cmd (novo) · sincronizar-projetos ·
-  novo-projeto · refresh-plugin-kimi (só os caminhos, por reescrita de bytes)
-- `motor/gerenteneuron/`: gerente.py · app.py · router.py · aspirar.cmd
-- `memoria/`: ESTADO · HANDOFF · DECISOES (+6) · licoes (+4) · VERSAO ·
-  CHECKLIST · MEGABRAIN.md · README.md · pendencias/260824_portfolio-megabrain
-- `03_docs/260824_megabrain-do-zero.html` (boards 15, 15B e o índice)
-- `.gitignore` · `.claude/CLAUDE.md` · `memoria/cerebro/.obsidian/`
+- `bin/`: mb-fila.py (novo) · mb-review-criteria.py (novo) ·
+  mb_telemetria.py · mb-mapa-refs.py · mb-migrar-motor.py · mb-testar.py ·
+  mb-obsidian.py · mb_utils.py · mb_workspace.py · mb-relatorio-vivo.py ·
+  mb-contexto.py · mb-check-version.py · mb-generate-template.py ·
+  mb-build-plugin-claude.py · mb-preflight.py · mb-indice-licoes.py ·
+  mb-aspirador.py · mb-observar.py · mb-orquestrador-ia.py · mb-patch-v5.py ·
+  mb-sync-projeto-para-central.py · mb-relatorio-dna.py ·
+  mb-recuperar-megabrain.py · mb-arrumar.py · mb_visual.py · mb-checar-meta.py
+- `motor/tests/`: test_mb_fila.py (novo) · test_mb_review_criteria.py (novo) ·
+  test_mb_layout.py · test_mb_telemetria.py + os 4 antigos com raiz achada por
+  subida
+- `motor/modelos/`: SPEC.md (novo)
+- `dados/`: fila.json (novo) · estado.json (regenerado)
+- `90_arquivo/scripts-uso-unico-260825/`: mb-specimen.py (aposentado) ·
+  LEIAME.md
+- `memoria/`: ESTADO · HANDOFF · DECISOES (+2) · licoes · VERSAO · CHECKLIST ·
+  MEGABRAIN.md · README.md
+- `.gitignore` · `.claude/CLAUDE.md`
 
 ## Risco pra próxima sessão
 
@@ -85,15 +100,3 @@ modos pra você estudar, ou (c) o case do portfólio.
 - A pasta da central tem DOIS espaços antes do N.
 - Ao mexer no gerador do pacote público, auditar a saída atrás de `.env`,
   `pyvenv.cfg`, `vault` e `dna/usuario` antes de publicar.
-
-<!-- mb-sync:lock:start -->
-USUARIO: SYSTEM
-TRAVADO_POR: claude
-ATE: 2026-08-25 14:24
-ESCOPO:
-  - memoria/estado
-  - 01_acoes
-  - bin
-  - 00_painel
-  - motor/skills
-<!-- mb-sync:lock:end -->

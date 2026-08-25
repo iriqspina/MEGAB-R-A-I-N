@@ -48,3 +48,8 @@ __pycache__/
 # e engorda o diff a cada lição nova.
 motor/dna/indice-licoes.json
 motor/dna/indice-cerebro.json
+
+# --- dados/: derivado, regenerado a cada clique no botão 1. Versionar cria
+# churn de 18 KB por execução sem contar história nenhuma — a história de
+# verdade está nos .md que ele lê pra montar.
+dados/estado.json

@@ -347,8 +347,9 @@ def catalogo_md() -> str:
         "css  = v.css()                                    # tokens + estilo",
         "```", "",
         "Formas prontas de dados: `modelos/visuais/exemplos.json` (copie e troque os",
-        "valores). Galeria renderizada: `00_painel/CATALOGO-VISUAL.html`",
-        "(`python bin/mb_visual.py --catalogo`).", "",
+        "valores). Este .md É o catálogo — o gêmeo HTML foi aposentado em",
+        "260825 (mesmo dado, mesmo gerador, nenhum leitor). Renderizado sob",
+        "demanda: `python bin/mb_visual.py --catalogo --catalogo-html X.html`.", "",
         "Status aceitos em toda mecânica: `ok` ✓ · `ativo` ● · `espera` ○ · `trava` ✕.",
         "O glifo é derivado pelo renderizador — não passe.", "",
         "| id | quando usar | dados | custo |", "|---|---|---|---|",
@@ -377,11 +378,18 @@ if __name__ == "__main__":
     if "--catalogo" in sys.argv:
         md = raiz() / "CATALOGO.md"
         md.write_text(catalogo_md(), encoding="utf-8")
-        print(f"catálogo md: {md}")
-        destino = raiz().parent.parent / "00_painel" / "CATALOGO-VISUAL.html"
-        destino.parent.mkdir(parents=True, exist_ok=True)
-        destino.write_text(pagina_catalogo(), encoding="utf-8")
-        print(f"catálogo: {destino}  ({destino.stat().st_size // 1024} KB, {len(ids())} mecânicas)")
+        print(f"catálogo md: {md}  ({len(ids())} mecânicas)")
+        # 260825 (decisão 260825n): o gêmeo HTML foi aposentado. Ele saía do
+        # mesmo gerador e do mesmo dado que o .md, e o leitor real do catálogo
+        # é o agente montando peça — que lê markdown. Ninguém abria o HTML: 3
+        # dias sem regenerar e nenhum link apontando pra ele.
+        # Pra ver renderizado: `--catalogo-html CAMINHO`, sob demanda.
+        if "--catalogo-html" in sys.argv:
+            i = sys.argv.index("--catalogo-html")
+            destino = Path(sys.argv[i + 1]) if i + 1 < len(sys.argv) else Path("CATALOGO-VISUAL.html")
+            destino.parent.mkdir(parents=True, exist_ok=True)
+            destino.write_text(pagina_catalogo(), encoding="utf-8")
+            print(f"html sob demanda: {destino}  ({destino.stat().st_size // 1024} KB)")
     elif "--listar" in sys.argv:
         for m in catalogo():
             print(f"{m['id']:<18} {m.get('nome','')}\n{'':18} quando: {m.get('quando','')}")

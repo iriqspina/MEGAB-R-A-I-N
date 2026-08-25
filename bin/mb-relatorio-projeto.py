@@ -1134,11 +1134,27 @@ def main():
     """
     print("mb-relatorio-projeto.py foi fundido no relatório vivo na v6.6.")
     print("O relatório é um só: bin/mb-relatorio-vivo.py (grava RELATORIO.html).")
-    print("Delegando...\n")
     vivo = Path(__file__).resolve().parent / "mb-relatorio-vivo.py"
-    if vivo.is_file():
-        raise SystemExit(subprocess.call([sys.executable, str(vivo)]))
-    print("ERRO: bin/mb-relatorio-vivo.py não encontrado.")
+    if not vivo.is_file():
+        print("ERRO: bin/mb-relatorio-vivo.py não encontrado.")
+        raise SystemExit(1)
+
+    # 260825 (decisão 260825ab): a delegação chamava o vivo SEM ARGUMENTO e
+    # ignorava --projeto e --saida — quem pedia o relatório de um projeto
+    # recebia o da CENTRAL, sem erro. Ficou assim desde a v6.6 e só apareceu
+    # hoje, quando a cópia magra tirou o script de dentro dos projetos e os
+    # wrappers passaram a chamar a central: o do Financeiro da Silva morreu
+    # com FileNotFoundError num arquivo que nunca foi escrito.
+    # Quem passa --projeto/--saida quer a página agregada daquele projeto —
+    # isso é o modo legado, que continua existindo e sabe fazer.
+    argv = sys.argv[1:]
+    if any(a.startswith("--projeto") or a.startswith("--saida") for a in argv):
+        print("argumentos de projeto detectados → modo legado (página agregada "
+              "daquele projeto), em vez de delegar pro relatório da central.\n")
+        return _main_legado()
+
+    print("Delegando...\n")
+    raise SystemExit(subprocess.call([sys.executable, str(vivo)]))
     raise SystemExit(1)
 
 

@@ -1630,3 +1630,336 @@ POR QUÊ: as outras origens têm crédito e licença no ponto de uso (ECC MIT em
 `mb-slop-visual.py:10`, Pocock MIT em `grelhar/SKILL.md:9`); Traycer era a
 única viva sem nada. E a resposta certa aqui não é a mesma das outras, porque
 a relação é outra.
+
+
+## 260825j — a central vira repositório git, e este versiona dado pessoal
+DECISÃO: `git init` na central, sem remote e sem push. `.gitignore` PRÓPRIO,
+diferente do público: ficam de fora credenciais (`gerenteneuron/.env`,
+`.venv`, `vault`), `_github/` (é git aninhado — viraria gitlink quebrado),
+`.mb-backup/` (28 MB regeneráveis), `.mb-log/` (o hook escreve a cada prompt)
+e os índices com embedding. Dado pessoal ENTRA: `licoes-megabrain.md` e
+`260810_memoria-pessoal.md` são exatamente o que precisa ser recuperável.
+`.gitattributes` com `* -text`: backup byte-exato.
+ALTERNATIVA DESCARTADA: (a) herdar o `.gitignore` do pacote público — ele
+exclui `licoes-megabrain.md`, ou seja, o repo não versionaria justamente o
+arquivo que motivou criá-lo; (b) continuar com zip periódico — o último
+completo era de 22/08, três dias e quatro sessões atrás.
+POR QUÊ: 5 agentes escrevendo no mesmo disco e nenhuma detecção de conflito.
+O auditor pegou um agente-irmão escrevendo em `META.md` às 09:50 com a trava
+marcando `livre`. Sem git, decisão sobrescrita some sem diff.
+
+## 260825k — /conclusao-megabrain vira ponteiro pro Gate 6
+DECISÃO: a skill perde o corpo e passa a mandar executar o Gate 6 da skill
+`megabrain`. O comando continua existindo; some a segunda fonte de verdade.
+ALTERNATIVA DESCARTADA: matar de vez — quebra um hábito dele sem ganho, já
+que o custo era a divergência, não a existência do comando.
+POR QUÊ: duplicava o Gate 6 inteiro e divergia dele — carregava o teto de
+"máx. 2 perguntas por rodada" que a decisão 260824 revogou. E estava instalada
+nos dois agentes, contradizendo o protocolo em produção.
+
+## 260825l — o número das ações é declarado, não é a ordem da pasta
+DECISÃO: `bin/mb_registro.py` guarda `ACOES` (11), `ROTINA` (7) e
+`SKILLS_DELE` (13). O número vem de lá; `bin/mb-numerar-acoes.py` renomeia o
+disco pra bater (`01_` a `11_`) e o relatório monta o painel da mesma fonte.
+Botão novo entra no fim com o próximo livre; número aposentado nunca é reusado.
+O prefixo entra no NOME DO ARQUIVO, não só no HTML.
+ALTERNATIVA DESCARTADA: (a) numerar pela ordem alfabética da pasta — entra um
+botão e "o script 3" vira outro na semana seguinte, quebrando toda frase já
+dita; (b) número só no relatório — é na PASTA que ele se perde, foi o que ele
+descreveu.
+POR QUÊ: pedido dele em 260825 — "aí vc fala clica ali no script 3 e fica
+fácil de achar, não por nome". Número só cumpre isso se for estável.
+
+## 260825m — filtro por nome de pasta: a terceira ocorrência vira assert
+DECISÃO: `PULAR_DIRS` em `bin/mb-preflight.py` troca `"_github/export"` por
+`"_github"`, ganha `"90_arquivo"` e um `assert` que recusa barra no import —
+igual ao de `IGNORAR_CENTRAL` (260825b).
+ALTERNATIVA DESCARTADA: só documentar — é a 3ª vez que a mesma família de bug
+aparece (relatório, cópia de central, preflight) e lição não executa nada.
+POR QUÊ: a entrada composta nunca casava e dois cheques varriam o export
+inteiro à toa. Junto: um `manifest.json` de migração ARQUIVADA fazia o
+preflight sair com veredito PENDÊNCIA toda abertura de sessão — gate que
+acusa história treina a ignorar o gate.
+
+## 260825n — 6 artefatos de saída viram 3, critério: um leitor por artefato
+DECISÃO: `PAINEL-MEGABRAIN.html` (2,7 MB), `CATALOGO-VISUAL.html` e o gerador
+`bin/mb-painel.py` vão pra `90_arquivo/artefatos-aposentados-260825/` com
+LEIAME. `mb_visual.py --catalogo` para de gerar o gêmeo HTML (fica sob demanda
+em `--catalogo-html CAMINHO`). Ficam: `RELATORIO.html` (ele, ao vivo),
+`RELATORIO-DNA.html` (terceiro replicando o protocolo) e `CATALOGO.md`
+(agente montando peça). Fecha a decisão de 260824 que ficou pela metade.
+ALTERNATIVA DESCARTADA: (a) manter o PAINEL como anexo linkado, que era a
+decisão de 260824 — 260 dias depois não havia um único `href` apontando pra
+ele; ninguém constrói o link porque ninguém abre; (b) fundir tudo num arquivo
+— foi rejeitado em 260824 por peso, e continua certo.
+POR QUÊ: o contrato dizia "direcionado a usuário E IA" (MEGABRAIN.md §5b) e
+essa frase É a origem do inchaço. Nada que sirva os dois ao mesmo tempo
+sobrevive sem virar despejo.
+
+## 260825o — Gate 2 deixa de ser sensação e passa a ter número
+DECISÃO: `bin/mb-contexto.py` registra `contexto_injetado` (chars + peças +
+sessão) na telemetria a cada prompt. O Gate 2 troca ">85% de contexto" por
+dois sinais que o agente REALMENTE sabe: 80 mil chars injetados ou 40 arquivos
+lidos na sessão → HANDOFF + commit + recomeçar.
+ALTERNATIVA DESCARTADA: (a) descer o Gate 2 pra nota do Gate 6 — era a saída
+honesta se não houvesse medidor, mas o hook já calculava `len(bloco)` e só não
+guardava; (b) manter o percentual — nenhum agente conhece a própria janela.
+POR QUÊ: regra de ouro 21 — garantia real é script, não markdown. Um gate que
+só pode ser cumprido por sensação não é gate.
+
+## 260825p — o painel mostra as skills DELE, não as 44 instaladas
+DECISÃO: `SKILLS_DELE` em `bin/mb_registro.py` declara 13 — as 5 do protocolo,
+`registrar-licao`, as 4 de projeto e as 3 do Matt Pocock — com o que faz e o
+gatilho, cada uma expansível no painel. As ~31 de plugin de terceiro
+(cloudflare, figma, adobe, wordpress, canva) não entram.
+ALTERNATIVA DESCARTADA: (a) listar as 44 — é o problema que ele descreveu
+("fico olhando vários e perdido"), agora com 31 itens que ele não escreveu nem
+mantém; (b) varrer `~/.claude/skills/` e filtrar por heurística — não existe
+sinal confiável de autoria no diretório, e lista declarada ele controla.
+POR QUÊ: pedido dele — "todas as skills e explicadas caso vc clicar,
+expandindo". "Todas" que importa é o conjunto dele.
+
+
+## 260825q — fase 3: as 19 cópias de projeto auditadas e limpas
+DECISÃO: `bin/mb-auditar-copias.py` nasce como o verificador das cópias —
+versão × central, arquivo que a central já aposentou, `.cmd` com nome velho,
+contagem de lições. Rodado com `--limpar`: **300 arquivos movidos** (não
+apagados) pra `<projeto>/90_arquivo/aposentados-260825/`, cada pasta com
+LEIAME explicando o motivo de cada arquivo. As 19 cópias foram sincronizadas
+pra v7.5. A lição própria do TLOU (`260816 — resetBlocks apaga o que o usuário
+editou`) foi fundida na central antes de sobrescrever a cópia.
+ALTERNATIVA DESCARTADA: (a) deixar as cópias como estão porque "são
+descartáveis" — 6 delas serviam `PAINEL-MEGABRAIN.html` e 8 `.cmd` com nome de
+260810, ou seja, quem abrisse a pasta MEGABRAIN de um projeto recebia a
+experiência de 10 de agosto; (b) apagar direto — regra dele, poda com rede;
+(c) sobrescrever o `licoes-megabrain.md` do TLOU sem olhar — teria perdido a
+única lição que só existia lá. Mesma armadilha da 260825a, 8 horas depois.
+POR QUÊ: a reorganização de pastas melhorou a central e parou na fronteira.
+31 MB de peso morto espalhado em 19 lugares, e o sync só ACRESCENTA — nunca
+remove — então nada saía sozinho.
+
+## 260825r — a cópia de projeto carrega 68× mais máquina do que conteúdo
+DECISÃO (medida registrada, escolha PENDENTE dele): cada cópia tem **7.080 KB
+de máquina** (bin, skills, referencias, modelos, dna — tudo idêntico à central)
+contra **104 KB de estado próprio** (ESTADO, HANDOFF, DECISOES, META,
+PROGRESSO). São **182 MB em 19 cópias** pra guardar ~2 MB de coisa única.
+Isso reenquadra a pergunta "plano × aninhado": as duas respondem à pergunta
+errada. A pergunta certa é se o projeto precisa carregar a máquina.
+ALTERNATIVA DESCARTADA: nenhuma ainda — a decisão é dele e está registrada
+com os três caminhos e o custo de cada um em ESTADO.md.
+POR QUÊ: o custo do formato plano é real e mensurável — 63 linhas de
+resolvedor (`pasta()` + `achar()`), 29 de tabela, 12 dos 79 testes, 100
+chamadas em 24 de 34 scripts — e dois dos bugs de 260825 nasceram na costura
+entre os dois formatos. Mas trocar plano por aninhado paga a migração e NÃO
+elimina o resolvedor. Só a cópia magra elimina.
+
+## 260825s — o que a IA roda nos gates precisa estar declarado em algum lugar
+DECISÃO: `mb_registro.py` ganha a lista `AGENTE` — `mb-preflight` (Gate 0),
+`mb-mapa-refs` (Gate 3), `mb-slop-visual` (Gate 4) — com o gate, o que faz e
+**o que quebra se não rodar**. Aparece no painel numa seção própria, rotulada
+"não é pra você clicar". `ROTINA` foi de 7 pra 13.
+ALTERNATIVA DESCARTADA: (a) jogar no ROTINA — polui o painel dele com comando
+que ele nunca vai digitar; (b) deixar só na SKILL.md, que é onde já estava —
+`mb-mapa-refs.py` tem 4 citações em SKILL.md e ZERO execuções em 6 dias de log.
+POR QUÊ: levantamento do auditor por evidência de chamador. É a melhor regra
+do Gate 3 ("lista de quem quebra é verificação; 'tem certeza?' não é") e
+ninguém roda. Ver é a primeira condição de cobrar.
+
+
+## 260825t — uma fonte de dados, duas renderizações: o relatório vira um só
+DECISÃO: nasce `bin/mb-estado.py` → `dados/estado.json` (schema 1), a fonte
+única legível por máquina: versão, meta, estado, git, memória, decisões, uso
+por agente, padrões, as 19 cópias de projeto e o registro de ações/skills.
+Contrato do arquivo: todo número carrega `_fonte`; campo não medido vem `null`,
+nunca zero; `--campo versao.atual` lê um valor sem abrir o JSON. O
+`RELATORIO.html` passa a RENDERIZAR esse JSON, e com isso absorve
+`RELATORIO-AGENTES.html` (seção D11) e `AAMMDD_padroes.md` (D12), mais a
+auditoria de cópias (D13) e um bloco "Para a IA" (D14). O Gate 0 da skill
+`megabrain` manda ler o JSON ANTES da prosa. **`00_painel/` passa a ter 1
+arquivo.**
+ALTERNATIVA DESCARTADA: (a) mais uma rodada de "consolidar os HTMLs" — foi o
+que 260822 e 260824 fizeram, e os dois voltaram a inchar em dias; (b) o
+relatório continuar servindo IA e humano no mesmo arquivo, como a lição 260813
+pedia — é justamente a frase que produziu 2,7 MB de painel; (c) markdown
+agregado como fonte de máquina — é o que existia, e é o que faz cada IA
+escrever seu próprio parser.
+POR QUÊ: a causa de "um relatório só" ter sido decidido 3× e nunca fechar não
+era disciplina. Cada artefato novo nasceu porque uma IA precisava de um dado e
+o único jeito de obter era parsear prosa — então nascia mais um leitor com
+leitura própria do mesmo dado. Com o JSON existindo, a resposta pra "preciso
+desse dado" deixa de ser "crio um relatório" e passa a ser "acrescento um campo
+no coletor". Resolve também "funcionar pra todas as IAs equivalentemente":
+Claude, Kimi, GPT, Gemini, Codex e Qwen local leem o MESMO arquivo, sem saber
+em que layout a central está.
+
+## 260825u — reestruturar pasta não é o que faz o megabrain funcionar pra IA
+DECISÃO: **não** haverá nova reorganização de pastas nesta rodada, apesar da
+autorização. Entra uma pasta só — `dados/` — e nada é movido. O ganho pedido
+("foco na IA e processamento de dados") vem da CAMADA DE DADOS, não da árvore.
+ALTERNATIVA DESCARTADA: mover pastas de novo pra uma árvore "AI-first". Custo
+medido da última reorg (v7.1): ~2.300 citações, 63 linhas de resolvedor, 29 de
+tabela, 12 dos 79 testes, e **dois dos bugs de 260825 nasceram na costura** que
+ela criou. Ganho pra IA: zero — nenhuma IA lê melhor por a pasta se chamar
+`03_dados` em vez de `dados`.
+POR QUÊ: o que trava uma IA hoje não é onde o arquivo está — `u.achar()` já
+resolve isso nos três layouts. É que o dado só existe como prosa. Mover pasta
+paga o custo alto da migração pra comprar exatamente nada do que foi pedido.
+Se depois da cópia magra (260825r) a árvore ainda incomodar, aí sim — com o
+resolvedor já eliminado, a migração fica barata.
+
+
+## 260825v — o relatório para de carregar conteúdo: 76% dele era despejo pra IA
+DECISÃO: `conteudo_md()` em `bin/mb-relatorio-vivo.py` passa a emitir ÍNDICE
+(título, caminho clicável, tamanho, quando mudou) em vez do texto dos 31
+documentos. O conteúdo continua acessível — pelo arquivo. `dados/estado.json`
+ganha o coletor `documentos` (41 itens) com o mesmo índice, e a nota
+`como_usar` dizendo em letra que ele NÃO carrega conteúdo. A lição 260813
+("relatório serve IA e humano — HTML + metadados + JSON-LD") foi **aposentada**
+com rastro: a parte certa dela vive na 260825t; o que morreu foi o "no mesmo
+arquivo".
+Medido: `RELATORIO.html` **616.988 → 140.646 bytes (-77%)**; o despejo eram
+470.972 bytes em 31 seções.
+ALTERNATIVA DESCARTADA: (a) manter o despejo retrátil — 471 KB continuam sendo
+gerados, lidos e desatualizando a cada `.md` tocado, só que escondidos; (b)
+gerar dois HTMLs, um com conteúdo e um sem — é literalmente o problema que a
+consolidação de hoje desfez; (c) JSON-LD embutido no HTML, como a 260813
+pedia — seria uma TERCEIRA representação do mesmo dado, num arquivo que a IA
+não vai abrir porque já tem o JSON.
+POR QUÊ: pedido dele em 260825 — "foco na i.a., o humano qualquer coisa a gente
+faz depois um layout visual só pro caba ler e clicar". Com a IA lendo o JSON,
+o HTML não precisa mais carregar texto nenhum, e o que sobra é exatamente o
+painel visual que ele quer redesenhar depois. O leitor humano ganha junto: ele
+rolava e caía num poço de 31 seções sem navegação.
+
+## 260825w — a ordem certa era IA primeiro, humano depois
+DECISÃO (registro de método, não de código): a reestruturação do megabrain
+segue a ordem **dado → IA → humano**. Primeiro a fonte única
+(`dados/estado.json`, 260825t), depois o Gate 0 lendo ela, depois o índice no
+lugar do despejo (260825v). O layout visual do painel fica pra uma rodada
+dedicada, com ele conduzindo.
+ALTERNATIVA DESCARTADA: começar pelo visual, que é o que "o relatório está
+confuso" sugere à primeira leitura. Teria produzido um painel bonito por cima
+de 617 KB de despejo — e o despejo voltaria a crescer, porque a causa (IA sem
+dado estruturado) continuaria de pé.
+POR QUÊ: ele nomeou a ordem — "foco na i.a., o humano a gente faz depois". E a
+medição confirma que era a ordem certa: 76% do problema visual era consequência
+da falta de dado estruturado, não de design. Consertada a causa, o painel caiu
+para 141 KB e virou uma superfície pequena o bastante pra redesenhar de fato.
+
+## 260825x — fila de tasks com dependências e ondas (djinnai.io mecânica 2)
+DECISÃO: implementar a mecânica 2 do djinnai.io como board local.
+- Fonte de dados: `dados/fila.json` — epics, tasks, `blocked_by`, prioridade, dono e estado.
+- Script CLI: `bin/mb-fila.py` com subcomandos `listar`, `proxima`, `avancar <id>` e `json`.
+- Cálculo de ondas: tasks sem dependências = onda 0; cada nível de bloqueio incrementa uma onda; ciclos levantam erro.
+- Integração: `bin/mb-estado.py` ganha coletor `col_fila()` e exporta resumo no campo `fila` do `dados/estado.json`.
+- Testes: `motor/tests/test_mb_fila.py` com 10 casos cobrindo ondas, ciclos, dependências desconhecidas e avanço de estado.
+ALTERNATIVA DESCARTADA: (a) criar board só em markdown/prosa — reproduziria o problema que `dados/estado.json` resolveu (IA parseando texto); (b) despachar tasks para agentes reais automaticamente — exige orquestrador confiável que ainda não existe, e o valor da mecânica está em saber *o que está pronto*, não em executar sozinho.
+POR QUÊ: o <USUARIO> escolheu implementar a mecânica 2, e a forma mais barata de trazer o conceito do Djinn é a fonte de dados + renderização — o mesmo padrão que fechou o relatório em 260825t. Não se adota o Helm/Kubernetes do Djinn; a mecânica é roubada, não o código.
+
+
+## 260825z — o restaurador para de depender de "outro projeto" (passo 1 da cópia magra)
+> **Era 260825x.** Renumerada em 260825 11:20: um agente-irmão gravou outra
+> decisão com o MESMO id às 11:10 (fila de tasks, djinnai.io mecânica 2) e a
+> trava marcava LIVRE — nenhum script lê `TRAVADO_POR` antes de escrever. Duas
+> decisões com o mesmo endereço quebram toda citação cruzada. A dele ficou com
+> o id porque chegou primeiro no arquivo; esta cedeu. É o A15 da auditoria
+> acontecendo em cima da própria auditoria, pela segunda vez no dia.
+DECISÃO: `bin/mb-recuperar-megabrain.py` reescrito. Fontes agora, em ordem de
+confiança, cada uma com o que PROVA: (1) central viva; (2) **git da central**,
+que não existia antes de hoje; (3) `.mb-backup/*.zip`; (4) `_github/repo-local`,
+com aviso de que é sanitizado — sem lições nem identidade; (5) o `central` do
+`.mb-origem.json` da própria cópia. **"Outro projeto" foi REMOVIDO.** Ganhou
+`--listar-fontes` e, principalmente, `conferir()`: confere VERSAO.txt legível,
+MEGABRAIN.md presente, e recusa restauração com menos de 5 arquivos. Quando a
+central está viva, **delega a montagem pro `mb-check-version.py`** em vez de
+copiar. 11 testes novos em `motor/tests/test_mb_recuperar.py` (suíte 88 → 99).
+ALTERNATIVA DESCARTADA: (a) manter "outro projeto" como último recurso — é
+exatamente a linha que obriga a manter 19 cópias gordas pra alimentar o
+restaurador; redundância que só existe pra alimentar o plano de recuperação se
+paga sozinha; (b) o restaurador montar a cópia por conta — foi o que a versão
+antiga fazia e o teste de hoje pegou: `copytree` da central devolveu **3.371
+arquivos** com `_github/`, `90_arquivo/` e `99_to_delete/` dentro. Quem sabe o
+que uma cópia de projeto contém é o `mb-check-version.py`. Depois da delegação:
+**143 arquivos**, layout plano, conferido.
+POR QUÊ: condição dura levantada pelo auditor e aceita — não se remove
+redundância antes de o caminho de recuperação funcionar sem ela. É o passo 1 da
+ordem acordada: recuperar → piloto no Currículo → medir → os outros 18.
+
+## 260825y — a promessa de resiliência offline sai do canônico
+DECISÃO: `MEGABRAIN.md`, seção "Uso offline e recuperação", perde a frase
+"se o GitHub ou a internet caírem, os scripts continuam funcionando direto de
+lá" e ganha a correção com rastro. A proteção real contra "a central sumiu"
+passa a ser nomeada: git da central + `.mb-backup/*.zip`.
+ALTERNATIVA DESCARTADA: apagar a frase em silêncio. O rastro é o que impede
+alguém de reintroduzir a promessa daqui a um mês achando que é um recurso.
+POR QUÊ: a central está no mesmo disco `S:`, na pasta ao lado — queda de rede
+nunca afetou o funcionamento. A frase prometia uma proteção inexistente, e o
+custo disso não é o texto: é ter impedido de construir a proteção de verdade
+por quatro meses. Promessa falsa é pior que ausência.
+
+
+## 260825aa — cópia magra: as 19 pastas de projeto viram um ponteiro
+DECISÃO: `bin/mb-magra.py` converte a `MEGABRAIN/` de cada projeto para
+`.mb-origem.json` + `LEIAME.md`. A máquina vive só na central. Executado nos
+19: **3.631 arquivos movidos**, 3 vazamentos de `dna/usuario/` (Linkedolas) em
+quarentena na central, **182.000 KB → 531 KB (−99,7%)**. Nada apagado: tudo
+consolidado em `.mb-backup/260825_magra-arquivado.zip` (58 MB) e
+`260825_fase3-aposentados-projetos.zip` (11 MB).
+A classificação NÃO usa lista fixa: arquivo byte-idêntico em **5+ cópias** é
+legado compartilhado por evidência — conteúdo de projeto não se repete em 5
+projetos por acaso. O que não é reconhecido **fica** (44 preservados, listados
+no relatório). `mb-check-version.py` aprendeu o formato: cópia que declara
+`formato: magra` recebe só o ponteiro atualizado — sem isso o primeiro `--auto`
+engordaria tudo de volta em silêncio.
+ALTERNATIVA DESCARTADA: (a) plano ou aninhado, as duas opções que estavam na
+mesa — as duas duplicam a máquina, e a medição (7.080 KB de máquina contra
+104 KB de estado, que ainda por cima era cópia velha da central) mostrou que
+ambas respondiam à pergunta errada; (b) manter o arquivado dentro de cada
+projeto — 19 pastas de arquivo morto dentro de 19 projetos é exatamente o
+problema que a magra resolve.
+POR QUÊ: dois layouts vivos obrigavam `mb_utils` a resolver os dois — 63 linhas
+de resolvedor, 100 chamadas em 24 de 34 scripts — e **dois dos bugs de 260825
+nasceram nessa costura**. Sem cópia gorda não há costura. E o auditor provou
+que nenhum dos 35 scripts precisa rodar de dentro de um projeto: os hooks
+apontam pra central por caminho absoluto e nunca executaram da cópia.
+
+## 260825ab — o "alias" que ignorava os próprios argumentos
+DECISÃO: `mb-relatorio-projeto.py` rodado direto com `--projeto` ou `--saida`
+passa a executar o modo legado (a página agregada daquele projeto) em vez de
+delegar. Sem esses argumentos, continua delegando pro relatório da central.
+ALTERNATIVA DESCARTADA: fazer os wrappers chamarem `mb-relatorio-vivo.py` — o
+vivo grava o relatório da INSTÂNCIA, e os três wrappers querem a página
+agregada de um projeto com título, plano e TL;DR próprios. São coisas
+diferentes; o legado sabe fazer e continua existindo.
+POR QUÊ: desde a v6.6 a delegação chamava o vivo **sem argumento nenhum** —
+quem pedia o relatório de um projeto recebia o da central, sem erro. Ficou
+assim quatro dias e só apareceu hoje, quando a cópia magra tirou o script de
+dentro dos projetos e o wrapper do Financeiro da Silva morreu com
+FileNotFoundError num arquivo que nunca foi escrito. É a mesma confusão do
+"virou alias" que o canônico afirmava e foi corrigida hoje de manhã.
+
+## 260825ac — os 3 wrappers de projeto resolvem a central pelo ponteiro
+DECISÃO: `Portfolio/gerar-relatorio.ps1`, `Curriculo/scripts/gerar-relatorio.py`
+e `Financeiro da Silva/05_scripts/gerar_relatorio.py` passam a ler
+`MEGABRAIN/.mb-origem.json` pra achar a central, com fallback pra
+`MEGABRAIN/` (cópia cheia antiga). Os três foram executados e verificados.
+ALTERNATIVA DESCARTADA: chumbar o caminho absoluto da central nos três — é
+literalmente a lição 260807 ("pasta-mãe renomeada aposenta caminhos gravados em
+TODAS as superfícies"), que já custou 2 `.cmd`, 10 skills e um widget.
+POR QUÊ: o ponteiro já existia e já era escrito pelo sync em toda cópia. A
+terceira opção estava no disco — não precisava ser inventada.
+
+## 260825y — AI reviewer contra acceptance criteria (djinnai.io mecânica 3)
+DECISÃO: implementar reviewer local de acceptance criteria.
+- Fonte de critérios: `modelos/SPEC.md` (seção `## Acceptance Criteria`) ou `META.md` (campo `CRITÉRIO DE PRONTO`).
+- Script: `bin/mb-review-criteria.py` — lê spec, extrai critérios, lê diff/status do git, aplica heurística local (palavras-chave no diff + arquivos alterados) e gera parecer Markdown ou JSON.
+- Template: `modelos/SPEC.md` com seções Problema, Meta e Acceptance Criteria checklist.
+- Testes: `motor/tests/test_mb_review_criteria.py` com 9 casos cobrindo extração de SPEC/META e heurística de evidência.
+- Código de saída: 0 = aprovado, 1 = reprovado, 2 = sem spec/critérios.
+ALTERNATIVA DESCARTADA: (a) chamar modelo de IA externo pra revisar — adiciona latência, custo e dependência de rede; a mecânica do Djinn é um gate, e gate precisa ser rápido e local; (b) escrever critérios só em DECISOES.md — espalha a spec pelo repositório em vez de ter um arquivo de entrada do reviewer.
+POR QUÊ: o <USUARIO> escolheu implementar a mecânica 3. O valor do Djinn está em explicitar o critério ANTES de entregar e ter um passo de verificação obrigatório. A versão local é suficiente pra começar: evita handoff com critério esquecido e dá um parecer mensurável sem depender de API externa.
+
+## 260825ae — resolvedor de dois layouts cortado: um formato só na central
+DECISÃO: `u.pasta()` e `u.achar()` mantêm a API, mas a central passa a ter um único layout reconhecido: `memoria/` + `motor/`. Sai o fallback `PASTAS_V64` (`00_nucleo`, `01_estado` etc.) e sai a prioridade da árvore mista em que `skills/` plano vencia `motor/skills`. O plano permanece SOMENTE quando a pasta realmente existe — restauração cheia, backup anterior à cópia magra e arquivo de estado na raiz de projeto. Saldo: −36 linhas em `bin/mb_utils.py` e `motor/tests/test_mb_layout.py`; suíte 119 → 118 (o teste removido era o cenário morto "motor/ e skills/ coexistem"). Executado pelo auditor GPT com trava; medição antes do corte: zero consumidor de `PASTAS_V64` nas árvores vivas e nos 6 ZIPs locais.
+ALTERNATIVA DESCARTADA: remover TODO fallback plano — quebraria os backups reais (o ZIP magro arquivado tem 3.632 entradas no formato plano) e o `mb-recuperar-megabrain.py`, que restaura e confere esse formato sob demanda.
+POR QUÊ: depois da cópia magra (260825aa) só existe um formato vivo; o corte elimina compatibilidade hipotética e o cenário impossível de árvore mista sem amputar o plano de recuperação que tornou a magra reversível.

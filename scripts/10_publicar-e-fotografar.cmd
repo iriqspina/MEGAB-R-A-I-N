@@ -45,7 +45,14 @@ rem 260822: aspas na primeira linha do VERSAO.txt quebravam o -m (commit falhava
 set "MBVER=%MBVER:"='%"
 if "%MBVER%"=="" set "MBVER=megabrain v7"
 if "%MBVER%"=="='" set "MBVER=megabrain v7"
-git commit -m "megabrain: %MBVER%"
+rem 260825: a linha do VERSAO.txt tem ~1500 caracteres e virava o assunto do
+rem commit inteiro - `git log --oneline` ficava ilegivel justo quando voce
+rem esta procurando alguma coisa no historico. Corta no primeiro ponto final,
+rem que na convencao da casa fecha o titulo da versao. O texto completo
+rem continua no VERSAO.txt, que e a fonte.
+for /f "tokens=1 delims=." %%T in ("%MBVER%") do set "MBTIT=%%T"
+if "%MBTIT%"=="" set "MBTIT=%MBVER%"
+git commit -m "megabrain: %MBTIT%."
 if errorlevel 1 (
   echo.
   echo  Nada para commitar ou commit falhou. Verifique "git status".

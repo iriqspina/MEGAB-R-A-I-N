@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""Testes do resolvedor de layout (mb_utils.pasta / mb_utils.achar).
+"""Testes de caminhos canônicos (mb_utils.pasta / mb_utils.achar).
 
-É o contrato que sustenta a etapa 2 da reorg (máquina → motor\\): o MESMO
-código tem que achar `skills/megabrain/SKILL.md` na central nova
-(motor/skills/...), na cópia de projeto (skills/... plano) e na central
-antiga — sem ninguém escrever caminho na mão.
+É o contrato atual: a central usa memoria/ + motor/. O plano permanece
+somente onde ainda existe de verdade — restaurações cheias e backups anteriores
+à cópia magra. O layout v6.4 (00_nucleo/ etc.) não é mais resolvido.
 
 Se um destes cair, algum script vai procurar arquivo no lugar errado e falhar
 em silêncio, que é exatamente o risco que a condição do <USUARIO> ("não quebrar
@@ -43,7 +42,7 @@ class TestPasta(Base):
         (c / "motor" / "skills").mkdir(parents=True)
         self.assertEqual(u.pasta(c, "skills"), c / "motor" / "skills")
 
-    def test_plano_vale_na_copia_de_projeto(self):
+    def test_plano_vale_na_restauracao_cheia(self):
         c = self.tmp()
         (c / "skills").mkdir()
         self.assertEqual(u.pasta(c, "skills"), c / "skills")
@@ -59,7 +58,7 @@ class TestPasta(Base):
 
 
 class TestAchar(Base):
-    def test_arquivo_dentro_de_pasta_de_maquina_nos_dois_layouts(self):
+    def test_arquivo_de_maquina_na_central_e_na_restauracao_cheia(self):
         novo = self.tmp()
         (novo / "motor" / "skills" / "megabrain").mkdir(parents=True)
         self.assertEqual(u.achar(novo, "skills/megabrain/SKILL.md"),
@@ -68,15 +67,6 @@ class TestAchar(Base):
         (velho / "skills" / "megabrain").mkdir(parents=True)
         self.assertEqual(u.achar(velho, "skills/megabrain/SKILL.md"),
                          velho / "skills" / "megabrain" / "SKILL.md")
-
-    def test_arquivo_existente_no_lugar_plano_sempre_ganha(self):
-        """Cópia de projeto com motor/ por acidente não pode roubar o arquivo real."""
-        c = self.tmp()
-        (c / "skills" / "megabrain").mkdir(parents=True)
-        (c / "skills" / "megabrain" / "SKILL.md").write_text("real\n", encoding="utf-8")
-        (c / "motor" / "skills" / "megabrain").mkdir(parents=True)
-        self.assertEqual(u.achar(c, "skills/megabrain/SKILL.md"),
-                         c / "skills" / "megabrain" / "SKILL.md")
 
     def test_nome_de_pasta_sozinho(self):
         c = self.tmp()

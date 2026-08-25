@@ -256,13 +256,10 @@ IDENTIDADE_DEFAULT = "260810_memoria-pessoal.md"
 
 # ---------------------------------------------------------------------------
 # v6.3 (260822): raiz da central sem arquivo solto. Cada arquivo canônico
-# mora numa pasta; as cópias de projeto (MEGABRAIN/) e centrais antigas
-# continuam planas. achar() resolve os dois layouts — sempre use achar(raiz,
-# nome) em vez de raiz / nome para qualquer nome desta tabela.
+# mora numa pasta. achar() mantém a API comum para a central e para arquivos
+# de estado que pertencem à raiz de um projeto.
 # ---------------------------------------------------------------------------
-# v6.4 (260822): pastas "de humano" numeradas (NN_nome) pra ordenar e achar;
-# pastas "de código" (bin, referencias, skills, dna, modelos, tests, plugins,
-# export, espelho) ficam sem número — caminho fixo em scripts e plugins.
+# Nomes lógicos apontam para os locais canônicos da central v7.5.
 PASTAS_NUMERADAS = {
     "nucleo": "memoria/nucleo", "estado": "memoria/estado", "identidade": "memoria/identidade",
     "cerebro": "memoria/cerebro", "relatorios": "00_painel", "scripts": "01_acoes",
@@ -278,34 +275,22 @@ PASTAS_NUMERADAS = {
 }
 NOMES_ANTIGOS = {v: k for k, v in PASTAS_NUMERADAS.items()}
 
-# Pastas de máquina: nome lógico == nome da pasta. Existem planas (centrais e
-# cópias de projeto antigas) OU dentro de motor/ (v7.1). Sempre resolver por
-# pasta()/achar() — nunca escrever raiz / "skills" no código.
+# Pastas de máquina ficam em motor/ na central. O fallback plano permanece
+# somente para restaurações cheias e backups anteriores à cópia magra.
 PASTAS_MAQUINA = ("skills", "referencias", "modelos", "dna", "tests", "dist",
                   "plugin-megabrain", "plugin-megabrain-claude", "gerenteneuron")
 MOTOR = "motor"
 
-# v7.0 (260824): layout humano/maquina. Fallback pro layout v6.4 (numerado
-# antigo) - centrais e copias antigas continuam legiveis sem sincronizar.
-PASTAS_V64 = {
-    "nucleo": "00_nucleo", "estado": "01_estado", "identidade": "02_identidade",
-    "cerebro": "03_cerebro", "relatorios": "04_relatorios", "scripts": "05_scripts",
-    "dist": "06_dist", "docs": "07_docs", "alteracoes-pendentes": "08_alteracoes-pendentes",
-    "_arquivo": "90_arquivo", "_to_delete": "99_to_delete",
-}
-
-
 def pasta(raiz, nome: str) -> Path:
-    """Pasta da raiz pelo nome lógico ("cerebro"), em qualquer layout:
-    numerada se existir, senão a plana se existir, senão a numerada (vai
-    ser criada assim)."""
+    """Pasta pelo nome lógico.
+
+    A central tem um único layout canônico. Pasta plana só ganha quando já
+    existe, para ler restauração cheia ou backup anterior à cópia magra.
+    """
     base = Path(raiz)
     num = base / PASTAS_NUMERADAS.get(nome, nome)
     if num.is_dir():
         return num
-    antiga = base / PASTAS_V64.get(nome, nome)
-    if antiga.is_dir():
-        return antiga
     plana = base / nome
     if plana.is_dir():
         return plana
@@ -325,37 +310,26 @@ PASTAS_RAIZ = {
 
 
 def achar(raiz, nome: str) -> Path:
-    """Caminho de um arquivo canônico na raiz dada, em qualquer layout.
-    Ordem: existe na pasta lógica → raiz/pasta/nome; existe na raiz → raiz/nome;
-    nada existe → raiz/pasta/nome se a pasta existir (vai ser criado lá),
-    senão raiz/nome (layout plano de projeto/central antiga).
+    """Caminho canônico na central ou arquivo direto na raiz de um projeto.
 
-    v7.1: nome que COMEÇA por pasta de máquina ("skills/megabrain/SKILL.md",
-    "dna", "referencias/x.md") resolve o primeiro pedaço por pasta() — é o que
-    faz a mesma chamada valer na central nova (motor/skills/...) e na cópia de
-    projeto antiga (skills/...) sem ninguém reescrever caminho.
+    Nome que começa por pasta de máquina resolve o primeiro pedaço por
+    pasta(). O plano continua legível para restauração cheia; se os dois
+    existirem, o caminho canônico da central ganha.
 
-    v7.5: corrige prioridade — nome CANÔNICO de PASTAS_RAIZ solto na raiz NÃO
-    pode sobrepor o da pasta lógica (ex.: licoes-megabrain.md órfão na raiz
-    sombreando memoria/nucleo/licoes-megabrain.md). Caminho de máquina segue
-    com "arquivo real na cópia plana ganha" — são regras diferentes: máquina
-    muda de lugar por layout, canônico tem um lugar só."""
+    Nome CANÔNICO de PASTAS_RAIZ solto na raiz não sobrepõe o da pasta
+    lógica (ex.: licoes-megabrain.md órfão não sombreia memoria/nucleo/).
+    """
     base = Path(raiz)
-    plano = base / nome
     partes = str(nome).replace("\\", "/").split("/", 1)
     if partes[0] in PASTAS_MAQUINA:
-        if plano.exists():
-            return plano
         d = pasta(base, partes[0])
         return (d / partes[1]) if len(partes) == 2 else d
+    plano = base / nome
     logica = PASTAS_RAIZ.get(nome)
     if logica is not None:
         d = pasta(base, logica)
-        canonico = d / nome
-        if canonico.exists() or d.is_dir():
-            return canonico
-        return plano
-    if plano.exists():
+        if d.is_dir():
+            return d / nome
         return plano
     return plano
 
