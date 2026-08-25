@@ -108,6 +108,14 @@ EXCLUIR = {
 # não lê dentro do zip, então eles nunca sobem — o repo leva a pasta-fonte.
 EXCLUIR_SUFIXO = (".plugin", "_padroes.md")  # relatorio local do compreensor
 
+PREFIXOS_TEMPORARIOS = (".tmp-", ".temp-")
+
+
+def nome_temporario(nome):
+    """Diretório de trabalho local nunca pertence ao pacote distribuível."""
+    baixo = str(nome).lower()
+    return baixo in {".tmp", ".temp", "tmp", "temp"} or baixo.startswith(PREFIXOS_TEMPORARIOS)
+
 # Estado operacional da central privada. Projetos clonados criam os próprios
 # arquivos; publicar estes documentos vaza contexto, nomes e decisões locais.
 EXCLUIR_TOPO = {
@@ -188,6 +196,17 @@ EXTENSOES_TEXTO = {
     ".js",
 }
 
+# Batch é lido por deslocamento de byte assumindo CRLF; com LF o cmd.exe
+# desalinha e executa outra coisa sem erro (lição 260819). A leitura texto
+# abaixo traduz CRLF->LF, então a saída precisa ser reconvertida.
+EXTENSOES_BATCH = {".cmd", ".bat"}
+
+
+def forcar_crlf(conteudo):
+    """Normaliza pra LF e sobe CRLF — a ordem inversa dobraria o CR dos pares
+    que já existem."""
+    return conteudo.replace("\r\n", "\n").replace("\r", "\n").replace("\n", "\r\n")
+
 PADROES_PRIVADOS = {
     "caminho de projetos local": re.compile(r"S:[\\/]projetos multi i\.a", re.IGNORECASE),
     "home local": re.compile(
@@ -256,6 +275,8 @@ def copiar_sanitizando(src, dst):
         conteudo = sanitizar(conteudo)
         if src.endswith("MEGABRAIN.md") or src.endswith("260810_MEGABRAIN.md"):
             conteudo = remover_secoes_pessoais(conteudo)
+        if Path(src).suffix.lower() in EXTENSOES_BATCH:
+            conteudo = forcar_crlf(conteudo)
         if not u.atomic_write_text(dst_path, conteudo):
             return False
     else:
@@ -353,6 +374,8 @@ def gerar_template(central, destino):
     for nome in os.listdir(central_path):
         if nome in ACHATAR:
             continue
+        if nome_temporario(nome):
+            continue
         if nome in EXCLUIR or nome in EXCLUIR_TOPO or (nome + "/") in EXCLUIR:
             continue
         if nome.lower().endswith(EXCLUIR_SUFIXO):
@@ -367,13 +390,15 @@ def gerar_template(central, destino):
         elif os.path.isdir(src):
             # recursivo para referencias/, bin/, skills/
             for raiz, dirs, files in os.walk(src):
+                dirs[:] = [d for d in dirs if not nome_temporario(d)]
                 rel = os.path.relpath(raiz, central_path)
                 for f in files:
                     rel_f = os.path.join(rel, f).replace("\\", "/")
                     # pula .git e excluídos
                     if any(x in rel_f for x in EXCLUIR):
                         continue
-                    if f in EXCLUIR_NOME_EXATO or f.lower().endswith(EXCLUIR_SUFIXO):
+                    if (f in EXCLUIR_TOPO or f in EXCLUIR_NOME_EXATO or
+                            f.lower().endswith(EXCLUIR_SUFIXO)):
                         continue
                     src_f = os.path.join(raiz, f)
                     rel_dst = rel

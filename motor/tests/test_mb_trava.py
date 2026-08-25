@@ -14,8 +14,11 @@ import json
 import subprocess
 import sys
 import tempfile
+import threading
+import time
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 def _raiz() -> Path:
@@ -74,6 +77,80 @@ class TestContrato(Base):
         p.write_text(json.dumps(dados), encoding="utf-8")
         novo = trava.travar(alvo, "kimi", raiz=raiz)
         self.assertEqual(novo["agente"], "kimi")
+
+    def test_disputa_por_vencida_nao_apaga_trava_nova(self):
+        raiz = self.tmpdir()
+        alvo = raiz / "META.md"
+        trava.travar(alvo, "antigo", raiz=raiz)
+        p = trava.caminho_trava(alvo, raiz)
+        dados = json.loads(p.read_text(encoding="utf-8"))
+        dados["ate"] = (dt.datetime.now() - dt.timedelta(minutes=1)).strftime(
+            trava.FMT)
+        p.write_text(json.dumps(dados), encoding="utf-8")
+
+        chegou_na_criacao = threading.Event()
+        pode_criar = threading.Event()
+        resultados = {}
+        criar_real = trava._criar_exclusivo
+
+        def criar_lento(arq, novos_dados):
+            if novos_dados["agente"] == "primeiro":
+                chegou_na_criacao.set()
+                pode_criar.wait(2)
+            return criar_real(arq, novos_dados)
+
+        def tomar(nome):
+            try:
+                resultados[nome] = trava.travar(alvo, nome, raiz=raiz)
+            except Exception as e:  # resultado do concorrente faz parte da prova
+                resultados[nome] = e
+
+        with mock.patch.object(trava, "_criar_exclusivo", side_effect=criar_lento):
+            primeiro = threading.Thread(target=tomar, args=("primeiro",))
+            segundo = threading.Thread(target=tomar, args=("segundo",))
+            primeiro.start()
+            self.assertTrue(chegou_na_criacao.wait(2))
+            segundo.start()
+            time.sleep(0.1)
+            pode_criar.set()
+            primeiro.join(3)
+            segundo.join(3)
+
+        self.assertFalse(primeiro.is_alive())
+        self.assertFalse(segundo.is_alive())
+        self.assertIsInstance(resultados["primeiro"], dict)
+        self.assertIsInstance(resultados["segundo"], trava.TravaOcupada)
+        self.assertEqual(trava.ler(alvo, raiz)["agente"], "primeiro")
+
+    def test_falha_de_gravacao_na_reentrada_sobe_erro(self):
+        raiz = self.tmpdir()
+        alvo = raiz / "ESTADO.md"
+        trava.travar(alvo, "codex", raiz=raiz)
+        with mock.patch.object(trava.u, "atomic_write_text", return_value=False):
+            with self.assertRaises(OSError):
+                trava.travar(alvo, "codex", raiz=raiz)
+        self.assertEqual(trava.ler(alvo, raiz)["contagem"], 1)
+
+    def test_falha_de_gravacao_no_decremento_sobe_erro(self):
+        raiz = self.tmpdir()
+        alvo = raiz / "ESTADO.md"
+        trava.travar(alvo, "codex", raiz=raiz)
+        trava.travar(alvo, "codex", raiz=raiz)
+        with mock.patch.object(trava.u, "atomic_write_text", return_value=False):
+            with self.assertRaises(OSError):
+                trava.liberar(alvo, "codex", raiz=raiz)
+        self.assertEqual(trava.ler(alvo, raiz)["contagem"], 2)
+
+    def test_falha_no_unlink_final_sobe_erro(self):
+        raiz = self.tmpdir()
+        alvo = raiz / "ESTADO.md"
+        trava.travar(alvo, "codex", raiz=raiz)
+        arq = trava.caminho_trava(alvo, raiz)
+        with mock.patch.object(
+                type(arq), "unlink", side_effect=OSError("arquivo aberto")):
+            with self.assertRaisesRegex(OSError, "não foi possível remover"):
+                trava.liberar(alvo, "codex", raiz=raiz)
+        self.assertIsNotNone(trava.ler(alvo, raiz))
 
     def test_contexto_libera_depois_de_excecao(self):
         raiz = self.tmpdir()
@@ -134,6 +211,26 @@ class TestIds(Base):
         self.assertEqual(gravado, "260825b")
         self.assertTrue(alvo.read_bytes().endswith(b"\n"))
 
+    def test_anexar_preserva_prefixo_e_crlf_existentes(self):
+        raiz = self.tmpdir()
+        alvo = raiz / "DECISOES.md"
+        prefixo = "## 260825a — um\r\ntexto\r\n".encode("utf-8")
+        alvo.write_bytes(prefixo)
+        trava.anexar_decisao(
+            alvo, "## 260825b — dois\nlinha 2\n", "codex", raiz=raiz)
+        depois = alvo.read_bytes()
+        self.assertTrue(depois.startswith(prefixo))
+        self.assertTrue(depois.endswith(
+            "## 260825b — dois\r\nlinha 2\r\n".encode("utf-8")))
+
+    def test_anexar_normaliza_legado_latin1_para_utf8(self):
+        raiz = self.tmpdir()
+        alvo = raiz / "licoes-megabrain.md"
+        alvo.write_bytes(b"caf\xe9\r\n")
+        trava.anexar(alvo, "nova lição\n", "codex", raiz=raiz)
+        self.assertEqual(
+            alvo.read_bytes(), "café\r\nnova lição\r\n".encode("utf-8"))
+
     def test_proximo_id_nao_recicla_buraco(self):
         raiz = self.tmpdir()
         alvo = raiz / "DECISOES.md"
@@ -148,6 +245,12 @@ class TestIds(Base):
         alvo = raiz / "DECISOES.md"
         alvo.write_text("## 260825z — vinte e seis\n", encoding="utf-8")
         self.assertEqual(trava.proximo_id(alvo, "260825"), "260825aa")
+
+    def test_proximo_id_avanca_de_zz_para_aaa(self):
+        raiz = self.tmpdir()
+        alvo = raiz / "DECISOES.md"
+        alvo.write_text("## 260825zz — setecentos e dois\n", encoding="utf-8")
+        self.assertEqual(trava.proximo_id(alvo, "260825"), "260825aaa")
 
 
 class TestProcessos(Base):

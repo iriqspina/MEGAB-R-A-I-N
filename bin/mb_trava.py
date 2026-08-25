@@ -41,6 +41,8 @@ CONTRATO
   duas vezes não se bloqueia.
 - `ceder()` existe para handover explícito: quem toma registra de quem tomou
   e por quê. Roubar em silêncio é o defeito, não a tomada em si.
+- No CLI, `--agente` identifica uma SESSÃO, não só o modelo. Use um sufixo
+  único, como `kimi-0032` ou `codex-bc5c`, para não criar reentrada falsa.
 
 Uso como biblioteca:
 
@@ -59,6 +61,7 @@ import json
 import os
 import re
 import sys
+import time
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -131,6 +134,66 @@ def caminho_trava(alvo: Path, raiz: Path | None = None) -> Path:
     return central(raiz) / PASTA / _slug(Path(alvo))
 
 
+@contextmanager
+def _serializar_metadados(alvo: Path, raiz: Path | None = None,
+                          timeout: float = 5.0):
+    """Serializa alterações do JSON da trava sem deixar lock morto.
+
+    O arquivo ``.guard`` é persistente; o que vale é o lock do sistema
+    operacional sobre o primeiro byte. Windows e POSIX liberam esse lock ao
+    fechar o descritor, inclusive quando o processo morre. Isso fecha a janela
+    ``ler -> unlink -> criar`` sem introduzir uma segunda trava que possa ficar
+    órfã.
+    """
+    alvo = Path(alvo)
+    arq = caminho_trava(alvo, raiz)
+    guard = arq.with_suffix(arq.suffix + ".guard")
+    guard.parent.mkdir(parents=True, exist_ok=True)
+    inicio = time.monotonic()
+    travou = False
+
+    with guard.open("a+b") as f:
+        f.seek(0, os.SEEK_END)
+        if f.tell() == 0:
+            f.write(b"\0")
+            f.flush()
+            os.fsync(f.fileno())
+
+        while not travou:
+            try:
+                f.seek(0)
+                if os.name == "nt":
+                    import msvcrt
+                    msvcrt.locking(f.fileno(), msvcrt.LK_NBLCK, 1)
+                else:
+                    import fcntl
+                    fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                travou = True
+            except (OSError, BlockingIOError):
+                if time.monotonic() - inicio >= timeout:
+                    raise TravaOcupada(
+                        alvo, "outro processo", "em instantes",
+                        "atualizando os metadados da trava")
+                time.sleep(0.05)
+
+        try:
+            yield
+        finally:
+            if travou:
+                try:
+                    f.seek(0)
+                    if os.name == "nt":
+                        import msvcrt
+                        msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, 1)
+                    else:
+                        import fcntl
+                        fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+                except OSError:
+                    # Fechar o descritor ainda libera o lock. Não esconda uma
+                    # exceção original do corpo por uma falha tardia de unlock.
+                    pass
+
+
 def ler(alvo: Path, raiz: Path | None = None) -> dict | None:
     """A trava atual do arquivo, ou None se livre/vencida."""
     arq = caminho_trava(alvo, raiz)
@@ -171,6 +234,37 @@ def _criar_exclusivo(arq: Path, dados: dict) -> None:
             os.close(fd)
 
 
+def _gravar_texto_ou_falhar(alvo: Path, texto: str) -> bool:
+    """Converte o False legado de atomic_write_text em falha alta."""
+    if not u.atomic_write_text(Path(alvo), texto):
+        raise OSError(f"falha na escrita atômica de {Path(alvo).name}")
+    return True
+
+
+def _anexar_preservando_terminadores(alvo: Path, bloco: str) -> bool:
+    """Anexa sem normalizar os terminadores que já existem no arquivo."""
+    alvo = Path(alvo)
+    try:
+        bruto = alvo.read_bytes()
+    except FileNotFoundError:
+        bruto = b""
+    try:
+        atual = bruto.decode("utf-8")
+    except UnicodeDecodeError:
+        # Mesmo fallback de mb_utils.safe_read_text: ao salvar, o legado é
+        # normalizado para UTF-8 em vez de terminar em traceback cru no CLI.
+        atual = bruto.decode("latin-1")
+    crlf = bruto.count(b"\r\n")
+    lf = bruto.count(b"\n") - crlf
+    nl = "\r\n" if crlf and crlf >= lf else "\n"
+    corpo = bloco.replace("\r\n", "\n").replace("\r", "\n").strip("\n")
+    if not corpo:
+        return True
+    corpo = corpo.replace("\n", nl)
+    separador = "" if not atual or atual.endswith(("\n", "\r")) else nl
+    return _gravar_texto_ou_falhar(alvo, atual + separador + corpo + nl)
+
+
 def checar(alvo: Path, agente: str, raiz: Path | None = None) -> None:
     """Levanta TravaOcupada se OUTRO agente tem o arquivo. É o passo que
     faltava: barato, e transforma a trava de decoração em garantia."""
@@ -186,47 +280,55 @@ def travar(alvo: Path, agente: str, motivo: str = "", horas: int = HORAS_PADRAO,
     alvo = Path(alvo)
     arq = caminho_trava(alvo, raiz)
     arq.parent.mkdir(parents=True, exist_ok=True)
-    for _ in range(5):
-        existente = ler(alvo, raiz)
-        if existente:
-            if existente.get("agente") != agente:
-                raise TravaOcupada(alvo, existente.get("agente", "?"),
-                                   existente.get("ate", "?"),
-                                   existente.get("motivo", ""))
-            # Reentrada explícita do mesmo dono: só a última liberação solta.
+    # A guarda de SO cobre todo o read-modify-write dos metadados. Sem ela,
+    # outro processo podia criar uma trava válida entre o ler() e o unlink()
+    # da trava vencida, e ter a trava nova apagada.
+    with _serializar_metadados(alvo, raiz):
+        for _ in range(5):
+            existente = ler(alvo, raiz)
+            if existente:
+                if existente.get("agente") != agente:
+                    raise TravaOcupada(alvo, existente.get("agente", "?"),
+                                       existente.get("ate", "?"),
+                                       existente.get("motivo", ""))
+                # Reentrada explícita: só a última liberação solta.
+                agora = _agora().replace(tzinfo=None)
+                existente["contagem"] = (
+                    max(1, int(existente.get("contagem", 1))) + 1)
+                existente["ate"] = (
+                    agora + dt.timedelta(hours=horas)).strftime(FMT)
+                if motivo:
+                    existente["motivo"] = motivo
+                _gravar_texto_ou_falhar(
+                    arq, json.dumps(existente, ensure_ascii=False, indent=2) + "\n")
+                return existente
+
+            # Só uma execução compatível chega aqui por vez. Assim, remover a
+            # versão inválida/vencida não apaga uma trava viva recém-criada.
+            try:
+                arq.unlink()
+            except FileNotFoundError:
+                pass
+            except OSError:
+                continue
+
             agora = _agora().replace(tzinfo=None)
-            existente["contagem"] = max(1, int(existente.get("contagem", 1))) + 1
-            existente["ate"] = (agora + dt.timedelta(hours=horas)).strftime(FMT)
-            if motivo:
-                existente["motivo"] = motivo
-            u.atomic_write_text(
-                arq, json.dumps(existente, ensure_ascii=False, indent=2) + "\n")
-            return existente
-
-        # Arquivo inválido ou vencido não bloqueia. Remova e dispute a criação
-        # exclusiva; se outro processo ganhar, o próximo laço verá o dono.
-        try:
-            arq.unlink()
-        except FileNotFoundError:
-            pass
-        except OSError:
-            continue
-
-        agora = _agora().replace(tzinfo=None)
-        dados = {
-            "arquivo": str(alvo.resolve()),
-            "agente": agente,
-            "motivo": motivo,
-            "pid": os.getpid(),
-            "contagem": 1,
-            "desde": agora.strftime(FMT),
-            "ate": (agora + dt.timedelta(hours=horas)).strftime(FMT),
-        }
-        try:
-            _criar_exclusivo(arq, dados)
-            return dados
-        except FileExistsError:
-            continue
+            dados = {
+                "arquivo": str(alvo.resolve()),
+                "agente": agente,
+                "motivo": motivo,
+                "pid": os.getpid(),
+                "contagem": 1,
+                "desde": agora.strftime(FMT),
+                "ate": (agora + dt.timedelta(hours=horas)).strftime(FMT),
+            }
+            try:
+                _criar_exclusivo(arq, dados)
+                return dados
+            except FileExistsError:
+                # Defesa contra uma implementação antiga/externa que ainda
+                # não usa a guarda. O laço relê e jamais escreve às cegas.
+                continue
     # A disputa só chega aqui se o arquivo mudou repetidamente durante todas
     # as tentativas. Falhar é mais seguro do que escrever sem dono conhecido.
     raise TravaOcupada(alvo, "outro processo", "desconhecido",
@@ -235,21 +337,24 @@ def travar(alvo: Path, agente: str, motivo: str = "", horas: int = HORAS_PADRAO,
 
 def liberar(alvo: Path, agente: str, raiz: Path | None = None) -> bool:
     """Solta a própria trava. Não solta a dos outros — para isso, ceder()."""
-    d = ler(alvo, raiz)
-    if d and d.get("agente") != agente:
-        return False
-    arq = caminho_trava(alvo, raiz)
-    if d and int(d.get("contagem", 1)) > 1:
-        d["contagem"] = int(d["contagem"]) - 1
-        return u.atomic_write_text(
-            arq, json.dumps(d, ensure_ascii=False, indent=2) + "\n")
-    try:
-        arq.unlink()
-        return True
-    except FileNotFoundError:
-        return True
-    except OSError:
-        return False
+    alvo = Path(alvo)
+    with _serializar_metadados(alvo, raiz):
+        d = ler(alvo, raiz)
+        if d and d.get("agente") != agente:
+            return False
+        arq = caminho_trava(alvo, raiz)
+        if d and int(d.get("contagem", 1)) > 1:
+            d["contagem"] = int(d["contagem"]) - 1
+            return _gravar_texto_ou_falhar(
+                arq, json.dumps(d, ensure_ascii=False, indent=2) + "\n")
+        try:
+            arq.unlink()
+            return True
+        except FileNotFoundError:
+            return True
+        except OSError as e:
+            raise OSError(
+                f"não foi possível remover a trava de {alvo.name}: {e}") from e
 
 
 def ceder(alvo: Path, de: str, para: str, porque: str,
@@ -260,21 +365,25 @@ def ceder(alvo: Path, de: str, para: str, porque: str,
     de mandar ele sair. Tomar não é o defeito — tomar em SILÊNCIO é. Aqui a
     tomada fica escrita no próprio arquivo de trava e no log.
     """
-    anterior = ler(alvo, raiz) or {}
-    arq = caminho_trava(alvo, raiz)
-    arq.parent.mkdir(parents=True, exist_ok=True)
-    agora = _agora().replace(tzinfo=None)
-    d = {
-        "arquivo": str(Path(alvo).resolve()),
-        "agente": para,
-        "motivo": porque,
-        "pid": os.getpid(),
-        "desde": agora.strftime(FMT),
-        "ate": (agora + dt.timedelta(hours=HORAS_PADRAO)).strftime(FMT),
-        "tomada_de": anterior.get("agente") or de,
-        "tomada_em": agora.strftime(FMT),
-    }
-    u.atomic_write_text(arq, json.dumps(d, ensure_ascii=False, indent=2) + "\n")
+    alvo = Path(alvo)
+    with _serializar_metadados(alvo, raiz):
+        anterior = ler(alvo, raiz) or {}
+        arq = caminho_trava(alvo, raiz)
+        arq.parent.mkdir(parents=True, exist_ok=True)
+        agora = _agora().replace(tzinfo=None)
+        d = {
+            "arquivo": str(alvo.resolve()),
+            "agente": para,
+            "motivo": porque,
+            "pid": os.getpid(),
+            "contagem": 1,
+            "desde": agora.strftime(FMT),
+            "ate": (agora + dt.timedelta(hours=HORAS_PADRAO)).strftime(FMT),
+            "tomada_de": anterior.get("agente") or de,
+            "tomada_em": agora.strftime(FMT),
+        }
+        _gravar_texto_ou_falhar(
+            arq, json.dumps(d, ensure_ascii=False, indent=2) + "\n")
     try:
         import mb_telemetria as tel
         tel.registrar("trava_cedida", arquivo=Path(alvo).name,
@@ -309,7 +418,7 @@ def escrever(alvo: Path, texto: str, agente: str, motivo: str = "",
     """
     alvo = Path(alvo)
     with travado(alvo, agente, motivo or f"escrita por {agente}", raiz=raiz):
-        return u.atomic_write_text(alvo, texto)
+        return _gravar_texto_ou_falhar(alvo, texto)
 
 
 def anexar(alvo: Path, bloco: str, agente: str, motivo: str = "",
@@ -321,9 +430,7 @@ def anexar(alvo: Path, bloco: str, agente: str, motivo: str = "",
     """
     alvo = Path(alvo)
     with travado(alvo, agente, motivo or f"append por {agente}", raiz=raiz):
-        atual = u.safe_read_text(alvo) or ""
-        novo = atual.rstrip("\n") + "\n" + bloco.rstrip("\n") + "\n"
-        return u.atomic_write_text(alvo, novo)
+        return _anexar_preservando_terminadores(alvo, bloco)
 
 
 # --------------------------------------------------------------------------
@@ -339,7 +446,7 @@ def ids_de(texto: str) -> list[str]:
     """
     achados = []
     for linha in texto.splitlines():
-        m = re.match(r"^##\s+~?~?(\d{6}[a-z]{1,2})\b", linha)
+        m = re.match(r"^##\s+~?~?(\d{6}[a-z]+)\b", linha)
         if m:
             achados.append(m.group(1))
     return achados
@@ -415,7 +522,7 @@ def anexar_decisao(alvo: Path, bloco: str, agente: str,
                 f"id(s) {', '.join(colididos)} já existem em {alvo.name}. "
                 f"Próximo livre: {livre}. Não gravei — id é endereço, "
                 f"e dois blocos com o mesmo endereço quebram toda citação.")
-        u.atomic_write_text(alvo, atual.rstrip("\n") + "\n" + bloco)
+        _anexar_preservando_terminadores(alvo, bloco)
         return novos[0] if novos else ""
 
 
@@ -509,14 +616,18 @@ def main() -> int:
     if a.acao == "travar":
         try:
             d = travar(alvo, a.agente, a.porque, a.horas, raiz)
-        except TravaOcupada as e:
+        except (OSError, TravaOcupada) as e:
             print(f"RECUSADO: {e}")
             return 1
         print(f"travado: {d['agente']} até {d['ate']} — {alvo.name}")
         return 0
 
     if a.acao == "liberar":
-        ok = liberar(alvo, a.agente, raiz)
+        try:
+            ok = liberar(alvo, a.agente, raiz)
+        except (OSError, TravaOcupada) as e:
+            print(f"RECUSADO: {e}")
+            return 1
         print("liberado" if ok else "RECUSADO: a trava é de outro agente; use ceder")
         return 0 if ok else 1
 
@@ -524,7 +635,11 @@ def main() -> int:
         if not a.para or not a.porque:
             print("ceder exige --para e --porque (tomada sem motivo é o defeito)")
             return 2
-        d = ceder(alvo, a.agente, a.para, a.porque, raiz)
+        try:
+            d = ceder(alvo, a.agente, a.para, a.porque, raiz)
+        except (OSError, TravaOcupada) as e:
+            print(f"RECUSADO: {e}")
+            return 1
         print(f"cedida: {d.get('tomada_de')} → {d['agente']} — {a.porque}")
         return 0
     return 0

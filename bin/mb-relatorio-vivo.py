@@ -68,7 +68,7 @@ u.utf8_console()
 # CSS do conteúdo agregado (.md) e dos slots fixos. Fica aqui, e não em
 # modelos/visuais/, porque descreve a PÁGINA — as mecânicas descrevem peças.
 CSS_CONTEUDO = """
-html.pre-carga *, html.pre-carga *::before { transition: none !important; }
+html.pre-carga *, html.pre-carga *::before { transition: none; }
 
 /* --- 260825: ações numeradas + skills expansíveis ------------------------
    Regra do 260804 (feedback nasce no campo visual de quem clicou): o corpo
@@ -298,7 +298,9 @@ def indexar_arquivo(pasta: Path) -> None:
         linhas.append(f"| {quando} | `{commit}` | [{a.name}](./{a.name}) |")
     linhas.append("")
     try:
-        (pasta / "INDICE.md").write_text("\n".join(linhas), encoding="utf-8")
+        # newline explícito: Path.write_text usa CRLF no Windows e fazia
+        # git diff --check acusar whitespace em cada linha da tabela.
+        u.atomic_write_text(pasta / "INDICE.md", "\n".join(linhas))
     except OSError:
         pass
 
@@ -1007,7 +1009,7 @@ def gerar_html(c: Path, forcar_snapshot: bool = False) -> bool:
         tabnav = ws.tabs_nav()
         rail = ws.html_rail()
         js_ws = ws.js_workspace()
-        esquema_html = ws.html_esquema()
+        esquema_html = ws.html_esquema(_estado_json(c))
         # 260825: a lista de acoes/skills sai de mb_registro (numerada,
         # declarada), nao da varredura de comentario do .cmd — uma fonte so.
         bloco_acoes = secao_acoes(c) + secao_rotina(c)
@@ -1212,8 +1214,8 @@ tr.proj--desatualizado td {{ background:var(--signal-soft); }}
   {pf()}
 
   {pa("esquema")}
-  {ask("como as peças se ligam: minha central, o GitHub, as outras pessoas e os projetos?")}
-  <h2 class="faixa">O esquema do megabrain <small>— central · GitHub · usuários · projetos · o que desce e o que sobe</small></h2>
+  {ask("como era, como está agora e por onde cada informação passa?")}
+  <h2 class="faixa">Organização do megabrain <small>— antes × agora · mapa atual · fluxo de uma mudança</small></h2>
   {esquema_html}
   <h2 class="faixa">Workflow <small>— dados em modelos/visuais/exemplos.json; mecânicas em modelos/visuais/mecanicas/</small></h2>
   {slot("w1-gates", "", pecas["gates"])}
@@ -1333,6 +1335,7 @@ requestAnimationFrame(function () {{ requestAnimationFrame(function () {{
 </body>
 </html>
 """
+    pagina = "\n".join(linha.rstrip() for linha in pagina.splitlines()) + "\n"
     return u.atomic_write_text(u.achar(c, "RELATORIO.html"), pagina)
 
 

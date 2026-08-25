@@ -15,7 +15,7 @@
 
    Cascata (padrão Pico/Primer): os blocos são mutuamente exclusivos por
    :not(), não por especificidade — a escolha explícita ganha do sistema NOS
-   DOIS SENTIDOS, sem !important e sem guerra de peso.
+   DOIS SENTIDOS, sem sobrescrita forçada e sem guerra de peso.
    @nome: Wildfire
    @amostra: #131614,#6ee87a,#8f2233
    ═══════════════════════════════════════════════════════════════════════ */

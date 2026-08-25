@@ -4,3 +4,7 @@
 # sincronizar-projetos.cmd imprimia 18 "OK" e copiava zero byte por causa
 # disso). Deixar o git normalizar desfaria o conserto na primeira checagem.
 * -text
+
+# O CR continua byte-exato, mas não é espaço sobrando para o
+# `git diff --check`: em Markdown histórico e batch ele é parte do fim de linha.
+* whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

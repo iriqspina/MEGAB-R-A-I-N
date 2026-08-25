@@ -70,7 +70,8 @@ agente não começa do zero). Detalhe passo a passo, quando precisar:
   todo script que altera estado compartilhado usa `bin/mb_trava.py`; edição
   direta toma trava por arquivo antes de tocar. Em `DECISOES.md`, confira IDs
   com `python bin/mb_trava.py conferir-ids` e anexe por
-  `anexar-decisao --entrada <arquivo> --agente <nome>`. Versão:
+  `anexar-decisao --entrada <arquivo> --agente <nome-id-sessao>`; o identificador
+  inclui a sessão (ex.: `kimi-0032`), não só o modelo. Versão:
   `bin/mb-check-version.py --projeto <p>`
   (cria/atualiza o megabrain do projeto e o `cerebro/`; projeto mais novo que a
   central = parar e perguntar). Fonte que o usuário trouxe → `02_entrada` ou

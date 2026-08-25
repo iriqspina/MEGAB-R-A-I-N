@@ -125,6 +125,8 @@ def comparar_versoes(v_central, v_projeto):
     d_p, n_p = parse_versao(v_projeto)
     if d_c and d_p and d_c != d_p:
         return "central" if d_c > d_p else "projeto"
+    if d_c and d_p and n_c and n_p and d_c == d_p and n_c == n_p:
+        return "igual"
     if n_c and n_p:
         def tupla(n):
             return tuple(int(x) for x in n.split("."))
@@ -220,6 +222,24 @@ def e_copia_magra(mb_projeto) -> bool:
         return (_j.loads(txt) or {}).get("formato") == "magra"
     except (ValueError, TypeError):
         return False
+
+
+def ler_versao_projeto(mb_projeto):
+    """Lê a versão declarada tanto na cópia cheia quanto na magra.
+
+    A cópia magra não carrega ``VERSAO.txt`` por desenho: sua versão vive no
+    ponteiro ``.mb-origem.json``. Tentar lê-la como cópia cheia devolvia
+    ``None`` e empurrava até ``--dry-run`` para uma pergunta interativa.
+    """
+    if not e_copia_magra(mb_projeto):
+        return ler_versao(mb_projeto)
+    import json as _j
+    try:
+        dados = _j.loads(u.safe_read_text(Path(mb_projeto) / ".mb-origem.json") or "{}")
+    except (ValueError, TypeError):
+        return None
+    versao = dados.get("versao_curta")
+    return versao.strip() if isinstance(versao, str) and versao.strip() else None
 
 
 def sincronizar_magra(central, mb_projeto, dry_run=False) -> bool:
@@ -471,7 +491,7 @@ def main():
     tem_mb = os.path.isdir(mb_projeto)
 
     v_central = ler_versao(central)
-    v_projeto = ler_versao(mb_projeto) if tem_mb else None
+    v_projeto = ler_versao_projeto(mb_projeto) if tem_mb else None
 
     print(f"central: {v_central}")
     print(f"projeto: {v_projeto if tem_mb else 'sem MEGABRAIN/'}")
@@ -549,7 +569,7 @@ def main():
     if relacao == "projeto":
         print("ATENÇÃO: o projeto está mais atualizado que a central.")
         print("Não vou sobrescrever o projeto. Avalie se as mudanças devem subir para a central.")
-        if not args.auto:
+        if not (args.auto or args.dry_run):
             resposta = input("Sincronizar projeto -> central? [s/N] ")
             if resposta.lower().strip() == "s":
                 print("Para sync projeto -> central, use mb-sync-projeto-para-central.py (ou copie manualmente).")
@@ -559,7 +579,7 @@ def main():
     print("ATENÇÃO: não foi possível determinar qual versão é mais recente.")
     print("Central:", v_central)
     print("Projeto:", v_projeto)
-    if not args.auto:
+    if not (args.auto or args.dry_run):
         resposta = input("Sobrescrever projeto com a central? [s/N] ")
         if resposta.lower().strip() != "s":
             print("sync cancelado")

@@ -13,6 +13,7 @@ Roda na suíte:     python -m unittest discover tests
 
 from __future__ import annotations
 
+import json
 import shutil
 import subprocess
 import sys
@@ -126,6 +127,40 @@ class Base(unittest.TestCase):
 
 
 class TestCheckVersion(Base):
+    def test_dry_run_le_versao_da_copia_magra_sem_perguntar(self):
+        central = self.central_falsa()
+        projeto = self.tmp("mb-projeto-magro-")
+        mb = projeto / "MEGABRAIN"
+        mb.mkdir()
+        (mb / ".mb-origem.json").write_text(json.dumps({
+            "formato": "magra",
+            "versao_curta": "2026-08-19 · v5.9",
+        }), encoding="utf-8")
+        antes = snapshot(projeto)
+
+        r = rodar(CHECK_VERSION, "--projeto", str(projeto), "--central", str(central),
+                  "--offline", "--dry-run")
+
+        self.assertEqual(r.returncode, 0, f"dry-run magro devia concluir: {r.stdout}{r.stderr}")
+        self.assertIn("versões iguais", r.stdout)
+        self.assertNotIn("EOFError", r.stderr)
+        self.assertEqual(snapshot(projeto), antes, "dry-run alterou o ponteiro magro")
+
+    def test_dry_run_magro_sem_versao_nao_abre_prompt(self):
+        central = self.central_falsa()
+        projeto = self.tmp("mb-projeto-magro-")
+        mb = projeto / "MEGABRAIN"
+        mb.mkdir()
+        (mb / ".mb-origem.json").write_text(
+            json.dumps({"formato": "magra"}), encoding="utf-8")
+
+        r = rodar(CHECK_VERSION, "--projeto", str(projeto), "--central", str(central),
+                  "--offline", "--dry-run")
+
+        self.assertEqual(r.returncode, 0, f"dry-run sem versão devia concluir: {r.stdout}{r.stderr}")
+        self.assertIn("dry-run: gravaria .mb-origem.json", r.stdout)
+        self.assertNotIn("EOFError", r.stderr)
+
     def test_central_externa_e_aceita(self):
         """Regressao 260819: --central valido fora da central detectada era
         recusado (bug A5 reencarnado)."""

@@ -96,20 +96,106 @@ html[data-dens="compacta"] .slot { margin:.7rem 0; }
 .acao .linha-botao { display:flex; gap:.4rem; align-items:center; margin-top:.2rem; }
 .skillcard b { font:700 .82rem/1.3 var(--mono); }
 
-/* ── esquema (os desenhos do doc, na linguagem do tema) ────────── */
-.esq { display:flex; flex-direction:column; gap:.9rem; }
-.esq-row { display:flex; align-items:stretch; gap:.5rem; flex-wrap:wrap; }
-.esq-tile { border:1px solid var(--line); background:var(--paper-high);
-  padding:.55rem .7rem; min-width:10rem; flex:1 1 10rem; max-width:16rem; }
-.esq-tile b { display:block; font:800 .72rem/1.4 var(--mono);
-  text-transform:uppercase; letter-spacing:.06em; margin-bottom:.15rem; }
-.esq-tile.forte { border:2px solid var(--ink); }
-.esq-tile.ok { border-color:var(--ok); } .esq-tile.ok b { color:var(--ok); }
-.esq-tile.alerta { border-color:var(--signal); } .esq-tile.alerta b { color:var(--signal); }
-.esq-tile small { font-size:.72rem; color:var(--ink-soft); line-height:1.4; display:block; }
-.esq-seta { align-self:center; color:var(--ink-faint); font:800 1rem/1 var(--mono); }
-.esq-rotulo { font:800 .66rem/1.3 var(--mono); color:var(--ink-faint);
-  text-transform:uppercase; letter-spacing:.1em; align-self:center; min-width:5.2rem; }
+/* ── esquema: evolução, organização atual e fluxo ──────────────── */
+.esq { display:flex; flex-direction:column; gap:1.5rem; }
+.esq-section { border:1px solid var(--line); background:var(--paper-high); padding:1rem; }
+.esq-head { max-width:54rem; margin-bottom:.9rem; }
+.esq-overline { display:block; font:800 .62rem/1.35 var(--mono); color:var(--ink-faint);
+  text-transform:uppercase; letter-spacing:.12em; margin-bottom:.3rem; }
+.esq-head h3 { font-size:clamp(1rem,2vw,1.35rem); margin:.1rem 0 .35rem; }
+.esq-head p { color:var(--ink-soft); font-size:.82rem; line-height:1.55; margin:0; }
+.esq-compare { display:grid; grid-template-columns:minmax(0,1fr) 2.2rem minmax(0,1fr);
+  gap:.65rem; align-items:stretch; }
+.esq-era { border:1px solid var(--line); background:var(--paper); padding:.85rem;
+  min-width:0; }
+.esq-era--antes { border-top:3px solid var(--signal); }
+.esq-era--agora { border-top:3px solid var(--ok); }
+.esq-era__tag { display:inline-block; font:900 .6rem/1.2 var(--mono); letter-spacing:.12em;
+  padding:.25rem .4rem; border:1px solid currentColor; margin-bottom:.45rem; }
+.esq-era--antes .esq-era__tag { color:var(--signal); }
+.esq-era--agora .esq-era__tag { color:var(--ok); }
+.esq-era h4 { font-size:.92rem; margin:.05rem 0 .65rem; }
+.esq-tree { display:flex; flex-direction:column; gap:.3rem; font:.68rem/1.35 var(--mono);
+  border-left:2px solid var(--line); padding-left:.65rem; margin-bottom:.7rem; }
+.esq-tree span { display:block; color:var(--ink-soft); }
+.esq-tree strong { color:var(--ink); }
+.esq-tree .repete { color:var(--signal); }
+.esq-tree .unico { color:var(--ok); }
+.esq-metrics { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.4rem; }
+.esq-metric { border-top:1px solid var(--line); padding-top:.45rem; min-width:0; }
+.esq-metric strong { display:block; font:900 clamp(.82rem,2vw,1.08rem)/1.1 var(--mono); }
+.esq-metric small { display:block; color:var(--ink-faint); font-size:.64rem; line-height:1.3;
+  margin-top:.18rem; }
+.esq-bridge { align-self:center; justify-self:center; font:900 1.2rem/1 var(--mono);
+  color:var(--ok); }
+.esq-proof { display:flex; align-items:center; gap:.55rem; margin-top:.7rem;
+  padding:.55rem .65rem; border:1px solid color-mix(in srgb,var(--ok) 55%,var(--line));
+  background:color-mix(in srgb,var(--ok) 8%,var(--paper)); font-size:.72rem; }
+.esq-proof b { font-family:var(--mono); color:var(--ok); white-space:nowrap; }
+.esq-shifts { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.5rem;
+  margin-top:.65rem; }
+.esq-shift { border-left:3px solid var(--ink); padding:.35rem .55rem; }
+.esq-shift b { display:block; font:.72rem/1.3 var(--mono); margin-bottom:.15rem; }
+.esq-shift small { color:var(--ink-soft); font-size:.69rem; line-height:1.4; }
+
+.esq-core { border:2px solid var(--ink); background:var(--paper); }
+.esq-core__head { display:flex; justify-content:space-between; gap:1rem; align-items:flex-start;
+  padding:.75rem .85rem; border-bottom:1px solid var(--line); }
+.esq-core__head b { font:900 .8rem/1.35 var(--mono); text-transform:uppercase; }
+.esq-core__head small { color:var(--ink-faint); font-size:.67rem; text-align:right; }
+.esq-folders { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:0;
+  border-bottom:1px solid var(--line); }
+.esq-folder { padding:.65rem; border-right:1px solid var(--line); min-width:0; }
+.esq-folder:last-child { border-right:0; }
+.esq-folder code { display:block; font-weight:800; color:var(--ink); margin-bottom:.2rem; }
+.esq-folder small { color:var(--ink-soft); font-size:.66rem; line-height:1.38; display:block; }
+.esq-channels { display:grid; grid-template-columns:1fr 1fr; gap:.55rem; margin-top:.7rem; }
+.esq-channel { position:relative; border:1px solid var(--line); padding:.65rem .75rem;
+  background:var(--paper); }
+.esq-channel::before { content:"↓"; position:absolute; left:50%; top:-1.1rem;
+  color:var(--ink-faint); font:900 .8rem/1 var(--mono); }
+.esq-channel b { display:block; font:.72rem/1.3 var(--mono); margin-bottom:.2rem; }
+.esq-channel small { color:var(--ink-soft); font-size:.68rem; line-height:1.4; }
+.esq-channel--humano { border-color:var(--signal); }
+.esq-channel--ia { border-color:var(--ok); }
+.esq-routes { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.55rem;
+  margin-top:.7rem; }
+.esq-route { border:1px dashed var(--line); padding:.65rem .7rem; }
+.esq-route b { display:block; font:.68rem/1.3 var(--mono); text-transform:uppercase;
+  letter-spacing:.06em; margin-bottom:.2rem; }
+.esq-route small { display:block; color:var(--ink-soft); font-size:.67rem; line-height:1.4; }
+.esq-route--privado { border-style:solid; border-color:var(--signal); }
+.esq-route--privado b { color:var(--signal); }
+
+.esq-flow { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:1rem; }
+.esq-step { position:relative; border:1px solid var(--line); background:var(--paper);
+  padding:.65rem; min-height:5.5rem; }
+.esq-step::after { content:"→"; position:absolute; right:-.8rem; top:42%;
+  color:var(--ink-faint); font:900 .9rem/1 var(--mono); }
+.esq-step:last-child::after { display:none; }
+.esq-step__n { display:block; font:900 .65rem/1 var(--mono); color:var(--signal);
+  margin-bottom:.35rem; }
+.esq-step b { display:block; font:.7rem/1.3 var(--mono); margin-bottom:.2rem; }
+.esq-step small { display:block; color:var(--ink-soft); font-size:.65rem; line-height:1.38; }
+@media (max-width:800px) {
+  .esq-compare { grid-template-columns:1fr; }
+  .esq-bridge { transform:rotate(90deg); }
+  .esq-metrics, .esq-shifts, .esq-routes { grid-template-columns:1fr; }
+  .esq-folders, .esq-channels { grid-template-columns:1fr 1fr; }
+  .esq-folder:nth-child(2) { border-right:0; }
+  .esq-folder:nth-child(-n+2) { border-bottom:1px solid var(--line); }
+  .esq-flow { grid-template-columns:1fr; gap:.55rem; }
+  .esq-step { min-height:0; }
+  .esq-step::after { content:"↓"; right:auto; top:auto; bottom:-.75rem; left:50%; }
+}
+@media (max-width:520px) {
+  .esq-section { padding:.75rem; }
+  .esq-folders, .esq-channels { grid-template-columns:1fr; }
+  .esq-folder { border-right:0; border-bottom:1px solid var(--line); }
+  .esq-folder:last-child { border-bottom:0; }
+  .esq-core__head { flex-direction:column; }
+  .esq-core__head small { text-align:left; }
+}
 
 /* ── feedback rail ─────────────────────────────────────────────── */
 .rail { position:fixed; right:0; top:16vh; width:16rem; z-index:40;
@@ -130,6 +216,7 @@ html[data-dens="compacta"] .slot { margin:.7rem 0; }
 .rail .aviso s { opacity:.7; }
 .rail .curtir { display:flex; align-items:center; gap:.5rem; }
 @media (max-width:1180px) { .rail { top:auto; bottom:0; } }
+@media (max-width:640px) { .rail { display:none; } }
 @media print { .rail, .wsbar, .mbtabs { display:none; } }
 """
 
@@ -249,35 +336,130 @@ def html_skills(itens: list[dict]) -> str:
             'ou descreva a tarefa — a skill certa acorda sozinha.</p>')
 
 
-def html_esquema() -> str:
-    """Central → GitHub → usuário → projetos, na linguagem visual do tema.
-    A versão didática completa (43 boards) é 03_docs/260824_megabrain-do-zero.html."""
-    return """
+def html_esquema(estado: dict | None = None) -> str:
+    """Explica a migração e a organização atual sem criar outra fonte."""
+    estado = estado or {}
+    copias = estado.get("copias") or {}
+    suite = estado.get("suite") or {}
+    total = copias.get("total")
+    em_dia = copias.get("em_dia")
+    testes = suite.get("testes")
+    copias_txt = (f"{_e(em_dia)}/{_e(total)}" if total is not None and
+                  em_dia is not None else "—")
+    testes_txt = _e(testes) if testes is not None else "—"
+    prova_txt = "verde" if suite.get("verde") is True else "sem medição"
+
+    return f"""
 <div class="esq">
-  <div class="esq-row">
-    <div class="esq-tile forte"><b>sua central</b><small>MEGA B R A I N — a matriz do mundo: a única onde o megabrain é editado</small></div>
-    <span class="esq-seta">→</span>
-    <div class="esq-tile"><b>GitHub</b><small>a versão pública + todas as fotos antigas (sem nada pessoal)</small></div>
-    <span class="esq-seta">→</span>
-    <div class="esq-tile"><b>central do usuário</b><small>clone no PC de cada pessoa; identidade e cérebro dela nascem vazios e são só dela</small></div>
-    <span class="esq-seta">→</span>
-    <div class="esq-tile"><b>megabrain do projeto</b><small>a pasta MEGABRAIN\\ dentro de cada projeto: trava a versão, roda sozinho, se atualiza. Não é backup nem lugar de editar</small></div>
-  </div>
-  <div class="esq-row">
-    <span class="esq-rotulo">desce</span>
-    <div class="esq-tile ok"><b>automático</b><small>regras, skill, scripts, referências — matriz → GitHub → centrais → projetos, no sync</small></div>
-    <span class="esq-rotulo">sobe</span>
-    <div class="esq-tile ok"><b>peneirado</b><small>lição generalizada, SEM dados pessoais, como proposta que o dono aprova (opt-in)</small></div>
-    <span class="esq-rotulo">nunca sobe</span>
-    <div class="esq-tile alerta"><b>o pessoal</b><small>identidade, cérebro, pessoas, motor\\dna\\usuario\\ — morre na máquina de cada um</small></div>
-  </div>
-  <div class="esq-row">
-    <div class="esq-tile"><b>memoria\\</b><small>o que a IA lê pra lembrar: nucleo (regras e lições) · estado (onde paramos) · identidade · cerebro (raw → wiki) · pendencias</small></div>
-    <div class="esq-tile"><b>02_entrada\\</b><small>jogue fontes aqui (PDF, print, briefing) → /ingerir destila pro cérebro</small></div>
-    <div class="esq-tile"><b>motor\\</b><small>a máquina numa caixa só: skills, referencias, modelos, dna, tests, dist, plugins, gerenteneuron — você nunca precisa abrir. Só <code>bin\\</code> ficou na raiz (hook externo aponta pra ela)</small></div>
-    <div class="esq-tile"><b>motor\\dna\\usuario\\</b><small>backup imaculado local das suas infos pessoais — intocável, fora do git</small></div>
-  </div>
-  <p class="det">A explicação completa, board por board: <code>03_docs\\260824_megabrain-do-zero.html</code> (43 boards, setas ↑↓).</p>
+  <section class="esq-section" aria-labelledby="esq-evolucao">
+    <header class="esq-head">
+      <span class="esq-overline">mudança estrutural · fotografia de 25/08/2026</span>
+      <h3 id="esq-evolucao">De 19 máquinas repetidas para uma central única</h3>
+      <p>Antes, cada projeto carregava uma cópia quase inteira do Megabrain. Agora a
+      máquina vive uma vez na central; o projeto guarda só o ponteiro que diz onde ela
+      está e qual versão deve usar.</p>
+    </header>
+
+    <div class="esq-compare">
+      <article class="esq-era esq-era--antes">
+        <span class="esq-era__tag">antes</span>
+        <h4>Cada projeto levava sua própria máquina</h4>
+        <div class="esq-tree" aria-label="organização anterior">
+          <span><strong>central\\</strong> máquina principal</span>
+          <span class="repete">├─ Projeto 01\\MEGABRAIN\\ máquina copiada</span>
+          <span class="repete">├─ Projeto 02\\MEGABRAIN\\ máquina copiada</span>
+          <span class="repete">└─ … até a cópia 19</span>
+        </div>
+        <div class="esq-metrics">
+          <div class="esq-metric"><strong>182 MB</strong><small>nas 19 cópias para ~2 MB de conteúdo próprio</small></div>
+          <div class="esq-metric"><strong>617 KB</strong><small>relatório com 31 markdowns despejados dentro</small></div>
+          <div class="esq-metric"><strong>6</strong><small>artefatos de saída disputando atenção</small></div>
+        </div>
+      </article>
+
+      <span class="esq-bridge" aria-hidden="true">→</span>
+
+      <article class="esq-era esq-era--agora">
+        <span class="esq-era__tag">agora</span>
+        <h4>Uma máquina; cada projeto aponta para ela</h4>
+        <div class="esq-tree" aria-label="organização atual resumida">
+          <span class="unico"><strong>central\\</strong> única fonte editável</span>
+          <span>├─ Projeto 01\\MEGABRAIN\\ <strong>ponteiro</strong></span>
+          <span>├─ Projeto 02\\MEGABRAIN\\ <strong>ponteiro</strong></span>
+          <span>└─ … todos leem a mesma máquina</span>
+        </div>
+        <div class="esq-metrics">
+          <div class="esq-metric"><strong>2–3</strong><small>arquivos leves na pasta MEGABRAIN de cada projeto</small></div>
+          <div class="esq-metric"><strong>141 KB</strong><small>na virada: índice no lugar do despejo, −76%</small></div>
+          <div class="esq-metric"><strong>3</strong><small>saídas, cada uma com um leitor definido</small></div>
+        </div>
+        <div class="esq-proof"><b>{copias_txt} cópias em dia</b><span>{testes_txt} testes · suíte {prova_txt}</span></div>
+      </article>
+    </div>
+
+    <div class="esq-shifts" aria-label="o que mudou na prática">
+      <div class="esq-shift"><b>máquina ≠ projeto</b><small>Scripts, skills e regras ficam na central. O trabalho do projeto continua sendo dele.</small></div>
+      <div class="esq-shift"><b>dado ≠ tela</b><small><code>dados/estado.json</code> serve às IAs; este relatório serve a você.</small></div>
+      <div class="esq-shift"><b>local ≠ público</b><small>Identidade e cérebro ficam no PC; só o pacote sanitizado chega ao GitHub.</small></div>
+    </div>
+  </section>
+
+  <section class="esq-section" aria-labelledby="esq-organizacao">
+    <header class="esq-head">
+      <span class="esq-overline">mapa da organização atual</span>
+      <h3 id="esq-organizacao">A central separa memória, máquina, leitura e distribuição</h3>
+      <p>A caixa grande abaixo é a única fonte editável. As caixas de baixo são
+      saídas diferentes; elas não viraram novas fontes.</p>
+    </header>
+
+    <div class="esq-core">
+      <div class="esq-core__head">
+        <b>MEGA B R A I N\\ · central</b>
+        <small>fonte da verdade · histórico Git local · backup recuperável</small>
+      </div>
+      <div class="esq-folders">
+        <div class="esq-folder"><code>memoria\\</code><small>núcleo, estado, decisões, lições, identidade e cérebro</small></div>
+        <div class="esq-folder"><code>motor\\ + bin\\</code><small>skills, referências, modelos, plugins, scripts e testes</small></div>
+        <div class="esq-folder"><code>02_entrada\\</code><small>PDF, print e briefing entram crus; <b>/ingerir</b> destila</small></div>
+        <div class="esq-folder"><code>90_arquivo\\</code><small>histórico aposentado continua recuperável sem poluir o uso diário</small></div>
+      </div>
+    </div>
+
+    <div class="esq-channels">
+      <article class="esq-channel esq-channel--ia">
+        <b>para as IAs · <code>dados/estado.json</code></b>
+        <small>Estado estruturado, contagens e fontes. O agente lê o dado; não raspa a tela.</small>
+      </article>
+      <article class="esq-channel esq-channel--humano">
+        <b>para você · <code>00_painel/RELATORIO.html</code></b>
+        <small>Painel navegável, ações, esquema, cérebro e histórico. É a porta de entrada humana.</small>
+      </article>
+    </div>
+
+    <div class="esq-routes">
+      <article class="esq-route"><b>projetos</b><small><code>.mb-origem.json</code> aponta para a central; não duplica a máquina.</small></article>
+      <article class="esq-route"><b>GitHub público</b><small><code>_github/export</code> recebe scripts e regras sanitizados, sem memória pessoal.</small></article>
+      <article class="esq-route esq-route--privado"><b>nunca sai do PC</b><small>identidade, cérebro, pessoas, credenciais e <code>motor/dna/usuario</code>.</small></article>
+    </div>
+  </section>
+
+  <section class="esq-section" aria-labelledby="esq-fluxo">
+    <header class="esq-head">
+      <span class="esq-overline">fluxo de uma mudança</span>
+      <h3 id="esq-fluxo">Do material bruto até uma versão provada e publicada</h3>
+    </header>
+    <div class="esq-flow">
+      <div class="esq-step"><span class="esq-step__n">01</span><b>entra</b><small>chat, briefing, PDF ou arquivo em <code>02_entrada</code></small></div>
+      <div class="esq-step"><span class="esq-step__n">02</span><b>vira memória ou máquina</b><small><code>memoria</code> guarda conhecimento; <code>motor/bin</code> guarda procedimento</small></div>
+      <div class="esq-step"><span class="esq-step__n">03</span><b>é provado</b><small>suíte, preflight, IDs, trava e teste funcional recusam estado inválido</small></div>
+      <div class="esq-step"><span class="esq-step__n">04</span><b>ganha duas leituras</b><small>JSON para agentes; relatório visual para você</small></div>
+      <div class="esq-step"><span class="esq-step__n">05</span><b>é distribuído</b><small>ponteiro para projetos; export sanitizado para o GitHub</small></div>
+    </div>
+  </section>
+
+  <p class="det">Histórico das escolhas: decisões <code>260825n</code>, <code>260825r</code>,
+  <code>260825t</code> e <code>260825aa</code>. Explicação extensa, board por board:
+  <code>03_docs\\260824_megabrain-do-zero.html</code>.</p>
 </div>"""
 
 
@@ -308,7 +490,9 @@ def js_workspace() -> str:
   function ler() { try { return JSON.parse(localStorage.getItem(NS)) || {}; } catch (e) { return {}; } }
   function gravar(st) { try { localStorage.setItem(NS, JSON.stringify(st)); } catch (e) {} }
   var st = ler();
-  st.ativa = st.ativa || "painel";
+  var hashTab = location.hash.replace(/^#/, "");
+  var tabsValidas = ["painel", "esquema", "acoes", "skills", "cerebro", "docs", "historico"];
+  st.ativa = tabsValidas.indexOf(hashTab) !== -1 ? hashTab : (st.ativa || "painel");
   st.fixas = Array.isArray(st.fixas) ? st.fixas : [];
   st.fonte = Math.min(20, Math.max(13, st.fonte || 16));
   st.dens = st.dens || "normal";
@@ -342,10 +526,17 @@ def js_workspace() -> str:
   tabs.forEach(function (t) {
     t.addEventListener("click", function (ev) {
       if (ev.target.classList.contains("pin")) return;
-      st.ativa = t.dataset.tab; aplicar();
+      st.ativa = t.dataset.tab;
+      history.replaceState(null, "", "#" + st.ativa);
+      aplicar();
     });
     t.addEventListener("keydown", function (ev) {
-      if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); st.ativa = t.dataset.tab; aplicar(); }
+      if (ev.key === "Enter" || ev.key === " ") {
+        ev.preventDefault();
+        st.ativa = t.dataset.tab;
+        history.replaceState(null, "", "#" + st.ativa);
+        aplicar();
+      }
     });
   });
   document.querySelectorAll(".pin").forEach(function (p) {
