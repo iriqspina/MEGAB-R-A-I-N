@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-mb-preflight.py — abertura de sessão do megabrain em 1 comando. v6.1 (260821)
+mb-preflight.py — abertura de sessão do megabrain em 1 comando. v6.2 (260825)
 
 É o script que a skill `mb-abertura` documentava desde 260817 e que nunca tinha
-sido escrito (confirmado ausente em 260821). Quatro cheques, um veredito, um
+sido escrito (confirmado ausente em 260821). Os cheques, um veredito, um
 código de saída:
 
   git     o repo local está atrás do origin/main conhecido? árvore suja?
@@ -11,6 +11,10 @@ código de saída:
           passe --fetch pra tentar `git fetch` antes, com timeout)
   skills  a SKILL.md do megabrain instalada em cada agente tem o mesmo hash da
           fonte na central? (a instalada é a que roda — Gate 5)
+  plugin  a cópia derivada em plugin-megabrain-claude/ bate com a derivação da
+          fonte? (v6.2, lição 260825: plugin velho + cópia instalada velha
+          formam par consistente e passam no cheque de hash — o drift
+          fonte→plugin só aparece contra a derivação)
   fatos   algum JSON com `verificado_em` venceu a `validade_dias` (default 30)?
   legado  sobrou `metaprotocolo` / `metaclaude` fora dos lugares onde o nome
           antigo é reconhecimento deliberado (hook, registrar-licao, histórico)?
@@ -35,6 +39,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import hashlib
+import importlib.util
 import json
 import os
 import re
@@ -195,6 +200,31 @@ def cheque_skills(central: Path, agentes: bool) -> tuple[bool, str]:
         return False, (f"{len(divergentes)}/{len(achados)} cópia(s) instalada(s) DIVERGEM da fonte "
                        f"(a instalada é a que roda): " + "; ".join(divergentes))
     return True, f"{len(achados)} cópia(s) instalada(s) com hash igual à fonte"
+
+
+def cheque_plugin(central: Path) -> tuple[bool, str]:
+    """Drift fonte→plugin (lição 260825, decisão 260825aj).
+
+    O cheque de skills aceita o hash do plugin como fonte válida porque as
+    cópias instaladas do Claude são deploy do derivado — mas plugin velho +
+    cópia velha formam par consistente e o drift só aparece comparando o
+    plugin com a DERIVAÇÃO da fonte. A lógica mora em mb-build-plugin-claude
+    (conferir_drift); aqui ela só vira veredito.
+    """
+    caminho = Path(__file__).resolve().parent / "mb-build-plugin-claude.py"
+    try:
+        spec = importlib.util.spec_from_file_location("mb_build_plugin_claude", str(caminho))
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+    except (OSError, ImportError, SyntaxError) as e:
+        return False, f"mb-build-plugin-claude.py ilegível: {e}"
+    if not u.pasta(central, mod.PLUGIN_DIR).is_dir():
+        return True, "central sem plugin-megabrain-claude (nada a conferir)"
+    drift = mod.conferir_drift(central)
+    if drift:
+        return False, ("plugin DIVERGE da fonte — rode `python bin/mb-build-plugin-claude.py` "
+                       "e atualize as cópias instaladas: " + "; ".join(drift))
+    return True, "derivação fonte→plugin em dia"
 
 
 def iter_texto(raiz: Path):
@@ -366,6 +396,7 @@ def main() -> int:
     resultados = {
         "git": cheque_git(repo, args.fetch),
         "skills": cheque_skills(central, args.agentes),
+        "plugin": cheque_plugin(central),
         "fatos": cheque_fatos(central),
         "legado": cheque_legado(raizes_legado),
         "crlf": cheque_crlf(central),

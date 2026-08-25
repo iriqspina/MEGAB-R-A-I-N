@@ -599,8 +599,17 @@ def main() -> int:
             print(f"{a.acao} exige --entrada CAMINHO (ou - para stdin)")
             return 2
         try:
-            conteudo = (sys.stdin.read() if a.entrada == "-" else
-                        Path(a.entrada).read_text(encoding="utf-8"))
+            if a.entrada == "-":
+                # stdin em bytes: sys.stdin.read() decodifica no locale do
+                # console (cp1252 no Windows) e dobra a codificação de UTF-8
+                # vindo de pipe — paridade com --entrada CAMINHO é UTF-8.
+                bruto = sys.stdin.buffer.read()
+                try:
+                    conteudo = bruto.decode("utf-8")
+                except UnicodeDecodeError:
+                    conteudo = bruto.decode("cp1252")
+            else:
+                conteudo = Path(a.entrada).read_text(encoding="utf-8")
             if a.acao == "escrever":
                 escrever(alvo, conteudo, a.agente, a.porque, raiz)
             elif a.acao == "anexar":

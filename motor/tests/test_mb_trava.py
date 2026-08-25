@@ -281,6 +281,25 @@ class TestProcessos(Base):
             raiz, "liberar", "--arquivo", str(alvo), "--agente", "processo-1")
         self.assertEqual(liberado.returncode, 0, liberado.stdout + liberado.stderr)
 
+    def test_anexar_stdin_utf8_nao_dobra_codificacao(self):
+        # regressão 260825: sys.stdin.read() decodificava o pipe no locale do
+        # console (cp1252 no Windows) e "lição — café" chegava mojibake ao
+        # arquivo; o subprocesso é deliberado — só ele passa por stdin real.
+        raiz = self.tmpdir()
+        alvo = raiz / "licoes-megabrain.md"
+        alvo.write_text("## antes\n", encoding="utf-8")
+        r = subprocess.run(
+            [sys.executable, str(RAIZ / "bin" / "mb_trava.py"), "anexar",
+             "--arquivo", str(alvo), "--agente", "processo-1",
+             "--entrada", "-", "--raiz", str(raiz)],
+            input="## 260825 — lição com café\n".encode("utf-8"),
+            capture_output=True,
+        )
+        self.assertEqual(r.returncode, 0,
+                         (r.stdout + r.stderr).decode("utf-8", "replace"))
+        self.assertIn("## 260825 — lição com café",
+                      alvo.read_text(encoding="utf-8"))
+
 
 class TestEscritorIntegrado(Base):
     def test_estado_usa_ultima_trava_do_handoff(self):

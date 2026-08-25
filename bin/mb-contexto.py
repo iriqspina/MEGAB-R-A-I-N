@@ -64,12 +64,22 @@ def achar_projeto(cwd: str | None) -> Path | None:
             return None
         alvo = Path(cwd).resolve()
         raiz = projetos_root()
-        if alvo == raiz or raiz not in alvo.parents:
-            return None
-        projeto = alvo
-        while projeto.parent != raiz:
-            projeto = projeto.parent
-        return projeto
+        if alvo != raiz and raiz in alvo.parents:
+            projeto = alvo
+            while projeto.parent != raiz:
+                projeto = projeto.parent
+            return projeto
+        # v6.1 (260825, item 4.2 da auditoria): checkout/worktree FORA da raiz
+        # de projetos (ex.: Traycer em ~/.traycer/worktrees) tem projeto do
+        # mesmo jeito — o hook dizia "ainda não tem META.md" com o META
+        # rastreado dentro do worktree. Sobe do cwd até o primeiro marcador
+        # megabrain; sem marcador, segue não sendo projeto.
+        for d in (alvo, *alvo.parents):
+            if (u.achar(d, "META.md").is_file()
+                    or (d / "MEGABRAIN").is_dir()
+                    or (d / ".mb-origem.json").is_file()):
+                return d
+        return None
     except OSError:
         return None
 

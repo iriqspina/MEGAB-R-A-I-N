@@ -81,6 +81,38 @@ def derivar_skill_licao(fonte: str) -> str:
     return t
 
 
+def mapa_fontes(c: Path) -> dict[str, tuple[Path, object]]:
+    """rel dentro do plugin → (fonte na central, derivação aplicada na cópia)."""
+    return {
+        "skills/megabrain/SKILL.md": (u.achar(c, "skills/megabrain/SKILL.md"), derivar_skill_megabrain),
+        "skills/registrar-licao/SKILL.md": (u.achar(c, "plugin-megabrain/skills/registrar-licao/SKILL.md"), derivar_skill_licao),
+        "skills/ingerir/SKILL.md": (u.achar(c, "skills/ingerir/SKILL.md"), lambda t: t),  # v6.2
+        "skills/grelhar/SKILL.md": (u.achar(c, "skills/grelhar/SKILL.md"), lambda t: t),  # v6.3 (260824)
+        "skills/traycer/SKILL.md": (u.achar(c, "skills/traycer/SKILL.md"), lambda t: t),  # v6.4 (260825)
+        "skills/leigolanguage/SKILL.md": (u.achar(c, "skills/leigolanguage/SKILL.md"), lambda t: t),  # v6.5 (260825)
+    }
+
+
+def conferir_drift(c: Path) -> list[str]:
+    """rels do plugin cujo conteúdo difere do derivado da fonte, sem efeito
+    colateral — é o que o preflight embute (lição 260825: plugin velho + cópia
+    instalada velha formam par consistente e o drift fonte→plugin some do
+    cheque de hash). Fonte e cópia ambas ausentes não é drift; fonte ausente
+    com cópia órfã no plugin é."""
+    plugin = u.pasta(c, PLUGIN_DIR)
+    if not plugin.is_dir():
+        return []
+    drift = []
+    for rel, (fonte, derivar) in mapa_fontes(c).items():
+        texto = u.safe_read_text(fonte)
+        atual = u.safe_read_text(plugin / rel)
+        if texto is None and atual is None:
+            continue
+        if texto is None or atual != derivar(texto):
+            drift.append(rel)
+    return drift
+
+
 def frontmatter_ok(texto: str) -> bool:
     m = re.match(r"---\n(.*?)\n---\n", texto, re.DOTALL)
     if not m:
@@ -150,14 +182,7 @@ def main() -> int:
 
     c = central()
     plugin = u.pasta(c, PLUGIN_DIR)   # v7.1: motor/plugin-megabrain-claude
-    fontes = {
-        "skills/megabrain/SKILL.md": (u.achar(c, "skills/megabrain/SKILL.md"), derivar_skill_megabrain),
-        "skills/registrar-licao/SKILL.md": (u.achar(c, "plugin-megabrain/skills/registrar-licao/SKILL.md"), derivar_skill_licao),
-        "skills/ingerir/SKILL.md": (u.achar(c, "skills/ingerir/SKILL.md"), lambda t: t),  # v6.2
-        "skills/grelhar/SKILL.md": (u.achar(c, "skills/grelhar/SKILL.md"), lambda t: t),  # v6.3 (260824)
-        "skills/traycer/SKILL.md": (u.achar(c, "skills/traycer/SKILL.md"), lambda t: t),  # v6.4 (260825)
-        "skills/leigolanguage/SKILL.md": (u.achar(c, "skills/leigolanguage/SKILL.md"), lambda t: t),  # v6.5 (260825)
-    }
+    fontes = mapa_fontes(c)
     drift = []
     for rel, (fonte, derivar) in fontes.items():
         texto = u.safe_read_text(fonte)
