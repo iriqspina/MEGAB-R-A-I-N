@@ -1,17 +1,21 @@
 # MEGABRAIN
 
-**Versão atual: v6.5 (2026-08-22).** A versão vale o que está em `VERSAO.txt`
-(changelog completo na central privada; aqui só a entrada vigente). Skill
-`megabrain` v5.5 · plugin Claude/Cowork v1.2.0.
+**A versão é a primeira linha de `VERSAO.txt`** — não confie em número
+repetido aqui, em título de arquivo ou em `PROGRESSO.json`. Em 260825 este
+README dizia v6.5 com o disco em v7.4, e a divergência custou uma auditoria
+inteira. Versão da skill e do plugin: `motor/skills/megabrain/SKILL.md` e o
+`.plugin` mais recente em `motor/dist/`.
 
 Protocolo de execução para agentes de IA (Claude Code, Kimi CLI, Gemini CLI
 como fallback opcional, ou colado direto em qualquer chat) — pensado para
 dois ou mais agentes trabalhando no mesmo projeto sem pisar um no outro, e
 para impedir que entregas de IA saiam genéricas.
 
-Para uma explicação visual e curta, gere o relatório institucional com
-`python relatorio-megabrain/gerar.py` (sai `RELATORIO.html`, uma tela por
-assunto). O HTML não vem no pacote: edite a fonte e regenere.
+Para uma explicação visual e curta, gere o relatório com
+`python bin/mb-relatorio-vivo.py` (sai `00_painel/RELATORIO.html`, dashboard
+que recarrega sozinho). O HTML não vem no pacote: edite a fonte e regenere.
+O antigo `relatorio-megabrain/gerar.py` foi arquivado em `90_arquivo/` na
+v7.1 — se algum texto ainda mandar rodá-lo, é texto vencido.
 
 ## O que tem aqui
 

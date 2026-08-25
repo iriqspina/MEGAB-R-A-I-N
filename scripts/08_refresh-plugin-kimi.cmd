@@ -12,6 +12,10 @@ set "FONTE=<MEGABRAIN_ROOT>"
 set "PLUGIN=<USER_HOME>\.kimi-code\plugins\managed\megabrain"
 set "SKILL_DEST=%PLUGIN%\skills\megabrain"
 set "DESKTOP=<USER_HOME>\AppData\Roaming\kimi-desktop\daimon-share\daimon\skills\megabrain"
+rem  260825: skills que nasceram DEPOIS do plugin Kimi e ficavam de fora do
+rem  refresh — o Kimi tinha 4 de 6 e /grelhar nao existia pra ele. A fonte de
+rem  skill e sempre motor\skills\<nome>, nunca a copia dentro do plugin.
+set "SKILLS_EXTRA=grelhar traycer conclusao-megabrain"
 
 echo.
 echo  ================================================================
@@ -54,6 +58,13 @@ if exist "%DESKTOP%\.." (
   robocopy "%FONTE%\memoria\nucleo" "%DESKTOP%" MEGABRAIN.md /R:1 /W:1 >nul
   robocopy "%FONTE%\motor\referencias" "%DESKTOP%\referencias" 26*_*.md /R:1 /W:1 >nul
   echo        OK ^(kimi-desktop tambem^)
+)
+
+rem --- 3b. skills novas: grelhar, traycer, conclusao --------------
+echo  [3b] copiando as skills novas da central:
+for %%S in (%SKILLS_EXTRA%) do (
+  if exist "%FONTE%\motor\skills\%%S\SKILL.md" robocopy "%FONTE%\motor\skills\%%S" "%PLUGIN%\skills\%%S" /E /R:1 /W:1 >nul
+  if exist "%PLUGIN%\skills\%%S\SKILL.md" echo        OK    %%S
 )
 
 rem --- 4. verificacao: o hook instalado E o da fonte? -------------

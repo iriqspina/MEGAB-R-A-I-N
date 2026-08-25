@@ -68,6 +68,42 @@ u.utf8_console()
 # modelos/visuais/, porque descreve a PÁGINA — as mecânicas descrevem peças.
 CSS_CONTEUDO = """
 html.pre-carga *, html.pre-carga *::before { transition: none !important; }
+
+/* --- 260825: ações numeradas + skills expansíveis ------------------------
+   Regra do 260804 (feedback nasce no campo visual de quem clicou): o corpo
+   do <details> abre logo abaixo do próprio item, nunca em painel de rodapé.
+   O número é grande e monoespaçado porque a frase que ele vai ouvir é
+   "roda o 5" — o 5 tem que ser a primeira coisa que o olho acha. */
+.acao { border:1px solid var(--line); border-left:3px solid var(--ink);
+  background:var(--paper-high); margin:0 0 .35rem; }
+.acao[open] { border-left-color:var(--signal); }
+.acao > summary { display:grid; grid-template-columns:2.6rem minmax(9rem,auto) 1fr;
+  gap:.6rem; align-items:baseline; padding:.55rem .7rem; cursor:pointer;
+  list-style:none; }
+.acao > summary::-webkit-details-marker { display:none; }
+.acao > summary:hover { background:var(--signal-soft); }
+.acao__n { font:800 1.25rem/1 var(--mono); color:var(--signal);
+  text-align:right; font-variant-numeric:tabular-nums; }
+.acao__nome { font:700 .92rem/1.3 var(--sans); }
+.acao__faz { font:400 .82rem/1.45 var(--sans); color:var(--ink-soft); }
+.acao__falta { font:700 .7rem var(--mono); color:var(--signal); }
+.acao__corpo { padding:.2rem .7rem .7rem 3.9rem; border-top:1px solid var(--line); }
+.acao__corpo p { margin:.5rem 0; font-size:.86rem; }
+.acao--rotina > summary { grid-template-columns:minmax(15rem,auto) 1fr; }
+.acao--rotina .acao__corpo, .acao--skill .acao__corpo { padding-left:.7rem; }
+.acao--skill > summary { grid-template-columns:minmax(11rem,auto) 1fr; }
+.acao--skill .acao__nome { font-family:var(--mono); color:var(--info); }
+.skills__grupo { margin:1.1rem 0 .4rem; font:800 .68rem var(--mono);
+  text-transform:uppercase; letter-spacing:.12em; color:var(--ink-faint); }
+.copiar { font:600 .74rem var(--mono); padding:.3rem .6rem; cursor:pointer;
+  border:1px solid var(--ink); background:var(--paper); color:var(--ink); }
+.copiar:hover { background:var(--ink); color:var(--paper); }
+.copiar[data-ok] { border-color:var(--ok); color:var(--ok); }
+@media (max-width:640px) {
+  .acao > summary { grid-template-columns:2.2rem 1fr; }
+  .acao__faz { grid-column:1 / -1; }
+  .acao__corpo { padding-left:.7rem; }
+}
 .faixa { margin:2.4rem 0 .2rem; padding:.35rem 0; border-top:2px solid var(--ink);
   border-bottom:1px solid var(--line); font:800 .7rem/1.3 var(--mono);
   text-transform:uppercase; letter-spacing:.14em; }
@@ -381,7 +417,14 @@ def eventos_hoje(c: Path, n=12):
         except (json.JSONDecodeError, ValueError):
             continue
         resumo = ev.get("prompt") or ev.get("arquivo") or ev.get("evento") or ""
-        if isinstance(resumo, str) and len(resumo) > 90:
+        # v7.5: "arquivo" chega como lista em evento de escrita múltipla — o
+        # html.escape() quebrava o relatório inteiro. Campo de log é dado de
+        # fora: normaliza pra texto antes de confiar no tipo.
+        if isinstance(resumo, (list, tuple)):
+            resumo = ", ".join(str(x) for x in resumo)
+        elif not isinstance(resumo, str):
+            resumo = str(resumo)
+        if len(resumo) > 90:
             resumo = resumo[:90] + "…"
         linhas.append((ev.get("ts", "")[11:19], ev.get("agente", "?"),
                        ev.get("evento", "?"), resumo))
@@ -428,14 +471,21 @@ def fila_pendentes(c: Path) -> list[dict]:
 # Pastas da central que NÃO entram no conteúdo do relatório: são código,
 # derivado ou arquivo morto. Sem esta lista o rglob puxa referencias/,
 # github-export/ e repo-local/ e o HTML passa de 2 MB.
+#
+# O casamento é por PEDAÇO de caminho (rel.parts), então entrada composta
+# ("_github/export") NUNCA casa e o filtro vira no-op silencioso — foi o que
+# fez cada documento aparecer 3× no HTML até 260825. A asserção abaixo mata
+# a próxima tentativa na hora de importar, em vez de na conta do byte.
 IGNORAR_CENTRAL = {
-    "90_arquivo", "99_to_delete", "_github/repo-local", "_github/export",
+    "90_arquivo", "99_to_delete", "_github",
     "00_painel", "dist", "referencias", "modelos", "skills", "tests",
     "bin", "dna", "plugin-megabrain", "plugin-megabrain-claude",
     "relatorio-megabrain", "gerenteneuron", ".claude", ".mb-backup", ".mb-log",
     ".mb-aspirador", "__pycache__", ".git", "megabrain", "02_entrada",
     "motor",  # v7.1: a máquina inteira mora aqui — nada dela entra no relatório
 }
+assert not any("/" in x or "\\" in x for x in IGNORAR_CENTRAL), (
+    "IGNORAR_CENTRAL casa por pedaço de caminho: entrada composta nunca casa")
 
 
 def _motor_md():
@@ -455,6 +505,98 @@ def _motor_md():
     sys.modules["mb_rel_projeto"] = mod
     spec.loader.exec_module(mod)
     return mod
+
+
+e = html.escape  # escape de modulo: `e` local so existe dentro de gerar_html
+
+
+def secao_acoes(c: Path) -> str:
+    """As ações numeradas 1..N — a única lista do painel com número.
+
+    260825: ele pediu pra poder ouvir "clica no script 3" em vez de decorar
+    nome. O número vem de mb_registro.ACOES (declarado, estável), não da ordem
+    da pasta — se viesse da pasta, um botão novo renumeraria os outros e a
+    frase "clica no 3" passaria a apontar pro lugar errado na semana seguinte.
+    """
+    try:
+        import mb_registro as reg
+    except ImportError:
+        return ""
+    pasta = c / "01_acoes"
+    linhas = []
+    for n, apelido, faz, quando in reg.ACOES:
+        arq = pasta / f"{n:02d}_{apelido}.cmd"
+        existe = arq.is_file()
+        rotulo = apelido.replace("-", " ")
+        estado = "" if existe else ' <span class="acao__falta">arquivo não encontrado</span>'
+        caminho = f"01_acoes\\{n:02d}_{apelido}.cmd"
+        linhas.append(f"""<details class="acao">
+<summary><span class="acao__n">{n}</span><span class="acao__nome">{e(rotulo)}</span>{estado}
+<span class="acao__faz">{e(faz)}</span></summary>
+<div class="acao__corpo">
+<p><strong>Quando usar:</strong> {e(quando)}</p>
+<p class="det">Está em <code>{e(caminho)}</code> — o número está no nome do arquivo,
+então na pasta ele aparece nesta mesma ordem.</p>
+<button class="copiar" data-copiar="{e(str(pasta / f'{n:02d}_{apelido}.cmd'))}">copiar caminho</button>
+</div>
+</details>""")
+    cab = ('<p class="det">Clique para abrir na pasta <code>01_acoes\\</code>. '
+           'O número é fixo: botão novo entra no fim e nunca renumera os outros — '
+           'então "roda o 5" continua sendo o 5 daqui a três meses.</p>')
+    return cab + "".join(linhas)
+
+
+def secao_rotina(c: Path) -> str:
+    """Comandos que rodam de vez em quando. Sem número de propósito: ele não
+    procura por eles na pasta, chama quando precisa."""
+    try:
+        import mb_registro as reg
+    except ImportError:
+        return ""
+    linhas = []
+    for cmd, faz, quando in reg.ROTINA:
+        linhas.append(f"""<details class="acao acao--rotina">
+<summary><span class="acao__nome"><code>{e(cmd)}</code></span>
+<span class="acao__faz">{e(faz)}</span></summary>
+<div class="acao__corpo"><p><strong>Quando:</strong> {e(quando)}</p>
+<button class="copiar" data-copiar="{e(cmd)}">copiar comando</button></div>
+</details>""")
+    return ('<p class="det">Sem número: você não procura estes na pasta, você chama '
+            'quando precisa. Os de uso único já executados saíram de <code>bin/</code> '
+            'e estão em <code>90_arquivo/scripts-uso-unico-260825/</code>.</p>'
+            + "".join(linhas))
+
+
+def secao_skills(c: Path) -> str:
+    """As skills DELE, expansíveis. As de plugin de terceiro ficam de fora —
+    são 30+, ele não escreveu nem mantém, e listá-las é o próprio problema
+    que ele descreveu ('fico olhando vários e perdido')."""
+    try:
+        import mb_registro as reg
+    except ImportError:
+        return ""
+    por_origem: dict[str, list] = {}
+    for nome, origem, faz, gatilho in reg.SKILLS_DELE:
+        por_origem.setdefault(origem, []).append((nome, faz, gatilho))
+    ordem = ["central", "plugin", "projeto", "Matt Pocock (MIT)"]
+    rotulo = {"central": "Do protocolo (fonte em motor/skills/)",
+              "plugin": "Do plugin", "projeto": "Dos seus projetos",
+              "Matt Pocock (MIT)": "De fora — Matt Pocock, licença MIT"}
+    partes = []
+    for origem in ordem + [o for o in por_origem if o not in ordem]:
+        if origem not in por_origem:
+            continue
+        partes.append(f'<h4 class="skills__grupo">{e(rotulo.get(origem, origem))}</h4>')
+        for nome, faz, gatilho in por_origem[origem]:
+            partes.append(f"""<details class="acao acao--skill">
+<summary><span class="acao__nome">/{e(nome)}</span>
+<span class="acao__faz">{e(faz)}</span></summary>
+<div class="acao__corpo"><p><strong>Chama assim:</strong> {e(gatilho)}</p></div>
+</details>""")
+    return ('<p class="det">Só as suas. As de plugin de terceiro (cloudflare, figma, '
+            'adobe, wordpress, canva) não entram aqui — você não as escreveu nem as '
+            'mantém, e listar 30 a mais é o que faz você não achar as suas.</p>'
+            + "".join(partes))
 
 
 def _titulo_md(relativo: str, texto: str) -> str:
@@ -550,7 +692,7 @@ def pecas_visuais(c: Path, git: dict, versao: str, projetos: list,
         {"valor": (f"{len(projetos) - len(atrasados)}/{len(projetos)}" if projetos else "—"),
          "rotulo": "projetos na atual",
          "status": "ok" if projetos and not atrasados else "espera",
-         "det": "260824_sincronizar-projetos.cmd" if atrasados else ("nada a fazer" if projetos else "sem projetos irmãos")},
+         "det": "05_sincronizar-projetos.cmd" if atrasados else ("nada a fazer" if projetos else "sem projetos irmãos")},
         {"valor": (f"{feitas}/{len(etapas)}" if etapas else "—"), "rotulo": "etapas",
          "status": "ok" if etapas and feitas == len(etapas) else "ativo",
          "det": "PROGRESSO.json"},
@@ -621,6 +763,17 @@ def gerar_html(c: Path, forcar_snapshot: bool = False) -> bool:
              "visto_em": agora.astimezone().isoformat(timespec="minutes")}
     ver = estado_versao(c, atual, forcar_snapshot)
     anterior = ver["anterior"]
+    try:
+        import mb_registro as _mbreg
+        _reg_acoes = _mbreg.ACOES
+    except ImportError:
+        _reg_acoes = []
+    # v7.5: o h1 mostrava PROGRESSO.json["projeto"], string congelada na v6.7 —
+    # a primeira coisa que ele lê pra saber "onde estou" mentia a versão.
+    # Nome vem do PROGRESSO (sem o sufixo de versão), número vem do VERSAO.txt.
+    nome_projeto = re.sub(r"\s+v\d+(\.\d+)*\b.*$", "",
+                          str(prog.get("projeto", "megabrain"))).strip() or "megabrain"
+    titulo_h1 = f"{nome_projeto} {versao_resumida(versao)}"
     if git["sem_push"] is None:
         push_txt = "remoto desconhecido (git sem origin/main)" if git["repo"] else "sem repositório git"
         push_cls = "det"
@@ -706,8 +859,10 @@ def gerar_html(c: Path, forcar_snapshot: bool = False) -> bool:
         rail = ws.html_rail()
         js_ws = ws.js_workspace()
         esquema_html = ws.html_esquema()
-        bloco_acoes = ws.html_acoes(ws.acoes_lista(c))
-        bloco_skills = ws.html_skills(ws.skills_lista(c))
+        # 260825: a lista de acoes/skills sai de mb_registro (numerada,
+        # declarada), nao da varredura de comentario do .cmd — uma fonte so.
+        bloco_acoes = secao_acoes(c) + secao_rotina(c)
+        bloco_skills = secao_skills(c)
         bloco_cerebro = ws.html_cerebro(ws.cerebro_dados(c))
         bloco_telemetria = ws.html_telemetria(ws.telemetria_dados(c))
         ask = ws.html_ask
@@ -822,7 +977,7 @@ tr.proj--desatualizado td {{ background:var(--signal-soft); }}
   <!-- ═══ D · DASHBOARD — planta fixa: D1→D5 nesta ordem, sempre ═══ -->
   <header id="d1-identidade">
     <span class="eyebrow">megabrain · relatório</span>
-    <h1>{e(prog.get("projeto", "megabrain"))}</h1>
+    <h1>{e(titulo_h1)}</h1>
     <p class="meta pulse">gerado {agora:%d/%m %H:%M:%S} · recarrega sozinho a cada {RELOAD_SEGUNDOS}s · trava: {e(quem)} (até {e(ate)})</p>
     {f'<p class="det">{e(tldr)}</p>' if tldr else ""}
   </header>
@@ -857,7 +1012,13 @@ tr.proj--desatualizado td {{ background:var(--signal-soft); }}
   {slot("d2-kpi", "", pecas["kpi"], "biblioteca visual ausente — rode python bin/mb_visual.py")}
   {slot("d3-acao", "Para você — o que fazer agora", bloco_para_voce, "nada pendente do seu lado (seção PARA VOCÊ do HANDOFF.md está vazia)")}
   {slot("d4-saude", "", pecas["saude"])}
-  {slot("d5-distribuicao", "", pecas["distribuicao"] + f'<table><thead><tr><th>projeto</th><th>puxou</th><th>commit</th><th>quando</th><th>estado</th></tr></thead><tbody>{linhas_proj}</tbody></table><p class="det">fonte: <code>&lt;projeto&gt;/MEGABRAIN/VERSAO.txt</code> + <code>.mb-origem.json</code>. Desatualizado = rode <code>260824_sincronizar-projetos.cmd</code>.</p>' if projetos else pecas["distribuicao"], "nenhum projeto irmão com MEGABRAIN/ encontrado")}
+  {slot("d5-distribuicao", "", pecas["distribuicao"] + f'<table><thead><tr><th>projeto</th><th>puxou</th><th>commit</th><th>quando</th><th>estado</th></tr></thead><tbody>{linhas_proj}</tbody></table><p class="det">fonte: <code>&lt;projeto&gt;/MEGABRAIN/VERSAO.txt</code> + <code>.mb-origem.json</code>. Desatualizado = rode <code>05_sincronizar-projetos.cmd</code>.</p>' if projetos else pecas["distribuicao"], "nenhum projeto irmão com MEGABRAIN/ encontrado")}
+
+  <!-- ═══ D7 · O QUE VOCÊ CLICA — a única lista numerada do painel ═══ -->
+  <h2 class="faixa">O que você clica <small>— 01_acoes\\, numerado de 1 a {len(_reg_acoes)}</small></h2>
+  {slot("d7-acoes", "", secao_acoes(c), "registro de ações ausente (bin/mb_registro.py)")}
+  {slot("d8-rotina", "Comandos de manutenção", secao_rotina(c), "sem comandos de rotina declarados")}
+  {slot("d9-skills", "Suas skills — clique pra ver o que cada uma faz", secao_skills(c), "sem skills declaradas")}
 
   {slot("d6-telemetria", "Telemetria — o caderninho local desta central", bloco_telemetria, "sem telemetria nesta instância")}
 
@@ -903,14 +1064,17 @@ tr.proj--desatualizado td {{ background:var(--signal-soft); }}
 
   {pa("acoes")}
   {ask("quais botões existem e o que cada um faz quando eu clico?")}
-  <h2 class="faixa">Ações <small>— os botões da central: 01_acoes/*.cmd, com o que cada um faz</small></h2>
-  {bloco_acoes}
+  <h2 class="faixa">Ações <small>— os botões da central, numerados de 1 a {len(_reg_acoes)}</small></h2>
+  <p class="det">A lista mora na primeira dobra do Painel, na seção <b>O que você clica</b> —
+  <a href="#d7-acoes">ir pra lá</a>. Está num lugar só de propósito: a mesma lista em
+  duas seções é como o número de uma delas começa a mentir.</p>
   {pf()}
 
   {pa("skills")}
   {ask("que poderes o megabrain tem, e como eu chamo cada um?")}
-  <h2 class="faixa">Skills <small>— os poderes instalados: skills/*/SKILL.md</small></h2>
-  {bloco_skills}
+  <h2 class="faixa">Skills <small>— as suas, com gatilho e o que fazem</small></h2>
+  <p class="det">Também na primeira dobra do Painel, em <b>Suas skills</b> —
+  <a href="#d9-skills">ir pra lá</a>.</p>
   {pf()}
 
   {pa("cerebro")}
@@ -956,6 +1120,55 @@ requestAnimationFrame(function () {{ requestAnimationFrame(function () {{
     sessionStorage.setItem(KEY, String(window.scrollY || document.documentElement.scrollTop || 0));
     location.reload();
   }}, {RELOAD_SEGUNDOS * 1000});
+}})();
+
+/* 260825 — o painel recarrega a cada {RELOAD_SEGUNDOS}s. Sem isto, tudo que ele
+   abre fecha sozinho antes de terminar de ler: expandir viraria uma armadilha
+   em vez de um recurso. Guarda quais <details> estão abertos e reabre. */
+(function () {{
+  var KEY = "mb-vivo-abertos";
+  var abertos;
+  try {{ abertos = JSON.parse(sessionStorage.getItem(KEY) || "[]"); }}
+  catch (e) {{ abertos = []; }}
+  var itens = document.querySelectorAll("details.acao");
+  itens.forEach(function (d, i) {{
+    var id = d.querySelector(".acao__nome");
+    id = id ? id.textContent.trim() : ("i" + i);
+    d.dataset.mbId = id;
+    if (abertos.indexOf(id) !== -1) {{ d.open = true; }}
+    d.addEventListener("toggle", function () {{
+      var lista = [];
+      document.querySelectorAll("details.acao[open]").forEach(function (x) {{
+        lista.push(x.dataset.mbId);
+      }});
+      try {{ sessionStorage.setItem(KEY, JSON.stringify(lista)); }} catch (e) {{}}
+    }});
+  }});
+}})();
+
+/* Copiar caminho/comando. Navegador não executa .cmd a partir de file:// —
+   por isso o botão entrega o texto pronto pra colar, e o número no NOME do
+   arquivo é o que faz você achar na pasta. */
+(function () {{
+  document.querySelectorAll("button.copiar").forEach(function (b) {{
+    b.addEventListener("click", function (ev) {{
+      ev.preventDefault();
+      var txt = b.getAttribute("data-copiar") || "";
+      var feito = function () {{
+        var antes = b.textContent;
+        b.textContent = "copiado";
+        b.setAttribute("data-ok", "1");
+        setTimeout(function () {{
+          b.textContent = antes; b.removeAttribute("data-ok");
+        }}, 1600);
+      }};
+      if (navigator.clipboard && navigator.clipboard.writeText) {{
+        navigator.clipboard.writeText(txt).then(feito, function () {{ prompt("copie:", txt); }});
+      }} else {{
+        prompt("copie:", txt);
+      }}
+    }});
+  }});
 }})();
 </script>
 </body>

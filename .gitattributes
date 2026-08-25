@@ -1,0 +1,6 @@
+# 260825 — este repo é BACKUP BYTE-EXATO da central, não fonte multiplataforma.
+# Sem conversão de fim de linha em nenhum arquivo: os .cmd de 01_acoes PRECISAM
+# de CRLF (com LF o cmd.exe come a primeira letra das linhas — 260825, o
+# sincronizar-projetos.cmd imprimia 18 "OK" e copiava zero byte por causa
+# disso). Deixar o git normalizar desfaria o conserto na primeira checagem.
+* -text

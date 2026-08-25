@@ -97,7 +97,8 @@ def validar(plugin: Path) -> list[str]:
         except (OSError, ValueError) as e:
             erros.append(f"{rel}: {e}")
     for rel in ("skills/megabrain/SKILL.md", "skills/registrar-licao/SKILL.md",
-                "skills/ingerir/SKILL.md", "skills/grelhar/SKILL.md"):
+                "skills/ingerir/SKILL.md", "skills/grelhar/SKILL.md",
+                "skills/traycer/SKILL.md"):
         t = u.safe_read_text(plugin / rel) or ""
         if not frontmatter_ok(t):
             erros.append(f"{rel}: frontmatter sem name/description")
@@ -154,6 +155,7 @@ def main() -> int:
         "skills/registrar-licao/SKILL.md": (u.achar(c, "plugin-megabrain/skills/registrar-licao/SKILL.md"), derivar_skill_licao),
         "skills/ingerir/SKILL.md": (u.achar(c, "skills/ingerir/SKILL.md"), lambda t: t),  # v6.2
         "skills/grelhar/SKILL.md": (u.achar(c, "skills/grelhar/SKILL.md"), lambda t: t),  # v6.3 (260824)
+        "skills/traycer/SKILL.md": (u.achar(c, "skills/traycer/SKILL.md"), lambda t: t),  # v6.4 (260825)
     }
     drift = []
     for rel, (fonte, derivar) in fontes.items():

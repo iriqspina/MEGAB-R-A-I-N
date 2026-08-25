@@ -66,7 +66,7 @@ modos pra você estudar, ou (c) o case do portfólio.
   mb_visual.py · mb-checar-meta.py
 - `motor/tests/`: test_mb_layout.py e test_mb_telemetria.py (novos) + os 4
   antigos com raiz achada por subida
-- `01_acoes/`: 260824_abrir-cerebro-obsidian.cmd (novo) · sincronizar-projetos ·
+- `01_acoes/`: 03_abrir-cerebro-obsidian.cmd (novo) · sincronizar-projetos ·
   novo-projeto · refresh-plugin-kimi (só os caminhos, por reescrita de bytes)
 - `motor/gerenteneuron/`: gerente.py · app.py · router.py · aspirar.cmd
 - `memoria/`: ESTADO · HANDOFF · DECISOES (+6) · licoes (+4) · VERSAO ·
@@ -85,3 +85,15 @@ modos pra você estudar, ou (c) o case do portfólio.
 - A pasta da central tem DOIS espaços antes do N.
 - Ao mexer no gerador do pacote público, auditar a saída atrás de `.env`,
   `pyvenv.cfg`, `vault` e `dna/usuario` antes de publicar.
+
+<!-- mb-sync:lock:start -->
+USUARIO: SYSTEM
+TRAVADO_POR: claude
+ATE: 2026-08-25 14:24
+ESCOPO:
+  - memoria/estado
+  - 01_acoes
+  - bin
+  - 00_painel
+  - motor/skills
+<!-- mb-sync:lock:end -->

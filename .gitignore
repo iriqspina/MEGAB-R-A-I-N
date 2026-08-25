@@ -1,37 +1,50 @@
-# Arquivos gerados por ferramentas do megabrain
+# .gitignore da CENTRAL (repositório local, privado, nunca publicado).
+#
+# 260825 — decisão 260825j: este repo existe pra você NÃO PERDER TRABALHO com
+# 5 agentes escrevendo no mesmo disco. Por isso ele VERSIONA dado pessoal:
+# licoes-megabrain.md e 260810_memoria-pessoal.md são exatamente o que você
+# precisa poder recuperar. O .gitignore que esconde dado pessoal é o do PACOTE
+# PÚBLICO e mora em _github/repo-local/.gitignore — não misture os dois.
+#
+# Regra: sem remote, sem push. Se um dia ganhar remote, esta decisão volta pra
+# mesa antes do primeiro push.
+
+# --- credenciais: nunca, em repo nenhum ---
+**/gerenteneuron/.env
+**/gerenteneuron/.venv/
+**/gerenteneuron/vault/
+gerenteneuron/.env
+gerenteneuron/.venv/
+gerenteneuron/vault/
+*.key
+*.pem
+
+# --- repositório git aninhado: viraria gitlink quebrado ---
+# _github/repo-local é um clone com .git próprio; _github/export é derivado
+# (regenerável por bin/mb-generate-template.py).
+_github/
+
+# --- backups e derivados: regeneráveis, e pesam 28 MB ---
+.mb-backup/
 .mb-aspirador/
 .megabrain/
-.mb-backup/
-*.plugin
 .dna-backup/
+*.plugin
+
+# --- caches ---
 __pycache__/
 *.pyc
 *.pyo
 
-# Dados pessoais nunca sobem
-260810_memoria-pessoal.md
-licoes-megabrain.md
+# --- log de eventos: o hook escreve a cada prompt de cada agente. Fica fora
+# porque churn de máquina não é trabalho a recuperar, e porque um arquivo em
+# escrita durante `git rm --cached` aborta a operação inteira (260825).
+.mb-log/
 
-# GerenteNeuron: dados locais, credenciais, ambiente virtual e cofre
-# v7.1 (260824): a maquina foi pra motor\ — os padroes valem nos dois lugares
-# (** cobre qualquer profundidade; as linhas antigas ficam pra copia antiga).
-**/gerenteneuron/.env
-**/gerenteneuron/.venv/
-**/gerenteneuron/projetos.json
-**/gerenteneuron/data/
-**/gerenteneuron/vault/
-**/gerenteneuron/__pycache__/
-**/gerenteneuron/**/*.pyc
-gerenteneuron/.env
-gerenteneuron/.venv/
-gerenteneuron/projetos.json
-gerenteneuron/data/
-gerenteneuron/vault/
-gerenteneuron/__pycache__/
-gerenteneuron/**/*.pyc
-
-# Obsidian (config local do vault) e DNA do usuario nunca sobem
+# --- config local de ferramenta ---
 .obsidian/
-dna/usuario/
-motor/dna/usuario/
-**/dna/usuario/
+
+# --- índice com embeddings: regenerável por bin/mb-indice-licoes.py --indexar
+# e engorda o diff a cada lição nova.
+motor/dna/indice-licoes.json
+motor/dna/indice-cerebro.json

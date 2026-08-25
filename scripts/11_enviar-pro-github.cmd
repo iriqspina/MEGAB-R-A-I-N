@@ -60,7 +60,7 @@ if not "%ERRORLEVEL%"=="0" (
   pause
   exit /b 9009
 )
-python "%RAIZ%bin\mb-relatorio-vivo.py" --nota "push feito via 260824_enviar-pro-github.cmd" >> "%LOG%" 2>&1
+python "%RAIZ%bin\mb-relatorio-vivo.py" --nota "push feito via 11_enviar-pro-github.cmd" >> "%LOG%" 2>&1
 set "RC2=%ERRORLEVEL%"
 if not "%RC2%"=="0" (
   echo  AVISO: relatorio NAO atualizou - codigo %RC2%. Push OK. Detalhe no final de:

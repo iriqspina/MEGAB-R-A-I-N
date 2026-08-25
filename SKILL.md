@@ -80,7 +80,12 @@ agente não começa do zero). Detalhe passo a passo, quando precisar:
   `referencias/260824_interface-que-sente.md`.
 - **2 ORÇAR CONTEXTO** — orçamento compartilhado: ler sob demanda (Glob→Grep→
   trecho), checkpoint em .md, delegar varredura pro modelo barato, exemplos
-  canônicos e não exaustivos; >85% de contexto → HANDOFF + commit + recomeçar.
+  canônicos e não exaustivos. **Sinal medível (v7.5)**: o hook registra
+  `contexto_injetado` (chars + peças) por prompt em `.mb-log/telemetria-*.jsonl`
+  — some por sessão com `python bin/mb-compreensor.py` ou leia o slot de
+  telemetria do relatório. Passou de **80 mil chars injetados** ou **40 arquivos
+  lidos** na sessão → HANDOFF + commit + recomeçar. Nenhum agente sabe seu
+  próprio % de janela; esses dois números ele sabe.
   `referencias/260810_context-engineering.md`.
 - **3 GERAR** — estrutura antes de prosa; uma afirmação por parágrafo; fato do
   mundo atual → buscar, nunca de memória; número/data/preço verificado ou
@@ -115,8 +120,8 @@ agente não começa do zero). Detalhe passo a passo, quando precisar:
   verbo e objeto · PARA VOCÊ · `TRAVADO_POR: livre`); DECISOES: append com a
   alternativa descartada. Git: commit local ok; push por ambiente — cloud com
   repo como fonte da sessão = push direto; cloud sem = commitar e apontar
-  `01_acoes/260824_publicar-e-fotografar.cmd` e DEPOIS
-  `01_acoes/260824_enviar-pro-github.cmd`; **git nunca pela pasta montada do
+  `01_acoes/10_publicar-e-fotografar.cmd` e DEPOIS
+  `01_acoes/11_enviar-pro-github.cmd`; **git nunca pela pasta montada do
   bridge**. Central mudou → `bin/mb-check-version.py` nos projetos ativos;
   versão/commit mudou → regenerar o relatório vivo.
 - **7 APRENDER** — tarefa não-trivial vira lição `GATILHO/LIÇÃO/ATALHO`, gravada

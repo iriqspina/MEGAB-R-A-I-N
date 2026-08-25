@@ -1,7 +1,7 @@
 {
   "name": "megabrain",
-  "version": "1.6.4",
-  "description": "Protocolo de execução multi-agente de alto padrão para entregas: gates anti-slop, grelha de briefing sem teto de perguntas (/grelhar), Duplo Diamante para design, orçamento de contexto, handoff entre agentes e loop de lições que acumula entre sessões. Instala o núcleo sempre-ativo via hook SessionStart, sem editar CLAUDE.md.",
+  "version": "1.7.0",
+  "description": "Protocolo de execução multi-agente de alto padrão para entregas: gates anti-slop, grelha de briefing sem teto de perguntas (/grelhar), Duplo Diamante para design, orçamento de contexto, handoff entre agentes e loop de lições que acumula entre sessões. Instala o núcleo sempre-ativo via hook SessionStart, sem editar CLAUDE.md. Inclui /traycer: a pipeline do Traycer (epic, core flows, tech plan, ticket breakdown, execute) rodando sob os gates, com roteamento de modelo e o que precisa voltar pra ESTADO/HANDOFF/DECISOES.",
   "author": {
     "name": "iriqspina"
   },
@@ -21,6 +21,9 @@
     "handoff",
     "grelhar",
     "briefing",
-    "entrevista"
+    "entrevista",
+    "traycer",
+    "orquestracao",
+    "cli-agents"
   ]
 }

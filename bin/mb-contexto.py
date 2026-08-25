@@ -162,9 +162,13 @@ def montar(payload: dict, agente: str) -> str:
 
     # Lições por relevância — em toda mensagem, só as inéditas na sessão.
     if prompt.strip():
+        total_licoes = 0
         try:
             indice = carregar_indice_licoes()
             achadas = indice.buscar(prompt, MAX_LICOES)
+            # total medido, nunca literal: número sem fonte é o que a regra proíbe.
+            dados = indice.carregar_indice() or {}
+            total_licoes = len(dados.get("entradas") or [])
         except Exception:
             achadas = []
         novas = []
@@ -177,8 +181,9 @@ def montar(payload: dict, agente: str) -> str:
         if novas:
             blocos = "\n\n".join(e["texto"] for e in novas)
             partes.append(
-                f"### Lições relevantes pra este prompt ({len(novas)} de 126+, "
-                "por proximidade — cada uma já foi paga em erro)\n" + blocos)
+                f"### Lições relevantes pra este prompt ({len(novas)} de "
+                f"{total_licoes or '?'}, por proximidade — cada uma já foi "
+                "paga em erro)\n" + blocos)
             injetadas.update(e["chave"] for e in novas)
 
     # Páginas do cérebro (v6.2) — conteúdo, não processo. Só inéditas na sessão.
@@ -258,6 +263,22 @@ def main() -> int:
         except (OSError, ValueError, AttributeError):
             pass
         sys.stdout.write(bloco)
+
+    # v7.5 (Gate 2): o orçamento de contexto era prosa — ">85%" sem medidor
+    # nenhum no pacote, cumprido por sensação. Agora cada injeção registra o
+    # que dá pra medir de verdade: caracteres injetados e quantas peças
+    # entraram. É acumulável por sessão, então o Gate 2 passa a olhar número.
+    if bloco:
+        try:
+            import mb_telemetria as t
+            t.registrar("contexto_injetado",
+                        agente=args.agente,
+                        chars=len(bloco),
+                        pecas=bloco.count("\n### "),
+                        sessao=(payload.get("session_id") or "")[:16])
+        except Exception:
+            pass
+
     if args.teste:
         print(f"\n[teste] {len(bloco)} chars injetados", file=sys.stderr)
     return 0

@@ -1500,3 +1500,133 @@ relógio de quem roda, e a VM da ponte é UTC; (b) só registrar a lição e seg
 POR QUÊ: entre 21h e meia-noite em SP, a ponte enxerga o dia seguinte.
 `telemetria-260825.jsonl` nasceu às 22h38 de 260824. Mesma raiz da lição de
 carimbo de arquivo do mesmo dia, agora fechada no código em vez de na regra.
+
+
+## 260825a — a memória tinha dois arquivos e o índice lia o menor
+DECISÃO: `memoria/nucleo/licoes-megabrain.md` é o canônico, ponto. As 8 lições
+que só existiam no órfão da raiz foram fundidas nele (166 → 174), a órfã foi
+pra `99_to_delete/260825_licoes-megabrain-ORFA-raiz.md` com backup em
+`.mb-backup/260825_licoes-nucleo-antes-merge.md`, e `achar()` passou a separar
+duas regras que estavam misturadas: nome CANÔNICO de `PASTAS_RAIZ` resolve
+sempre na pasta lógica (tem um lugar só); caminho de MÁQUINA continua com
+"arquivo real na cópia plana ganha" (muda de lugar por layout). Teste de
+regressão em `test_mb_layout.py::test_orfao_na_raiz_nao_sombreia_canonico`.
+ALTERNATIVA DESCARTADA: (a) manter a raiz como fonte e o núcleo virar link —
+a raiz não é o que sobe pro pacote público nem o que `mb-check-version.py`
+distribui pros 16 projetos; (b) fazer `achar()` gritar quando achar os dois,
+como o auditor sugeriu — grito em função chamada por 28 módulos vira ruído em
+todo script; o teste pega o caso na suíte, que é onde dói barato; (c) apagar
+a órfã direto — 8 lições sem cópia, incluindo a de 260825.
+POR QUÊ: o hook injetava "5 de 126+" escolhendo entre 8. 95% da memória estava
+invisível pra todo agente, e o rótulo mentia duas vezes — no denominador e na
+fonte. O índice agora tem 173 entradas medidas.
+
+## 260825b — filtro que casa por pedaço de caminho não aceita entrada composta
+DECISÃO: `IGNORAR_CENTRAL` em `bin/mb-relatorio-vivo.py` troca
+`"_github/repo-local"` e `"_github/export"` por `"_github"`, e ganha um
+`assert` que recusa qualquer entrada com barra na hora do import.
+ALTERNATIVA DESCARTADA: mudar o casamento pra comparar caminho relativo
+inteiro em vez de pedaço — cada entrada da lista precisaria virar prefixo
+exato e as 20 entradas simples quebrariam junto.
+POR QUÊ: as duas entradas compostas nunca casavam, então o rglob varria
+`_github/` inteiro e cada documento aparecia 3× no HTML. `RELATORIO.html` caiu
+de 948.500 pra 570.599 bytes (-40%) com uma linha. O comentário logo acima da
+lista já previa o defeito — o que faltava era a garantia executável.
+
+## 260825c — versão tem uma fonte, e é VERSAO.txt
+DECISÃO: nenhum título, cabeçalho ou JSON repete número de versão. O h1 do
+relatório passa a compor o nome do projeto (de `PROGRESSO.json`, com o sufixo
+de versão removido por regex) + `versao_resumida(VERSAO.txt)`. `MEGABRAIN.md`
+e `README.md` perderam o número e ganharam a regra no lugar.
+ALTERNATIVA DESCARTADA: (a) atualizar os quatro números na mão — é o que já
+tinha sido feito antes e eles divergiram de novo em 3 dias; (b) um script que
+sincroniza número em todo lugar — quatro cópias sincronizadas continuam sendo
+quatro cópias.
+POR QUÊ: `MEGABRAIN.md` dizia v3, `README.md` v6.5, o h1 do relatório v6.7 e o
+subtítulo v7.1, com o disco em v7.4. É a primeira linha que toda IA nova lê, e
+a primeira coisa que o <USUARIO> olha pra saber onde está.
+
+## 260825d — o Gate 5 vira botão em vez de disciplina
+DECISÃO: `01_acoes/00_ABRIR-RELATORIO.cmd` regenera o relatório e abre no
+navegador. Nome com `00_` pra ordenar primeiro na pasta. Se o python falhar,
+abre a última versão gerada em vez de não abrir nada.
+ALTERNATIVA DESCARTADA: (a) só um atalho pro HTML — abriria conteúdo vencido,
+que é exatamente o defeito; (b) hook que regenera a cada escrita de `.md` —
+regeneração custa segundos e ele escreve `.md` o tempo todo.
+POR QUÊ: `01_acoes/` tem 10 botões e nenhum abria o artefato que existe pra ser
+lido. E em 24/08 os três `.md` foram tocados 2 minutos depois da última
+geração: o "relatório vivo" recarregava a cada 15s um conteúdo vencido desde o
+minuto seguinte ao nascimento. Regra de ouro 21 aplicada — garantia é script.
+
+## 260825e — skill instalada é a que o harness lista, não a que está na central
+DECISÃO: as 5 skills (`megabrain`, `ingerir`, `grelhar`, `traycer`,
+`conclusao-megabrain`) foram instaladas em `~/.claude/skills/` e copiadas pro
+plugin do Kimi; `260824_refresh-plugin-kimi.cmd` ganhou a variável
+`SKILLS_EXTRA` pra levar skill nova daqui em diante, sempre de
+`motor/skills/<nome>` — nunca da cópia dentro do plugin.
+ALTERNATIVA DESCARTADA: instalar o `.plugin` v1.7.0 no Claude — o mecanismo de
+marketplace não é acionável de fora e `~/.claude/plugins/data/megabrain-inline`
+está vazio desde 21/08. A lição 260805 já dizia: o hook não sobrevive à
+portabilidade, a skill sim.
+POR QUÊ: `enabledPlugins` tinha só figma; o Claude rodava o protocolo há dias
+sem nenhuma skill do megabrain carregada, e o `ESTADO.md` afirmava o contrário.
+O Kimi tinha 4 de 7. Verificado nesta sessão: o harness listou as 5.
+
+## 260825f — caminho de dados fixo mata relatório em silêncio
+DECISÃO: `mb-relatorio-agentes.py` lê `licoes-recorrencia.json` por
+`u.pasta(c, "dna")` em vez de `c / "dna"`. E `eventos_hoje()` normaliza o campo
+de resumo pra texto antes do `html.escape()`.
+ALTERNATIVA DESCARTADA: try/except em volta da geração — engoliria o próximo
+defeito do mesmo jeito.
+POR QUÊ: dois defeitos com a mesma forma. O primeiro (achado do GPT) fazia o
+relatório concluir "nenhuma candidata a regra" com os dados presentes em
+`motor/dna/`. O segundo derrubava a geração inteira com `AttributeError`
+quando um evento trazia `arquivo` como lista — o relatório de hoje não gerava.
+Campo de log é dado de fora: o tipo não é promessa.
+
+## 260825g — o contrato de resposta apontava pra um caminho morto nos 5 agentes
+DECISÃO: `memoria/identidade/260810_memoria-pessoal.md` corrigido pra
+`motor\referencias\260818_padrao-resposta.md` e propagado pelos 6 destinos
+(`~/.claude/CLAUDE.md`, `~/.gemini/GEMINI.md`, `~/.kimi/AGENTS.md`,
+`~/.kimi-code/AGENTS.md`, `~/.codex/AGENTS.md`, output style).
+ALTERNATIVA DESCARTADA: corrigir os 6 destinos na mão — a fonte continuaria
+errada e o próximo sync propagaria o erro de volta, que é o defeito real.
+POR QUÊ: o caminho morreu na migração v7.1 (24/08) e ninguém consertou a
+fonte. Todo agente lia "contrato completo em <caminho inexistente>". O
+`.claude/CLAUDE.md` do projeto estava certo — o que escondeu o problema.
+
+
+## 260825h — sanitizar por substring deixa o resto do nome composto no pacote
+DECISÃO: `bin/mb-generate-template.py` ganha o token COMPOSTO inteiro na lista
+de substituição (o domínio pessoal, 13 caracteres, que a ordenação por tamanho
+faz ganhar do primeiro nome, de 8), e um detector novo em `PADROES_PRIVADOS`
+que recusa o pacote quando encontra placeholder colado em letra — a forma do
+defeito, não o nome específico. Sobrenome SOLTO fica fora da lista de
+propósito, com o motivo escrito no código.
+ALTERNATIVA DESCARTADA: (a) acrescentar o sobrenome solto à lista, que foi a
+recomendação do Kimi — testado e reprovado na hora: ele casa dentro de
+`iriqspina`, o username público do GitHub, e a URL do repositório no pacote
+virou `<USUARIO><USUARIO>`; (b) corrigir os 5 arquivos do export na mão — o
+export é derivado, regenerar desfaz; (c) tirar `ALINHAMENTO-AGENTES.md` do
+pacote, que resolveria estes 5 casos e nenhum futuro (segue na fila como
+decisão dele, junto com o arquivamento dos vencidos).
+POR QUÊ: a substituição é de substring, então o primeiro nome dentro do
+domínio pessoal era trocado e o sobrenome sobrava colado ao placeholder, no
+pacote público, em 4 arquivos. O detector é o que impede a terceira vez: o
+gerador já tinha sido mordido em 260821 pela sanitização da própria cópia — e
+mordeu de novo nesta sessão, barrando o comentário que eu escrevi com o
+exemplo literal dentro. Ficou registrado no código pra não repetir.
+
+## 260825i — crédito da skill /traycer: interoperabilidade, não derivação
+DECISÃO: `motor/skills/traycer/SKILL.md` ganha bloco de crédito declarando
+Traycer como produto proprietário de terceiro (`traycer.ai`), que a skill NÃO
+deriva de código ou texto deles — é documentação de interoperabilidade escrita
+a partir do comportamento observado — e que nenhuma licença é reivindicada
+sobre o produto. Plugin regenerado e a skill re-sincronizada nos dois agentes.
+ALTERNATIVA DESCARTADA: declarar uma licença para a integração, como o
+inventário do Kimi sugeriu — seria reivindicar relação de licenciamento que
+não existe. Crédito honesto é dizer o que a coisa é, não carimbar licença.
+POR QUÊ: as outras origens têm crédito e licença no ponto de uso (ECC MIT em
+`mb-slop-visual.py:10`, Pocock MIT em `grelhar/SKILL.md:9`); Traycer era a
+única viva sem nada. E a resposta certa aqui não é a mesma das outras, porque
+a relação é outra.

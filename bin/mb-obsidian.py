@@ -76,7 +76,7 @@ escritos pelo `/ingerir`.
 
 ## Abrir
 
-Dois cliques em `01_acoes\\260824_abrir-cerebro-obsidian.cmd`.
+Dois cliques em `01_acoes\\03_abrir-cerebro-obsidian.cmd`.
 Na primeira vez o Obsidian pergunta qual pasta é o vault: escolha
 **Open folder as vault** e aponte pra esta pasta (o caminho já está na sua
 área de transferência).

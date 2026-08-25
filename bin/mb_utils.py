@@ -326,28 +326,37 @@ PASTAS_RAIZ = {
 
 def achar(raiz, nome: str) -> Path:
     """Caminho de um arquivo canônico na raiz dada, em qualquer layout.
-    Ordem: existe na raiz → raiz/nome; existe na pasta → raiz/pasta/nome;
+    Ordem: existe na pasta lógica → raiz/pasta/nome; existe na raiz → raiz/nome;
     nada existe → raiz/pasta/nome se a pasta existir (vai ser criado lá),
     senão raiz/nome (layout plano de projeto/central antiga).
 
     v7.1: nome que COMEÇA por pasta de máquina ("skills/megabrain/SKILL.md",
     "dna", "referencias/x.md") resolve o primeiro pedaço por pasta() — é o que
     faz a mesma chamada valer na central nova (motor/skills/...) e na cópia de
-    projeto antiga (skills/...) sem ninguém reescrever caminho."""
+    projeto antiga (skills/...) sem ninguém reescrever caminho.
+
+    v7.5: corrige prioridade — nome CANÔNICO de PASTAS_RAIZ solto na raiz NÃO
+    pode sobrepor o da pasta lógica (ex.: licoes-megabrain.md órfão na raiz
+    sombreando memoria/nucleo/licoes-megabrain.md). Caminho de máquina segue
+    com "arquivo real na cópia plana ganha" — são regras diferentes: máquina
+    muda de lugar por layout, canônico tem um lugar só."""
     base = Path(raiz)
     plano = base / nome
-    if plano.exists():
-        return plano
     partes = str(nome).replace("\\", "/").split("/", 1)
     if partes[0] in PASTAS_MAQUINA:
+        if plano.exists():
+            return plano
         d = pasta(base, partes[0])
         return (d / partes[1]) if len(partes) == 2 else d
     logica = PASTAS_RAIZ.get(nome)
-    if logica is None:
+    if logica is not None:
+        d = pasta(base, logica)
+        canonico = d / nome
+        if canonico.exists() or d.is_dir():
+            return canonico
         return plano
-    d = pasta(base, logica)
-    if d.is_dir():
-        return d / nome
+    if plano.exists():
+        return plano
     return plano
 
 

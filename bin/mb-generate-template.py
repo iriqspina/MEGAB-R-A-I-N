@@ -77,7 +77,7 @@ EXCLUIR = {
     "__pycache__",
     "260810_VISAO-GERAL.md",
     "PIPELINE.md",
-    "260824_sincronizar-projetos.cmd",
+    "05_sincronizar-projetos.cmd",
     "mb-sync-all.cmd",
     "260810_SKILL-divergente.bak.md",
     ".bak",
@@ -148,7 +148,15 @@ _SUBSTITUICOES_BRUTAS = [
     ("C:\\Users\\<USUARIO>", "<USER_HOME>"),
     ("<AUTOR>", "<AUTOR>"),
     ("<USUARIO>", "<USUARIO>"),
+    # 260825: substituição é de SUBSTRING, não de palavra. O primeiro nome
+    # dentro do domínio pessoal era trocado e o SOBRENOME sobrava colado no
+    # placeholder, exposto no pacote público. Token composto precisa entrar
+    # INTEIRO na lista; a ordenação por tamanho garante que ele ganhe do curto.
     ("<USUARIO>", "<USUARIO>"),
+    ("<USUARIO>", "<USUARIO>"),
+    # NÃO acrescentar "Spina" solto: ele casa dentro de "iriqspina", o username
+    # público do GitHub, e a URL do repo vira "<USUARIO><USUARIO>". Testado em
+    # 260825. Sobrenome só entra colado ao nome, como token composto.
     ("<USUARIO>", "<USUARIO>"),
 ]
 
@@ -176,6 +184,13 @@ PADROES_PRIVADOS = {
     "home local": re.compile(
         r"[A-Z]:[\\/]Users[\\/](?!<USER_HOME>)[^\\/\s<>]+", re.IGNORECASE
     ),
+    # 260825: resíduo de token composto. Placeholder colado em letra significa
+    # que a substituição comeu só um pedaço do nome e o resto ficou no pacote —
+    # foi o caso do domínio pessoal em 260825. Não é sobre um nome específico:
+    # pega a FORMA do defeito, então o próximo composto também é barrado.
+    # Não escrever o exemplo literal aqui: ele sobrevive à sanitização desta
+    # própria cópia e o detector barra o gerador (aconteceu na primeira versão).
+    "residuo de nome composto": re.compile(r"<(?:USUARIO|AUTOR)>[A-Za-z0-9]"),
     # Construção em partes impede que o próprio gerador reescreva estes
     # detectores ao sanitizar sua cópia pública.
     "nome pessoal": re.compile(r"\b" + "Hen" + "rique" + r"\b", re.IGNORECASE),

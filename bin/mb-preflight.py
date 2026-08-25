@@ -14,6 +14,11 @@ código de saída:
   fatos   algum JSON com `verificado_em` venceu a `validade_dias` (default 30)?
   legado  sobrou `metaprotocolo` / `metaclaude` fora dos lugares onde o nome
           antigo é reconhecimento deliberado (hook, registrar-licao, histórico)?
+  crlf    algum `.cmd`/`.bat` da central está com quebra de linha Unix (LF)?
+          O cmd.exe lê batch por deslocamento de byte assumindo CRLF: com LF
+          ele desalinha e come as primeiras letras das linhas — o script não
+          dá erro, ele executa outra coisa. Em 260824 o sincronizar-projetos
+          ficou 20h imprimindo 18 "OK" e copiando zero byte por causa disso.
 
 Saída 0 = pode começar. Saída 2 = pendência (o veredito diz qual).
 Cache: <repo>/.megabrain/preflight.json, validade 8 h (--forcar ignora,
@@ -42,10 +47,19 @@ import mb_utils as u
 u.utf8_console()
 
 TEXTO = {".md", ".txt", ".py", ".cmd", ".js", ".mjs", ".json", ".yaml", ".yml", ".html", ".css"}
+# 260825 (decisão 260825m): esta lista casa contra NOME DE PASTA no os.walk,
+# então entrada composta nunca casa e vira no-op silencioso. "_github/export"
+# estava aqui desde sempre e os cheques varriam o export inteiro à toa — é a
+# 3ª vez que a mesma família de bug aparece (relatório, cópia de central,
+# preflight). O assert abaixo mata a 4ª na hora do import.
+# "90_arquivo" entrou junto: é história congelada, e um manifesto de migração
+# arquivada estava fazendo o preflight sair com exit 2 toda abertura de sessão.
 PULAR_DIRS = {".git", "node_modules", "__pycache__", ".venv", "venv", ".mb-backup",
               ".mb-aspirador", ".dna-backup", ".megabrain", ".mb-log", "_to_delete", "99_to_delete",
-              "260810_backup-raiz-perfil", "260810_variantes", "_github/export",
+              "260810_backup-raiz-perfil", "260810_variantes", "_github", "90_arquivo",
               ".orquestrador"}  # diálogos antigos do orquestrador: artefato de execução
+assert not any("/" in d or "\\" in d for d in PULAR_DIRS), (
+    "PULAR_DIRS casa por nome de pasta: entrada composta nunca casa")
 # Onde o nome antigo é reconhecimento deliberado (ler arquivo legado, registrar
 # a decisão de renomear, histórico). Fora daqui, é resíduo.
 LEGADO_PERMITIDO = (
@@ -66,6 +80,22 @@ LEGADO_PERMITIDO = (
     "260804_licoes-inicial.md",  # seed do plugin Kimi: texto de lições de 260804 (histórico)
 )
 PADRAO_LEGADO = re.compile(r"metaprotocolo|metaclaude", re.IGNORECASE)
+
+# --- crlf -------------------------------------------------------------------
+# Batch é sensível a quebra de linha e o sintoma NÃO é erro de sintaxe: o
+# cmd.exe engole as primeiras letras da linha seguinte ('setlocal' vira
+# 'tlocal', 'python' vira 'thon') e segue executando. Variável não definida,
+# robocopy com origem vazia, e o `if errorlevel` do fim mede outra coisa —
+# 18 "OK" com zero byte copiado. A lição existe desde 260819 e reapareceu em
+# 260824 e 260825; markdown pediu três vezes e não garantiu nenhuma.
+EXT_BATCH = {".cmd", ".bat"}
+# Espelho gerado, arquivo morto e backup não são fonte: quem conserta é o
+# gerador. Pedaço ISOLADO de caminho — entrada composta nunca casaria (a
+# própria armadilha que fez cada doc entrar 3× no relatório, decisão 260825b).
+PULAR_CRLF = {"_github", "90_arquivo", "99_to_delete", ".mb-backup", ".mb-aspirador",
+              ".dna-backup", ".git", "__pycache__", ".megabrain", "node_modules",
+              ".venv", "venv", "MEGABRAIN"}
+PADRAO_LF_SOLTO = re.compile(rb"(?<!\r)\n")
 
 
 def h(p: Path) -> str | None:
@@ -227,6 +257,43 @@ def cheque_legado(raizes: list[Path]) -> tuple[bool, str]:
     return True, f"limpo ({permitido} menção(ões) só em reconhecimento deliberado/histórico)"
 
 
+def batch_com_lf(raiz: Path) -> list[tuple[str, int]]:
+    """Todo .cmd/.bat da árvore com pelo menos um LF sem CR antes.
+
+    Devolve [(caminho relativo, quantas linhas em LF)], ordenado. Lista vazia
+    = a árvore está sã. Lê em BYTES de propósito: `read_text` normaliza a
+    quebra de linha e o defeito desaparece na leitura — foi assim que ele
+    sobreviveu a três lições.
+    """
+    achados: list[tuple[str, int]] = []
+    raiz = Path(raiz)
+    for dirpath, dirs, files in os.walk(raiz):
+        dirs[:] = [d for d in dirs if d not in PULAR_CRLF]
+        for f in files:
+            p = Path(dirpath) / f
+            if p.suffix.lower() not in EXT_BATCH:
+                continue
+            try:
+                dados = p.read_bytes()
+            except OSError:
+                continue
+            n = len(PADRAO_LF_SOLTO.findall(dados))
+            if n:
+                achados.append((p.relative_to(raiz).as_posix(), n))
+    return sorted(achados)
+
+
+def cheque_crlf(raiz: Path) -> tuple[bool, str]:
+    achados = batch_com_lf(raiz)
+    if achados:
+        lista = "; ".join(f"{c} ({n} linha{'s' if n != 1 else ''})" for c, n in achados[:8])
+        if len(achados) > 8:
+            lista += f"; … +{len(achados) - 8}"
+        return False, (f"{len(achados)} .cmd/.bat em LF — o cmd.exe vai comer as "
+                       f"primeiras letras das linhas: {lista}")
+    return True, "todo .cmd/.bat da central em CRLF"
+
+
 def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--repo", required=True, help="central do megabrain ou _github/repo-local")
@@ -268,6 +335,7 @@ def main() -> int:
         "skills": cheque_skills(central, args.agentes),
         "fatos": cheque_fatos(central),
         "legado": cheque_legado(raizes_legado),
+        "crlf": cheque_crlf(central),
     }
     linhas = [f"preflight megabrain · {central}"]
     for nome, (ok, txt) in resultados.items():

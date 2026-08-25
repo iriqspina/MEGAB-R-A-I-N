@@ -8,10 +8,10 @@ substitui os gates - so torna a trava uma garantia de script em vez de
 disciplina de markdown (regra de ouro 21: garantia real e script, nao
 markdown).
 
-Uso:
-  mb-sync.py status  [--dir CAMINHO]
-  mb-sync.py lock    --agente NOME --escopo CAMINHO [CAMINHO ...] [--horas N] [--usuario NOME] [--dir CAMINHO]
-  mb-sync.py release --agente NOME [--force] [--dir CAMINHO]
+Uso (--dir vem ANTES do subcomando: e um argumento do parser de cima):
+  mb-sync.py [--dir CAMINHO] status
+  mb-sync.py [--dir CAMINHO] lock    --agente NOME --escopo CAMINHO [CAMINHO ...] [--horas N] [--usuario NOME]
+  mb-sync.py [--dir CAMINHO] release --agente NOME [--force]
 
 Sem argumentos: roda "status" no diretorio atual.
 Saida de "status" tem codigo de saida 0 (livre/vencida - pode escrever) ou

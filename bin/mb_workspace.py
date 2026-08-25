@@ -557,7 +557,7 @@ def html_cerebro(d: dict) -> str:
         '<div class="cer-vault"><b>abrir o cérebro no Obsidian</b>'
         f'<span class="det">O vault já está apontado pra <code>{_e(d["caminho"])}</code>. '
         'No Obsidian: <i>Open folder as vault</i> → escolha essa pasta (ou 2 cliques em '
-        '<code>01_acoes\\260824_abrir-cerebro-obsidian.cmd</code>). '
+        '<code>01_acoes\\03_abrir-cerebro-obsidian.cmd</code>). '
         'A configuração do vault fica local e não sobe pro GitHub.</span></div>')
 
 
@@ -613,7 +613,7 @@ def html_padroes(p: dict | None) -> str:
     if p is None:
         return ('<h3 class="slot__tit" style="margin-top:1.4rem">Padrões — o que já se repete</h3>'
                 '<p class="det">Ainda não rodou. Dois cliques em '
-                '<code>01_acoes\\260824_compreender-padroes.cmd</code> — ele cruza pendências, '
+                '<code>01_acoes\\02_compreender-padroes.cmd</code> — ele cruza pendências, '
                 'cérebro, docs e visuais e aponta o tema que merece virar modelo.</p>')
     decl, ach = p.get("declarados") or [], p.get("achados") or []
     linhas = "".join(

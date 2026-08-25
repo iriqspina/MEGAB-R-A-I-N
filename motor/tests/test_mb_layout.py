@@ -91,6 +91,16 @@ class TestAchar(Base):
         self.assertEqual(u.achar(c, "VERSAO.txt"), c / "memoria" / "nucleo" / "VERSAO.txt")
         self.assertEqual(u.achar(c, "HANDOFF.md"), c / "memoria" / "estado" / "HANDOFF.md")
 
+    def test_orfao_na_raiz_nao_sombreia_canonico(self):
+        """260825: um licoes-megabrain.md solto na raiz sequestrou o índice —
+        8 lições no lugar de 166. Canônico de PASTAS_RAIZ tem UM lugar."""
+        c = self.tmp()
+        (c / "memoria" / "nucleo").mkdir(parents=True)
+        (c / "memoria" / "nucleo" / "licoes-megabrain.md").write_text("real\n", encoding="utf-8")
+        (c / "licoes-megabrain.md").write_text("orfao\n", encoding="utf-8")
+        self.assertEqual(u.achar(c, "licoes-megabrain.md"),
+                         c / "memoria" / "nucleo" / "licoes-megabrain.md")
+
     def test_barra_invertida_tambem_resolve(self):
         c = self.tmp()
         (c / "motor" / "modelos").mkdir(parents=True)

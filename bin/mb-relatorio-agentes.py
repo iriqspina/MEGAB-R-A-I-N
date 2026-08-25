@@ -171,7 +171,9 @@ def main() -> int:
 
     # v6 fase 3: candidatas a regra (recorrência 3×+).
     candidatas = []
-    rec_txt = u.safe_read_text(c / "dna" / "licoes-recorrencia.json")
+    # v7.5: por u.pasta(), não por "dna" plano — na central v7.1 o arquivo mora
+    # em motor/dna/ e o caminho fixo devolvia "nenhuma candidata" em silêncio.
+    rec_txt = u.safe_read_text(u.pasta(c, "dna") / "licoes-recorrencia.json")
     if rec_txt:
         try:
             rec = json.loads(rec_txt)
