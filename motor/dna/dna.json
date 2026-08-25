@@ -2,8 +2,8 @@
   "@context": "https://schema.org",
   "@type": "TechArticle",
   "name": "MEGABRAIN — Relatório DNA",
-  "version": "v7.0 · 2026-08-24",
-  "dateCreated": "2026-08-24T17:27:37.163666",
+  "version": "v7.5 · 2026-08-25",
+  "dateCreated": "2026-08-25T12:35:51.843895",
   "description": "DNA completo do protocolo megabrain: gates, ferramentas, métodos e instruções para replicação.",
   "about": {
     "@type": "SoftwareApplication",
@@ -17,7 +17,7 @@
       "4 · Auditar",
       "5 · Verificar",
       "Aspirador",
-      "mb-sync.py",
+      "mb-sync + mb_trava",
       "mb-check-version.py",
       "Relatório DNA",
       "Relatório de projeto",
@@ -36,7 +36,7 @@
     {
       "@type": "Thing",
       "name": "0 · Assumir",
-      "description": "Checa trava, lê ESTADO/HANDOFF/DECISOES/LICOES."
+      "description": "Checa presença, escopo e trava por arquivo; lê ESTADO/HANDOFF/DECISOES/LICOES."
     },
     {
       "@type": "Thing",
@@ -70,8 +70,8 @@
     },
     {
       "@type": "Thing",
-      "name": "mb-sync.py",
-      "description": "Trava de handoff multi-agente."
+      "name": "mb-sync + mb_trava",
+      "description": "Presença de sessão + trava por arquivo compartilhado."
     },
     {
       "@type": "Thing",

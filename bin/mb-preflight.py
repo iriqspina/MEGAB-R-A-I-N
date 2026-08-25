@@ -312,6 +312,21 @@ def cheque_decisoes(central: Path) -> tuple[bool, str]:
     return True, f"{len(trava.ids_de(u.safe_read_text(caminho) or ''))} ids únicos"
 
 
+def cheque_canonicos(central: Path) -> tuple[bool, str]:
+    """Arquivo solto na raiz não pode sombrear/recriar a fonte canônica."""
+    nomes = ("licoes-megabrain.md", "ESTADO.md", "HANDOFF.md",
+             "DECISOES.md", "META.md")
+    orfaos = []
+    for nome in nomes:
+        solto = central / nome
+        canonico = u.achar(central, nome)
+        if solto.is_file() and solto.resolve() != canonico.resolve():
+            orfaos.append(nome)
+    if orfaos:
+        return False, "CANÔNICO ÓRFÃO na raiz: " + ", ".join(orfaos)
+    return True, "nenhum canônico duplicado na raiz"
+
+
 def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--repo", required=True, help="central do megabrain ou _github/repo-local")
@@ -355,6 +370,7 @@ def main() -> int:
         "legado": cheque_legado(raizes_legado),
         "crlf": cheque_crlf(central),
         "decisoes": cheque_decisoes(central),
+        "canonicos": cheque_canonicos(central),
     }
     linhas = [f"preflight megabrain · {central}"]
     for nome, (ok, txt) in resultados.items():

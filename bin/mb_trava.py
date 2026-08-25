@@ -67,6 +67,10 @@ import mb_utils as u
 PASTA = ".mb-lock"
 HORAS_PADRAO = 2
 FMT = "%Y-%m-%d %H:%M:%S"
+# Em 24/08, b/c eram rótulos de lote e se repetem por desenho. Em 25/08 os
+# blocos passaram a ser citados como endereços individuais; daí em diante a
+# unicidade é contrato e colisão é erro.
+ID_UNICO_DESDE = "260825"
 
 
 class TravaOcupada(Exception):
@@ -327,20 +331,26 @@ def anexar(alvo: Path, bloco: str, agente: str, motivo: str = "",
 # --------------------------------------------------------------------------
 
 def ids_de(texto: str) -> list[str]:
-    """Os identificadores `## 260825x — título` de um arquivo de decisões."""
+    """Os endereços `## 260825x — título` de um arquivo de decisões.
+
+    Cabeçalhos antigos usavam só a data e se repetem legitimamente; nunca
+    foram endereços citáveis. O sufixo alfabético é o que identifica o sistema
+    novo e, portanto, o que precisa ser único.
+    """
     achados = []
     for linha in texto.splitlines():
-        m = re.match(r"^##\s+~?~?(\d{6}[a-z]{0,2})\b", linha)
+        m = re.match(r"^##\s+~?~?(\d{6}[a-z]{1,2})\b", linha)
         if m:
             achados.append(m.group(1))
     return achados
 
 
 def conferir_ids(alvo: Path) -> list[str]:
-    """Ids repetidos no arquivo. Vazio = são."""
+    """Endereços repetidos desde o contrato de unicidade. Vazio = são."""
     import collections
     texto = u.safe_read_text(Path(alvo)) or ""
-    cont = collections.Counter(ids_de(texto))
+    cont = collections.Counter(
+        i for i in ids_de(texto) if i[:6] >= ID_UNICO_DESDE)
     return sorted([i for i, n in cont.items() if n > 1])
 
 
@@ -354,16 +364,24 @@ def proximo_id(alvo: Path, data: str | None = None) -> str:
     texto = u.safe_read_text(Path(alvo)) or ""
     usados = {i[6:] for i in ids_de(texto) if i.startswith(data)}
     if not usados:
-        return data
-    alfabeto = "abcdefghijklmnopqrstuvwxyz"
-    for a in alfabeto:
-        if a not in usados:
-            return data + a
-    for a in alfabeto:
-        for b in alfabeto:
-            if a + b not in usados:
-                return data + a + b
-    return data + "zz"
+        return data + "a"
+
+    def numero(sufixo: str) -> int:
+        valor = 0
+        for ch in sufixo:
+            valor = valor * 26 + (ord(ch) - ord("a") + 1)
+        return valor
+
+    def sufixo(valor: int) -> str:
+        chars = []
+        while valor > 0:
+            valor, resto = divmod(valor - 1, 26)
+            chars.append(chr(ord("a") + resto))
+        return "".join(reversed(chars))
+
+    # Vai depois do maior endereço já usado. Preencher um buraco reciclaria um
+    # ID que pode continuar citado fora do arquivo.
+    return data + sufixo(max(numero(s) for s in usados) + 1)
 
 
 def anexar_decisao(alvo: Path, bloco: str, agente: str,
@@ -463,6 +481,11 @@ def main() -> int:
         print("--arquivo é obrigatório para esta ação")
         return 2
     alvo = Path(a.arquivo)
+
+    if a.acao in {"travar", "liberar", "ceder", "escrever", "anexar",
+                  "anexar-decisao"} and a.agente == "?":
+        print(f"{a.acao} exige --agente com dono identificável")
+        return 2
 
     if a.acao in {"escrever", "anexar", "anexar-decisao"}:
         if not a.entrada:

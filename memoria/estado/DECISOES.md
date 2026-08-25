@@ -1978,3 +1978,43 @@ DECISÃO: implementar sign-off local de specs detectando obsolescência automati
 - Integração: `bin/mb-estado.py` expõe `signoffs` com total, ok, obsoletas, sem_signoff e detalhes.
 ALTERNATIVA DESCARTADA: (a) usar timestamp de modificação do arquivo em vez de commit — não distingue mudança real de `touch` e quebra em checkout; (b) assinar com tag git anotada — introduz mutation no repo a cada aprovação de spec, e a mecânica precisa ser leve o bastante pra rodar várias vezes por sessão.
 POR QUÊ: o <USUARIO> escolheu implementar a mecânica 1. O valor do Djinn está em saber que uma spec aprovada ainda é a spec vigente. Detectar obsolescência pelo git é preciso e não exige estado extra: o próprio histórico já conta quando o arquivo mudou. A integração no estado.json faz o painel alertar specs obsoletas sem precisar rodar nada à mão.
+
+## 260825ad — trava por arquivo deixa de ser decorativa
+DECISÃO: `bin/mb_trava.py` passa a ser a trava operacional dos arquivos
+compartilhados. Cada alvo ganha um JSON efêmero em `.mb-lock/`, com dono, PID,
+motivo, prazo e contagem de reentrada; aquisição usa criação exclusiva do
+sistema (`O_EXCL`), trava vencida fica livre e a escrita é atômica. Os fluxos
+read-modify-write tomam a trava ANTES da leitura. Integrações: `mb-sync.py`
+(HANDOFF), `mb-relatorio-vivo.py` (PROGRESSO + relatório/snapshots),
+`mb-estado.py`, `mb-fila.py`, `mb-spec-signoff.py`,
+`mb-sync-projeto-para-central.py` (inclusive lições), `mb-indice-licoes.py` e
+`mb-indice-cerebro.py`. `DECISOES.md` ganha append protegido e recusa endereço
+duplicado; o preflight verifica unicidade desde 260825 e canônicos órfãos na
+raiz. Os rótulos de lote `260824b/c` ficam congelados como legado: renumerá-los
+agora quebraria referências históricas já ambíguas.
+ALTERNATIVA DESCARTADA: (a) manter só `TRAVADO_POR` no HANDOFF — quatro agentes
+escreveram com ele marcando livre e duas colisões de ID aconteceram no mesmo
+dia; nenhum escritor o consultava; (b) mutex global por projeto — bloquearia
+agentes em arquivos diferentes e repetiria o gargalo que o escopo por arquivo
+resolve; (c) confiar apenas no Git — recupera depois da perda, mas não avisa
+antes nem impede append com o mesmo endereço; (d) lock server/daemon — custo e
+ponto de falha desnecessários para arquivos locais.
+POR QUÊ: a prova não é a existência do módulo. A suíte agora executa dois
+processos contra o mesmo alvo, recusa o segundo e prova que `mb-fila` preserva
+o JSON quando outro agente tem a trava. A consolidação também encontrou a
+cópia órfã de lições recriada na raiz; o sync agora resolve a fonte com
+`u.achar()` e o preflight bloqueia a repetição. Suíte completa: 141/141.
+
+## 260825b0 — Fase 3 da auditoria: as 19 cópias de projeto estão em dia
+DECISÃO: declarar a Fase 3 concluída. `python bin/mb-auditar-copias.py` encontrou
+19 cópias (18 projetos + uma variação de nome), todas em v7.5, formato magra, 0
+arquivos mortos, 0 arquivos renomeados, 0 KB de peso morto. Nenhuma cópia
+precisou de limpeza. A cópia magra reduziu o trabalho de sincronização ao mínimo:
+cada projeto guarda só `.mb-origem.json` + `LEIAME.md` e aponta pra central.
+ALTERNATIVA DESCARTADA: (a) rodar `mb-auditar-copias.py --limpar` sem medição —
+não havia nada pra limpar; limpar sem alvo só geraria LEIAME vazio em 19 pastas;
+(b) ignorar a Fase 3 porque as cópias pareciam magras — sem medição, a confiança
+seria cega.
+POR QUÊ: a Fase 3 existia exatamente porque a cópia gorda escondia divergência.
+Com a magra, a divergência só pode existir no ponteiro `.mb-origem.json`. Medir
+confirmou que todos os ponteiros apontam pra v7.5.

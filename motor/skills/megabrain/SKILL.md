@@ -65,8 +65,13 @@ agente não começa do zero). Detalhe passo a passo, quando precisar:
   saber em que layout a central está. Um campo só:
   `python bin/mb-estado.py --campo estado.bloqueio`.
   Prosa (o *porquê*) continua em `ESTADO.md → HANDOFF.md → fim de DECISOES.md →
-  LICOES.md` — leia **depois** do JSON e só o que o hook não injetou. Trava: `TRAVADO_POR:` no HANDOFF —
-  `bin/mb-sync.py` lock/release. Versão: `bin/mb-check-version.py --projeto <p>`
+  LICOES.md` — leia **depois** do JSON e só o que o hook não injetou.
+  Presença/escopo da sessão: `bin/mb-sync.py` lock/release. Escrita concorrente:
+  todo script que altera estado compartilhado usa `bin/mb_trava.py`; edição
+  direta toma trava por arquivo antes de tocar. Em `DECISOES.md`, confira IDs
+  com `python bin/mb_trava.py conferir-ids` e anexe por
+  `anexar-decisao --entrada <arquivo> --agente <nome>`. Versão:
+  `bin/mb-check-version.py --projeto <p>`
   (cria/atualiza o megabrain do projeto e o `cerebro/`; projeto mais novo que a
   central = parar e perguntar). Fonte que o usuário trouxe → `02_entrada` ou
   `cerebro/raw` + `/ingerir`. Output de outro agente = rascunho: audite antes
@@ -125,7 +130,8 @@ agente não começa do zero). Detalhe passo a passo, quando precisar:
 - **6 PASSAR O BASTÃO** — esgotar execução autônoma antes de pedir qualquer coisa;
   reescrever ESTADO (5 linhas) e HANDOFF (feito · aberto · próximo passo com
   verbo e objeto · PARA VOCÊ · `TRAVADO_POR: livre`); DECISOES: append com a
-  alternativa descartada. Git: commit local ok; push por ambiente — cloud com
+  alternativa descartada via `mb_trava.py anexar-decisao`, nunca por append
+  cego. Git: commit local ok; push por ambiente — cloud com
   repo como fonte da sessão = push direto; cloud sem = commitar e apontar
   `01_acoes/10_publicar-e-fotografar.cmd` e DEPOIS
   `01_acoes/11_enviar-pro-github.cmd`; **git nunca pela pasta montada do

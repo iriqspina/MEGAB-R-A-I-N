@@ -98,8 +98,8 @@ NOS = [
 
     # Gates
     {"id": "g0", "label": "0 · Assumir", "grupo": "gate", "x": 80, "y": 180,
-     "desc": "Checa trava, lê ESTADO/HANDOFF/DECISOES/LICOES.",
-     "detalhe": "Gate 0 garante que apenas um agente escreva por vez. Usa HANDOFF.md e o script mb-sync.py para travar/liberar o projeto."},
+     "desc": "Checa presença, escopo e trava por arquivo; lê ESTADO/HANDOFF/DECISOES/LICOES.",
+     "detalhe": "mb-sync.py declara presença/escopo no HANDOFF. mb_trava.py é checado pelos escritores e protege cada arquivo compartilhado separadamente."},
     {"id": "g1", "label": "1 · Enquadrar", "grupo": "gate", "x": 220, "y": 180,
      "desc": "Define artefato, leitor, critérios e restrições.",
      "detalhe": "Antes de gerar qualquer output, responde: artefato, leitor, 3 critérios verificáveis, restrição dura e a versão genérica a evitar."},
@@ -120,9 +120,9 @@ NOS = [
     {"id": "aspirador", "label": "Aspirador", "grupo": "ferramenta", "x": 120, "y": 340,
      "desc": "Revisão pós-implementação: limpa código mecanicamente.",
      "detalhe": "Default dry-run. Detecta trailing whitespace, linhas em branco, tabs misturados, imports não usados. Só aplica correções mecânicas seguras com backup."},
-    {"id": "sync", "label": "mb-sync.py", "grupo": "ferramenta", "x": 260, "y": 340,
-     "desc": "Trava de handoff multi-agente.",
-     "detalhe": "Escreve TRAVADO_POR/ATÉ/ESCOPO em HANDOFF.md. status/lock/release. Garantia executável para que dois agentes não escrevam ao mesmo tempo."},
+    {"id": "sync", "label": "mb-sync + mb_trava", "grupo": "ferramenta", "x": 260, "y": 340,
+     "desc": "Presença de sessão + trava por arquivo compartilhado.",
+     "detalhe": "mb-sync escreve TRAVADO_POR/ATÉ/ESCOPO no HANDOFF. mb_trava usa .mb-lock por arquivo, prazo/dono e recusa IDs duplicados em DECISOES."},
     {"id": "version", "label": "mb-check-version.py", "grupo": "ferramenta", "x": 400, "y": 340,
      "desc": "Sincroniza megabrain dos projetos com a central.",
      "detalhe": "Compara VERSAO.txt. Central mais nova → sync. Projeto mais novo → avisa. Modo --verificar-git consulta o repositório público."},
@@ -470,8 +470,8 @@ def gerar_html(central: Path, versao: str, data_iso: str) -> str:
         <p>Revisão pós-implementação: limpa código mecanicamente sem alterar lógica. Dry-run, backup, correções seguras.</p>
       </div>
       <div class="card">
-        <h4>mb-sync.py</h4>
-        <p>Trava multi-agente em HANDOFF.md. Garante que só um agente escreva por vez.</p>
+        <h4>mb-sync.py + mb_trava.py</h4>
+        <p>O HANDOFF declara presença e escopo; os escritores checam uma trava por arquivo antes do read-modify-write.</p>
       </div>
       <div class="card">
         <h4>mb-check-version.py</h4>
@@ -542,7 +542,7 @@ python MEGABRAIN/bin/mb-aspirador.py --dir "./meu-projeto" --aplicar</code></pre
         <li><strong>Versão:</strong> {html.escape(versao)}</li>
         <li><strong>Gerado em:</strong> {html.escape(data_iso)}</li>
         <li><strong>Componentes principais:</strong> {html.escape(meta_componentes)}</li>
-        <li><strong>Regra de ouro:</strong> garantia real é script, não markdown. Use <code>mb-sync.py</code> para travar, <code>mb-check-version.py</code> para sincronizar.</li>
+        <li><strong>Regra de ouro:</strong> garantia real é script, não markdown. Use <code>mb-sync.py</code> para presença/escopo, <code>mb_trava.py</code> por arquivo e <code>mb-check-version.py</code> para sincronizar.</li>
         <li><strong>Se procura o relatório de UM projeto</strong> (não o protocolo), é outro artefato: <code>RELATORIO.html</code> na raiz do projeto, gerado por <code>mb-relatorio-projeto.py</code> — não confundir os dois.</li>
       </ul>
       <p>Para replicar: copie a estrutura de <code>MEGABRAIN.md</code>, <code>SKILL.md</code>, <code>referencias/</code> e <code>bin/</code>. Mantenha <code>ESTADO.md</code>, <code>HANDOFF.md</code>, <code>DECISOES.md</code> e <code>LICOES.md</code> por projeto.</p>

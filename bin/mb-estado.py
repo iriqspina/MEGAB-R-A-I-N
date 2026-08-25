@@ -198,7 +198,11 @@ def col_estado(c: Path) -> dict:
     est = _txt(u.achar(c, "ESTADO.md"))
     han = _txt(u.achar(c, "HANDOFF.md"))
     m = re.search(r"TL;DR:(.*?)(?:\n\n|\Z)", est, re.S)
-    quem = re.search(r"TRAVADO_POR:\s*(.+)", han)
+    # O bloco operacional do mb-sync fica no fim; a última ocorrência vale.
+    # Ler a primeira fazia `dados/estado.json` dizer "livre" enquanto havia
+    # uma trava ativa no rodapé do mesmo HANDOFF.
+    ocorrencias_trava = list(re.finditer(r"^TRAVADO_POR:\s*(.+)$", han, re.M))
+    quem = ocorrencias_trava[-1] if ocorrencias_trava else None
     blo = re.search(r"BLOQUEIO:\s*(.+)", est)
     prog = _json(u.achar(c, "PROGRESSO.json")) or {}
     etapas = prog.get("etapas") or []
