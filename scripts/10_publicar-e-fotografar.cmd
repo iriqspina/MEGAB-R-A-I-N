@@ -39,20 +39,24 @@ robocopy "%FONTE%" "%CLONE%" /MIR /XD .git /NFL /NDL /NJH /NJS >nul
 cd /d "%CLONE%"
 git add -A
 
-for /f "usebackq delims=" %%V in ("%CLONE%\memoria\nucleo\VERSAO.txt") do (set "MBVER=%%V" & goto :temversao)
-:temversao
-rem 260822: aspas na primeira linha do VERSAO.txt quebravam o -m (commit falhava em silencio)
-set "MBVER=%MBVER:"='%"
-if "%MBVER%"=="" set "MBVER=megabrain v7"
-if "%MBVER%"=="='" set "MBVER=megabrain v7"
-rem 260825: a linha do VERSAO.txt tem ~1500 caracteres e virava o assunto do
-rem commit inteiro - `git log --oneline` ficava ilegivel justo quando voce
-rem esta procurando alguma coisa no historico. Corta no primeiro ponto final,
-rem que na convencao da casa fecha o titulo da versao. O texto completo
-rem continua no VERSAO.txt, que e a fonte.
-for /f "tokens=1 delims=." %%T in ("%MBVER%") do set "MBTIT=%%T"
-if "%MBTIT%"=="" set "MBTIT=%MBVER%"
-git commit -m "megabrain: %MBTIT%."
+rem 260825b (decisao 260825am): o assunto do commit sai de bin/mb-titulo-versao.py.
+rem O corte antigo era `tokens=1 delims=.` e parava no PRIMEIRO ponto - que na
+rem linha do VERSAO.txt e o ponto da versao, nao o ponto final: o commit publico
+rem 011d1af saiu "megabrain: 2026-08-25 - v7.". Batch nao distingue os dois; o
+rem script corta no ponto final de verdade, cabe em 72 caracteres e sanitiza
+rem aspas e metacaractere - com teste em motor/tests/test_mb_titulo_versao.py.
+rem O texto completo continua no VERSAO.txt, que e a fonte.
+rem A saida vai para arquivo em vez de backtick: dentro de `for /f ... in (...)`
+rem o cmd.exe reprocessa as aspas e %PY% entre aspas devolve captura VAZIA
+rem (medido nas 3 variantes em 260825) - o commit cairia no texto de reserva
+rem sem avisar. Lendo de arquivo, caminho de python com espaco continua valendo.
+set "MBTITARQ=%TEMP%\mb-titulo-versao.txt"
+set "MBTIT="
+"%PY%" "%~dp0..\bin\mb-titulo-versao.py" --arquivo "%CLONE%\memoria\nucleo\VERSAO.txt" > "%MBTITARQ%"
+for /f "usebackq delims=" %%T in ("%MBTITARQ%") do set "MBTIT=%%T"
+del "%MBTITARQ%" >nul 2>nul
+if "%MBTIT%"=="" set "MBTIT=megabrain v7"
+git commit -m "%MBTIT%"
 if errorlevel 1 (
   echo.
   echo  Nada para commitar ou commit falhou. Verifique "git status".

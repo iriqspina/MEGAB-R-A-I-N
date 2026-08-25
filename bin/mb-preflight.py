@@ -342,19 +342,55 @@ def cheque_decisoes(central: Path) -> tuple[bool, str]:
     return True, f"{len(trava.ids_de(u.safe_read_text(caminho) or ''))} ids únicos"
 
 
+def sosias_canonicos(central: Path) -> list[str]:
+    """Todo arquivo com nome canônico fora do lugar canônico (raiz + memoria/).
+
+    Os nomes saem de u.PASTAS_RAIZ — o mesmo mapa que o resolvedor usa, então
+    nome novo entra no cheque sozinho. `cerebro/raw` fica de fora: é despejo
+    bruto do humano por contrato do /ingerir, e um ESTADO.md de cliente ali é
+    fonte, não órfão.
+    """
+    alvos: list[Path] = []
+    solto = [p for p in central.iterdir() if p.is_file()] if central.is_dir() else []
+    alvos += solto
+    mem = central / "memoria"
+    if mem.is_dir():
+        raw = (u.pasta(central, "cerebro") / "raw").resolve()
+        for dirpath, dirs, files in os.walk(mem):
+            dirs[:] = [d for d in dirs
+                       if d not in PULAR_DIRS
+                       and (Path(dirpath) / d).resolve() != raw]
+            alvos += [Path(dirpath) / f for f in files]
+    achados = []
+    for p in alvos:
+        if p.name not in u.PASTAS_RAIZ:
+            continue
+        canonico = u.achar(central, p.name)
+        try:
+            if p.resolve() == canonico.resolve():
+                continue
+        except OSError:
+            continue
+        achados.append(p.relative_to(central).as_posix())
+    return sorted(achados)
+
+
 def cheque_canonicos(central: Path) -> tuple[bool, str]:
-    """Arquivo solto na raiz não pode sombrear/recriar a fonte canônica."""
-    nomes = ("licoes-megabrain.md", "ESTADO.md", "HANDOFF.md",
-             "DECISOES.md", "META.md")
-    orfaos = []
-    for nome in nomes:
-        solto = central / nome
-        canonico = u.achar(central, nome)
-        if solto.is_file() and solto.resolve() != canonico.resolve():
-            orfaos.append(nome)
+    """Nome canônico tem UM lugar — conferido na raiz e dentro de memoria/.
+
+    Na raiz o sósia sombreia a LEITURA (lição 260825: um licoes-megabrain.md
+    órfão de 4,6 KB fez o índice ver 8 lições em vez de 166, por um dia, sem
+    aviso). Dentro de memoria/ o estrago é o inverso e mais silencioso: o
+    resolvedor acerta o canônico, então o sósia nunca é lido — ele só recebe
+    ESCRITA que ninguém mais vê. Foi o que aconteceu em 260825, quando um
+    anexo de decisão criou memoria/nucleo/DECISOES.md do zero e o contador
+    seguiu marcando o canônico intacto (item 4.3 da auditoria).
+    """
+    orfaos = sosias_canonicos(central)
     if orfaos:
-        return False, "CANÔNICO ÓRFÃO na raiz: " + ", ".join(orfaos)
-    return True, "nenhum canônico duplicado na raiz"
+        return False, ("CANÔNICO DUPLICADO (recebe escrita que ninguém lê): "
+                       + ", ".join(orfaos))
+    return True, "nenhum canônico duplicado na raiz nem em memoria/"
 
 
 def main() -> int:

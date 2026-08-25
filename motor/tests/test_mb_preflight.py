@@ -92,6 +92,55 @@ class TestChequePlugin(Base):
         self.assertTrue(ok, txt)
 
 
+class TestChequeCanonicos(Base):
+    def central_v7(self) -> Path:
+        c = self.tmpdir()
+        for logica, nomes in (("nucleo", ("licoes-megabrain.md", "VERSAO.txt")),
+                              ("estado", ("ESTADO.md", "DECISOES.md"))):
+            d = c / "memoria" / logica
+            d.mkdir(parents=True, exist_ok=True)
+            for nome in nomes:
+                (d / nome).write_text("canônico\n", encoding="utf-8")
+        return c
+
+    def test_central_arrumada_passa(self):
+        ok, txt = preflight.cheque_canonicos(self.central_v7())
+        self.assertTrue(ok, txt)
+
+    def test_sosia_na_pasta_logica_errada_reprova(self):
+        # 260825: anexar decisão no caminho errado criou memoria/nucleo/
+        # DECISOES.md do zero; u.achar seguia lendo memoria/estado/, então o
+        # texto novo virou escrita órfã e nenhum contador acusou.
+        c = self.central_v7()
+        (c / "memoria/nucleo/DECISOES.md").write_text("órfã\n", encoding="utf-8")
+        ok, txt = preflight.cheque_canonicos(c)
+        self.assertFalse(ok)
+        self.assertIn("memoria/nucleo/DECISOES.md", txt)
+
+    def test_sosia_na_raiz_continua_reprovando(self):
+        c = self.central_v7()
+        (c / "licoes-megabrain.md").write_text("órfã\n", encoding="utf-8")
+        ok, txt = preflight.cheque_canonicos(c)
+        self.assertFalse(ok)
+        self.assertIn("licoes-megabrain.md", txt)
+
+    def test_despejo_bruto_no_cerebro_raw_nao_e_orfao(self):
+        c = self.central_v7()
+        raw = c / "memoria/cerebro/raw"
+        raw.mkdir(parents=True)
+        (raw / "ESTADO.md").write_text("fonte de cliente\n", encoding="utf-8")
+        ok, txt = preflight.cheque_canonicos(c)
+        self.assertTrue(ok, txt)
+
+    def test_nome_datado_de_pendencia_nao_e_orfao(self):
+        c = self.central_v7()
+        pend = c / "memoria/pendencias/260819-retrabalho"
+        pend.mkdir(parents=True)
+        (pend / "260819_HANDOFF-RETRABALHO.md").write_text("nota\n", encoding="utf-8")
+        ok, txt = preflight.cheque_canonicos(c)
+        self.assertTrue(ok, txt)
+
+
 class TestVereditoCompleto(Base):
     def test_preflight_sai_2_com_drift_fonte_plugin(self):
         c = self.central_fake()
