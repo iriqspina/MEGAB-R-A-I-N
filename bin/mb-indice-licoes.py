@@ -33,6 +33,7 @@ import urllib.request
 from pathlib import Path
 
 import mb_utils as u
+import mb_trava as trava
 
 u.utf8_console()
 
@@ -190,7 +191,11 @@ def indexar(force: bool = False, silencioso: bool = False) -> dict | None:
         "com_embedding": com_embedding,
         "entradas": entradas,
     }
-    u.atomic_write_text(caminho_indice(), json.dumps(indice, ensure_ascii=False))
+    trava.escrever(
+        caminho_indice(), json.dumps(indice, ensure_ascii=False),
+        agente=trava.agente_script("mb-indice-licoes"),
+        motivo="regenera índice de lições",
+    )
     if not silencioso:
         modo = "embeddings" if com_embedding else "SEM embeddings (Ollama fora) — fallback keyword"
         print(f"indexadas {len(entradas)} entradas ({modo}, hash {h})")
@@ -259,8 +264,12 @@ def recontar() -> dict:
             })
     clusters.sort(key=lambda c: -c["n"])
     resultado = {"total_entradas": n, "clusters": clusters}
-    u.atomic_write_text(u.pasta(central(), "dna") / "licoes-recorrencia.json",
-                        json.dumps(resultado, ensure_ascii=False, indent=2))
+    trava.escrever(
+        u.pasta(central(), "dna") / "licoes-recorrencia.json",
+        json.dumps(resultado, ensure_ascii=False, indent=2),
+        agente=trava.agente_script("mb-indice-licoes"),
+        motivo="regenera recorrência das lições",
+    )
     return resultado
 
 

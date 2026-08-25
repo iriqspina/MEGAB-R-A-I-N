@@ -25,6 +25,15 @@ DEFINIDO EM: <AAMMDD HH:MM>
 - [ ] documentação/registro atualizado
 - [ ] suíte de testes continua verde
 
+## Sign-offs
+
+<!-- Quem aprovou esta spec, quando e em qual commit. Cada sign-off fica
+     obsoleto automaticamente se o arquivo for modificado depois do commit
+     registrado. O utilitário `mb-spec-signoff.py` detecta sign-offs obsoletos. -->
+
+| Quem | Quando | Commit | Estado |
+|------|--------|--------|--------|
+
 ## Notas
 
 <!-- Decisões, restrições ou contexto que o reviewer deve respeitar. -->

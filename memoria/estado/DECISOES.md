@@ -1885,7 +1885,13 @@ POR QUÊ: condição dura levantada pelo auditor e aceita — não se remove
 redundância antes de o caminho de recuperação funcionar sem ela. É o passo 1 da
 ordem acordada: recuperar → piloto no Currículo → medir → os outros 18.
 
-## 260825y — a promessa de resiliência offline sai do canônico
+## 260825ag — a promessa de resiliência offline sai do canônico
+> **Era 260825y.** Renumerada em 260825 12:15: um agente-irmão gravou o AI
+> reviewer (mecânica 3 do djinnai.io) com o MESMO id, e esse já era citado por
+> `ESTADO.md` e pela pendência da fila. Quem tem citação viva fica com o id;
+> esta decisão não era citada em nenhum arquivo vivo, então cedeu. Segunda
+> colisão de id no dia (a primeira foi 260825x) — a trava por escopo
+> (260825ad) existe por causa disso.
 DECISÃO: `MEGABRAIN.md`, seção "Uso offline e recuperação", perde a frase
 "se o GitHub ou a internet caírem, os scripts continuam funcionando direto de
 lá" e ganha a correção com rastro. A proteção real contra "a central sumiu"
@@ -1963,3 +1969,12 @@ POR QUÊ: o <USUARIO> escolheu implementar a mecânica 3. O valor do Djinn está
 DECISÃO: `u.pasta()` e `u.achar()` mantêm a API, mas a central passa a ter um único layout reconhecido: `memoria/` + `motor/`. Sai o fallback `PASTAS_V64` (`00_nucleo`, `01_estado` etc.) e sai a prioridade da árvore mista em que `skills/` plano vencia `motor/skills`. O plano permanece SOMENTE quando a pasta realmente existe — restauração cheia, backup anterior à cópia magra e arquivo de estado na raiz de projeto. Saldo: −36 linhas em `bin/mb_utils.py` e `motor/tests/test_mb_layout.py`; suíte 119 → 118 (o teste removido era o cenário morto "motor/ e skills/ coexistem"). Executado pelo auditor GPT com trava; medição antes do corte: zero consumidor de `PASTAS_V64` nas árvores vivas e nos 6 ZIPs locais.
 ALTERNATIVA DESCARTADA: remover TODO fallback plano — quebraria os backups reais (o ZIP magro arquivado tem 3.632 entradas no formato plano) e o `mb-recuperar-megabrain.py`, que restaura e confere esse formato sob demanda.
 POR QUÊ: depois da cópia magra (260825aa) só existe um formato vivo; o corte elimina compatibilidade hipotética e o cenário impossível de árvore mista sem amputar o plano de recuperação que tornou a magra reversível.
+
+## 260825af — specs vivas com sign-off obsoleto (djinnai.io mecânica 1)
+DECISÃO: implementar sign-off local de specs detectando obsolescência automaticamente.
+- Fonte: `modelos/SPEC.md` ganha seção `## Sign-offs` com tabela `Quem | Quando | Commit | Estado`.
+- Script: `bin/mb-spec-signoff.py` — `listar` todas as specs, `assinar <caminho> --quem`, `verificar [caminho]`. O sign-off registra o hash curto do HEAD; a obsolescência é detectada por `git log <hash-do-signoff>..HEAD -- <arquivo>`.
+- Testes: `motor/tests/test_mb_spec_signoff.py` com 10 casos cobrindo extração, obsolescência, assinatura em spec nova/existente e formatação.
+- Integração: `bin/mb-estado.py` expõe `signoffs` com total, ok, obsoletas, sem_signoff e detalhes.
+ALTERNATIVA DESCARTADA: (a) usar timestamp de modificação do arquivo em vez de commit — não distingue mudança real de `touch` e quebra em checkout; (b) assinar com tag git anotada — introduz mutation no repo a cada aprovação de spec, e a mecânica precisa ser leve o bastante pra rodar várias vezes por sessão.
+POR QUÊ: o <USUARIO> escolheu implementar a mecânica 1. O valor do Djinn está em saber que uma spec aprovada ainda é a spec vigente. Detectar obsolescência pelo git é preciso e não exige estado extra: o próprio histórico já conta quando o arquivo mudou. A integração no estado.json faz o painel alertar specs obsoletas sem precisar rodar nada à mão.

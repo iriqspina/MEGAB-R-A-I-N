@@ -46,6 +46,7 @@ import sys
 from pathlib import Path
 
 import mb_utils as u
+import mb_trava as trava
 
 u.utf8_console()
 
@@ -355,6 +356,29 @@ def col_fila(c: Path) -> dict:
         return {"erro": str(e)[:120], "_fonte": "dados/fila.json"}
 
 
+def col_signoffs(c: Path) -> dict:
+    """Specs vivas: quantas estão assinadas, obsoletas ou sem sign-off."""
+    try:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("mb_spec_signoff", str(c / "bin" / "mb-spec-signoff.py"))
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        specs = mod._status_specs(c)
+        ok = sum(1 for s in specs if s["estado"] == "ok")
+        obsoletas = sum(1 for s in specs if s["obsoleto"] and s["estado"] != "sem_signoff")
+        sem = sum(1 for s in specs if s["estado"] == "sem_signoff")
+        return {
+            "total": len(specs),
+            "ok": ok,
+            "obsoletas": obsoletas,
+            "sem_signoff": sem,
+            "detalhes": specs,
+            "_fonte": "bin/mb-spec-signoff.py (SPEC.md rastreados)",
+        }
+    except Exception as e:
+        return {"erro": str(e)[:120], "_fonte": "bin/mb-spec-signoff.py"}
+
+
 def montar(c: Path, com_suite: bool = True) -> dict:
     d = {
         "schema": SCHEMA,
@@ -372,6 +396,7 @@ def montar(c: Path, com_suite: bool = True) -> dict:
         "registro": col_registro(c),
         "documentos": col_documentos(c),
         "fila": col_fila(c),
+        "signoffs": col_signoffs(c),
     }
     # null, nunca zero nem chute: "não medido" e "medido e deu zero" são
     # coisas diferentes, e o contrato do arquivo promete a diferença.
@@ -409,7 +434,16 @@ def main() -> int:
 
     saida = caminho_saida(c)
     saida.parent.mkdir(parents=True, exist_ok=True)
-    saida.write_text(json.dumps(d, ensure_ascii=False, indent=2), encoding="utf-8")
+    try:
+        trava.escrever(
+            saida,
+            json.dumps(d, ensure_ascii=False, indent=2),
+            agente=trava.agente_script("mb-estado"),
+            motivo="regenera a fonte de estado para as IAs",
+        )
+    except trava.TravaOcupada as e:
+        print(f"ERRO: {e}", file=sys.stderr)
+        return 1
     print(f"estado: {saida}  ({saida.stat().st_size // 1024} KB)")
     print(f"  versão {d['versao']['atual']} · {d['decisoes']['total']} decisões · "
           f"{d['memoria']['licoes_no_arquivo']} lições · "

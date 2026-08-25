@@ -44,6 +44,7 @@ EXCLUIR = {
     "260810_memoria-pessoal.md",
     "licoes-megabrain.md",
     ".mb-log",  # v6 fase 1: cobre também .mb-log/ dentro de subpastas (walk)
+    ".mb-lock",  # trava efêmera por arquivo; nunca faz parte do pacote
     # Derivados das lições: carregam o TEXTO das lições (pessoais) e podem
     # carregar segredo citado em lição — o push protection do GitHub barrou
     # uma chave GCP em 260819. Lição nunca sai da central, nem derivada.
@@ -70,6 +71,7 @@ EXCLUIR = {
     ".git",
     ".mb-aspirador",
     ".mb-backup",
+    ".mb-lock",
     ".dna-backup",
     # 260821: com barra — ".claude" solto casava com ".claude-plugin/" do plugin
     # Claude e deixava o plugin.json fora do pacote.

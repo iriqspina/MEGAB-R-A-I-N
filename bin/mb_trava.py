@@ -92,6 +92,17 @@ def _agora() -> dt.datetime:
         return dt.datetime.now()
 
 
+def agente_script(nome: str | None = None) -> str:
+    """Identidade única para uma execução de script.
+
+    Usar apenas ``script:mb-fila`` faria dois processos diferentes parecerem
+    o mesmo dono reentrante. O PID separa as execuções e faz a segunda ser
+    recusada de verdade.
+    """
+    base = nome or Path(sys.argv[0]).stem or "python"
+    return f"script:{base}:{os.getpid()}"
+
+
 def central(inicio: Path | None = None) -> Path:
     base = Path(inicio) if inicio else Path(__file__).resolve().parent.parent
     return base
@@ -136,6 +147,26 @@ def ler(alvo: Path, raiz: Path | None = None) -> dict | None:
     return d
 
 
+def _criar_exclusivo(arq: Path, dados: dict) -> None:
+    """Cria a trava sem janela entre "checar" e "gravar".
+
+    ``O_EXCL`` é a peça que torna duas aquisições simultâneas decidíveis: só
+    uma cria o arquivo; a outra relê o dono e falha alto.
+    """
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+    fd = os.open(str(arq), flags)
+    try:
+        conteudo = json.dumps(dados, ensure_ascii=False, indent=2) + "\n"
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as f:
+            fd = -1
+            f.write(conteudo)
+            f.flush()
+            os.fsync(f.fileno())
+    finally:
+        if fd != -1:
+            os.close(fd)
+
+
 def checar(alvo: Path, agente: str, raiz: Path | None = None) -> None:
     """Levanta TravaOcupada se OUTRO agente tem o arquivo. É o passo que
     faltava: barato, e transforma a trava de decoração em garantia."""
@@ -147,22 +178,55 @@ def checar(alvo: Path, agente: str, raiz: Path | None = None) -> None:
 
 def travar(alvo: Path, agente: str, motivo: str = "", horas: int = HORAS_PADRAO,
            raiz: Path | None = None) -> dict:
-    """Toma a trava. Reentrante para o mesmo agente."""
+    """Toma a trava por criação exclusiva. Reentrante para o mesmo agente."""
     alvo = Path(alvo)
-    checar(alvo, agente, raiz)
     arq = caminho_trava(alvo, raiz)
     arq.parent.mkdir(parents=True, exist_ok=True)
-    agora = _agora().replace(tzinfo=None)
-    d = {
-        "arquivo": str(alvo.resolve()),
-        "agente": agente,
-        "motivo": motivo,
-        "pid": os.getpid(),
-        "desde": agora.strftime(FMT),
-        "ate": (agora + dt.timedelta(hours=horas)).strftime(FMT),
-    }
-    u.atomic_write_text(arq, json.dumps(d, ensure_ascii=False, indent=2) + "\n")
-    return d
+    for _ in range(5):
+        existente = ler(alvo, raiz)
+        if existente:
+            if existente.get("agente") != agente:
+                raise TravaOcupada(alvo, existente.get("agente", "?"),
+                                   existente.get("ate", "?"),
+                                   existente.get("motivo", ""))
+            # Reentrada explícita do mesmo dono: só a última liberação solta.
+            agora = _agora().replace(tzinfo=None)
+            existente["contagem"] = max(1, int(existente.get("contagem", 1))) + 1
+            existente["ate"] = (agora + dt.timedelta(hours=horas)).strftime(FMT)
+            if motivo:
+                existente["motivo"] = motivo
+            u.atomic_write_text(
+                arq, json.dumps(existente, ensure_ascii=False, indent=2) + "\n")
+            return existente
+
+        # Arquivo inválido ou vencido não bloqueia. Remova e dispute a criação
+        # exclusiva; se outro processo ganhar, o próximo laço verá o dono.
+        try:
+            arq.unlink()
+        except FileNotFoundError:
+            pass
+        except OSError:
+            continue
+
+        agora = _agora().replace(tzinfo=None)
+        dados = {
+            "arquivo": str(alvo.resolve()),
+            "agente": agente,
+            "motivo": motivo,
+            "pid": os.getpid(),
+            "contagem": 1,
+            "desde": agora.strftime(FMT),
+            "ate": (agora + dt.timedelta(hours=horas)).strftime(FMT),
+        }
+        try:
+            _criar_exclusivo(arq, dados)
+            return dados
+        except FileExistsError:
+            continue
+    # A disputa só chega aqui se o arquivo mudou repetidamente durante todas
+    # as tentativas. Falhar é mais seguro do que escrever sem dono conhecido.
+    raise TravaOcupada(alvo, "outro processo", "desconhecido",
+                       "a trava mudou durante a aquisição")
 
 
 def liberar(alvo: Path, agente: str, raiz: Path | None = None) -> bool:
@@ -171,6 +235,10 @@ def liberar(alvo: Path, agente: str, raiz: Path | None = None) -> bool:
     if d and d.get("agente") != agente:
         return False
     arq = caminho_trava(alvo, raiz)
+    if d and int(d.get("contagem", 1)) > 1:
+        d["contagem"] = int(d["contagem"]) - 1
+        return u.atomic_write_text(
+            arq, json.dumps(d, ensure_ascii=False, indent=2) + "\n")
     try:
         arq.unlink()
         return True
@@ -250,7 +318,8 @@ def anexar(alvo: Path, bloco: str, agente: str, motivo: str = "",
     alvo = Path(alvo)
     with travado(alvo, agente, motivo or f"append por {agente}", raiz=raiz):
         atual = u.safe_read_text(alvo) or ""
-        return u.atomic_write_text(alvo, atual.rstrip("\n") + "\n" + bloco)
+        novo = atual.rstrip("\n") + "\n" + bloco.rstrip("\n") + "\n"
+        return u.atomic_write_text(alvo, novo)
 
 
 # --------------------------------------------------------------------------
@@ -308,6 +377,18 @@ def anexar_decisao(alvo: Path, bloco: str, agente: str,
     with travado(alvo, agente, "grava decisão", raiz=raiz):
         atual = u.safe_read_text(alvo) or ""
         novos = ids_de(bloco)
+        duplicados_atuais = conferir_ids(alvo)
+        if duplicados_atuais:
+            raise IdDuplicado(
+                f"o arquivo já contém id(s) duplicado(s): "
+                f"{', '.join(duplicados_atuais)}. Não gravei.")
+        import collections
+        repetidos_no_bloco = [i for i, n in collections.Counter(novos).items()
+                              if n > 1]
+        if repetidos_no_bloco:
+            raise IdDuplicado(
+                f"o bloco novo repete id(s): {', '.join(repetidos_no_bloco)}. "
+                "Não gravei.")
         existentes = set(ids_de(atual))
         colididos = [i for i in novos if i in existentes]
         if colididos:
@@ -329,15 +410,20 @@ def main() -> int:
     u.utf8_console()
     ap = argparse.ArgumentParser(description="trava por arquivo do megabrain")
     ap.add_argument("acao", choices=["status", "travar", "liberar", "ceder",
-                                     "conferir-ids", "proximo-id"])
+                                     "conferir-ids", "proximo-id", "escrever",
+                                     "anexar", "anexar-decisao"])
     ap.add_argument("--arquivo", default=None)
     ap.add_argument("--agente", default="?")
     ap.add_argument("--para", default=None)
     ap.add_argument("--porque", default="")
     ap.add_argument("--horas", type=int, default=HORAS_PADRAO)
+    ap.add_argument("--entrada", default=None,
+                    help="arquivo com o conteúdo; use - para stdin")
+    ap.add_argument("--raiz", default=None,
+                    help="onde guardar .mb-lock (default: central deste script)")
     a = ap.parse_args()
 
-    raiz = central()
+    raiz = Path(a.raiz).resolve() if a.raiz else central()
     if a.acao == "status":
         base = raiz / PASTA
         vivas = []
@@ -377,6 +463,25 @@ def main() -> int:
         print("--arquivo é obrigatório para esta ação")
         return 2
     alvo = Path(a.arquivo)
+
+    if a.acao in {"escrever", "anexar", "anexar-decisao"}:
+        if not a.entrada:
+            print(f"{a.acao} exige --entrada CAMINHO (ou - para stdin)")
+            return 2
+        try:
+            conteudo = (sys.stdin.read() if a.entrada == "-" else
+                        Path(a.entrada).read_text(encoding="utf-8"))
+            if a.acao == "escrever":
+                escrever(alvo, conteudo, a.agente, a.porque, raiz)
+            elif a.acao == "anexar":
+                anexar(alvo, conteudo, a.agente, a.porque, raiz)
+            else:
+                anexar_decisao(alvo, conteudo, a.agente, raiz)
+        except (OSError, TravaOcupada, IdDuplicado) as e:
+            print(f"RECUSADO: {e}")
+            return 1
+        print(f"{a.acao}: ok — {alvo.name}")
+        return 0
 
     if a.acao == "travar":
         try:

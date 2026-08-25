@@ -26,6 +26,7 @@ import sys
 from pathlib import Path
 
 import mb_utils as u
+import mb_trava as trava
 
 u.utf8_console()
 
@@ -77,7 +78,8 @@ def chave_entrada(bloco: str) -> str:
     return " ".join(primeira.strip().lower().split())
 
 
-def merge_licoes(licoes_projeto: Path, licoes_central: Path, dry_run=False) -> bool:
+def _merge_licoes_sem_trava(licoes_projeto: Path, licoes_central: Path,
+                            dry_run=False) -> bool:
     texto_projeto = u.safe_read_text(licoes_projeto)
     if texto_projeto is None:
         print(f"  ERRO: não consegui ler {licoes_projeto}")
@@ -116,6 +118,23 @@ def merge_licoes(licoes_projeto: Path, licoes_central: Path, dry_run=False) -> b
     return ok
 
 
+def merge_licoes(licoes_projeto: Path, licoes_central: Path,
+                 dry_run=False) -> bool:
+    """Merge inteiro sob a mesma trava: ler fora dela ainda perde update."""
+    if dry_run:
+        return _merge_licoes_sem_trava(licoes_projeto, licoes_central, True)
+    agente_arquivo = trava.agente_script("mb-sync-projeto-para-central")
+    try:
+        with trava.travado(
+                licoes_central, agente_arquivo,
+                "funde lições de projeto na fonte canônica"):
+            return _merge_licoes_sem_trava(
+                licoes_projeto, licoes_central, False)
+    except trava.TravaOcupada as e:
+        print(f"  ERRO: {e}")
+        return False
+
+
 def copiar(src: Path, dst: Path, central: Path, dry_run=False) -> bool:
     try:
         u.resolve_within(dst, central)
@@ -131,9 +150,12 @@ def copiar(src: Path, dst: Path, central: Path, dry_run=False) -> bool:
         # 260818: merge, não replace. dirs_exist_ok sobrescreve arquivos com o
         # mesmo nome (o projeto é a fonte da verdade pro que ele de fato tem)
         # mas preserva o que só existe na central.
+        agente_arquivo = trava.agente_script("mb-sync-projeto-para-central")
         try:
-            shutil.copytree(src, dst, dirs_exist_ok=True)
-        except OSError as e:
+            with trava.travado(dst, agente_arquivo,
+                               f"funde diretório {src.name} na central"):
+                shutil.copytree(src, dst, dirs_exist_ok=True)
+        except (OSError, trava.TravaOcupada) as e:
             print(f"  ERRO ao copiar {src} -> {dst}: {e}")
             return False
     else:
@@ -141,7 +163,16 @@ def copiar(src: Path, dst: Path, central: Path, dry_run=False) -> bool:
         if conteudo is None:
             print(f"  ERRO: não consegui ler {src}")
             return False
-        if not u.atomic_write_text(dst, conteudo):
+        try:
+            ok = trava.escrever(
+                dst, conteudo,
+                agente=trava.agente_script("mb-sync-projeto-para-central"),
+                motivo=f"copia {src.name} do projeto para a central",
+            )
+        except trava.TravaOcupada as e:
+            print(f"  ERRO ao copiar {src} -> {dst}: {e}")
+            return False
+        if not ok:
             return False
     print(f"  copiado {src.name} -> {dst}")
     return True
@@ -184,7 +215,10 @@ def main():
 
     licoes_projeto = mb_projeto / LICOES_NAME
     if licoes_projeto.exists():
-        if not merge_licoes(licoes_projeto, central / LICOES_NAME, args.dry_run):
+        # A fonte canônica vive em memoria/nucleo; escrever na raiz recriaria
+        # a órfã que sequestrou 95% das lições em 260825.
+        if not merge_licoes(licoes_projeto, u.achar(central, LICOES_NAME),
+                            args.dry_run):
             falhas.append(LICOES_NAME)
     else:
         print(f"  AVISO: projeto sem {LICOES_NAME}, pulando merge de lições")

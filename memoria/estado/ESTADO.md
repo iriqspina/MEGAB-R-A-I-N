@@ -6,13 +6,14 @@ TL;DR: v7.5 no disco. As 7 pendências da auditoria foram decididas por ele em
 260825 ("toca tudo com as suas recomendações") e executadas — a central virou
 repositório git, 6 artefatos de saída viraram 3, as 11 ações estão numeradas
 com o número no nome do arquivo, e o painel abre skills e comandos por clique.
-Suíte 118/118 (o resolvedor de dois layouts foi cortado em 260825ae: um formato
-só na central, plano só em restauração). Preflight PODE COMEÇAR. BLOQUEIO: nenhum.
+Suíte 128/128 (mecânicas 1, 2 e 3 do djinnai.io implementadas; resolvedor de
+dois layouts cortado em 260825ae). Preflight PODE COMEÇAR. BLOQUEIO: nenhum.
 
-ONDE ESTAMOS: fases 1 (diagnóstico) e 2 (consolidação) fechadas. Falta a fase
-3 — varrer os 18 megabrains de projeto contra a central. As lições já batem
-(183 nas cópias conferidas), mas ninguém auditou versão, skills e estrutura
-projeto a projeto.
+ONDE ESTAMOS: fases 1 (diagnóstico) e 2 (consolidação) fechadas. As 3 mecânicas
+do djinnai.io (specs com sign-off, fila de tasks, reviewer de criteria) foram
+absorvidas e testadas. Falta a fase 3 — varrer os 18 megabrains de projeto
+contra a central. As lições já batem (183 nas cópias conferidas), mas ninguém
+auditou versão, skills e estrutura projeto a projeto.
 
 ## O que o painel entrega agora
 
@@ -46,10 +47,8 @@ Decisões 260825a–p em `DECISOES.md`. 13 lições novas no núcleo.
 
 ## Fila (nada bloqueado, tudo dele)
 
-1. **Push.** O `repo-local` tem 1 commit sem push (`ee84eca`, rodado pelo
-   auditor com autorização dele) e a central ganhou mais 4 commits depois do
-   bump — o `10_publicar-e-fotografar` precisa rodar de novo pra convergir, e
-   o `11_enviar-pro-github` é o que sobe. Nenhum dos dois roda sozinho.
+1. ~~**Push.**~~ FEITO (260825, Kimi): pacote público regenerado, repo-local
+   espelhado e `7d429a4` no `origin/main` do GitHub. Relatório regenerado.
 2. **Fase 3** — os 18 megabrains de projeto contra a central.
 3. **Trava por escopo.** Ficou pra depois do git de propósito: com histórico,
    perda virou recuperável e a trava certa é mais leve do que era. Hoje
@@ -65,7 +64,14 @@ Decisões 260825a–p em `DECISOES.md`. 13 lições novas no núcleo.
    `modelos/SPEC.md`, `bin/mb-review-criteria.py`,
    `motor/tests/test_mb_review_criteria.py`. Veredito da mecânica 3 em
    `memoria/estado/DECISOES.md` §260825y.
-7. **Resíduo histórico no git público**: `pyvenv.cfg` e 3 caminhos pessoais em
+7. **Specs vivas com sign-off obsoleto** implementado: `modelos/SPEC.md`
+   ganhou seção `## Sign-offs`, `bin/mb-spec-signoff.py` gerencia assinaturas
+   e detecta obsolescência via `git log`, `motor/tests/test_mb_spec_signoff.py`
+   com 11 casos, integração em `dados/estado.json:signoffs`. Veredito da
+   mecânica 1 em `memoria/estado/DECISOES.md` §260825af.
+8. **Referência no cérebro**: `memoria/cerebro/wiki/260825_djinnai-io-mecanicas.md`
+   arquiva as 3 mecânicas do djinnai.io; `memoria/cerebro/INDICE.md` atualizado.
+8. **Resíduo histórico no git público**: `pyvenv.cfg` e 3 caminhos pessoais em
    commits antigos do clone. Sem chave; revela usuário e caminho local.
 
 SEGURADO: nada foi apagado em 260825. `90_arquivo/artefatos-aposentados-260825`,

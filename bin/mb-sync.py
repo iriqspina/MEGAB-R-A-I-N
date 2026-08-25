@@ -28,6 +28,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import mb_utils as u
+import mb_trava as trava
 
 u.utf8_console()
 
@@ -191,7 +192,13 @@ def cmd_lock(args) -> int:
         print(f"recusado: nao foi possivel obter lock exclusivo ({lock_path})")
         return 1
 
+    agente_arquivo = trava.agente_script("mb-sync")
     try:
+        try:
+            trava.travar(caminho, agente_arquivo, "atualiza trava de handoff")
+        except trava.TravaOcupada as e:
+            print(f"recusado: {e}")
+            return 1
         texto = u.safe_read_text(caminho) or ""
         lock_existente = parse_lock(texto)
         agora = dt.datetime.now()
@@ -226,6 +233,7 @@ def cmd_lock(args) -> int:
         )
         return 0
     finally:
+        trava.liberar(caminho, agente_arquivo)
         u.release_lock(lock_path)
 
 
@@ -238,7 +246,13 @@ def cmd_release(args) -> int:
         print(f"recusado: nao foi possivel obter lock exclusivo ({lock_path})")
         return 1
 
+    agente_arquivo = trava.agente_script("mb-sync")
     try:
+        try:
+            trava.travar(caminho, agente_arquivo, "libera trava de handoff")
+        except trava.TravaOcupada as e:
+            print(f"recusado: {e}")
+            return 1
         texto = u.safe_read_text(caminho) or ""
         lock = parse_lock(texto)
         if not texto or lock is None:
@@ -261,6 +275,7 @@ def cmd_release(args) -> int:
         print("liberado: trava removida")
         return 0
     finally:
+        trava.liberar(caminho, agente_arquivo)
         u.release_lock(lock_path)
 
 

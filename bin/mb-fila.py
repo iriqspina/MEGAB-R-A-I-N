@@ -27,10 +27,12 @@ import argparse
 import datetime as dt
 import json
 import sys
+from contextlib import nullcontext
 from pathlib import Path
 from typing import Any
 
 import mb_utils as u
+import mb_trava as trava
 
 u.utf8_console()
 
@@ -190,26 +192,26 @@ def main() -> int:
     raiz = Path(args.dir).resolve() if args.dir else _central()
     caminho = raiz / "dados" / "fila.json"
 
-    try:
-        dados = _carregar(caminho)
-    except FileNotFoundError as e:
-        print(f"ERRO: {e}", file=sys.stderr)
-        return 1
-    except json.JSONDecodeError as e:
-        print(f"ERRO: JSON inválido em {caminho}: {e}", file=sys.stderr)
-        return 1
+    # "avancar" é read-modify-write: a trava começa ANTES da leitura. Travar
+    # só no save ainda permitiria duas execuções perderem a atualização uma da
+    # outra.
+    agente_arquivo = trava.agente_script("mb-fila")
+    contexto = (trava.travado(caminho, agente_arquivo, "avança task da fila")
+                if args.cmd == "avancar" else nullcontext())
 
     try:
-        if args.cmd == "listar":
-            cmd_listar(dados)
-        elif args.cmd == "json":
-            print(json.dumps(resumo(dados), ensure_ascii=False, indent=2))
-        elif args.cmd == "proxima":
-            cmd_proxima(dados)
-        elif args.cmd == "avancar":
-            cmd_avancar(dados, args.id)
-            _salvar(caminho, dados)
-    except ValueError as e:
+        with contexto:
+            dados = _carregar(caminho)
+            if args.cmd == "listar":
+                cmd_listar(dados)
+            elif args.cmd == "json":
+                print(json.dumps(resumo(dados), ensure_ascii=False, indent=2))
+            elif args.cmd == "proxima":
+                cmd_proxima(dados)
+            elif args.cmd == "avancar":
+                cmd_avancar(dados, args.id)
+                _salvar(caminho, dados)
+    except (FileNotFoundError, json.JSONDecodeError, ValueError, trava.TravaOcupada) as e:
         print(f"ERRO: {e}", file=sys.stderr)
         return 1
     return 0

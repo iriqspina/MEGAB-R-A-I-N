@@ -43,6 +43,7 @@ import sys
 from pathlib import Path
 
 import mb_utils as u
+import mb_trava as trava
 
 u.utf8_console()
 
@@ -55,7 +56,8 @@ TEXTO = {".md", ".txt", ".py", ".cmd", ".js", ".mjs", ".json", ".yaml", ".yml", 
 # "90_arquivo" entrou junto: é história congelada, e um manifesto de migração
 # arquivada estava fazendo o preflight sair com exit 2 toda abertura de sessão.
 PULAR_DIRS = {".git", "node_modules", "__pycache__", ".venv", "venv", ".mb-backup",
-              ".mb-aspirador", ".dna-backup", ".megabrain", ".mb-log", "_to_delete", "99_to_delete",
+              ".mb-aspirador", ".dna-backup", ".megabrain", ".mb-log", ".mb-lock",
+              "_to_delete", "99_to_delete",
               "260810_backup-raiz-perfil", "260810_variantes", "_github", "90_arquivo",
               # 260825: dados/ é DERIVADO — `mb-estado.py` monta o índice a
               # partir dos .md, então qualquer resíduo ali já foi contado na
@@ -98,7 +100,7 @@ EXT_BATCH = {".cmd", ".bat"}
 # gerador. Pedaço ISOLADO de caminho — entrada composta nunca casaria (a
 # própria armadilha que fez cada doc entrar 3× no relatório, decisão 260825b).
 PULAR_CRLF = {"_github", "90_arquivo", "99_to_delete", ".mb-backup", ".mb-aspirador",
-              ".dna-backup", ".git", "__pycache__", ".megabrain", "node_modules",
+              ".dna-backup", ".git", "__pycache__", ".megabrain", ".mb-lock", "node_modules",
               ".venv", "venv", "MEGABRAIN"}
 PADRAO_LF_SOLTO = re.compile(rb"(?<!\r)\n")
 
@@ -299,6 +301,17 @@ def cheque_crlf(raiz: Path) -> tuple[bool, str]:
     return True, "todo .cmd/.bat da central em CRLF"
 
 
+def cheque_decisoes(central: Path) -> tuple[bool, str]:
+    """IDs são endereços: duplicata bloqueia antes de outro agente editar."""
+    caminho = u.achar(central, "DECISOES.md")
+    if not caminho.is_file():
+        return True, "DECISOES.md ausente (nada a conferir)"
+    duplicados = trava.conferir_ids(caminho)
+    if duplicados:
+        return False, "ID DUPLICADO em DECISOES.md: " + ", ".join(duplicados)
+    return True, f"{len(trava.ids_de(u.safe_read_text(caminho) or ''))} ids únicos"
+
+
 def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--repo", required=True, help="central do megabrain ou _github/repo-local")
@@ -341,6 +354,7 @@ def main() -> int:
         "fatos": cheque_fatos(central),
         "legado": cheque_legado(raizes_legado),
         "crlf": cheque_crlf(central),
+        "decisoes": cheque_decisoes(central),
     }
     linhas = [f"preflight megabrain · {central}"]
     for nome, (ok, txt) in resultados.items():

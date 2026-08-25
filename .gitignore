@@ -41,6 +41,9 @@ __pycache__/
 # escrita durante `git rm --cached` aborta a operação inteira (260825).
 .mb-log/
 
+# --- travas por arquivo: estado efêmero de coordenação entre processos ---
+.mb-lock/
+
 # --- config local de ferramenta ---
 .obsidian/
 

@@ -50,6 +50,7 @@ import subprocess
 from pathlib import Path
 
 import mb_utils as u
+import mb_trava as trava
 
 try:
     import mb_visual as vis
@@ -1346,33 +1347,49 @@ def main() -> int:
     args = p.parse_args()
 
     c = central()
-    prog = carregar_progresso(c)
-    agora = dt.datetime.now().astimezone().isoformat(timespec="seconds")
+    agente_arquivo = trava.agente_script("mb-relatorio-vivo")
 
-    if args.marcar:
-        if len(args.marcar) < 2 or args.marcar[1] not in STATUS_VALIDOS:
-            print(f"ERRO: uso --marcar <id> <{'|'.join(sorted(STATUS_VALIDOS))}> [detalhe]")
-            return 1
-        alvo, status = args.marcar[0], args.marcar[1]
-        detalhe = " ".join(args.marcar[2:]) if len(args.marcar) > 2 else None
-        achou = False
-        for et in prog.get("etapas", []):
-            if et.get("id") == alvo:
-                et["status"] = status
-                et["ts"] = agora
-                if detalhe:
-                    et["detalhe"] = detalhe
-                achou = True
-        if not achou:
-            print(f"ERRO: etapa '{alvo}' não existe no PROGRESSO.json")
-            return 1
-        salvar_progresso(c, prog)
+    if args.marcar and (len(args.marcar) < 2 or
+                        args.marcar[1] not in STATUS_VALIDOS):
+        print(f"ERRO: uso --marcar <id> <{'|'.join(sorted(STATUS_VALIDOS))}> [detalhe]")
+        return 1
 
-    if args.nota:
-        prog.setdefault("notas", []).append({"ts": agora, "texto": args.nota})
-        salvar_progresso(c, prog)
+    try:
+        if args.marcar or args.nota:
+            progresso_path = u.achar(c, "PROGRESSO.json")
+            # Protege o ciclo inteiro. Duas notas simultâneas não podem ler o
+            # mesmo JSON e a última apagar a primeira.
+            with trava.travado(progresso_path, agente_arquivo,
+                               "atualiza progresso do relatório"):
+                prog = carregar_progresso(c)
+                agora = dt.datetime.now().astimezone().isoformat(timespec="seconds")
+                if args.marcar:
+                    alvo, status = args.marcar[0], args.marcar[1]
+                    detalhe = (" ".join(args.marcar[2:])
+                               if len(args.marcar) > 2 else None)
+                    achou = False
+                    for et in prog.get("etapas", []):
+                        if et.get("id") == alvo:
+                            et["status"] = status
+                            et["ts"] = agora
+                            if detalhe:
+                                et["detalhe"] = detalhe
+                            achou = True
+                    if not achou:
+                        print(f"ERRO: etapa '{alvo}' não existe no PROGRESSO.json")
+                        return 1
+                if args.nota:
+                    prog.setdefault("notas", []).append(
+                        {"ts": agora, "texto": args.nota})
+                salvar_progresso(c, prog)
 
-    if not gerar_html(c, forcar_snapshot=args.snapshot):
+        relatorio_path = u.achar(c, "RELATORIO.html")
+        with trava.travado(relatorio_path, agente_arquivo,
+                           "regenera relatório e snapshots"):
+            if not gerar_html(c, forcar_snapshot=args.snapshot):
+                return 1
+    except trava.TravaOcupada as e:
+        print(f"ERRO: {e}")
         return 1
     print(f"relatório: {u.achar(c, 'RELATORIO.html')}")
     return 0
