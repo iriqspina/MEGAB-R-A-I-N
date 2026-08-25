@@ -88,6 +88,14 @@ class TestAcao10(unittest.TestCase):
 
     ACAO = RAIZ / "01_acoes" / "10_publicar-e-fotografar.cmd"
 
+    def setUp(self):
+        # O pacote público não leva 01_acoes/ (os .cmd são operacionais e
+        # privados), então lá não há alvo — pular. Mas onde a pasta EXISTE e o
+        # arquivo não, é regressão de verdade e o teste tem que falhar: skip
+        # cego por "arquivo ausente" viraria um teste que nunca reprova.
+        if not (RAIZ / "01_acoes").is_dir():
+            self.skipTest("instância sem 01_acoes (pacote público)")
+
     def bloco(self) -> str:
         txt = self.ACAO.read_text(encoding="utf-8", errors="replace")
         ini = txt.index('set "MBTITARQ=')
