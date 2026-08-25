@@ -83,6 +83,23 @@ class TestExtracao(unittest.TestCase):
         self.assertIsNone(sig._ultimo_signoff([]))
 
 
+class TestDescoberta(unittest.TestCase):
+    def test_modelo_de_spec_nao_entra_no_tracker(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            _git(repo, "init", "--quiet")
+            _git(repo, "config", "user.email", "test@x")
+            _git(repo, "config", "user.name", "Test")
+            modelo = repo / "motor/modelos/SPEC.md"
+            real = repo / "projeto/SPEC.md"
+            for p in (modelo, real):
+                p.parent.mkdir(parents=True, exist_ok=True)
+                p.write_text(TEXTO_SEM_SIGNOFF, encoding="utf-8")
+            _commit(repo, "specs")
+            encontrados = sig._encontrar_specs(repo)
+            self.assertEqual(encontrados, [real])
+
+
 class TestEstado(unittest.TestCase):
     def tmpdir(self) -> Path:
         d = tempfile.TemporaryDirectory()

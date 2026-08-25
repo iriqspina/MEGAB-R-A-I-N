@@ -15,6 +15,8 @@ código de saída:
           fonte? (v6.2, lição 260825: plugin velho + cópia instalada velha
           formam par consistente e passam no cheque de hash — o drift
           fonte→plugin só aparece contra a derivação)
+  estado  o fingerprint do estado e do relatório bate com a visão pedida?
+          worktree no Gate 0; índice staged no pré-commit; HEAD no pós-commit.
   fatos   algum JSON com `verificado_em` venceu a `validade_dias` (default 30)?
   legado  sobrou `metaprotocolo` / `metaclaude` fora dos lugares onde o nome
           antigo é reconhecimento deliberado (hook, registrar-licao, histórico)?
@@ -32,6 +34,8 @@ Uso:
     python bin/mb-preflight.py --repo "<central ou repo-local>"
     python bin/mb-preflight.py --repo "<...>" --agentes --forcar
     python bin/mb-preflight.py --repo "<...>" --fetch
+    python bin/mb-preflight.py --repo "<...>" --pre-commit
+    python bin/mb-preflight.py --repo "<...>" --post-commit
 """
 
 from __future__ import annotations
@@ -49,6 +53,7 @@ from pathlib import Path
 
 import mb_utils as u
 import mb_trava as trava
+import mb_frescor as frescor
 
 u.utf8_console()
 
@@ -108,6 +113,7 @@ PULAR_CRLF = {"_github", "90_arquivo", "99_to_delete", ".mb-backup", ".mb-aspira
               ".dna-backup", ".git", "__pycache__", ".megabrain", ".mb-lock", "node_modules",
               ".venv", "venv", "MEGABRAIN"}
 PADRAO_LF_SOLTO = re.compile(rb"(?<!\r)\n")
+FONTES_ESTADO = frescor.FONTES_ESTADO
 
 
 def h(p: Path) -> str | None:
@@ -167,39 +173,86 @@ def cheque_git(repo: Path | None, fetch: bool) -> tuple[bool, str]:
     return not bloqueia, txt
 
 
-def locais_skill(agentes: bool) -> list[Path]:
-    home = Path(os.environ.get("USERPROFILE") or Path.home())
-    locais = [
-        home / ".claude/skills/megabrain/SKILL.md",
-        home / ".claude/plugins/synced/megabrain/skills/megabrain/SKILL.md",
-        home / ".kimi-code/plugins/managed/megabrain/skills/megabrain/SKILL.md",
-        home / "AppData/Roaming/kimi-desktop/daimon-share/daimon/skills/megabrain/SKILL.md",
-    ]
+def _cache_codex_atual(home: Path) -> Path | None:
+    raiz = home / ".codex/plugins/cache/personal/megabrain"
+    candidatos = [p for p in raiz.glob("*/skills/megabrain/SKILL.md") if p.is_file()]
+    # O diretório é a versão instalada (cachebuster crescente). Usar versão,
+    # não mtime: restauração/antivírus pode tocar cache antigo depois do atual.
+    return max(candidatos, key=lambda p: p.parents[2].name) if candidatos else None
+
+
+def runtimes_skill(agentes: bool, home: Path | None = None) -> dict[str, dict]:
+    """Runtimes configurados e os pontos realmente carregáveis da skill."""
+    home = home or Path(os.environ.get("USERPROFILE") or Path.home())
+    grupos = {
+        "Claude": {
+            "raiz": home / ".claude",
+            "candidatos": [
+                home / ".claude/skills/megabrain/SKILL.md",
+                home / ".claude/plugins/synced/megabrain/skills/megabrain/SKILL.md",
+            ],
+        },
+        "Kimi Code": {
+            "raiz": home / ".kimi-code",
+            "candidatos": [home / ".kimi-code/plugins/managed/megabrain/skills/megabrain/SKILL.md"],
+        },
+        "Kimi Desktop": {
+            "raiz": home / "AppData/Roaming/kimi-desktop",
+            "candidatos": [home / "AppData/Roaming/kimi-desktop/daimon-share/daimon/skills/megabrain/SKILL.md"],
+        },
+    }
     if agentes:
-        locais += [home / ".gemini/skills/megabrain/SKILL.md", home / ".codex/skills/megabrain/SKILL.md"]
-    return locais
+        cache_codex = _cache_codex_atual(home)
+        grupos.update({
+            "Gemini": {
+                "raiz": home / ".gemini",
+                "candidatos": [home / ".gemini/skills/megabrain/SKILL.md"],
+            },
+            "Codex": {
+                "raiz": home / ".codex",
+                "candidatos": [
+                    home / ".codex/skills/megabrain/SKILL.md",
+                    *([cache_codex] if cache_codex else []),
+                ],
+            },
+        })
+    return grupos
 
 
-def cheque_skills(central: Path, agentes: bool) -> tuple[bool, str]:
+def locais_skill(agentes: bool, home: Path | None = None) -> list[Path]:
+    return [p for grupo in runtimes_skill(agentes, home).values()
+            for p in grupo["candidatos"]]
+
+
+def cheque_skills(central: Path, agentes: bool, home: Path | None = None) -> tuple[bool, str]:
     fontes = {p: h(p) for p in (u.achar(central, "skills/megabrain/SKILL.md"),
                                 u.achar(central, "plugin-megabrain-claude/skills/megabrain/SKILL.md")) if p.is_file()}
     if not fontes:
         return False, "fonte skills/megabrain/SKILL.md não encontrada na central"
     aceitos = set(fontes.values())
-    achados, divergentes = [], []
-    for p in locais_skill(agentes):
-        if not p.is_file():
+    achados, divergentes, ausentes, runtimes_ok = [], [], [], []
+    for nome, grupo in runtimes_skill(agentes, home).items():
+        if not grupo["raiz"].is_dir():
             continue
-        hp = h(p)
-        achados.append(p)
-        if hp not in aceitos:
-            divergentes.append(f"{p} ({hp})")
+        instaladas = [p for p in grupo["candidatos"] if p and p.is_file()]
+        if not instaladas:
+            ausentes.append(nome)
+            continue
+        runtimes_ok.append(nome)
+        for p in instaladas:
+            hp = h(p)
+            achados.append(p)
+            if hp not in aceitos:
+                divergentes.append(f"{nome}: {p} ({hp})")
+    if ausentes:
+        return False, "skill AUSENTE em runtime(s) configurado(s): " + ", ".join(ausentes)
     if not achados:
         return True, "nenhuma cópia instalada encontrada nos caminhos conhecidos (nada a comparar)"
     if divergentes:
         return False, (f"{len(divergentes)}/{len(achados)} cópia(s) instalada(s) DIVERGEM da fonte "
                        f"(a instalada é a que roda): " + "; ".join(divergentes))
-    return True, f"{len(achados)} cópia(s) instalada(s) com hash igual à fonte"
+    return True, (f"{len(runtimes_ok)} runtime(s), {len(achados)} cópia(s) "
+                  "carregável(is) com hash igual à fonte: " + ", ".join(runtimes_ok))
 
 
 def cheque_plugin(central: Path) -> tuple[bool, str]:
@@ -211,6 +264,54 @@ def cheque_plugin(central: Path) -> tuple[bool, str]:
     plugin com a DERIVAÇÃO da fonte. A lógica mora em mb-build-plugin-claude
     (conferir_drift); aqui ela só vira veredito.
     """
+    manifesto = central / ".mb-manifest.json"
+    if manifesto.is_file():
+        try:
+            dados_manifesto = json.loads(manifesto.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as e:
+            return False, f".mb-manifest.json ilegível: {e}"
+        plugin = u.pasta(central, "plugin-megabrain-claude")
+        if not plugin.is_dir():
+            return True, "pacote público sem plugin-megabrain-claude (nada a conferir)"
+        if dados_manifesto.get("schema") != 2:
+            return False, "manifesto público sem proveniência schema 2"
+        publicado = dados_manifesto.get("plugin_publicado")
+        if not isinstance(publicado, dict) or publicado.get("algoritmo") != "sha256":
+            return False, "manifesto público sem bloco plugin_publicado sha256"
+        if publicado.get("transformacao") != "mb-generate-template:sanitizar-v1":
+            return False, "manifesto público sem transformação sanitizadora conhecida"
+        proveniencia = publicado.get("proveniencia")
+        if not isinstance(proveniencia, dict):
+            return False, "manifesto público sem proveniência da fonte central"
+        campos_texto = ("plugin_fonte", "builder", "builder_sha256")
+        if any(not isinstance(proveniencia.get(k), str) or not proveniencia[k]
+               for k in campos_texto):
+            return False, "manifesto público com proveniência incompleta"
+        if proveniencia.get("derivacao_canonica") != "verificada":
+            return False, "manifesto público sem gate de derivação canônica"
+        if not isinstance(proveniencia.get("arquivos_fonte"), dict) or not proveniencia["arquivos_fonte"]:
+            return False, "manifesto público sem hashes dos arquivos-fonte"
+        if not isinstance(proveniencia.get("fontes_canonicas"), dict) or not proveniencia["fontes_canonicas"]:
+            return False, "manifesto público sem hashes das fontes canônicas"
+        esperados = publicado.get("arquivos")
+        if not isinstance(esperados, dict) or not esperados:
+            return False, "manifesto público sem hashes derivados esperados"
+        atuais = {
+            p.relative_to(plugin).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
+            for p in sorted(plugin.rglob("*"))
+            if p.is_file() and "__pycache__" not in p.parts
+        }
+        faltam = sorted(set(esperados) - set(atuais))
+        sobram = sorted(set(atuais) - set(esperados))
+        divergem = sorted(k for k in set(esperados) & set(atuais)
+                          if esperados[k] != atuais[k])
+        if faltam or sobram or divergem:
+            itens = ([f"ausente:{x}" for x in faltam] +
+                     [f"extra:{x}" for x in sobram] +
+                     [f"diverge:{x}" for x in divergem])
+            return False, "plugin público DIVERGE da proveniência: " + "; ".join(itens[:8])
+        return True, f"plugin público íntegro pela proveniência ({len(atuais)} arquivos)"
+
     caminho = Path(__file__).resolve().parent / "mb-build-plugin-claude.py"
     try:
         spec = importlib.util.spec_from_file_location("mb_build_plugin_claude", str(caminho))
@@ -265,6 +366,63 @@ def cheque_fatos(raiz: Path) -> tuple[bool, str]:
     if vencidos:
         return False, f"{len(vencidos)}/{total} fato(s) VENCIDO(S): " + "; ".join(vencidos[:6])
     return True, f"{total} fato(s) com verificado_em, nenhum vencido" if total else "nenhum JSON com verificado_em"
+
+
+def cheque_estado(central: Path, modo: str = "worktree") -> tuple[bool, str]:
+    """Compara estado e relatório contra worktree, índice staged ou HEAD."""
+    if (central / ".mb-manifest.json").is_file():
+        return True, "snapshot público datado pelo .mb-manifest.json"
+    caminho = central / "dados" / "estado.json"
+    if not caminho.is_file():
+        return False, "dados/estado.json AUSENTE — rode `python bin/mb-estado.py`"
+    try:
+        dados = json.loads(caminho.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as e:
+        return False, f"dados/estado.json ilegível: {e}"
+    origem = dados.get("gerado_de") or {}
+    head_atual = git(central, "rev-parse", "--short", "HEAD")
+    problemas = []
+    esperado = frescor.calcular(central, modo)
+    fp_estado = origem.get("fingerprint") or {}
+
+    if dados.get("schema", 0) < 3 or not origem:
+        problemas.append("sem proveniência schema 3")
+    if modo in {"worktree", "head"} and head_atual and origem.get("git_head") != head_atual:
+        problemas.append(f"HEAD {origem.get('git_head') or '?'} != {head_atual}")
+    if esperado["faltantes"]:
+        problemas.append(f"fontes ausentes em {modo}: " + ", ".join(esperado["faltantes"]))
+    if list(origem.get("fontes") or []) != esperado["fontes"]:
+        problemas.append("lista de fontes do estado diverge da lista canônica")
+    if fp_estado.get("algoritmo") != esperado["algoritmo"]:
+        problemas.append(f"algoritmo {fp_estado.get('algoritmo') or '?'} != {esperado['algoritmo']}")
+    if esperado["valor"] and fp_estado.get("valor") != esperado["valor"]:
+        problemas.append("fingerprint do estado diverge das fontes")
+
+    relatorio = u.achar(central, "RELATORIO.html")
+    try:
+        relatorio_rel = relatorio.relative_to(central).as_posix()
+    except ValueError:
+        relatorio_rel = "00_painel/RELATORIO.html"
+    html = frescor.ler_visao(central, relatorio_rel, modo)
+    if html is None:
+        problemas.append(f"RELATORIO.html ausente em {modo}")
+    else:
+        meta, erro = frescor.extrair_html(html)
+        if erro:
+            problemas.append(erro)
+        else:
+            if meta.get("algoritmo") != esperado["algoritmo"]:
+                problemas.append("algoritmo do relatório diverge")
+            if list(meta.get("fontes") or []) != esperado["fontes"]:
+                problemas.append("lista de fontes do relatório diverge")
+            if esperado["valor"] and meta.get("valor") != esperado["valor"]:
+                problemas.append("fingerprint do relatório diverge das fontes")
+    if problemas:
+        return False, (f"frescor {modo} REPROVADO — rode `python bin/mb-estado.py` e "
+                       "`python bin/mb-relatorio-vivo.py`: " + "; ".join(problemas))
+    return True, (f"schema {dados.get('schema')} · {modo} · "
+                  f"{len(esperado['fontes'])} fontes · "
+                  f"{esperado['algoritmo']}:{esperado['valor'][:12]}")
 
 
 def cheque_legado(raizes: list[Path]) -> tuple[bool, str]:
@@ -400,6 +558,11 @@ def main() -> int:
     p.add_argument("--fetch", action="store_true", help="tenta git fetch antes de comparar (timeout 25s)")
     p.add_argument("--forcar", action="store_true", help="ignora o cache")
     p.add_argument("--ttl", type=float, default=8.0, help="validade do cache em horas")
+    modo = p.add_mutually_exclusive_group()
+    modo.add_argument("--pre-commit", action="store_true",
+                      help="valida fontes e relatório exatamente como estão no índice staged")
+    modo.add_argument("--post-commit", action="store_true",
+                      help="valida fontes e relatório exatamente como estão no HEAD")
     args = p.parse_args()
 
     base = Path(args.repo).resolve()
@@ -409,8 +572,11 @@ def main() -> int:
     central = achar_central(base)
     repo = achar_repo(central)
     cache = (repo or central) / ".megabrain" / "preflight.json"
+    modo_frescor = "staged" if args.pre_commit else "head" if args.post_commit else "worktree"
 
-    if not args.forcar:
+    # O índice e o HEAD são gates de commit: nunca podem reutilizar um veredito
+    # calculado para outra visão do repositório.
+    if not args.forcar and modo_frescor == "worktree":
         txt = u.safe_read_text(cache)
         if txt:
             try:
@@ -426,13 +592,15 @@ def main() -> int:
     home = Path(os.environ.get("USERPROFILE") or Path.home())
     raizes_legado = [central]
     if args.agentes:
-        raizes_legado += [home / ".claude" / "skills", home / ".kimi-code" / "skills",
-                          home / ".kimi-code" / "plugins", home / ".gemini", home / ".codex"]
+        # Só instalações ativas conhecidas; ~/.codex inteiro inclui memórias e
+        # caches de terceiros que não pertencem a este runtime.
+        raizes_legado += [p.parent for p in locais_skill(True, home) if p.is_file()]
 
     resultados = {
         "git": cheque_git(repo, args.fetch),
         "skills": cheque_skills(central, args.agentes),
         "plugin": cheque_plugin(central),
+        "estado": cheque_estado(central, modo_frescor),
         "fatos": cheque_fatos(central),
         "legado": cheque_legado(raizes_legado),
         "crlf": cheque_crlf(central),
@@ -446,11 +614,12 @@ def main() -> int:
     linhas.append("veredito: " + ("PODE COMEÇAR" if exit_code == 0 else "PENDÊNCIA — resolva o ✗ antes de editar"))
     relatorio = "\n".join(linhas)
     print(relatorio)
-    u.atomic_write_text(cache, json.dumps({
-        "quando": dt.datetime.now().astimezone().isoformat(timespec="seconds"),
-        "exit": exit_code, "relatorio": relatorio,
-        "cheques": {k: {"ok": ok, "txt": t} for k, (ok, t) in resultados.items()},
-    }, ensure_ascii=False, indent=2) + "\n")
+    if modo_frescor == "worktree":
+        u.atomic_write_text(cache, json.dumps({
+            "quando": dt.datetime.now().astimezone().isoformat(timespec="seconds"),
+            "exit": exit_code, "relatorio": relatorio,
+            "cheques": {k: {"ok": ok, "txt": t} for k, (ok, t) in resultados.items()},
+        }, ensure_ascii=False, indent=2) + "\n")
     return exit_code
 
 

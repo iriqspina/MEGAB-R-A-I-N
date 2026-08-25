@@ -91,17 +91,21 @@ def _commits_tocaram_arquivo(raiz: Path, caminho: Path, desde_hash: str) -> list
 
 def _encontrar_specs(raiz: Path) -> list[Path]:
     """Todas as SPEC.md rastreadas pelo git dentro de raiz."""
+    def e_modelo(p: Path) -> bool:
+        partes = {x.casefold() for x in p.relative_to(raiz).parts[:-1]}
+        return bool(partes & {"modelos", "models", "templates"})
+
     specs: list[Path] = []
     # primeiro: SPEC.md na raiz
     raiz_spec = raiz / "SPEC.md"
-    if raiz_spec.is_file():
+    if raiz_spec.is_file() and not e_modelo(raiz_spec):
         specs.append(raiz_spec)
     # depois: todas as SPEC.md rastreadas
     rc, out, _ = _git(raiz, "ls-files", "**/SPEC.md", "SPEC.md")
     if rc == 0:
         for linha in out.splitlines():
             p = raiz / linha.strip()
-            if p.is_file() and p not in specs:
+            if p.is_file() and p not in specs and not e_modelo(p):
                 specs.append(p)
     return sorted(specs)
 

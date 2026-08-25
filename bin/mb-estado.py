@@ -27,6 +27,8 @@ CONTRATO DO ARQUIVO
 -------------------
 - `schema`: inteiro. Sobe quando um campo muda de sentido. Quem lê deve conferir.
 - `gerado_em`: ISO com fuso de São Paulo.
+- `gerado_de.fingerprint`: conteúdo das fontes canônicas; HEAD e horário não
+  entram no hash.
 - Todo número tem fonte declarada em `_fonte` no mesmo bloco.
 - Campo que não pôde ser medido vem `null`, nunca zero ou chute.
 
@@ -47,10 +49,11 @@ from pathlib import Path
 
 import mb_utils as u
 import mb_trava as trava
+import mb_frescor as frescor
 
 u.utf8_console()
 
-SCHEMA = 1
+SCHEMA = 3
 
 
 def _agora():
@@ -74,6 +77,26 @@ def _json(p: Path):
         return json.loads(t)
     except (json.JSONDecodeError, ValueError):
         return None
+
+
+def col_gerado_de(c: Path) -> dict:
+    """Proveniência estável para o gate, mais o HEAD operacional."""
+    try:
+        r = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=c,
+                           capture_output=True, text=True, timeout=8)
+        head = r.stdout.strip() if r.returncode == 0 else None
+    except (OSError, subprocess.SubprocessError):
+        head = None
+    fp = frescor.calcular(c, "worktree")
+    return {
+        "git_head": head,
+        "fontes": fp["fontes"],
+        "fingerprint": {
+            "algoritmo": fp["algoritmo"],
+            "valor": fp["valor"],
+        },
+        **({"fontes_ausentes": fp["faltantes"]} if fp["faltantes"] else {}),
+    }
 
 
 # --------------------------------------------------------------------------
@@ -387,6 +410,7 @@ def montar(c: Path, com_suite: bool = True) -> dict:
     d = {
         "schema": SCHEMA,
         "gerado_em": _agora(),
+        "gerado_de": col_gerado_de(c),
         "central": str(c),
         "versao": col_versao(c),
         "meta": col_meta(c),

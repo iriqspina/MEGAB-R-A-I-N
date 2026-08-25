@@ -51,6 +51,7 @@ from pathlib import Path
 
 import mb_utils as u
 import mb_trava as trava
+import mb_frescor as frescor
 
 try:
     import mb_visual as vis
@@ -893,6 +894,14 @@ def pecas_visuais(c: Path, git: dict, versao: str, projetos: list,
 
 def gerar_html(c: Path, forcar_snapshot: bool = False) -> bool:
     e = html.escape
+    estado_dados = _estado_json(c)
+    proveniencia = estado_dados.get("gerado_de") or {}
+    fp = proveniencia.get("fingerprint") or {}
+    if (fp.get("algoritmo") != frescor.ALGORITMO or not fp.get("valor") or
+            list(proveniencia.get("fontes") or []) != frescor.fontes_relativas(c)):
+        print("ERRO: dados/estado.json sem fingerprint atual — rode `python bin/mb-estado.py`")
+        return False
+    frescor_html = frescor.bloco_html(proveniencia)
     prog = carregar_progresso(c)
     etapas = prog.get("etapas", [])
     notas = prog.get("notas", [])[-30:][::-1]
@@ -1059,6 +1068,7 @@ def gerar_html(c: Path, forcar_snapshot: bool = False) -> bool:
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
+{frescor_html}
 <script>{antiflash}</script>
 <title>MEGABRAIN — relatório vivo</title>
 <style>
@@ -1149,7 +1159,7 @@ tr.proj--desatualizado td {{ background:var(--signal-soft); }}
       <span class="det" title="{e(versao)}">{e(versao[:110])}{"…" if len(versao) > 110 else ""}</span>
     </div>
     <div>
-      <span class="label">git (local)</span>
+      <span class="label">base de geração</span>
       <span class="big">{e(git["head_curto"])}</span><br>
       <span class="det">{e(git["assunto"][:80])}{" · " + e(git["data"]) if git["data"] else ""}</span><br>
       <span class="{push_cls}">{e(push_txt)}</span><span class="det">{e(suja_txt)}</span>
@@ -1261,6 +1271,7 @@ tr.proj--desatualizado td {{ background:var(--signal-soft); }}
 
   <!-- ═══ R · RODAPÉ ═══ -->
   <p class="meta" style="margin-top:2.5rem">fonte: PROGRESSO.json · ESTADO.md · HANDOFF.md · DECISOES.md · VERSAO.txt · git de {e("_github/repo-local" if git["repo"] else "—")} · .mb-log/ · os .md acima. Arquivo local, não sobe pro GitHub.<br>
+  frescor: <code>{e(fp["algoritmo"])}:{e(fp["valor"][:12])}</code> · {len(proveniencia.get("fontes") or [])} fontes; HEAD e horário são apenas estado operacional.<br>
   sem servidor local o navegador não detecta mudança de arquivo — por isso o reload em intervalo fixo, preservando o scroll.<br>
   planta fixa D1–D6 · W1–W4 · E1–E4 · C · CB (cérebro): cada bloco tem lugar reservado e aparece vazio quando não há dado, para o relatório de qualquer projeto ter a mesma leitura.</p>
 </div>

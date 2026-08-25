@@ -13,6 +13,7 @@ O detector continua morando no mb-preflight; estes testes provam que o GERADOR
 não produz mais o defeito, sem duplicar a lógica de detecção.
 """
 import importlib.util
+import json
 import sys
 import tempfile
 import unittest
@@ -132,6 +133,84 @@ class TestTemporariosNaoSaem(Base):
         self.assertFalse((destino / "bin" / ".tmp-captura").exists())
         for nome in ("ESTADO.md", "HANDOFF.md", "DECISOES.md"):
             self.assertEqual(list(destino.rglob(nome)), [], nome)
+
+
+class TestManifestoComProveniencia(Base):
+    def fixture_plugin(self) -> tuple[Path, Path]:
+        central = self.tmp() / "central"
+        canonica = central / "motor/skills/megabrain/SKILL.md"
+        canonica.parent.mkdir(parents=True)
+        canonica.write_text(
+            "---\nname: megabrain\ndescription: x\n---\nconteúdo canônico\n",
+            encoding="utf-8",
+        )
+        plugin = central / "motor/plugin-megabrain-claude"
+        skill = plugin / "skills/megabrain/SKILL.md"
+        skill.parent.mkdir(parents=True)
+        skill.write_bytes(canonica.read_bytes())
+        (plugin / ".claude-plugin").mkdir()
+        (plugin / ".claude-plugin/plugin.json").write_text(
+            '{"name":"megabrain"}\n', encoding="utf-8")
+        (plugin / "README.md").write_text(
+            "fonte em C:\\Users\\<USUARIO>\\privado\n", encoding="utf-8")
+
+        builder = central / "bin/mb-build-plugin-claude.py"
+        builder.parent.mkdir(parents=True)
+        builder.write_text(
+            "from pathlib import Path\n"
+            "def mapa_fontes(c):\n"
+            "    return {'skills/megabrain/SKILL.md': "
+            "(Path(c) / 'motor/skills/megabrain/SKILL.md', lambda t: t)}\n"
+            "def conferir_drift(c):\n"
+            "    f = Path(c) / 'motor/skills/megabrain/SKILL.md'\n"
+            "    p = Path(c) / 'motor/plugin-megabrain-claude/skills/megabrain/SKILL.md'\n"
+            "    return [] if f.read_text(encoding='utf-8') == p.read_text(encoding='utf-8') "
+            "else ['skills/megabrain/SKILL.md']\n",
+            encoding="utf-8",
+        )
+
+        destino = central / "_github/export"
+        for fonte in plugin.rglob("*"):
+            if fonte.is_file():
+                rel = fonte.relative_to(plugin)
+                self.assertTrue(gt.copiar_sanitizando(
+                    str(fonte), str(destino / "plugin-megabrain-claude" / rel)))
+        return central, destino
+
+    def test_manifesto_prova_fonte_derivacao_e_sanitizacao(self):
+        central, destino = self.fixture_plugin()
+        self.assertTrue(gt.gravar_manifesto(central, destino))
+        dados = json.loads((destino / ".mb-manifest.json").read_text(encoding="utf-8"))
+        publicado = dados["plugin_publicado"]
+        proveniencia = publicado["proveniencia"]
+
+        self.assertEqual(dados["schema"], 2)
+        self.assertEqual(proveniencia["derivacao_canonica"], "verificada")
+        self.assertIn("motor/skills/megabrain/SKILL.md",
+                      proveniencia["fontes_canonicas"])
+        readme_publico = destino / "plugin-megabrain-claude/README.md"
+        self.assertIn("<USER_HOME>", readme_publico.read_text(encoding="utf-8"))
+        self.assertEqual(publicado["arquivos"]["README.md"],
+                         gt._sha256(readme_publico.read_bytes()))
+        self.assertNotEqual(publicado["arquivos"]["README.md"],
+                            proveniencia["arquivos_fonte"]["README.md"])
+
+    def test_saida_adulterada_nao_ganha_manifesto_novo(self):
+        central, destino = self.fixture_plugin()
+        manifesto = destino / ".mb-manifest.json"
+        manifesto.write_text("sentinela\n", encoding="utf-8")
+        (destino / "plugin-megabrain-claude/README.md").write_text(
+            "adulterado\n", encoding="utf-8")
+
+        self.assertFalse(gt.gravar_manifesto(central, destino))
+        self.assertEqual(manifesto.read_text(encoding="utf-8"), "sentinela\n")
+
+    def test_drift_da_fonte_canonica_recusa_proveniencia(self):
+        central, destino = self.fixture_plugin()
+        (central / "motor/skills/megabrain/SKILL.md").write_text(
+            "nova fonte\n", encoding="utf-8")
+        self.assertFalse(gt.gravar_manifesto(central, destino))
+        self.assertFalse((destino / ".mb-manifest.json").exists())
 
 
 if __name__ == "__main__":

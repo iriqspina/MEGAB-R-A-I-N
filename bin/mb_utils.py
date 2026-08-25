@@ -271,6 +271,7 @@ PASTAS_NUMERADAS = {
     "modelos": "motor/modelos", "dna": "motor/dna", "tests": "motor/tests",
     "plugin-megabrain": "motor/plugin-megabrain",
     "plugin-megabrain-claude": "motor/plugin-megabrain-claude",
+    "plugin-megabrain-codex": "motor/plugin-megabrain-codex",
     "gerenteneuron": "motor/gerenteneuron",
 }
 NOMES_ANTIGOS = {v: k for k, v in PASTAS_NUMERADAS.items()}
@@ -278,7 +279,8 @@ NOMES_ANTIGOS = {v: k for k, v in PASTAS_NUMERADAS.items()}
 # Pastas de máquina ficam em motor/ na central. O fallback plano permanece
 # somente para restaurações cheias e backups anteriores à cópia magra.
 PASTAS_MAQUINA = ("skills", "referencias", "modelos", "dna", "tests", "dist",
-                  "plugin-megabrain", "plugin-megabrain-claude", "gerenteneuron")
+                  "plugin-megabrain", "plugin-megabrain-claude",
+                  "plugin-megabrain-codex", "gerenteneuron")
 MOTOR = "motor"
 
 def pasta(raiz, nome: str) -> Path:

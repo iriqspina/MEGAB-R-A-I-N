@@ -1,9 +1,52 @@
 {
-  "gerado_em": "2026-08-25T16:28:22-03:00",
+  "schema": 2,
+  "gerado_em": "2026-08-25T19:05:35-03:00",
   "hash_fonte": {
     "MEGABRAIN.md": "5facc027383b",
     "skills/megabrain/SKILL.md": "c11aa7d1907c",
     "VERSAO.txt": "1e57b4ed5691",
     "plugin-megabrain-claude/scripts/260821_session-start.js": "1aaddf4d2e10"
+  },
+  "plugin_publicado": {
+    "algoritmo": "sha256",
+    "transformacao": "mb-generate-template:sanitizar-v1",
+    "proveniencia": {
+      "plugin_fonte": "motor/plugin-megabrain-claude",
+      "builder": "bin/mb-build-plugin-claude.py",
+      "builder_sha256": "a2593bd3683201248620a8b1f6ec0d48fa50cdfddc1de7ca4bd53c87710748cf",
+      "derivacao_canonica": "verificada",
+      "arquivos_fonte": {
+        ".claude-plugin/plugin.json": "dcc752b926e6d4e5139681935d33235a4d4fd42446e563f3d8ea2d540646c033",
+        "README.md": "b9c992fb52bae0bf422f1ecc7d703e092b284ba67e5acce0689eb0e1ecfc1245",
+        "hooks/hooks.json": "fb77abec34397f8dec06a6796ac7fe244a22efa0853b3a391b6400c9904e068f",
+        "scripts/260821_session-start.js": "1aaddf4d2e10e5e9baac79da480e8d33c5b6472a448ef79f0962170acdc88b3d",
+        "skills/grelhar/SKILL.md": "8a875690be103792552b84855347163b1864caafd393d7a1ac302dde2543c4f9",
+        "skills/ingerir/SKILL.md": "ecaf7215f44c7a45fd28640225701bb9d523cd42c943a50bd2186dcdd52791be",
+        "skills/leigolanguage/SKILL.md": "2072d9686aa4ba438dd977e54f2175c38081426607a390274a983c3a863f131a",
+        "skills/megabrain/SKILL.md": "c11aa7d1907c83c072970b8c84492b90b5be9a94e1902a0c89485f976aaa0bdd",
+        "skills/registrar-licao/SKILL.md": "aac9c85fe81d8475a626e30e2b59dee7c7d290e44a5a824b69bcba8c4971e166",
+        "skills/traycer/SKILL.md": "5aeed214ee8ae33b5fe5b13151a56ded0a15c356f8bcc78059cf7cd10d5f9bf7"
+      },
+      "fontes_canonicas": {
+        "motor/plugin-megabrain/skills/registrar-licao/SKILL.md": "9014ccc8394c6d5c2a149067d5c02fd1e62d72cc08bb6ca213694d483e33ee74",
+        "motor/skills/grelhar/SKILL.md": "8a875690be103792552b84855347163b1864caafd393d7a1ac302dde2543c4f9",
+        "motor/skills/ingerir/SKILL.md": "ecaf7215f44c7a45fd28640225701bb9d523cd42c943a50bd2186dcdd52791be",
+        "motor/skills/leigolanguage/SKILL.md": "2072d9686aa4ba438dd977e54f2175c38081426607a390274a983c3a863f131a",
+        "motor/skills/megabrain/SKILL.md": "c11aa7d1907c83c072970b8c84492b90b5be9a94e1902a0c89485f976aaa0bdd",
+        "motor/skills/traycer/SKILL.md": "5aeed214ee8ae33b5fe5b13151a56ded0a15c356f8bcc78059cf7cd10d5f9bf7"
+      }
+    },
+    "arquivos": {
+      ".claude-plugin/plugin.json": "dcc752b926e6d4e5139681935d33235a4d4fd42446e563f3d8ea2d540646c033",
+      "README.md": "b9c992fb52bae0bf422f1ecc7d703e092b284ba67e5acce0689eb0e1ecfc1245",
+      "hooks/hooks.json": "fb77abec34397f8dec06a6796ac7fe244a22efa0853b3a391b6400c9904e068f",
+      "scripts/260821_session-start.js": "1aaddf4d2e10e5e9baac79da480e8d33c5b6472a448ef79f0962170acdc88b3d",
+      "skills/grelhar/SKILL.md": "8a875690be103792552b84855347163b1864caafd393d7a1ac302dde2543c4f9",
+      "skills/ingerir/SKILL.md": "ecaf7215f44c7a45fd28640225701bb9d523cd42c943a50bd2186dcdd52791be",
+      "skills/leigolanguage/SKILL.md": "f85618224331dbae1ddc67880e392845353c7f1e50a4d5b12cdb0d039dd6e845",
+      "skills/megabrain/SKILL.md": "c11aa7d1907c83c072970b8c84492b90b5be9a94e1902a0c89485f976aaa0bdd",
+      "skills/registrar-licao/SKILL.md": "37d3f279e3b2c35bec0fa68147ceb87dab42537df366d5b232a7217701021b48",
+      "skills/traycer/SKILL.md": "56b20ca5370c83109d8c7b1c90d428f733610ee436a2c4b8407ac9947be5c6ba"
+    }
   }
 }

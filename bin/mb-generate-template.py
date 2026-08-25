@@ -13,6 +13,10 @@ O que faz:
 """
 
 import argparse
+import datetime as dt
+import hashlib
+import importlib.util
+import json
 import os
 import re
 import shutil
@@ -260,28 +264,37 @@ def remover_secoes_pessoais(conteudo):
     return conteudo
 
 
+def conteudo_publicado(src: Path) -> bytes:
+    """Bytes públicos determinísticos derivados de um arquivo da central."""
+    src = Path(src)
+    if src.suffix.lower() not in EXTENSOES_TEXTO:
+        return src.read_bytes()
+    conteudo = src.read_text(encoding="utf-8")
+    conteudo = sanitizar(conteudo)
+    if src.name in {"MEGABRAIN.md", "260810_MEGABRAIN.md"}:
+        conteudo = remover_secoes_pessoais(conteudo)
+    if src.suffix.lower() in EXTENSOES_BATCH:
+        conteudo = forcar_crlf(conteudo)
+    return conteudo.encode("utf-8")
+
+
 def copiar_sanitizando(src, dst):
     dst_path = Path(dst)
     if not u.ensure_parent_dir(dst_path):
         return False
 
+    try:
+        conteudo = conteudo_publicado(Path(src))
+    except (OSError, UnicodeDecodeError) as e:
+        print(f"ERRO ao ler {src}: {e}")
+        return False
     if Path(src).suffix.lower() in EXTENSOES_TEXTO:
-        try:
-            with open(src, "r", encoding="utf-8") as f:
-                conteudo = f.read()
-        except OSError as e:
-            print(f"ERRO ao ler {src}: {e}")
-            return False
-        conteudo = sanitizar(conteudo)
-        if src.endswith("MEGABRAIN.md") or src.endswith("260810_MEGABRAIN.md"):
-            conteudo = remover_secoes_pessoais(conteudo)
-        if Path(src).suffix.lower() in EXTENSOES_BATCH:
-            conteudo = forcar_crlf(conteudo)
-        if not u.atomic_write_text(dst_path, conteudo):
+        if not u.atomic_write_text(dst_path, conteudo.decode("utf-8")):
             return False
     else:
         try:
-            shutil.copy2(src, dst)
+            dst_path.write_bytes(conteudo)
+            shutil.copystat(src, dst)
         except OSError as e:
             print(f"ERRO ao copiar {src} -> {dst}: {e}")
             return False
@@ -445,6 +458,121 @@ def gerar_template(central, destino):
     return True
 
 
+def _sha256(conteudo: bytes) -> str:
+    return hashlib.sha256(conteudo).hexdigest()
+
+
+def _carregar_builder_claude(central: Path):
+    caminho = central / "bin" / "mb-build-plugin-claude.py"
+    spec = importlib.util.spec_from_file_location("mb_build_plugin_claude_manifesto", caminho)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"builder Claude ilegível: {caminho}")
+    modulo = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(modulo)
+    return modulo, caminho
+
+
+def provar_plugin_publicado(central: Path, destino: Path) -> tuple[bool, dict | str | None]:
+    """Prova fonte central → derivação canônica → bytes públicos sanitizados."""
+    central = Path(central).resolve()
+    destino = Path(destino).resolve()
+    plugin_fonte = u.pasta(central, "plugin-megabrain-claude")
+    if not plugin_fonte.is_dir():
+        return True, None
+
+    try:
+        builder, builder_path = _carregar_builder_claude(central)
+        drift = builder.conferir_drift(central)
+    except (OSError, ImportError, SyntaxError, ValueError) as e:
+        return False, f"builder Claude não pôde provar a derivação: {e}"
+    if drift:
+        return False, ("plugin central DIVERGE das fontes canônicas: " +
+                       "; ".join(drift))
+
+    plugin_publico = u.pasta(destino, "plugin-megabrain-claude")
+    arquivos_fonte = {}
+    arquivos_esperados = {}
+    try:
+        for fonte in sorted(plugin_fonte.rglob("*")):
+            if not fonte.is_file() or "__pycache__" in fonte.parts:
+                continue
+            rel = fonte.relative_to(plugin_fonte).as_posix()
+            bruto = fonte.read_bytes()
+            arquivos_fonte[rel] = _sha256(bruto)
+            arquivos_esperados[rel] = _sha256(conteudo_publicado(fonte))
+
+        fontes_canonicas = {}
+        for fonte, _derivar in builder.mapa_fontes(central).values():
+            fonte = Path(fonte)
+            rel = fonte.resolve().relative_to(central).as_posix()
+            fontes_canonicas[rel] = _sha256(fonte.read_bytes())
+
+        atuais = {
+            arq.relative_to(plugin_publico).as_posix(): _sha256(arq.read_bytes())
+            for arq in sorted(plugin_publico.rglob("*"))
+            if arq.is_file() and "__pycache__" not in arq.parts
+        } if plugin_publico.is_dir() else {}
+    except (OSError, UnicodeDecodeError, ValueError) as e:
+        return False, f"não foi possível calcular a proveniência do plugin: {e}"
+
+    faltam = sorted(set(arquivos_esperados) - set(atuais))
+    sobram = sorted(set(atuais) - set(arquivos_esperados))
+    divergem = sorted(
+        rel for rel in set(arquivos_esperados) & set(atuais)
+        if arquivos_esperados[rel] != atuais[rel]
+    )
+    if faltam or sobram or divergem:
+        itens = ([f"ausente:{x}" for x in faltam] +
+                 [f"extra:{x}" for x in sobram] +
+                 [f"diverge:{x}" for x in divergem])
+        return False, "plugin público não deriva da fonte central: " + "; ".join(itens[:8])
+
+    return True, {
+        "algoritmo": "sha256",
+        "transformacao": "mb-generate-template:sanitizar-v1",
+        "proveniencia": {
+            "plugin_fonte": plugin_fonte.relative_to(central).as_posix(),
+            "builder": builder_path.relative_to(central).as_posix(),
+            "builder_sha256": _sha256(builder_path.read_bytes()),
+            "derivacao_canonica": "verificada",
+            "arquivos_fonte": dict(sorted(arquivos_fonte.items())),
+            "fontes_canonicas": dict(sorted(fontes_canonicas.items())),
+        },
+        # Calculado da fonte após a transformação, nunca relido da saída.
+        "arquivos": dict(sorted(arquivos_esperados.items())),
+    }
+
+
+def gravar_manifesto(central: Path, destino: Path) -> bool:
+    """Grava hashes da fonte e uma prova verificável do plugin sanitizado."""
+    central = Path(central).resolve()
+    destino = Path(destino).resolve()
+    chaves = ["MEGABRAIN.md", "skills/megabrain/SKILL.md", "VERSAO.txt",
+              "plugin-megabrain-claude/scripts/260821_session-start.js"]
+    hashes = {}
+    for rel in chaves:
+        try:
+            hashes[rel] = _sha256(u.achar(central, rel).read_bytes())[:12]
+        except OSError:
+            hashes[rel] = None
+
+    ok, prova = provar_plugin_publicado(central, destino)
+    if not ok:
+        print(f"ERRO: manifesto público recusado: {prova}")
+        return False
+    manifesto = {
+        "schema": 2,
+        "gerado_em": dt.datetime.now().astimezone().isoformat(timespec="seconds"),
+        "hash_fonte": hashes,
+    }
+    if prova is not None:
+        manifesto["plugin_publicado"] = prova
+    return u.atomic_write_text(
+        destino / ".mb-manifest.json",
+        json.dumps(manifesto, ensure_ascii=False, indent=2) + "\n",
+    )
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--central", default=CENTRAL_DEFAULT)
@@ -458,39 +586,11 @@ def main():
         print(f"ERRO: central inválida: {e}")
         sys.exit(1)
 
-    # Destino default já está dentro da central; se o usuário passar outro,
-    # gerar_template valida contenção.
     destino = Path(args.destino).resolve()
-
     ok = gerar_template(central, destino)
     if ok:
-        gravar_manifesto(central, destino)
+        ok = gravar_manifesto(central, destino)
     sys.exit(0 if ok else 1)
-
-
-def gravar_manifesto(central: Path, destino: Path) -> None:
-    """v6 fase 4: grava no export os hashes DA FONTE no momento da geração.
-
-    O export é sanitizado, então hash direto central↔export não fecha nunca;
-    o gate de drift (mb-check-version.py --gate-drift) compara o hash atual
-    da central com o que está aqui — se divergir, a central mudou depois da
-    última geração e o export está velho."""
-    import datetime as dt
-    import hashlib
-    import json as _json
-
-    chaves = ["MEGABRAIN.md", "skills/megabrain/SKILL.md", "VERSAO.txt",
-              "plugin-megabrain-claude/scripts/260821_session-start.js"]  # v6.1
-    hashes = {}
-    for rel in chaves:
-        try:
-            hashes[rel] = hashlib.sha256(u.achar(central, rel).read_bytes()).hexdigest()[:12]
-        except OSError:
-            hashes[rel] = None
-    manifesto = {"gerado_em": dt.datetime.now().astimezone().isoformat(timespec="seconds"),
-                 "hash_fonte": hashes}
-    u.atomic_write_text(destino / ".mb-manifest.json",
-                        _json.dumps(manifesto, ensure_ascii=False, indent=2) + "\n")
 
 
 if __name__ == "__main__":

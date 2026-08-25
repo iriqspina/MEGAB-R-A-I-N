@@ -11,6 +11,7 @@ USERPROFILE falso para as cópias instaladas reais não contaminarem o cenário.
 from __future__ import annotations
 
 import importlib.util
+import json
 import os
 import subprocess
 import sys
@@ -62,6 +63,29 @@ class Base(unittest.TestCase):
 
 
 class TestChequePlugin(Base):
+    def gravar_manifesto_publico(self, c: Path) -> None:
+        plugin = c / "plugin-megabrain-claude"
+        arquivos = {
+            p.relative_to(plugin).as_posix(): preflight.hashlib.sha256(p.read_bytes()).hexdigest()
+            for p in plugin.rglob("*") if p.is_file()
+        }
+        (c / ".mb-manifest.json").write_text(json.dumps({
+            "schema": 2,
+            "plugin_publicado": {
+                "algoritmo": "sha256",
+                "transformacao": "mb-generate-template:sanitizar-v1",
+                "proveniencia": {
+                    "plugin_fonte": "motor/plugin-megabrain-claude",
+                    "builder": "bin/mb-build-plugin-claude.py",
+                    "builder_sha256": "a" * 64,
+                    "derivacao_canonica": "verificada",
+                    "arquivos_fonte": {"skills/megabrain/SKILL.md": "b" * 64},
+                    "fontes_canonicas": {"skills/megabrain/SKILL.md": "c" * 64},
+                },
+                "arquivos": arquivos,
+            },
+        }), encoding="utf-8")
+
     def test_plugin_em_dia_passa(self):
         ok, txt = preflight.cheque_plugin(self.central_fake())
         self.assertTrue(ok, txt)
@@ -90,6 +114,138 @@ class TestChequePlugin(Base):
     def test_central_sem_plugin_nao_acusa(self):
         ok, txt = preflight.cheque_plugin(self.tmpdir())
         self.assertTrue(ok, txt)
+
+    def test_plugin_publico_passa_por_manifesto_com_proveniencia(self):
+        c = self.central_fake()
+        self.gravar_manifesto_publico(c)
+        ok, txt = preflight.cheque_plugin(c)
+        self.assertTrue(ok, txt)
+        self.assertIn("proveniência", txt)
+
+    def test_manifesto_tautologico_sem_proveniencia_reprova(self):
+        c = self.central_fake()
+        plugin = c / "plugin-megabrain-claude"
+        arquivos = {
+            p.relative_to(plugin).as_posix(): preflight.hashlib.sha256(p.read_bytes()).hexdigest()
+            for p in plugin.rglob("*") if p.is_file()
+        }
+        (c / ".mb-manifest.json").write_text(json.dumps({
+            "plugin_publicado": {"algoritmo": "sha256", "arquivos": arquivos},
+        }), encoding="utf-8")
+        ok, txt = preflight.cheque_plugin(c)
+        self.assertFalse(ok)
+        self.assertIn("proveniência schema 2", txt)
+
+    def test_plugin_publico_alterado_reprova(self):
+        c = self.central_fake()
+        plugin = c / "plugin-megabrain-claude"
+        arq = plugin / "skills/megabrain/SKILL.md"
+        self.gravar_manifesto_publico(c)
+        arq.write_text("alterado\n", encoding="utf-8")
+        ok, txt = preflight.cheque_plugin(c)
+        self.assertFalse(ok)
+        self.assertIn("diverge:skills/megabrain/SKILL.md", txt)
+
+
+class TestChequeRuntimes(Base):
+    def central_skill(self) -> Path:
+        c = self.tmpdir()
+        p = c / "motor/skills/megabrain/SKILL.md"
+        p.parent.mkdir(parents=True)
+        p.write_text("---\nname: megabrain\ndescription: x\n---\natual\n", encoding="utf-8")
+        return c
+
+    def test_runtime_configurado_sem_skill_reprova(self):
+        c = self.central_skill()
+        home = self.tmpdir()
+        (home / ".codex").mkdir()
+        ok, txt = preflight.cheque_skills(c, True, home)
+        self.assertFalse(ok)
+        self.assertIn("Codex", txt)
+
+    def test_codex_direto_e_cache_atual_passam(self):
+        c = self.central_skill()
+        home = self.tmpdir()
+        fonte = c / "motor/skills/megabrain/SKILL.md"
+        direto = home / ".codex/skills/megabrain/SKILL.md"
+        cache = home / ".codex/plugins/cache/personal/megabrain/2/skills/megabrain/SKILL.md"
+        for p in (direto, cache):
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_bytes(fonte.read_bytes())
+        ok, txt = preflight.cheque_skills(c, True, home)
+        self.assertTrue(ok, txt)
+        self.assertIn("Codex", txt)
+
+    def test_cache_codex_antigo_nao_mascara_o_atual(self):
+        c = self.central_skill()
+        home = self.tmpdir()
+        fonte = c / "motor/skills/megabrain/SKILL.md"
+        antigo = home / ".codex/plugins/cache/personal/megabrain/1/skills/megabrain/SKILL.md"
+        atual = home / ".codex/plugins/cache/personal/megabrain/2/skills/megabrain/SKILL.md"
+        antigo.parent.mkdir(parents=True)
+        atual.parent.mkdir(parents=True)
+        antigo.write_text("velho\n", encoding="utf-8")
+        atual.write_bytes(fonte.read_bytes())
+        ok, txt = preflight.cheque_skills(c, True, home)
+        self.assertTrue(ok, txt)
+
+
+class TestChequeEstado(Base):
+    def central_estado(self) -> Path:
+        c = self.tmpdir()
+        (c / "dados").mkdir()
+        (c / "00_painel").mkdir()
+        for nome in preflight.FONTES_ESTADO:
+            (c / nome).parent.mkdir(parents=True, exist_ok=True)
+            (c / nome).write_text("fonte\n", encoding="utf-8")
+        fp = preflight.frescor.calcular(c)
+        origem = {
+            "git_head": None,
+            "fontes": fp["fontes"],
+            "fingerprint": {"algoritmo": fp["algoritmo"], "valor": fp["valor"]},
+        }
+        (c / "dados/estado.json").write_text(json.dumps({
+            "schema": 3,
+            "gerado_de": origem,
+        }), encoding="utf-8")
+        (c / "00_painel/RELATORIO.html").write_text(
+            "<!doctype html>\n" + preflight.frescor.bloco_html(origem) + "\n",
+            encoding="utf-8")
+        return c
+
+    def test_estado_e_relatorio_atuais_passam(self):
+        c = self.central_estado()
+        ok, txt = preflight.cheque_estado(c)
+        self.assertTrue(ok, txt)
+
+    def test_fonte_alterada_reprova_sem_depender_de_mtime(self):
+        c = self.central_estado()
+        fonte = c / "META.md"
+        fonte.write_text("mudou\n", encoding="utf-8")
+        ok, txt = preflight.cheque_estado(c)
+        self.assertFalse(ok)
+        self.assertIn("fingerprint", txt)
+
+    def test_relatorio_ausente_reprova(self):
+        c = self.central_estado()
+        (c / "00_painel/RELATORIO.html").unlink()
+        ok, txt = preflight.cheque_estado(c)
+        self.assertFalse(ok)
+        self.assertIn("RELATORIO.html ausente", txt)
+
+    def test_relatorio_sem_metadado_reprova(self):
+        c = self.central_estado()
+        (c / "00_painel/RELATORIO.html").write_text("<!doctype html>\n", encoding="utf-8")
+        ok, txt = preflight.cheque_estado(c)
+        self.assertFalse(ok)
+        self.assertIn("mb-frescor ausente", txt)
+
+    def test_estado_ausente_reprova(self):
+        c = self.central_estado()
+        (c / "dados/estado.json").unlink()
+        ok, txt = preflight.cheque_estado(c)
+        self.assertFalse(ok)
+        self.assertIn("estado.json AUSENTE", txt)
 
 
 class TestChequeCanonicos(Base):
