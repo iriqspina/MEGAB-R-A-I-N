@@ -150,7 +150,7 @@ def id_extra(relativo: str) -> str:
 def _inline(texto: str) -> str:
     texto = html.escape(texto)
     texto = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", texto)
-    # 260825: ~~riscado~~ — a regra de ouro 11 manda riscar o achado derrubado
+    # 260824: ~~riscado~~ — a regra de ouro 11 manda riscar o achado derrubado
     texto = re.sub(r"~~(.+?)~~", r"<del>\1</del>", texto)
     texto = re.sub(r"`([^`]+?)`", r"<code>\1</code>", texto)
     texto = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r'<a href="\2">\1</a>', texto)
@@ -428,7 +428,7 @@ summary{cursor:pointer;font-family:var(--m);font-size:11px;letter-spacing:.08em;
 
 
 def css_console() -> str:
-    """Tema console — padrao dos relatorios vivos desde 260825.
+    """Tema console — padrao dos relatorios vivos desde 260824.
 
     Fundo escuro, hairlines, rotulos monoespacados e um acento so. Neutro de
     marca de proposito: o mesmo modelo serve qualquer projeto megabrain.
@@ -436,7 +436,7 @@ def css_console() -> str:
     dispensa o remendo de CSS que os .ps1 de projeto injetavam depois.
     """
     return """
-/* ── tema console · relatório vivo (260825) ─────────────────────────────
+/* ── tema console · relatório vivo (260824) ─────────────────────────────
    Fundo escuro, hairlines, rótulos monoespaçados, um acento só.
    Neutro de marca: serve qualquer projeto megabrain.                     */
 :root{

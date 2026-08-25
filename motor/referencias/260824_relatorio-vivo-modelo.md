@@ -1,4 +1,4 @@
-# Modelo visual do relatório vivo — tema `console` (260825)
+# Modelo visual do relatório vivo — tema `console` (260824)
 
 **TL;DR:** o relatório vivo de projeto (`bin/mb-relatorio-projeto.py`) usa o tema `console` por
 padrão desde 25/08/2026. O tema anterior (`padrao`, claro/azulado) foi rejeitado pelo usuário e
