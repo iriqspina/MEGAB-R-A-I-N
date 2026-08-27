@@ -44,6 +44,7 @@ u.utf8_console()
 
 PLUGIN_DIR = "plugin-megabrain-claude"
 HOOK = "scripts/260821_session-start.js"
+LIMITE_DESCRIPTION = 500  # teto do instalador de plugins (Cowork/Claude), 260827
 
 
 def central() -> Path:
@@ -125,9 +126,18 @@ def validar(plugin: Path) -> list[str]:
     erros = []
     for rel in (".claude-plugin/plugin.json", "hooks/hooks.json"):
         try:
-            json.loads((plugin / rel).read_text(encoding="utf-8"))
+            dados = json.loads((plugin / rel).read_text(encoding="utf-8"))
         except (OSError, ValueError) as e:
             erros.append(f"{rel}: {e}")
+            continue
+        # 260827: o Cowork recusou o v1.7.0 com "Plugin description must be at
+        # most 500 characters" — 521 chars. O instalador é a única validação e
+        # ela só aparece no clique do usuário, em outra máquina. Agora reprova aqui.
+        if rel == ".claude-plugin/plugin.json":
+            desc = dados.get("description", "")
+            if len(desc) > LIMITE_DESCRIPTION:
+                erros.append(f"{rel}: description com {len(desc)} chars "
+                             f"(o instalador recusa acima de {LIMITE_DESCRIPTION})")
     for rel in ("skills/megabrain/SKILL.md", "skills/registrar-licao/SKILL.md",
                 "skills/ingerir/SKILL.md", "skills/grelhar/SKILL.md",
                 "skills/traycer/SKILL.md", "skills/leigolanguage/SKILL.md"):

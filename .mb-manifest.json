@@ -1,6 +1,6 @@
 {
   "schema": 2,
-  "gerado_em": "2026-08-25T19:05:35-03:00",
+  "gerado_em": "2026-08-27T10:59:40-03:00",
   "hash_fonte": {
     "MEGABRAIN.md": "5facc027383b",
     "skills/megabrain/SKILL.md": "c11aa7d1907c",
@@ -13,10 +13,10 @@
     "proveniencia": {
       "plugin_fonte": "motor/plugin-megabrain-claude",
       "builder": "bin/mb-build-plugin-claude.py",
-      "builder_sha256": "a2593bd3683201248620a8b1f6ec0d48fa50cdfddc1de7ca4bd53c87710748cf",
+      "builder_sha256": "1a4f9e502d452a5053417a15ef499bc363b18b9e2e93d4d112a9861e588b172c",
       "derivacao_canonica": "verificada",
       "arquivos_fonte": {
-        ".claude-plugin/plugin.json": "dcc752b926e6d4e5139681935d33235a4d4fd42446e563f3d8ea2d540646c033",
+        ".claude-plugin/plugin.json": "215810e39ad1674b866854d73d093800f8de185241114b509d401cd7138b90e8",
         "README.md": "b9c992fb52bae0bf422f1ecc7d703e092b284ba67e5acce0689eb0e1ecfc1245",
         "hooks/hooks.json": "fb77abec34397f8dec06a6796ac7fe244a22efa0853b3a391b6400c9904e068f",
         "scripts/260821_session-start.js": "1aaddf4d2e10e5e9baac79da480e8d33c5b6472a448ef79f0962170acdc88b3d",
@@ -37,7 +37,7 @@
       }
     },
     "arquivos": {
-      ".claude-plugin/plugin.json": "dcc752b926e6d4e5139681935d33235a4d4fd42446e563f3d8ea2d540646c033",
+      ".claude-plugin/plugin.json": "215810e39ad1674b866854d73d093800f8de185241114b509d401cd7138b90e8",
       "README.md": "b9c992fb52bae0bf422f1ecc7d703e092b284ba67e5acce0689eb0e1ecfc1245",
       "hooks/hooks.json": "fb77abec34397f8dec06a6796ac7fe244a22efa0853b3a391b6400c9904e068f",
       "scripts/260821_session-start.js": "1aaddf4d2e10e5e9baac79da480e8d33c5b6472a448ef79f0962170acdc88b3d",
