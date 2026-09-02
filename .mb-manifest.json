@@ -1,10 +1,10 @@
 {
   "schema": 2,
-  "gerado_em": "2026-08-27T10:59:40-03:00",
+  "gerado_em": "2026-09-01T22:46:34-03:00",
   "hash_fonte": {
     "MEGABRAIN.md": "5facc027383b",
-    "skills/megabrain/SKILL.md": "c11aa7d1907c",
-    "VERSAO.txt": "1e57b4ed5691",
+    "skills/megabrain/SKILL.md": "8da3b471fcb4",
+    "VERSAO.txt": "eb8d0a9a5b14",
     "plugin-megabrain-claude/scripts/260821_session-start.js": "1aaddf4d2e10"
   },
   "plugin_publicado": {
@@ -23,7 +23,7 @@
         "skills/grelhar/SKILL.md": "8a875690be103792552b84855347163b1864caafd393d7a1ac302dde2543c4f9",
         "skills/ingerir/SKILL.md": "ecaf7215f44c7a45fd28640225701bb9d523cd42c943a50bd2186dcdd52791be",
         "skills/leigolanguage/SKILL.md": "2072d9686aa4ba438dd977e54f2175c38081426607a390274a983c3a863f131a",
-        "skills/megabrain/SKILL.md": "c11aa7d1907c83c072970b8c84492b90b5be9a94e1902a0c89485f976aaa0bdd",
+        "skills/megabrain/SKILL.md": "ec4b9887891f930a79bbba51f0847cd9f43034c48a4243f2df5bc6a29f1a1b56",
         "skills/registrar-licao/SKILL.md": "aac9c85fe81d8475a626e30e2b59dee7c7d290e44a5a824b69bcba8c4971e166",
         "skills/traycer/SKILL.md": "5aeed214ee8ae33b5fe5b13151a56ded0a15c356f8bcc78059cf7cd10d5f9bf7"
       },
@@ -32,7 +32,7 @@
         "motor/skills/grelhar/SKILL.md": "8a875690be103792552b84855347163b1864caafd393d7a1ac302dde2543c4f9",
         "motor/skills/ingerir/SKILL.md": "ecaf7215f44c7a45fd28640225701bb9d523cd42c943a50bd2186dcdd52791be",
         "motor/skills/leigolanguage/SKILL.md": "2072d9686aa4ba438dd977e54f2175c38081426607a390274a983c3a863f131a",
-        "motor/skills/megabrain/SKILL.md": "c11aa7d1907c83c072970b8c84492b90b5be9a94e1902a0c89485f976aaa0bdd",
+        "motor/skills/megabrain/SKILL.md": "8da3b471fcb421a1d3136c43a3e4c864a13677f7862e9cbe60d8b3a0f26ba552",
         "motor/skills/traycer/SKILL.md": "5aeed214ee8ae33b5fe5b13151a56ded0a15c356f8bcc78059cf7cd10d5f9bf7"
       }
     },
@@ -44,7 +44,7 @@
       "skills/grelhar/SKILL.md": "8a875690be103792552b84855347163b1864caafd393d7a1ac302dde2543c4f9",
       "skills/ingerir/SKILL.md": "ecaf7215f44c7a45fd28640225701bb9d523cd42c943a50bd2186dcdd52791be",
       "skills/leigolanguage/SKILL.md": "f85618224331dbae1ddc67880e392845353c7f1e50a4d5b12cdb0d039dd6e845",
-      "skills/megabrain/SKILL.md": "c11aa7d1907c83c072970b8c84492b90b5be9a94e1902a0c89485f976aaa0bdd",
+      "skills/megabrain/SKILL.md": "ec4b9887891f930a79bbba51f0847cd9f43034c48a4243f2df5bc6a29f1a1b56",
       "skills/registrar-licao/SKILL.md": "37d3f279e3b2c35bec0fa68147ceb87dab42537df366d5b232a7217701021b48",
       "skills/traycer/SKILL.md": "56b20ca5370c83109d8c7b1c90d428f733610ee436a2c4b8407ac9947be5c6ba"
     }

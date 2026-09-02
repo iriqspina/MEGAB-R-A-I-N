@@ -87,7 +87,10 @@ agente não começa do zero). Detalhe passo a passo, quando precisar:
   qualquer momento pra clarear e seguir desenvolvendo. Fecha com espelho do
   entendimento + confirmação dele + registro em DECISOES/ESTADO — fronteira
   vazia não é autorização. Design → Duplo Diamante, fase declarada no
-  ESTADO, referência antes de adjetivo: `referencias/260810_design-projects.md`
+  ESTADO, referência antes de adjetivo: `referencias/260810_design-projects.md`.
+  Peça visual, imagem, Figma, adaptação de formato → roteador de ferramentas e
+  armadilhas: `referencias/260901_capacidades-visuais.md`; acervo medido em
+  `memoria/cerebro/visual/`
   (+ `260810_galerias-referencia.md`, `260810_impeccable-routing.md` se vira
   código); peça de interface → critérios verificáveis em
   `referencias/260824_interface-que-sente.md`.
