@@ -90,7 +90,9 @@ agente não começa do zero). Detalhe passo a passo, quando precisar:
   ESTADO, referência antes de adjetivo: `referencias/260810_design-projects.md`.
   Peça visual, imagem, Figma, adaptação de formato → roteador de ferramentas e
   armadilhas: `referencias/260901_capacidades-visuais.md`; acervo medido em
-  `memoria/cerebro/visual/`
+  `memoria/cerebro/visual/`. Nome, pasta, versão ou processo que se repete em mais
+  de um lugar tem DONO e DEPENDENTES em `ARVORE-DE-CONSISTENCIA.md` do projeto; mudou o
+  dono → propagar em todos na mesma sessão: `referencias/260901_arvore-de-consistencia.md`
   (+ `260810_galerias-referencia.md`, `260810_impeccable-routing.md` se vira
   código); peça de interface → critérios verificáveis em
   `referencias/260824_interface-que-sente.md`.
