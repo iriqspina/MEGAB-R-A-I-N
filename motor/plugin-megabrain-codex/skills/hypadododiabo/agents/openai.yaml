@@ -1,0 +1,4 @@
+interface:
+  display_name: "Hypado do Diabo"
+  short_description: "Explora o melhor caso sem esconder limites"
+  default_prompt: "Use $hypadododiabo para explorar o melhor caso desta opção com evidências, limites e um teste reversível."

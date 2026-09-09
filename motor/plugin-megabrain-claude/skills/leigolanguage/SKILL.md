@@ -5,7 +5,7 @@ description: Explica uma decisão técnica para quem não é programador poder d
 
 # leigolanguage — explicar pra pessoa poder decidir
 
-**v1.0 · 260825.** Nasceu de um pedido do <USUARIO>: *"como sou leigo, tá
+**v1.1 · 260905** (v1.0 · 260825). Nasceu de um pedido do <USUARIO>: *"como sou leigo, tá
 chegando num ponto que você manja mais, e pra eu decidir você tem que me
 explicar muito bem explicado."*
 
@@ -104,6 +104,61 @@ vocabulário é a versão educada de infantilizar.
 
 Um jeito rápido de checar: **se a pergunta que você ia fazer só faz sentido
 pra quem já sabe a resposta, ela precisa desta skill antes.**
+
+## Modo contínuo — leigo-gate com sensibilidade (v1.1 · 260905)
+
+Pedido do <USUARIO> em 260905: *"toda resposta explicando algo mais complicado tenha o
+leigolanguage rodando e você vai ajustando a sensibilidade de trigger"*. A tabela acima
+continua valendo (decisão com conceito novo = roda sempre). O modo contínuo acrescenta um
+**dial de sensibilidade** que decide quando uma resposta *explicativa* ganha um bloco curto
+em português — sem esperar pedido.
+
+### O dial
+
+| Nível | Quando o bloco entra | Uso |
+|---|---|---|
+| 0 | nunca (só a tabela acima) | ele pediu pra desligar |
+| 1 | resposta que introduz conceito novo **e** pede decisão | comportamento v1.0 |
+| 2 | **padrão inicial** — além do 1: resposta N1+ que explica mecanismo, arquitetura, fluxo entre agentes/ferramentas, ou usa ≥2 termos técnicos que ele não usou nesta conversa | começa aqui |
+| 3 | além do 2: qualquer resposta N1+ com termo técnico ganha o bloco, mesmo curto | ele pediu mais |
+
+Onde fica o nível vigente: linha `LEIGO-GATE:` no arquivo de identidade
+(`memoria/identidade/260810_memoria-pessoal.md`, injetado em toda sessão de todo agente).
+Quem ajusta o nível edita essa linha na FONTE com data e motivo e roda a sincronização de
+identidade (`01_acoes/06_sincronizar-identidade.cmd`). Nunca guarde o nível só na conversa.
+
+### Forma do bloco no modo contínuo
+
+Versão curta do método, 2–5 linhas, logo depois do TL;DR (ou colada na parte complicada,
+se a resposta for longa):
+
+```
+🗣️ EM PORTUGUÊS — <o que é, no mundo dele, 1 frase> · <o que muda pra ele> ·
+<o que dói se der errado e se volta atrás>
+```
+
+O formato completo de 5 partes fica reservado para quando você pede uma decisão. Termo
+técnico aparece E é definido uma vez; não some.
+
+### Calibração automática (o agente ajusta; ele confirma)
+
+- **Sobe 1 nível:** "não entendi", "explica", "como assim", "e daí?", pergunta sobre um
+  termo que você já usou, `/leigolanguage` digitado duas vezes na mesma sessão.
+- **Desce 1 nível:** "sei disso", "muito básico", "pula", "sem a explicação", ele usa o
+  termo corretamente por conta própria, ou três respostas seguidas em que o bloco não
+  gerou reação nem pergunta.
+- **Pergunta de calibração:** no máximo **uma a cada 5 respostas com bloco**, uma linha, no
+  fim da resposta: `(calibração do leigo-gate: esse "em português" foi útil, sobrou ou faltou?)`.
+- Duas respostas consistentes no mesmo sentido → aplicar o ajuste, registrar na fonte
+  (`LEIGO-GATE: nível N · AAMMDD · motivo`) e parar de perguntar por ~10 respostas.
+- Nunca ajustar dois níveis de uma vez; nunca perguntar quando ele pediu resposta curta.
+
+### Como o modo contínuo dá errado
+
+- Bloco em resposta N0 (papo) → ruído. N0 nunca ganha bloco em nível ≤ 2.
+- Analogia fofa no lugar do termo → viola a regra que sustenta tudo.
+- Nível guardado só na cabeça do agente → a próxima sessão volta pro 2 e ele repete a
+  calibração. A linha na identidade existe pra isso.
 
 ## Formato de saída
 

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Advogado do Diabo"
+  short_description: "Questiona o downside antes da entrega"
+  default_prompt: "Use $advogadododiabo para questionar esta entrega ou decisão com objeções falsificáveis, teste barato e veredito."

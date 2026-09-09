@@ -285,7 +285,10 @@ def conferir(central: Path) -> int:
         # [[x]] dentro de crase é EXEMPLO, não link — o Obsidian também não
         # desenha aresta pra código. Tirar antes de contar.
         texto = re.sub(r"```.*?```", " ", texto, flags=re.S)
-        texto = re.sub(r"`[^`\n]*`", " ", texto)
+        # crase simples atravessa linha (CommonMark): sem excluir a quebra, o
+        # code span multilinha fecha certo e a matriz de gradiente escrita em
+        # duas linhas para de virar wikilink fantasma (260904).
+        texto = re.sub(r"`[^`]*`", " ", texto)
         for m in re.finditer(r"\[\[([^\]|#]+)", texto):
             alvo = m.group(1).strip()
             if alvo.upper().startswith("YYMMDD"):

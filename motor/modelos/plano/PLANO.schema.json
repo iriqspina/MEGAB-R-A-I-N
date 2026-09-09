@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Plano megabrain — saida obrigatoria do Gate de Planejamento",
+  "type": "object",
+  "required": ["objetivo", "escopo_fora", "itens", "cobertura", "riscos", "criterio_de_aceite_global"],
+  "additionalProperties": false,
+  "properties": {
+    "objetivo": {
+      "type": "string",
+      "minLength": 20,
+      "description": "Uma frase. O que muda no mundo quando isso estiver pronto."
+    },
+    "escopo_fora": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" },
+      "description": "O que este plano deliberadamente NAO faz. Campo vazio e sinal de plano nao pensado."
+    },
+    "itens": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "titulo", "arquivos_alvo", "dono", "depende_de", "criterio_de_pronto", "risco"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^I[0-9]{2}$" },
+          "titulo": { "type": "string", "minLength": 5 },
+          "arquivos_alvo": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string" },
+            "description": "Caminhos reais. Usar '?' e proibido — se nao sabe qual arquivo, o item nao esta planejado."
+          },
+          "dono": {
+            "type": "string",
+            "enum": ["worker-explorar", "worker-codigo", "worker-teste", "orquestrador", "humano"]
+          },
+          "depende_de": {
+            "type": "array",
+            "items": { "type": "string", "pattern": "^I[0-9]{2}$" },
+            "description": "IDs. Array vazio significa item raiz — permitido, mas o grafo inteiro nao pode ser todo raiz."
+          },
+          "criterio_de_pronto": {
+            "type": "string",
+            "minLength": 15,
+            "description": "Verificavel por comando ou observacao. 'Funciona bem' e invalido. 'pytest tests/auth passa' e valido."
+          },
+          "verificacao": {
+            "type": "string",
+            "description": "Comando literal que prova o criterio, quando existir."
+          },
+          "risco": { "type": "string", "enum": ["baixo", "medio", "alto"] },
+          "reversivel": { "type": "boolean", "default": true }
+        }
+      }
+    },
+    "cobertura": {
+      "type": "object",
+      "description": "Resposta item a item do checklist de cobertura. Toda chave e obrigatoria.",
+      "required": [
+        "migracao_dados", "rollback", "testes", "config_env", "documentacao",
+        "erro_rede", "estado_vazio", "estado_carregando", "permissao_auth",
+        "responsivo_mobile", "dark_mode", "acessibilidade", "performance",
+        "log_observabilidade", "compatibilidade_versao"
+      ],
+      "additionalProperties": {
+        "type": "object",
+        "required": ["status", "nota"],
+        "properties": {
+          "status": { "type": "string", "enum": ["sim", "nao", "na"] },
+          "nota": {
+            "type": "string",
+            "minLength": 10,
+            "description": "Obrigatoria em todos os casos. Para 'na', precisa dizer POR QUE nao se aplica."
+          },
+          "item_id": { "type": "string", "description": "Qual item do plano cobre isso, quando status=sim." }
+        }
+      }
+    },
+    "riscos": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["descricao", "mitigacao"],
+        "properties": {
+          "descricao": { "type": "string" },
+          "mitigacao": { "type": "string" },
+          "probabilidade": { "type": "string", "enum": ["baixa", "media", "alta"] }
+        }
+      }
+    },
+    "lacunas_adversario": {
+      "type": "array",
+      "minItems": 5,
+      "description": "Preenchido pelo orquestrador-2 (adversario). Minimo 5. Se ele achar menos, precisa registrar o motivo aqui como item.",
+      "items": {
+        "type": "object",
+        "required": ["lacuna", "gravidade", "resolucao"],
+        "properties": {
+          "lacuna": { "type": "string" },
+          "gravidade": { "type": "string", "enum": ["bloqueante", "importante", "cosmetica"] },
+          "resolucao": { "type": "string", "enum": ["incorporada", "recusada", "adiada"] },
+          "justificativa": { "type": "string", "description": "Obrigatoria se resolucao != incorporada." },
+          "novo_item_id": { "type": "string" }
+        }
+      }
+    },
+    "criterio_de_aceite_global": { "type": "string", "minLength": 20 },
+    "orcamento": {
+      "type": "object",
+      "description": "Preenchido pelo governador. Nao editar a mao.",
+      "properties": {
+        "fase": { "type": "string", "enum": ["verde", "amarelo", "vermelho"] },
+        "politica_id": { "type": "string" },
+        "gerado_em": { "type": "string" }
+      }
+    }
+  }
+}

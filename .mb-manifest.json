@@ -1,11 +1,11 @@
 {
   "schema": 2,
-  "gerado_em": "2026-09-01T23:34:55-03:00",
+  "gerado_em": "2026-09-09T00:02:29-03:00",
   "hash_fonte": {
-    "MEGABRAIN.md": "5facc027383b",
-    "skills/megabrain/SKILL.md": "63aee2f993da",
-    "VERSAO.txt": "cee032833de1",
-    "plugin-megabrain-claude/scripts/260821_session-start.js": "1aaddf4d2e10"
+    "MEGABRAIN.md": "a5de999118bf",
+    "skills/megabrain/SKILL.md": "18d5edf505cb",
+    "VERSAO.txt": "c15957b8fb89",
+    "plugin-megabrain-claude/scripts/260821_session-start.js": "a26b40e40c16"
   },
   "plugin_publicado": {
     "algoritmo": "sha256",
@@ -13,40 +13,67 @@
     "proveniencia": {
       "plugin_fonte": "motor/plugin-megabrain-claude",
       "builder": "bin/mb-build-plugin-claude.py",
-      "builder_sha256": "1a4f9e502d452a5053417a15ef499bc363b18b9e2e93d4d112a9861e588b172c",
+      "builder_sha256": "62205eeac18fc477f54588d8d77a18dcae77655f61f60ef52e0e11eb9dff2f8c",
       "derivacao_canonica": "verificada",
       "arquivos_fonte": {
         ".claude-plugin/plugin.json": "215810e39ad1674b866854d73d093800f8de185241114b509d401cd7138b90e8",
-        "README.md": "b9c992fb52bae0bf422f1ecc7d703e092b284ba67e5acce0689eb0e1ecfc1245",
+        "README.md": "2abe45782aea1a24e38956f60249f1c0a9b8fe04daada4303fa57ee21a959e59",
         "hooks/hooks.json": "fb77abec34397f8dec06a6796ac7fe244a22efa0853b3a391b6400c9904e068f",
-        "scripts/260821_session-start.js": "1aaddf4d2e10e5e9baac79da480e8d33c5b6472a448ef79f0962170acdc88b3d",
+        "scripts/260821_session-start.js": "a26b40e40c162b35183cca6afac74cc96c91f6a5a082fbc7ba6a1c7d0ae2a354",
+        "skills/advogadododiabo/SKILL.md": "014183c5bcc8345822c16716331af44776c4052086d9d913704a917016376d5f",
+        "skills/conclusao-megabrain/SKILL.md": "9c9c857ca678ee38f45f10eae8129051a856cf3fee5460011e9cad19a03fd45b",
+        "skills/figma-flex/SKILL.md": "c576aae8ff4182ec048ae457ea7f63f911e4af0044355ab10e1bf315597a816a",
         "skills/grelhar/SKILL.md": "8a875690be103792552b84855347163b1864caafd393d7a1ac302dde2543c4f9",
+        "skills/hypadododiabo/SKILL.md": "1f80b4e0fad5a6db238de174243a091c41636e192b043cdcd5fd3e36e446b40d",
         "skills/ingerir/SKILL.md": "ecaf7215f44c7a45fd28640225701bb9d523cd42c943a50bd2186dcdd52791be",
-        "skills/leigolanguage/SKILL.md": "2072d9686aa4ba438dd977e54f2175c38081426607a390274a983c3a863f131a",
-        "skills/megabrain/SKILL.md": "c689f851cc84254359d69498947112251602fb7038043c3d6b90a596a4a2b0e2",
+        "skills/leigolanguage/SKILL.md": "af7d509198cb38d67fb15fd5bc07ad3ed530649fd4f0509f6467149c29d4b436",
+        "skills/megabrain/SKILL.md": "18d5edf505cb309ea39bc711202439e57b7718ab58d4879f0d178c80b3863cb6",
+        "skills/orquestracao1/SKILL.md": "54b8ae058b2c21fb6f0506e5d34cb81d695f3982925d76d822b7a21e44e7e41a",
+        "skills/orquestracao3/SKILL.md": "21343a0c518b552772b0f44787ae0efec3afdd353493458b0032908dcac185fe",
+        "skills/orquestracao4/SKILL.md": "ad23f966d7a143f9e0107497bb14c2d5ac4d9dd240f57a4270a229881f3cbe67",
+        "skills/orquestracao5/SKILL.md": "9129d59090cdbe5639cc5debb055ada5e64c989ef6fba1371215310af7f6251f",
+        "skills/quaseultracode/SKILL.md": "37fee974d635c58acec5859e808fd13b13b8b7b685431ef9f40e75c0d8f03404",
         "skills/registrar-licao/SKILL.md": "aac9c85fe81d8475a626e30e2b59dee7c7d290e44a5a824b69bcba8c4971e166",
-        "skills/traycer/SKILL.md": "5aeed214ee8ae33b5fe5b13151a56ded0a15c356f8bcc78059cf7cd10d5f9bf7"
+        "skills/traycer/SKILL.md": "91ff4ec7091c6c8a4d0308a799eadee599fa0a4bbeef9f4e89d8faaafc390456"
       },
       "fontes_canonicas": {
         "motor/plugin-megabrain/skills/registrar-licao/SKILL.md": "9014ccc8394c6d5c2a149067d5c02fd1e62d72cc08bb6ca213694d483e33ee74",
+        "motor/skills/advogadododiabo/SKILL.md": "014183c5bcc8345822c16716331af44776c4052086d9d913704a917016376d5f",
+        "motor/skills/conclusao-megabrain/SKILL.md": "9c9c857ca678ee38f45f10eae8129051a856cf3fee5460011e9cad19a03fd45b",
+        "motor/skills/figma-flex/SKILL.md": "c576aae8ff4182ec048ae457ea7f63f911e4af0044355ab10e1bf315597a816a",
         "motor/skills/grelhar/SKILL.md": "8a875690be103792552b84855347163b1864caafd393d7a1ac302dde2543c4f9",
+        "motor/skills/hypadododiabo/SKILL.md": "1f80b4e0fad5a6db238de174243a091c41636e192b043cdcd5fd3e36e446b40d",
         "motor/skills/ingerir/SKILL.md": "ecaf7215f44c7a45fd28640225701bb9d523cd42c943a50bd2186dcdd52791be",
-        "motor/skills/leigolanguage/SKILL.md": "2072d9686aa4ba438dd977e54f2175c38081426607a390274a983c3a863f131a",
-        "motor/skills/megabrain/SKILL.md": "63aee2f993da0cb7bc23693dfe20040fe34914cf94df1031f8b6b5fdb50cc112",
-        "motor/skills/traycer/SKILL.md": "5aeed214ee8ae33b5fe5b13151a56ded0a15c356f8bcc78059cf7cd10d5f9bf7"
+        "motor/skills/leigolanguage/SKILL.md": "af7d509198cb38d67fb15fd5bc07ad3ed530649fd4f0509f6467149c29d4b436",
+        "motor/skills/megabrain/SKILL.md": "18d5edf505cb309ea39bc711202439e57b7718ab58d4879f0d178c80b3863cb6",
+        "motor/skills/orquestracao1/SKILL.md": "54b8ae058b2c21fb6f0506e5d34cb81d695f3982925d76d822b7a21e44e7e41a",
+        "motor/skills/orquestracao3/SKILL.md": "21343a0c518b552772b0f44787ae0efec3afdd353493458b0032908dcac185fe",
+        "motor/skills/orquestracao4/SKILL.md": "ad23f966d7a143f9e0107497bb14c2d5ac4d9dd240f57a4270a229881f3cbe67",
+        "motor/skills/orquestracao5/SKILL.md": "9129d59090cdbe5639cc5debb055ada5e64c989ef6fba1371215310af7f6251f",
+        "motor/skills/quaseultracode/SKILL.md": "37fee974d635c58acec5859e808fd13b13b8b7b685431ef9f40e75c0d8f03404",
+        "motor/skills/traycer/SKILL.md": "91ff4ec7091c6c8a4d0308a799eadee599fa0a4bbeef9f4e89d8faaafc390456"
       }
     },
     "arquivos": {
       ".claude-plugin/plugin.json": "215810e39ad1674b866854d73d093800f8de185241114b509d401cd7138b90e8",
-      "README.md": "b9c992fb52bae0bf422f1ecc7d703e092b284ba67e5acce0689eb0e1ecfc1245",
+      "README.md": "95c451d275d45f596ee8fbc88ebf7e72417f1f0f591801338f1b2e6fde81d9d2",
       "hooks/hooks.json": "fb77abec34397f8dec06a6796ac7fe244a22efa0853b3a391b6400c9904e068f",
-      "scripts/260821_session-start.js": "1aaddf4d2e10e5e9baac79da480e8d33c5b6472a448ef79f0962170acdc88b3d",
+      "scripts/260821_session-start.js": "a26b40e40c162b35183cca6afac74cc96c91f6a5a082fbc7ba6a1c7d0ae2a354",
+      "skills/advogadododiabo/SKILL.md": "cd0cf95b206a037295a46725b445ee72aa82f24a937c3a0cb5fcdba9d80aa8c1",
+      "skills/conclusao-megabrain/SKILL.md": "9c9c857ca678ee38f45f10eae8129051a856cf3fee5460011e9cad19a03fd45b",
+      "skills/figma-flex/SKILL.md": "c576aae8ff4182ec048ae457ea7f63f911e4af0044355ab10e1bf315597a816a",
       "skills/grelhar/SKILL.md": "8a875690be103792552b84855347163b1864caafd393d7a1ac302dde2543c4f9",
+      "skills/hypadododiabo/SKILL.md": "582ed1e3323b0e5155cb186e083f0e6e810c26081f9481fe3c4a2432479a5d18",
       "skills/ingerir/SKILL.md": "ecaf7215f44c7a45fd28640225701bb9d523cd42c943a50bd2186dcdd52791be",
-      "skills/leigolanguage/SKILL.md": "f85618224331dbae1ddc67880e392845353c7f1e50a4d5b12cdb0d039dd6e845",
-      "skills/megabrain/SKILL.md": "c689f851cc84254359d69498947112251602fb7038043c3d6b90a596a4a2b0e2",
+      "skills/leigolanguage/SKILL.md": "f133f0fa01ab8771244ed875fe4256954d5b51826298d67fceece606de9aed9a",
+      "skills/megabrain/SKILL.md": "d65621e2e6d5d2d29850ce881f8c6bdd099ee1a70f5dcdaa0be1f1b6f57fafc3",
+      "skills/orquestracao1/SKILL.md": "d8f1a952f58086a263ea73a7f96b31e8ebf61ef3324c8ce5163c88860a31b228",
+      "skills/orquestracao3/SKILL.md": "ead9439a7d36b7eb1d36cde85c2654817bc85707f611852a2ecd5958e7ee1dc4",
+      "skills/orquestracao4/SKILL.md": "98bf09fe0b928f75aafdc0d3001d5fe94e466e2d96d4dec1d9a8e8720eff3190",
+      "skills/orquestracao5/SKILL.md": "f852e3b610a9fd38570252f1d5060ab9b3bba4ce07cbe5cb57e9103be8399d60",
+      "skills/quaseultracode/SKILL.md": "7385eff0fd75e6509d9ba7582ceab4098d7155d794e51f0eaf4a6f7f03535a1a",
       "skills/registrar-licao/SKILL.md": "37d3f279e3b2c35bec0fa68147ceb87dab42537df366d5b232a7217701021b48",
-      "skills/traycer/SKILL.md": "56b20ca5370c83109d8c7b1c90d428f733610ee436a2c4b8407ac9947be5c6ba"
+      "skills/traycer/SKILL.md": "dc45f92c0739de4684bfee4ba5e5b6ab52bd99cabec09e8bfa2bb821ed5b8779"
     }
   }
 }

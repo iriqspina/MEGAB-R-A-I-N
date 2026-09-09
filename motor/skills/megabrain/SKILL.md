@@ -35,6 +35,52 @@ conversa) = completo 0–7 · **rascunho/exploração** = leve 1·4·5 · **perg
 papo** = nenhum (rodar protocolo em papo é o próprio slop). Subir de leve pra
 completo no meio é barato; descer não existe.
 
+## Roteador de modos opcionais
+
+No início de uma nova conversa ou projeto, oferecer uma vez, sem bloquear nem
+transformar em pergunta:
+
+> Modos opcionais: /orquestracao1 para trabalho multiagente · /orquestracao3 para plano verificável · /orquestracao4 para Codex + Claude + Gemini com uso medido · /hypadododiabo para explorar o melhor caso com limites reais.
+
+Se o início caracterizar **projeto grande**, sugerir também
+`/quaseultracode`: ciclo ideal-first de até 5 horas, com orçamento
+`[HEURÍSTICA]`, workers persistentes, checkpoints e delta explícito. Não mostrar
+essa sugestão em conversa ordinária ou tarefa pequena.
+
+Uma sugestão nunca ativa um modo. Durante o andamento, sugerir somente numa
+**transição material**: novo escopo, decisão difícil, bloqueio, pré-implementação
+de risco, pré-entrega não trivial ou análise claramente unilateral.
+
+- `/orquestracao1`: trabalho decomponível, múltiplas responsabilidades ou
+  entrega com risco que justifique coordenação e verificação separadas.
+- `/orquestracao3`: plano tipado, adversário cross-vendor e fechamento de grafo
+  quando um plano incompleto tiver custo material.
+- `/orquestracao4`: perfil pessoal de Codex + Claude + Gemini com checkpoints
+  de quota/contexto/tokens, clientes nativos e failover de ponte.
+- `/orquestracao5`: motor local de loops e swarm entre Claude Code, Sol e Spark; recebe estado/fontes do projeto, guarda provas e limita reparos. Use `bin/mb-orquestracao.py`; contrato em `skills/orquestracao5/SKILL.md`. Complementa /orquestracao4 e não substitui os gates.
+- `/hypadododiabo`: upside plausível subexplorado ou análise unilateralmente
+  negativa; ampliar o melhor caso sem propaganda.
+- `/quaseultracode`: projeto grande cujo ideal estimado caiba em até 5 horas e
+  se beneficie de execução por marcos. Se o ideal ultrapassar 5 horas,
+  classificar `ULTRACODE_REAL` e preparar mapa de continuação.
+- `/advogadododiabo`: downside ou custo do erro merece contraste. Não sugerir
+  só para “balancear” uma conversa ordinária.
+
+Aplicar cooldown por estágio: registrar no ledger os modos sugeridos, ativados
+ou recusados; não repetir um modo recusado no mesmo estágio e não interromper
+tarefa N0, status, esclarecimento ou correção local óbvia. Novo estágio material
+pode liberar uma nova sugestão, mas nunca reapresentar a oferta em todo turno.
+
+Se o <USUARIO> ativar `/hypadododiabo` e `/advogadododiabo`, rodar cada lente uma
+vez sobre os mesmos fatos e sintetizar; proibir pingue-pongue entre lentes. No
+fluxo `/orquestracao1`, o Sol continua único orquestrador; `/grelhar`, workers,
+autonomia pós-grelha, `FABLE_LATEST` + effort adaptativo e fallback explícito
+para Kimi `>=3` saudável só quando `FABLE_PERTO_DO_LIMITE` for medido, ledger e
+limites de decisão seguem o contrato daquela skill. Em `/quaseultracode`, definir o ideal antes do plano e manter a
+rubrica independente de harness, modelo ou effort; limitações mudam a estratégia,
+não o padrão de qualidade. Toda sugestão do Headhunter passa por “casa ≠ cabana”
+e vira `SOLUÇÃO`, `PONTE` ou `DISTRAÇÃO`; distrações não chegam ao backlog.
+
 ## Localizar a instalação
 
 `<MEGABRAIN_ROOT>` = a central DESTE usuário. Procure: `MEGABRAIN/` dentro do
@@ -210,3 +256,9 @@ auditou a cópia carregada · **grelhar papo** (ele pergunta as horas e leva 3
 perguntas numeradas) · **pergunta sem recomendação** (vira formulário — ele te
 quer com opinião) · **grelha sem registro** (DECISOES.md intacto = a próxima
 sessão pergunta tudo de novo). Lista completa: `referencias/260824_skill-completa-v5.md`.
+
+## Entrega humana — uma pasta só
+
+Todo novo documento para o usuário olhar ou decidir nasce em `00_PARA-VOCE/` do projeto, com prefixo YYMMDD. Use `bin/mb-entrega.py --projeto <raiz> --origem <arquivo>` para organizar uma entrega já produzida: ele preserva a origem e recusa sobrescrita. Orquestracao5 faz isso automaticamente. Scripts, fontes canônicas, testes, evidências e backups ficam fora da pasta humana.
+
+Material concluído ainda útil vai para `_arquivo/<período>/`; pontual antigo comprovadamente sem uso pode ser apagado conforme autorização. Conferir referências antes; preservar backup de produção e o dia corrente. O painel vivo existente mantém seu caminho até migrar seus consumidores; ofereça um acesso a ele na pasta humana. Cite sempre a pasta completa de entrega.

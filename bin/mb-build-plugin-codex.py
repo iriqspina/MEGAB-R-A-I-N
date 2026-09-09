@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Monta e confere o plugin Codex a partir de fontes rastreadas da central.
 
-As cinco skills compartilhadas vêm de ``motor/skills``. O manifesto e a skill
+As skills compartilhadas vêm de ``motor/skills``. O manifesto e a skill
 ``registrar-licao`` são específicos do Codex e vivem em
 ``motor/plugin-megabrain-codex``. Nenhum arquivo preexistente no destino é
 tratado como fonte.
@@ -27,6 +27,16 @@ SKILLS_CANONICAS = (
     "grelhar",
     "traycer",
     "leigolanguage",
+    "conclusao-megabrain",
+    "figma-flex",
+    "codex-megabrain",
+    "orquestracao1",
+    "orquestracao3",
+    "orquestracao4",
+    "orquestracao5",
+    "hypadododiabo",
+    "quaseultracode",
+    "advogadododiabo",
 )
 SKILLS_PLUGIN = (*SKILLS_CANONICAS, "registrar-licao")
 

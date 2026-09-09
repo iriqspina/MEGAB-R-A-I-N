@@ -111,3 +111,21 @@ Depois de qualquer mudança na fonte: rodar a sincronização e abrir um alvo
 para conferir que o bloco novo chegou — não assumir que o script funcionou
 (Gate 5 aplicado aqui). Se dois agentes responderem diferente ao mesmo
 pedido simples, o diagnóstico começa comparando os blocos sincronizados.
+
+## Cabeçalho fixo em /orquestracao1 (260905)
+
+Pedido do <USUARIO> em 260905: toda resposta de uma orquestração ativa começa com
+três blocos — `📌 Prompt de origem` (o pedido literal que abriu a orquestração),
+`🧭 O que entendi` (o prompt retrabalhado, até 3 linhas) e o `TL;DR` — e só então
+o corpo no nível N0–N3 deste contrato. A regra completa, com o que muda e o que
+não muda entre respostas, está em `motor/skills/orquestracao1/SKILL.md`
+(seção "Cabeçalho fixo de resposta", v0.3). Fora de orquestração, o contrato
+acima continua igual: TL;DR primeiro.
+
+## Leigo-gate contínuo (260905)
+
+Toda resposta N1+ que explica algo mais complicado (mecanismo, arquitetura, fluxo entre
+agentes, ≥2 termos técnicos novos) ganha um bloco `🗣️ EM PORTUGUÊS` de 2–5 linhas logo
+após o TL;DR, com sensibilidade em 4 níveis calibrada pelo agente e confirmada por ele.
+Nível vigente na linha `LEIGO-GATE:` do arquivo de identidade; método e calibração em
+`motor/skills/leigolanguage/SKILL.md` §"Modo contínuo" (v1.1).

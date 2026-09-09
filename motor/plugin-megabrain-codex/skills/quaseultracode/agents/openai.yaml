@@ -1,0 +1,4 @@
+interface:
+  display_name: "Quase Ultracode"
+  short_description: "Entrega projetos grandes perto do ideal em ciclos de 5h"
+  default_prompt: "Use $quaseultracode para definir o resultado ideal, executar um ciclo grande com orçamento controlado e entregar o delta restante."

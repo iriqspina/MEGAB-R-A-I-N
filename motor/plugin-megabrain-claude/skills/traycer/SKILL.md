@@ -67,15 +67,16 @@ muda lá.
   reasoning alto. Único ponto em que a qualidade da decisão paga o token.
 - **Implementar** → Codex/GPT com reasoning alto.
 - **Varredura, extração, refactor mecânico, 1ª passada** → CLI agent
-  `260825_Kimi K2.7`. Mesma entrega, fração do custo.
+  `260905_Gemini 3.8 Flash (Antigravity)` ou `260825_Kimi K2.7`.
 - **Revisar** → harness **diferente** do que implementou. Implementou no
-  Codex, revisa no Claude; implementou no Kimi, revisa no Codex. Auto-review
+  Codex, revisa no Claude ou `260905_Gemini 3.1 Pro (Antigravity)`; implementou
+  no Kimi/Gemini, revisa no Codex. Auto-review
   é o modelo aprovando o próprio raciocínio.
 - **Review de decisão de produto** (o construído bate com o combinado) →
   sempre Opus, nunca delega.
 - Modelo local fraco gerando resposta: nunca, nem como fallback.
 
-## Agentes configurados nesta máquina (260825)
+## Agentes configurados nesta máquina (260905)
 
 Nativos, em Settings → Providers: **Claude Code**, **Codex**, **Kimi**,
 OpenCode, Cursor e o resto da lista.
@@ -88,6 +89,13 @@ projeto seria `.traycer/cli-agents/` na raiz do workspace):
   novo entre o managed do Traycer e o próprio.
 - `260825_Claude Opus (assinatura).sh` — Opus limpando `ANTHROPIC_API_KEY`
   do ambiente pra cair na sessão da assinatura em vez da chave de API.
+- `260903_Claude Fable 5.1 (assinatura).sh` — Fable 5.1 direto pelo CLI
+  da assinatura, contornando o dropdown do Traycer.
+- `260905_Gemini 3.8 Flash (Antigravity).sh` — Antigravity CLI (`agy`) com
+  `gemini-3.8-flash-high` e `--dangerously-skip-permissions`. Foco em
+  velocidade, contexto longo e execução ágil sem travar terminal.
+- `260905_Gemini 3.1 Pro (Antigravity).sh` — Antigravity CLI com
+  `gemini-3.1-pro-high` para raciocínio avançado e revisão cruzada.
 
 Regras de script (documentadas em docs.traycer.ai/extension/integrations/
 custom-cli-agents): pelo menos uma de `TRAYCER_PROMPT` ou

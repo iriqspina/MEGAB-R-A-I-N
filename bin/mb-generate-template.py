@@ -41,6 +41,9 @@ DESTINO_DEFAULT = os.path.join(CENTRAL_DEFAULT, "_github/export")
 
 # Não copiar: exclusivamente pessoais ou gerados (match por substring no caminho relativo)
 EXCLUIR = {
+    "02_entrada", "apps/ia-quota-widget",  # private input and personal account widget
+    ".venv", ".pytest_cache",  # installed dependencies/caches are not source
+    ".automations", "00_PARA-VOCE",  # personal deliveries and agent transcripts
     "cerebro", "memoria/cerebro",  # v6.2: conteúdo pessoal (wiki/pessoas/raw) nunca sai
     "_arquivo", "90_arquivo",  # v6.2: histórico congelado
     "dist", "dist", "00_painel",  # v6.2/v6.4 (01_acoes SAI como scripts/ — os .cmd fazem parte do pacote): instaláveis (.plugin/.skill)
@@ -87,7 +90,6 @@ EXCLUIR = {
     "mb-sync-all.cmd",
     "260810_SKILL-divergente.bak.md",
     ".bak",
-    "skills/conclusao-megabrain",
     # 260824 (v7.1): o backup imaculado do usuário (dna/usuario/) É pessoal
     # por definição — nunca sai no pacote público. Antes daqui, o card de
     # pessoas copiado pro DNA vazava pro export.

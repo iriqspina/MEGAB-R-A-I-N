@@ -10,7 +10,9 @@ recorrente do projeto: "registrado != disco"). Aqui as edições são código.
 O que faz:
   1. skills/megabrain/SKILL.md   ← <central>/skills/megabrain/SKILL.md
      (remove os gatilhos legados "/metaprotocolo" e "metaclaude" da description)
-  1b. skills/ingerir/SKILL.md e skills/grelhar/SKILL.md ← cópia literal da central
+  1b. skills/ingerir, grelhar, traycer, leigolanguage, orquestracao1,
+      hypadododiabo e quaseultracode
+      ← cópia literal da central
   2. skills/registrar-licao/SKILL.md ← <central>/plugin-megabrain/skills/registrar-licao/SKILL.md
      (/megabrain:licao → /registrar-licao; ~/.kimi-code/SYSTEM.md → genérico;
       aviso de que o hook pode não rodar)
@@ -91,6 +93,15 @@ def mapa_fontes(c: Path) -> dict[str, tuple[Path, object]]:
         "skills/grelhar/SKILL.md": (u.achar(c, "skills/grelhar/SKILL.md"), lambda t: t),  # v6.3 (260824)
         "skills/traycer/SKILL.md": (u.achar(c, "skills/traycer/SKILL.md"), lambda t: t),  # v6.4 (260825)
         "skills/leigolanguage/SKILL.md": (u.achar(c, "skills/leigolanguage/SKILL.md"), lambda t: t),  # v6.5 (260825)
+        "skills/orquestracao1/SKILL.md": (u.achar(c, "skills/orquestracao1/SKILL.md"), lambda t: t),
+        "skills/orquestracao3/SKILL.md": (u.achar(c, "skills/orquestracao3/SKILL.md"), lambda t: t),
+        "skills/orquestracao4/SKILL.md": (u.achar(c, "skills/orquestracao4/SKILL.md"), lambda t: t),
+        "skills/orquestracao5/SKILL.md": (u.achar(c, "skills/orquestracao5/SKILL.md"), lambda t: t),
+        "skills/hypadododiabo/SKILL.md": (u.achar(c, "skills/hypadododiabo/SKILL.md"), lambda t: t),
+        "skills/quaseultracode/SKILL.md": (u.achar(c, "skills/quaseultracode/SKILL.md"), lambda t: t),
+        "skills/advogadododiabo/SKILL.md": (u.achar(c, "skills/advogadododiabo/SKILL.md"), lambda t: t),
+        "skills/conclusao-megabrain/SKILL.md": (u.achar(c, "skills/conclusao-megabrain/SKILL.md"), lambda t: t),
+        "skills/figma-flex/SKILL.md": (u.achar(c, "skills/figma-flex/SKILL.md"), lambda t: t),
     }
 
 
@@ -140,7 +151,13 @@ def validar(plugin: Path) -> list[str]:
                              f"(o instalador recusa acima de {LIMITE_DESCRIPTION})")
     for rel in ("skills/megabrain/SKILL.md", "skills/registrar-licao/SKILL.md",
                 "skills/ingerir/SKILL.md", "skills/grelhar/SKILL.md",
-                "skills/traycer/SKILL.md", "skills/leigolanguage/SKILL.md"):
+                "skills/traycer/SKILL.md", "skills/leigolanguage/SKILL.md",
+                "skills/orquestracao1/SKILL.md", "skills/orquestracao3/SKILL.md",
+                "skills/orquestracao4/SKILL.md",
+                "skills/orquestracao5/SKILL.md",
+                "skills/hypadododiabo/SKILL.md",
+                "skills/quaseultracode/SKILL.md", "skills/advogadododiabo/SKILL.md",
+                "skills/conclusao-megabrain/SKILL.md", "skills/figma-flex/SKILL.md"):
         t = u.safe_read_text(plugin / rel) or ""
         if not frontmatter_ok(t):
             erros.append(f"{rel}: frontmatter sem name/description")

@@ -1,7 +1,7 @@
 {
   "name": "megabrain",
   "version": "1.6.3+codex.20260825202815",
-  "description": "Protocolo multi-agente para entregas verificadas: gates anti-slop, Duplo Diamante, orçamento de contexto, cérebro por projeto e handoff.",
+  "description": "Protocolo multi-agente para entregas verificadas: gates anti-slop, Duplo Diamante, or\u00e7amento de contexto, c\u00e9rebro por projeto e handoff.",
   "author": {
     "name": "iriqspina"
   },
@@ -9,7 +9,7 @@
   "interface": {
     "displayName": "MEGABRAIN",
     "shortDescription": "Roteiro anti-slop para entregas verificadas.",
-    "longDescription": "MEGABRAIN para Codex: protocolo operacional e skills de ingestão, grelha, Traycer, linguagem leiga e registro autorizado de lições.",
+    "longDescription": "MEGABRAIN para Codex: protocolo operacional e skills de ingest\u00e3o, grelha, Traycer, linguagem leiga e registro autorizado de li\u00e7\u00f5es.",
     "developerName": "iriqspina",
     "category": "Productivity",
     "capabilities": [

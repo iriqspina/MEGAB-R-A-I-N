@@ -15,7 +15,7 @@ set "DESKTOP=<USER_HOME>\AppData\Roaming\kimi-desktop\daimon-share\daimon\skills
 rem  260825: skills que nasceram DEPOIS do plugin Kimi e ficavam de fora do
 rem  refresh — o Kimi tinha 4 de 6 e /grelhar nao existia pra ele. A fonte de
 rem  skill e sempre motor\skills\<nome>, nunca a copia dentro do plugin.
-set "SKILLS_EXTRA=grelhar traycer conclusao-megabrain"
+set "SKILLS_EXTRA=grelhar traycer leigolanguage conclusao-megabrain figma-flex orquestracao1 orquestracao3 hypadododiabo quaseultracode advogadododiabo"
 
 echo.
 echo  ================================================================
@@ -60,7 +60,7 @@ if exist "%DESKTOP%\.." (
   echo        OK ^(kimi-desktop tambem^)
 )
 
-rem --- 3b. skills novas: grelhar, traycer, conclusao --------------
+rem --- 3b. skills novas: copiar sempre da fonte canonica ---------
 echo  [3b] copiando as skills novas da central:
 for %%S in (%SKILLS_EXTRA%) do (
   if exist "%FONTE%\motor\skills\%%S\SKILL.md" robocopy "%FONTE%\motor\skills\%%S" "%PLUGIN%\skills\%%S" /E /R:1 /W:1 >nul

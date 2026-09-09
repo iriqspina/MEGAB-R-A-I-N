@@ -43,7 +43,7 @@ class TestBuildPluginCodex(unittest.TestCase):
         )
         return raiz
 
-    def test_destino_vazio_recebe_manifesto_e_seis_skills(self):
+    def test_destino_vazio_recebe_manifesto_e_nove_skills(self):
         central = self.central_fake()
         destino = self.tmpdir()
         build.montar(central, destino)
@@ -52,6 +52,10 @@ class TestBuildPluginCodex(unittest.TestCase):
         self.assertEqual(build.validar(destino), [])
         self.assertTrue((destino / ".codex-plugin/plugin.json").is_file())
         self.assertTrue((destino / "skills/registrar-licao/SKILL.md").is_file())
+        self.assertTrue((destino / "skills/orquestracao1/SKILL.md").is_file())
+        self.assertTrue((destino / "skills/orquestracao4/SKILL.md").is_file())
+        self.assertTrue((destino / "skills/hypadododiabo/SKILL.md").is_file())
+        self.assertTrue((destino / "skills/quaseultracode/SKILL.md").is_file())
         self.assertEqual(
             set(build._arquivos_atuais(destino)),
             set(build.arquivos_esperados(central)),

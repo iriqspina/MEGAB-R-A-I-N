@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "central": "AUTO",
+  "providers": {
+    "codex": {
+      "executable": "codex",
+      "model": "gpt-5.6-sol",
+      "effort": "high"
+    },
+    "claude": {
+      "executable": "claude",
+      "model": "claude-fable-5",
+      "effort": "low",
+      "review_effort": "medium"
+    },
+    "spark": {
+      "executable": "codex",
+      "model": "gpt-5.3-codex-spark",
+      "effort": "low"
+    }
+  },
+  "roles": {
+    "probe": "spark",
+    "checklist": "spark"
+  },
+  "max_rounds": 2,
+  "max_workers": 2,
+  "timeout_seconds": 240,
+  "max_input_chars": 50000,
+  "max_output_chars": 120000
+}
