@@ -56,3 +56,11 @@ motor/dna/indice-cerebro.json
 # churn de 18 KB por execução sem contar história nenhuma — a história de
 # verdade está nos .md que ele lê pra montar.
 dados/estado.json
+
+# --- logs de execucao das automacoes: regeneraveis ---
+.automations/**/*.log
+
+# --- binarios de entrega do pets: ficam no disco, nao no historico (624 MB) ---
+00_PARA-VOCE/**/*.exe
+00_PARA-VOCE/**/*.zip
+00_PARA-VOCE/**/*.wav

@@ -1,5 +1,0 @@
-interface:
-  display_name: "Orquestração 1"
-  short_description: "Sol coordena workers e Fable revisa no fim"
-  default_prompt: "Use $orquestracao1 para decompor esta entrega, coordenar workers e submeter o candidato final à revisão final do Fable."
-

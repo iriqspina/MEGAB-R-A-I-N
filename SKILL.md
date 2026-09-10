@@ -35,12 +35,35 @@ conversa) = completo 0–7 · **rascunho/exploração** = leve 1·4·5 · **perg
 papo** = nenhum (rodar protocolo em papo é o próprio slop). Subir de leve pra
 completo no meio é barato; descer não existe.
 
-## Roteador de modos opcionais
+## Início de sessão e roteador de orquestração
+
+**Antes de qualquer trabalho novo:** rode `python <MEGABRAIN_ROOT>/bin/mb-inicio-sessao.py`.
+Ele mostra as skills canônicas realmente disponíveis nesta central, confirma que
+`/orquestracao1` é a V6 padrão e entrega uma instrução curta para a IA ler as
+skills necessárias. O catálogo é uma triagem: **não substitui ler por inteiro a
+`SKILL.md` da skill que será usada.**
+
+Toda entrega nova que seja não trivial e decomponível entra por
+`/orquestracao1` (V6) como padrão, sem esperar uma segunda confirmação. Não
+abra uma execução vazia nem use V6 para pergunta simples, conversa, agenda ou
+correção local óbvia; nesses casos o modo padrão é o trabalho direto. Retomada
+histórica ou pedido explícito de V5 usa `/orquestracao2`.
+
+**Worker Codex padrão:** em tarefa leve, delimitada e verificável (sondagem,
+checklist, varredura, extração ou teste), priorize o Codex Spark se a cota do
+próprio Spark estiver medida saudável. Ele usa a janela separada
+`codex_bengalfox`; nunca some seu saldo ao do Codex/Sol. Implementação, decisão,
+revisão e aceite continuam nos papéis fortes configurados.
+
+Para o <USUARIO>, o comando clicável é
+`01_acoes/12_INICIAR-SESSAO-ORQUESTRADA.cmd`. Ele não dispara modelos nem gasta
+cota: apenas confere o mapa de skills e deixa pronto o texto que deve abrir a
+conversa com qualquer IA.
 
 No início de uma nova conversa ou projeto, oferecer uma vez, sem bloquear nem
 transformar em pergunta:
 
-> Modos opcionais: /orquestracao1 para trabalho multiagente · /orquestracao3 para plano verificável · /orquestracao4 para Codex + Claude + Gemini com uso medido · /hypadododiabo para explorar o melhor caso com limites reais.
+> Orquestração: /orquestracao1 é a V6 primária para trabalho multiagente novo; /orquestracao2 mantém a V5 apenas para retomada ou pedido explícito. /hypadododiabo explora o melhor caso com limites reais.
 
 Se o início caracterizar **projeto grande**, sugerir também
 `/quaseultracode`: ciclo ideal-first de até 5 horas, com orçamento
@@ -51,13 +74,8 @@ Uma sugestão nunca ativa um modo. Durante o andamento, sugerir somente numa
 **transição material**: novo escopo, decisão difícil, bloqueio, pré-implementação
 de risco, pré-entrega não trivial ou análise claramente unilateral.
 
-- `/orquestracao1`: trabalho decomponível, múltiplas responsabilidades ou
-  entrega com risco que justifique coordenação e verificação separadas.
-- `/orquestracao3`: plano tipado, adversário cross-vendor e fechamento de grafo
-  quando um plano incompleto tiver custo material.
-- `/orquestracao4`: perfil pessoal de Codex + Claude + Gemini com checkpoints
-  de quota/contexto/tokens, clientes nativos e failover de ponte.
-- `/orquestracao5`: motor local de loops e swarm entre Claude Code, Sol e Spark; recebe estado/fontes do projeto, guarda provas e limita reparos. Use `bin/mb-orquestracao.py`; contrato em `skills/orquestracao5/SKILL.md`. Complementa /orquestracao4 e não substitui os gates.
+- `/orquestracao1`: V6 primária. Plano com revisor independente, produção, revisão final, rota explícita e evidências locais. Use em trabalho novo e decomponível.
+- `/orquestracao2`: V5 de compatibilidade. Use para uma execução histórica ou quando <USUARIO> pedir expressamente o fluxo anterior.
 - `/hypadododiabo`: upside plausível subexplorado ou análise unilateralmente
   negativa; ampliar o melhor caso sem propaganda.
 - `/quaseultracode`: projeto grande cujo ideal estimado caiba em até 5 horas e
@@ -150,7 +168,12 @@ agente não começa do zero). Detalhe passo a passo, quando precisar:
   telemetria do relatório. Passou de **80 mil chars injetados** ou **40 arquivos
   lidos** na sessão → HANDOFF + commit + recomeçar. Nenhum agente sabe seu
   próprio % de janela; esses dois números ele sabe.
-  `referencias/260810_context-engineering.md`.
+  `referencias/260810_context-engineering.md`. A orquestração V6 também mede
+  cota antes, em cada despacho e ao fechar a execução: o detalhe auditável fica
+  em `quota-lifecycle.jsonl` da run e a central mantém
+  `dados/telemetria-orquestracao.json` compacto (240 eventos recentes; passado
+  agregado por dia/provider). A rota usa a cota viva; o histórico só informa
+  otimizações futuras, sem transformar dado velho em disponibilidade atual.
 - **3 GERAR** — estrutura antes de prosa; uma afirmação por parágrafo; fato do
   mundo atual → buscar, nunca de memória; número/data/preço verificado ou
   `[ESTIMATIVA]`; específico > geral. **Antes de editar peça compartilhada**

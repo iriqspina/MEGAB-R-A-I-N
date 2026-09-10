@@ -134,6 +134,45 @@ class TestTemporariosNaoSaem(Base):
         for nome in ("ESTADO.md", "HANDOFF.md", "DECISOES.md"):
             self.assertEqual(list(destino.rglob(nome)), [], nome)
 
+    def test_gerador_exclui_pets_local_com_logs_e_licoes(self):
+        """Pets é local; build, logs e lições não pertencem ao template público."""
+        t = self.tmp()
+        central = t / "central"
+        central.mkdir()
+        (central / "VERSAO.txt").write_text("2026-09-10 · v7.13 — fixture\n", encoding="utf-8")
+        pets = central / "pets"
+        pets.mkdir()
+        (pets / "build-engine.log").write_text("log interno", encoding="utf-8")
+        (pets / "LICOES.md").write_text("lição local", encoding="utf-8")
+        destino = central / "_github" / "export"
+
+        self.assertTrue(gt.gerar_template(str(central), str(destino)))
+        self.assertFalse((destino / "pets").exists())
+
+    def test_gerador_exclui_dados_reais_de_cota_e_estado(self):
+        central = self.tmp() / "central"
+        (central / "dados").mkdir(parents=True)
+        (central / "VERSAO.txt").write_text("2026-09-10 · fixture\n", encoding="utf-8")
+        (central / "dados" / "orcamento_ia.json").write_text(
+            '{"claude": {"used_percent": 75}}\n', encoding="utf-8")
+        destino = central / "_github" / "export"
+
+        self.assertTrue(gt.gerar_template(str(central), str(destino)))
+        self.assertFalse((destino / "dados").exists())
+
+    def test_readme_publico_vira_a_entrada_raiz_do_github(self):
+        central = self.tmp() / "central"
+        (central / "docs").mkdir(parents=True)
+        (central / "VERSAO.txt").write_text("2026-09-10 · fixture\n", encoding="utf-8")
+        (central / "docs" / "README-publico.md").write_text(
+            "# Público\nC:\\Users\\<USUARIO>\n", encoding="utf-8")
+        destino = central / "_github" / "export"
+
+        self.assertTrue(gt.gerar_template(str(central), str(destino)))
+        readme = (destino / "README.md").read_text(encoding="utf-8")
+        self.assertIn("# Público", readme)
+        self.assertIn("<USER_HOME>", readme)
+
 
 class TestManifestoComProveniencia(Base):
     def fixture_plugin(self) -> tuple[Path, Path]:

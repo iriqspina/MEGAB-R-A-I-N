@@ -42,6 +42,10 @@ DESTINO_DEFAULT = os.path.join(CENTRAL_DEFAULT, "_github/export")
 # Não copiar: exclusivamente pessoais ou gerados (match por substring no caminho relativo)
 EXCLUIR = {
     "02_entrada", "apps/ia-quota-widget",  # private input and personal account widget
+    # `dados/` contém estado e telemetria reais da conta/máquina (fila,
+    # percentuais de cota, janelas e histórico compacto). O template leva o
+    # código que os recria, nunca uma fotografia do uso de uma pessoa.
+    "dados/",
     ".venv", ".pytest_cache",  # installed dependencies/caches are not source
     ".automations", "00_PARA-VOCE",  # personal deliveries and agent transcripts
     "cerebro", "memoria/cerebro",  # v6.2: conteúdo pessoal (wiki/pessoas/raw) nunca sai
@@ -108,6 +112,10 @@ EXCLUIR = {
     # 260821 (v6.1): com a barra final, pra NÃO casar com plugin-megabrain-claude/
     # (o plugin Cowork/Claude é versionado e sai no pacote, sanitizado).
     "plugin-megabrain/",
+    # Pets é um aplicativo local com builds, logs e estado do usuário. Não há
+    # pacote público versionado dele neste repositório; incluí-lo por acidente
+    # criou um export de 8 GB em 260910.
+    "pets",
 }
 
 # Pacotes binários gerados (zip do plugin Claude): o validador de privacidade
@@ -435,6 +443,14 @@ def gerar_template(central, destino):
     skill_src = u.achar(central_path, "skills/megabrain/SKILL.md")
     if skill_src.is_file():
         if not copiar_sanitizando(str(skill_src), str(destino_path / "SKILL.md")):
+            erros = True
+
+    # README público é uma peça própria: o README interno narra operação e
+    # histórico locais; a raiz do GitHub precisa explicar o template sem expor
+    # esse contexto. A fonte continua versionada e passa pela sanitização.
+    readme_publico = central_path / "docs" / "README-publico.md"
+    if readme_publico.is_file():
+        if not copiar_sanitizando(str(readme_publico), str(destino_path / "README.md")):
             erros = True
 
     # VERSAO.txt público: só a versão atual, sem histórico com nomes de projeto

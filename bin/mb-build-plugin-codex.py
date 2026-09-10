@@ -31,12 +31,12 @@ SKILLS_CANONICAS = (
     "figma-flex",
     "codex-megabrain",
     "orquestracao1",
-    "orquestracao3",
-    "orquestracao4",
-    "orquestracao5",
+    "orquestracao2",
     "hypadododiabo",
     "quaseultracode",
     "advogadododiabo",
+    "pet",
+    "marcelinhopet",
 )
 SKILLS_PLUGIN = (*SKILLS_CANONICAS, "registrar-licao")
 

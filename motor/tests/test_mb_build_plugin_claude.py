@@ -42,10 +42,10 @@ class TestMapaFontes(unittest.TestCase):
         texto = fonte.read_text(encoding="utf-8")
         self.assertEqual(derivar(texto), texto)
 
-    def test_orquestracao4_vem_da_fonte_canonica(self):
+    def test_orquestracao2_vem_da_fonte_canonica(self):
         mapa = build.mapa_fontes(RAIZ)
-        fonte, derivar = mapa["skills/orquestracao4/SKILL.md"]
-        self.assertEqual(fonte, RAIZ / "motor/skills/orquestracao4/SKILL.md")
+        fonte, derivar = mapa["skills/orquestracao2/SKILL.md"]
+        self.assertEqual(fonte, RAIZ / "motor/skills/orquestracao2/SKILL.md")
         texto = fonte.read_text(encoding="utf-8")
         self.assertEqual(derivar(texto), texto)
 
@@ -55,9 +55,9 @@ class TestBootstrapDeModos(unittest.TestCase):
         hook = (RAIZ / "motor" / build.PLUGIN_DIR /
                 "scripts" / "260821_session-start.js")
         texto = hook.read_text(encoding="utf-8")
-        oferta = ("Modos opcionais: /orquestracao1 para trabalho multiagente · "
-                  "/orquestracao4 para Codex + Claude + Gemini com uso medido · "
-                  "/hypadododiabo para explorar o melhor caso com limites reais.")
+        oferta = ("Orquestração: /orquestracao1 é a V6 primária para trabalho multiagente novo; "
+                  "/orquestracao2 mantém a V5 apenas para retomada ou pedido explícito. "
+                  "/hypadododiabo explora o melhor caso com limites reais.")
         self.assertEqual(texto.count(oferta), 1)
         self.assertNotIn("?", oferta)
 
@@ -129,26 +129,11 @@ class TestContratosDeOrquestracao(unittest.TestCase):
         self.quase = (skills / "quaseultracode" / "SKILL.md").read_text(encoding="utf-8")
         self.hypado = (skills / "hypadododiabo" / "SKILL.md").read_text(encoding="utf-8")
 
-    def test_fable_normal_medium_e_variantes_justificadas(self):
-        self.assertIn("O padrão de entrega elegível é `MEDIUM`", self.orq)
-        self.assertIn("`FABLE_REVISOU_LOW_DECLARADO`", self.orq)
-        self.assertIn("ação irreversível ou destrutiva", self.orq)
-        self.assertIn("`FABLE_REVISOU_XHIGH`", self.orq)
-
-    def test_fable_latest_resolve_familia_sem_substituicao(self):
-        self.assertIn("família Fable com versão `>= 5.1`", self.orq)
-        self.assertIn("preferir a maior versão compatível", self.orq.lower())
-        self.assertIn("não trocar por Sonnet, Opus", self.orq)
-
-    def test_kimi_fallback_so_com_fable_perto_do_limite_e_saude_medida(self):
-        self.assertIn("`FABLE_PERTO_DO_LIMITE`", self.orq)
-        self.assertIn("Kimi `>=3` saudável", self.orq)
-        self.assertIn("disponibilidade real e a cota", self.orq)
-        self.assertIn("sem chamar Fable antes", self.orq)
-        self.assertIn("uma única chamada final de revisor", self.orq)
-        self.assertIn("KIMI_FALLBACK_REVISOU_MEDIUM", self.orq)
-        self.assertIn("modelo Kimi exato", self.orq)
-        self.assertIn("não inventar sucessor", self.orq)
+    def test_v6_declara_rota_revisao_e_limites(self):
+        self.assertIn("V6 primária", self.orq)
+        self.assertIn("Codex revisa o plano de forma independente", self.orq)
+        self.assertIn("`review_approved` significa somente", self.orq)
+        self.assertIn("`NAO_MEDIDO`", self.orq)
 
     def test_casa_nao_e_cabana_e_ponte_tem_cadeia(self):
         self.assertIn("se o pedido é **casa**, uma **cabana** não é solução", self.quase)

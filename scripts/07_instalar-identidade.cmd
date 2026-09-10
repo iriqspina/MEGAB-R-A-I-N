@@ -6,6 +6,7 @@ rem Edite SO a fonte. Nunca edite as copias.
 
 set "FONTE=%~dp0..\memoria\identidade\260810_memoria-pessoal.md"
 set "SCRIPT=%~dp0..\bin\mb-sync-memoria.py"
+set "CENTRAL=%~dp0.."
 
 set "PY=python"
 where python >nul 2>nul || (
@@ -38,4 +39,6 @@ for %%F in ("%USERPROFILE%\.claude\CLAUDE.md" "%USERPROFILE%\.gemini\GEMINI.md" 
 )
 echo.
 echo Pronto. Feche e reabra Claude Code / Kimi / Codex para recarregar.
+"%PY%" "%CENTRAL%\bin\mb-pet.py" --central "%CENTRAL%" offers
+echo.
 pause

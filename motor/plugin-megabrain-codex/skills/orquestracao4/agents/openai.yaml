@@ -1,5 +1,0 @@
-interface:
-  display_name: "Orquestração 4"
-  short_description: "Codex + Claude com quota e failover nativo"
-  default_prompt: "Use $orquestracao4 para coordenar Codex, Claude e Gemini com checagens de uso, handoff e fallback nativo."
-

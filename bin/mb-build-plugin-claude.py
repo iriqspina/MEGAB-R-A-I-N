@@ -94,14 +94,14 @@ def mapa_fontes(c: Path) -> dict[str, tuple[Path, object]]:
         "skills/traycer/SKILL.md": (u.achar(c, "skills/traycer/SKILL.md"), lambda t: t),  # v6.4 (260825)
         "skills/leigolanguage/SKILL.md": (u.achar(c, "skills/leigolanguage/SKILL.md"), lambda t: t),  # v6.5 (260825)
         "skills/orquestracao1/SKILL.md": (u.achar(c, "skills/orquestracao1/SKILL.md"), lambda t: t),
-        "skills/orquestracao3/SKILL.md": (u.achar(c, "skills/orquestracao3/SKILL.md"), lambda t: t),
-        "skills/orquestracao4/SKILL.md": (u.achar(c, "skills/orquestracao4/SKILL.md"), lambda t: t),
-        "skills/orquestracao5/SKILL.md": (u.achar(c, "skills/orquestracao5/SKILL.md"), lambda t: t),
+        "skills/orquestracao2/SKILL.md": (u.achar(c, "skills/orquestracao2/SKILL.md"), lambda t: t),
         "skills/hypadododiabo/SKILL.md": (u.achar(c, "skills/hypadododiabo/SKILL.md"), lambda t: t),
         "skills/quaseultracode/SKILL.md": (u.achar(c, "skills/quaseultracode/SKILL.md"), lambda t: t),
         "skills/advogadododiabo/SKILL.md": (u.achar(c, "skills/advogadododiabo/SKILL.md"), lambda t: t),
         "skills/conclusao-megabrain/SKILL.md": (u.achar(c, "skills/conclusao-megabrain/SKILL.md"), lambda t: t),
         "skills/figma-flex/SKILL.md": (u.achar(c, "skills/figma-flex/SKILL.md"), lambda t: t),
+        "skills/pet/SKILL.md": (u.achar(c, "skills/pet/SKILL.md"), lambda t: t),
+        "skills/marcelinhopet/SKILL.md": (u.achar(c, "skills/marcelinhopet/SKILL.md"), lambda t: t),
     }
 
 
@@ -152,12 +152,11 @@ def validar(plugin: Path) -> list[str]:
     for rel in ("skills/megabrain/SKILL.md", "skills/registrar-licao/SKILL.md",
                 "skills/ingerir/SKILL.md", "skills/grelhar/SKILL.md",
                 "skills/traycer/SKILL.md", "skills/leigolanguage/SKILL.md",
-                "skills/orquestracao1/SKILL.md", "skills/orquestracao3/SKILL.md",
-                "skills/orquestracao4/SKILL.md",
-                "skills/orquestracao5/SKILL.md",
+                "skills/orquestracao1/SKILL.md", "skills/orquestracao2/SKILL.md",
                 "skills/hypadododiabo/SKILL.md",
                 "skills/quaseultracode/SKILL.md", "skills/advogadododiabo/SKILL.md",
-                "skills/conclusao-megabrain/SKILL.md", "skills/figma-flex/SKILL.md"):
+                "skills/conclusao-megabrain/SKILL.md", "skills/figma-flex/SKILL.md",
+                "skills/pet/SKILL.md", "skills/marcelinhopet/SKILL.md"):
         t = u.safe_read_text(plugin / rel) or ""
         if not frontmatter_ok(t):
             erros.append(f"{rel}: frontmatter sem name/description")

@@ -99,6 +99,11 @@ def load_config():
         val = config.get(key)
         if type(val) is not int or not minimum <= val <= maximum:
             raise RunError(f"Configuração inválida: {key}")
+    version = config.get("version", 1)
+    if type(version) is not int or version not in (1, 2):
+        raise RunError("Configuração inválida: version suporta apenas 1 ou 2")
+    if version == 2:
+        validate_workflow_v2(config)
     return config
 
 
@@ -140,26 +145,45 @@ def auth_status(config):
     return results
 
 
+def _load_central_module(config, relative_path, module_name):
+    source = Path(config["central"]) / relative_path
+    if not source.is_file():
+        return None
+    spec = importlib.util.spec_from_file_location(module_name, source)
+    module = importlib.util.module_from_spec(spec)
+    try:
+        spec.loader.exec_module(module)
+        return module
+    except Exception:
+        return None
+
+
+def write_budget_status(config, provider, pacing):
+    """Ritmo é telemetria consultiva — nunca deve derrubar um despacho."""
+    path = Path(config["central"]) / "dados" / "orcamento_ia.json"
+    try:
+        current = read_json(path) if path.exists() else {}
+        if not isinstance(current, dict):
+            current = {}
+        current[provider] = {"pacing": pacing, "updated_at": now()}
+        atomic(path, current)
+    except Exception:
+        pass
+
+
 class Quotas:
     """Reuse the central's read-only adapter. Cache failed requests to avoid 429 loops."""
     def __init__(self, config):
+        self.config = config
         self.lock = threading.Lock()
         self.cache = {}
-        self.module = None
-        source = Path(config["central"]) / "apps/ia-quota-widget/providers.py"
-        if source.is_file():
-            spec = importlib.util.spec_from_file_location("automations_quota", source)
-            module = importlib.util.module_from_spec(spec)
-            try:
-                spec.loader.exec_module(module)
-                self.module = module
-            except Exception:
-                pass
+        self.module = _load_central_module(config, "apps/ia-quota-widget/providers.py", "automations_quota")
+        self.pacing_module = _load_central_module(config, "apps/ia-quota-widget/budget_pacing.py", "automations_budget_pacing")
 
-    def snapshot(self, provider):
+    def snapshot(self, provider, *, force=False):
         with self.lock:
             cached = self.cache.get(provider)
-            if cached and time.monotonic() - cached[0] < 300:
+            if not force and cached and time.monotonic() - cached[0] < 300:
                 return dict(cached[1], cache=True)
             value = {"provider": provider, "status": "NAO_MEDIDO", "windows": [], "fetched_at": None}
             if self.module:
@@ -174,19 +198,275 @@ class Quotas:
                             value["status"] = "NAO_MEDIDO"
                 except Exception:
                     pass
+            # Ritmo é calculado só na leitura real (não no cache-hit acima), pra
+            # não gravar o mesmo dado repetido no arquivo compartilhado a cada
+            # despacho dentro da mesma janela de 300s.
+            if self.pacing_module and value.get("status") == "ok":
+                try:
+                    pacing = self.pacing_module.provider_pacing(value)
+                    value["pacing"] = pacing
+                    write_budget_status(self.config, provider, pacing)
+                except Exception:
+                    pass
             self.cache[provider] = (time.monotonic(), value)
             return value
 
 
-def provider_settings(config, provider, kind):
+_QUOTA_PROVIDERS = ("claude", "codex", "spark")
+_TELEMETRY_RECENT_LIMIT = 240
+
+
+def compact_quota_snapshot(snapshot):
+    """Keep decision-relevant quota evidence without storing provider payloads."""
+    snapshot = snapshot or {}
+    return {
+        "status": snapshot.get("status", "NAO_MEDIDO"),
+        "fetched_at": snapshot.get("fetched_at"),
+        "cache": bool(snapshot.get("cache")),
+        "pacing": (snapshot.get("pacing") or {}).get("status", "NAO_MEDIDO"),
+        "windows": [{key: window.get(key) for key in ("id", "used_percent", "resets_at")}
+                    for window in snapshot.get("windows", []) or []],
+    }
+
+
+def quota_summary(config, records):
+    """Compress old quota observations into daily/provider counters.
+
+    Current routing remains based on a live measurement. History helps identify
+    recurring availability and usage patterns, but never pretends an old
+    percentage is the present quota.
+    """
+    records = sorted(records, key=lambda item: item.get("at", ""))
+    recent = records[-_TELEMETRY_RECENT_LIMIT:]
+    archive = {}
+    for record in records[:-_TELEMETRY_RECENT_LIMIT]:
+        day = str(record.get("at", ""))[:10] or "SEM_DATA"
+        for provider, sample in (record.get("providers") or {}).items():
+            key = f"{day}:{provider}"
+            entry = archive.setdefault(key, {"day": day, "provider": provider,
+                                             "samples": 0, "measured": 0,
+                                             "cached": 0, "status": {}})
+            entry["samples"] += 1
+            entry["measured"] += int(sample.get("status") == "ok")
+            entry["cached"] += int(bool(sample.get("cache")))
+            status = sample.get("status", "NAO_MEDIDO")
+            entry["status"][status] = entry["status"].get(status, 0) + 1
+    return {"schema": 1, "updated_at": now(), "policy": {
+                "recent_exact_events": _TELEMETRY_RECENT_LIMIT,
+                "older_events": "agregados por dia e provider; escolha usa leitura ao vivo",
+            }, "recent": recent, "archive": list(archive.values())}
+
+
+def refresh_quota_summary(config):
+    """Regenerate the lightweight central view from auditable per-run files."""
+    runs_root = ROOT / "runs"
+    records = []
+    if runs_root.is_dir():
+        for path in sorted(runs_root.glob("*/quota-lifecycle.jsonl")):
+            try:
+                records.extend(json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip())
+            except (OSError, ValueError):
+                continue
+    destination = Path(config["central"]) / "dados" / "telemetria-orquestracao.json"
+    try:
+        atomic(destination, quota_summary(config, records))
+    except OSError:
+        # A useful run must not fail merely because the shared summary is busy.
+        pass
+
+
+# Espelha budget_pacing.STATUS_RANK (pior primeiro). Duplicado em vez de
+# importado porque pick_provider precisa funcionar em teste puro, sem um
+# Quotas/central de verdade — 4 chaves curtas, baixo risco de divergir.
+_PACING_STATUS_RANK = {"ok": 0, "NAO_MEDIDO": 1, "desacelerar": 2, "pause": 3}
+_EFFORT_RANK = {"low": 0, "medium": 1, "high": 2, "xhigh": 3, "max": 4}
+
+
+def pick_provider(candidates, quotas_by_provider, config=None, *, sensitivity="equilibrado"):
+    """Escolhe 1 provider entre `candidates` pelo par (ritmo medido, effort
+    configurado como proxy de capacidade) — nunca só pelo ritmo: um provider
+    de effort baixo sempre "ok" não deveria vencer por padrão um de effort
+    alto só porque o primeiro nunca é exigido.
+
+    `quotas_by_provider`: {provider: snapshot de Quotas.snapshot(provider)} —
+    cada snapshot só tem a chave "pacing" quando a leitura veio "ok" (ver
+    Quotas.snapshot); ausência vira NAO_MEDIDO aqui, nunca 0%.
+
+    `sensitivity`: "capaz" prefere sempre o effort mais alto configurado,
+    só desiste dele se estiver "pause"; "economico" prefere sempre o ritmo
+    mais folgado, trata até NAO_MEDIDO como motivo pra preferir outro;
+    "equilibrado" (padrão) fica com o mais capaz enquanto o ritmo dele for
+    "ok" ou NAO_MEDIDO, e só troca quando ele estiver "desacelerar"/"pause" e
+    houver alternativa melhor — captura "bom e capaz, adaptando quando
+    precisar" (preferência registrada em pets/DECISOES.md, 260909).
+
+    Nunca escolhe um "pause" havendo não-pausado, seja qual for a
+    sensibilidade — é isso que impede "trocar de agente só transfere o
+    esgotamento pro outro".
+    """
+    if not candidates:
+        raise ValueError("pick_provider precisa de ao menos um candidato")
+
+    def pacing_rank(provider):
+        pacing = (quotas_by_provider.get(provider) or {}).get("pacing") or {}
+        return _PACING_STATUS_RANK.get(pacing.get("status", "NAO_MEDIDO"), 1)
+
+    def capability_rank(provider):
+        settings = (config or {}).get("providers", {}).get(provider, {})
+        return _EFFORT_RANK.get(settings.get("effort", ""), 0)
+
+    not_paused = [p for p in candidates if pacing_rank(p) < _PACING_STATUS_RANK["pause"]]
+    pool = not_paused or list(candidates)
+
+    if sensitivity == "capaz":
+        pool.sort(key=lambda p: (-capability_rank(p), pacing_rank(p)))
+    elif sensitivity == "economico":
+        pool.sort(key=lambda p: (pacing_rank(p), -capability_rank(p)))
+    else:
+        degraded = _PACING_STATUS_RANK["desacelerar"]
+        pool.sort(key=lambda p: (pacing_rank(p) >= degraded, -capability_rank(p), pacing_rank(p)))
+    return pool[0]
+
+
+def resolve_role_provider(engine, role_name, default, candidates=("codex", "spark")):
+    """Resolve config["roles"][role_name]. "spark_preferido" usa Spark só
+    com sua cota separada saudável; "auto" chama pick_provider com ritmo
+    medido agora. Sem Quotas real (modo de teste com backend), cai no default
+    — não há medição pra decidir automaticamente.
+
+    A escolha "auto" é persistida em role-choices.json na pasta da run e
+    reusada em chamadas seguintes (mesmo papel) — sem isso, um `resume` re-
+    resolveria contra a cota do momento, podendo trocar de provider pro
+    mesmo papel de uma etapa já concluída e derrubar o fingerprint dela
+    (achado da revisão Fable 5.1, 260909). Path de persistência é best-effort:
+    `engine.run` inexistente/inválido (ex.: teste com Mock) só faz cair de
+    volta no comportamento antigo de resolver de novo a cada chamada.
+    """
+    configured = engine.config.get("roles", {}).get(role_name, default)
+    # Spark é worker leve no Codex, com janelas codex_bengalfox separadas. A
+    # prioridade vale somente quando a cota DO PRÓPRIO Spark foi medida saudável;
+    # sem leitura não presumimos que existe folga e voltamos ao default explícito.
+    # Nunca aparece nas etapas V6 (validate_workflow_v2 as proíbe): esta rota é
+    # restrita aos papéis leves como probe e checklist.
+    if configured == "spark_preferido":
+        if not engine.quota:
+            resolved = default
+        else:
+            spark = engine.quota.snapshot("spark")
+            pacing = (spark.get("pacing") or {}).get("status")
+            resolved = "spark" if spark.get("status") == "ok" and pacing == "ok" else default
+        configured = resolved
+    if configured != "auto":
+        return configured
+    choices_file = None
+    choices = {}
+    try:
+        choices_file = engine.run / "role-choices.json"
+        if choices_file.exists():
+            choices = read_json(choices_file)
+        if role_name in choices:
+            return choices[role_name]
+    except Exception:
+        choices_file = None
+    if not engine.quota:
+        resolved = default
+    else:
+        quotas = {p: engine.quota.snapshot(p) for p in candidates}
+        sensitivity = engine.config.get("roles", {}).get("sensitivity", "equilibrado")
+        resolved = pick_provider(candidates, quotas, engine.config, sensitivity=sensitivity)
+    if choices_file is not None:
+        try:
+            choices[role_name] = resolved
+            atomic(choices_file, choices)
+        except Exception:
+            pass
+    return resolved
+
+
+def provider_settings(config, provider, kind, override=None):
     settings = dict(config["providers"][provider])
     if kind == "review":
         settings["effort"] = settings.get("review_effort", settings["effort"])
+    if override:
+        settings.update(override)
     return settings
 
 
-def commands(config, provider, folder, kind):
-    settings = provider_settings(config, provider, kind)
+V2_STAGES = ("plan", "plan_review", "candidate", "final_review")
+V2_PROFILES = ("micro", "normal", "frontier")
+
+
+def validate_workflow_v2(config):
+    """Reject ambiguous V2 routing before a native client can be dispatched."""
+    workflow_config = config.get("workflow")
+    if not isinstance(workflow_config, dict):
+        raise RunError("V2 exige workflow")
+    plan_rounds = workflow_config.get("plan_rounds")
+    if type(plan_rounds) is not int or not 1 <= plan_rounds <= 3:
+        raise RunError("V2 exige workflow.plan_rounds entre 1 e 3")
+    profiles = workflow_config.get("profiles")
+    if not isinstance(profiles, dict) or set(profiles) != set(V2_PROFILES):
+        raise RunError("V2 exige perfis micro, normal e frontier")
+    for profile, entry in profiles.items():
+        if not isinstance(entry, dict) or set(entry) != set(V2_STAGES):
+            raise RunError(f"Perfil V2 inválido: {profile}")
+        providers = {}
+        for stage, role in entry.items():
+            if not isinstance(role, dict) or set(role) != {"provider", "effort"}:
+                raise RunError(f"Papel V2 inválido: {profile}.{stage}")
+            provider, effort = role["provider"], role["effort"]
+            if provider not in config.get("providers", {}):
+                raise RunError(f"Provider V2 desconhecido: {provider}")
+            if provider == "spark" or not config["providers"][provider].get("executable"):
+                raise RunError(f"Provider V2 não pode despachar {stage}: {provider}")
+            if effort not in _EFFORT_RANK:
+                raise RunError(f"Effort V2 inválido: {profile}.{stage}")
+            providers[stage] = provider
+        if providers["plan_review"] == providers["plan"]:
+            raise RunError(f"V2 exige revisor de plano independente no perfil {profile}")
+        if providers["final_review"] == providers["candidate"]:
+            raise RunError(f"V2 exige revisor final independente no perfil {profile}")
+
+
+def preview_route_v2(config, job):
+    """Calculate a V2 route without persisting a fake run or reusing stale data."""
+    profile = job.get("profile", "auto")
+    if profile not in ("auto", *V2_PROFILES):
+        raise RunError("profile deve ser auto, micro, normal ou frontier")
+    effective = "normal" if profile == "auto" else profile
+    return {"version": 2, "requested_profile": profile, "effective_profile": effective,
+            "reason": "auto conservador: cota não medida; manteve normal" if profile == "auto"
+                      else "perfil explícito no brief",
+            "quota": {"status": "NAO_MEDIDO"},
+            "roles": config["workflow"]["profiles"][effective]}
+
+
+def resolve_route_v2(engine, job):
+    """Persist one explainable route. Profile is audit data, never model input."""
+    route_file = engine.run / "route.json"
+    if route_file.exists():
+        return read_json(route_file)
+    route = preview_route_v2(engine.config, job)
+    snapshots = {}
+    if engine.quota:
+        providers = {role["provider"] for role in route["roles"].values()}
+        snapshots = {provider: engine.quota.snapshot(provider) for provider in sorted(providers)}
+    measured = bool(snapshots) and all(item.get("status") != "NAO_MEDIDO" for item in snapshots.values())
+    if snapshots:
+        route["quota"] = snapshots
+    if route["requested_profile"] == "auto" and measured:
+        route["reason"] = "auto conservador: perfil normal"
+    atomic(route_file, route)
+    return route
+
+
+def role_v2(route, stage):
+    role = route["roles"][stage]
+    return role["provider"], {"effort": role["effort"]}
+
+
+def commands(config, provider, folder, kind, override=None):
+    settings = provider_settings(config, provider, kind, override)
     exe = executable(config, provider)
     if provider == "claude":
         return [exe, "-p", "--safe-mode", "--tools", "", "--strict-mcp-config",
@@ -215,16 +495,19 @@ def parse_response(provider, stdout, folder):
         return value, {"usage": envelope.get("usage"), "model_usage": envelope.get("modelUsage"),
                        "session_id": envelope.get("session_id")}
     events = [json.loads(line) for line in stdout.splitlines() if line.strip()]
-    if any(e.get("type") in ("error", "turn.failed") for e in events):
+    failed = [i for i, e in enumerate(events) if e.get("type") in ("error", "turn.failed")]
+    completed = [i for i, e in enumerate(events) if e.get("type") == "turn.completed"]
+    # A transient transport error (e.g. websocket reconnect) is tolerated only if
+    # the turn went on to complete afterward with no further error trailing it.
+    if failed and (not completed or failed[-1] > completed[-1]):
         raise RunError("Codex devolveu erro; consulte stdout da etapa")
-    completed = [e for e in events if e.get("type") == "turn.completed"]
     if not completed:
         raise RunError("Codex não confirmou conclusão")
     # Tools are prohibited by the job contract; a tool call invalidates this stage.
     forbidden = {"command_execution", "file_change", "mcp_tool_call", "web_search", "collab_tool_call"}
     if any(e.get("item", {}).get("type") in forbidden for e in events):
         raise RunError("Codex usou ferramenta fora do contrato de proposta")
-    return read_json(folder / "last-message.json"), {"usage": completed[-1].get("usage")}
+    return read_json(folder / "last-message.json"), {"usage": events[completed[-1]].get("usage")}
 
 
 class Engine:
@@ -238,14 +521,36 @@ class Engine:
             with (self.run / "events.jsonl").open("a", encoding="utf-8") as log:
                 log.write(json.dumps({"at": now(), **data}, ensure_ascii=False) + "\n")
 
-    def call(self, stage, provider, kind, packet):
+    def quota_event(self, moment, *, stage=None, provider=None, snapshot=None, force=False):
+        """Record quota before/during/after a run in a compact, auditable form.
+
+        `force` is reserved for the run boundaries. Dispatch events reuse the
+        normal five-minute cache: that keeps monitoring from becoming the cause
+        of rate limits while preserving the exact cache flag in the evidence.
+        """
+        if not self.quota:
+            return {}
+        providers = (provider,) if provider else tuple(
+            name for name in _QUOTA_PROVIDERS if name in self.config.get("providers", {}))
+        samples = {name: compact_quota_snapshot(
+            snapshot if snapshot is not None and name == provider
+            else self.quota.snapshot(name, force=force)) for name in providers}
+        event = {"at": now(), "moment": moment, "providers": samples}
+        if stage:
+            event["stage"] = stage
+        with self.log_lock:
+            with (self.run / "quota-lifecycle.jsonl").open("a", encoding="utf-8") as log:
+                log.write(json.dumps(event, ensure_ascii=False) + "\n")
+        return samples
+
+    def call(self, stage, provider, kind, packet, override=None):
         if (self.run / "STOP").exists():
             raise RunError("Parada solicitada; nenhuma nova etapa foi iniciada")
         folder = self.run / "stages" / stage
         folder.mkdir(parents=True, exist_ok=True)
         spec = SCHEMAS[kind]
         request = {"system": SYSTEM, "schema": spec, "input": packet}
-        settings = provider_settings(self.config, provider, kind)
+        settings = provider_settings(self.config, provider, kind, override)
         fingerprint = digest({"request": request, "provider": settings})
         status_file = folder / "status.json"
         if status_file.exists():
@@ -261,6 +566,7 @@ class Engine:
         if len(prompt) > self.config["max_input_chars"]:
             raise RunError("Pacote excede limite de contexto; reduza o brief")
         usage = self.quota.snapshot(provider) if self.quota else {"status": "TEST_DOUBLE"}
+        self.quota_event("during_before_dispatch", stage=stage, provider=provider, snapshot=usage)
         self.event(stage=stage, provider=provider, event="before_dispatch", quota=usage,
                    context_chars=len(prompt), tokens="NAO_MEDIDO", **settings)
         # A measured depleted relevant bucket halts. Unknown is not reported as available.
@@ -280,7 +586,7 @@ class Engine:
                 value = self.backend(provider, kind, packet)
                 telemetry = {"usage": "TEST_DOUBLE"}
             else:
-                args = commands(self.config, provider, folder, kind)
+                args = commands(self.config, provider, folder, kind, override)
                 atomic(folder / "command.json", args)
                 with (folder / "stdout.jsonl").open("w", encoding="utf-8") as out, (folder / "stderr.log").open("w", encoding="utf-8") as err:
                     proc = subprocess.run(args, input=prompt, stdout=out, stderr=err,
@@ -298,11 +604,15 @@ class Engine:
             atomic(folder / "response.json", value)
             atomic(folder / "usage.json", telemetry)
             atomic(status_file, dict(state, status="succeeded", finished_at=now()))
+            returned_quota = self.quota.snapshot(provider) if self.quota else usage
+            self.quota_event("during_returned", stage=stage, provider=provider, snapshot=returned_quota)
             self.event(stage=stage, provider=provider, event="returned", elapsed_seconds=round(time.monotonic()-started, 3),
-                       telemetry=telemetry, quota=self.quota.snapshot(provider) if self.quota else usage)
+                       telemetry=telemetry, quota=returned_quota)
             return value
         except BaseException as exc:
             atomic(status_file, dict(state, status="failed", finished_at=now(), error=type(exc).__name__))
+            failed_quota = self.quota.snapshot(provider) if self.quota else usage
+            self.quota_event("during_failed", stage=stage, provider=provider, snapshot=failed_quota)
             self.event(stage=stage, provider=provider, event="failed", error=type(exc).__name__)
             raise
 
@@ -337,6 +647,8 @@ def validate_job(job):
     for assertion in assertions:
         if not isinstance(assertion, dict) or set(assertion) != {"contains"} or not isinstance(assertion["contains"], str) or not assertion["contains"]:
             raise RunError("Única verificação automática suportada: contains não vazio")
+    if "profile" in job and job["profile"] not in ("auto", *V2_PROFILES):
+        raise RunError("profile deve ser auto, micro, normal ou frontier")
 
 
 def assess(review, criteria, content, assertions):
@@ -360,7 +672,7 @@ def workflow(engine, job):
     context = {"objective": job["objective"], "criteria": job["criteria"], "context": job.get("context", "")}
     perspectives = []
     if mode == "swarm":
-        checklist_provider = engine.config.get("roles", {}).get("checklist", "codex")
+        checklist_provider = resolve_role_provider(engine, "checklist", "codex")
         roles = [("claude", "Riscos e lacunas: apresente fatos e alternativas."),
                  (checklist_provider, "Extraia os requisitos explícitos, organize checklist e aponte informação ausente. Não decida arquitetura, não invente fatos e não aprove a entrega.")]
         with ThreadPoolExecutor(max_workers=engine.config["max_workers"]) as pool:
@@ -406,6 +718,89 @@ def workflow(engine, job):
     return {"status": "needs_attention", "rounds": engine.config["max_rounds"], **assessment}
 
 
+def workflow_v2(engine, job):
+    """Versioned V6 loop: independently review the plan before any candidate exists."""
+    validate_job(job)
+    route = resolve_route_v2(engine, job)
+    context = {"objective": job["objective"], "criteria": job["criteria"], "context": job.get("context", "")}
+    mode = job.get("mode", "loop")
+    perspectives = []
+    if mode == "swarm":
+        checklist_provider = resolve_role_provider(engine, "checklist", "codex")
+        roles = [("claude", "Riscos e lacunas: apresente fatos e alternativas."),
+                 (checklist_provider, "Extraia os requisitos explícitos, organize checklist e aponte informação ausente. Não decida arquitetura, não invente fatos e não aprove a entrega.")]
+        with ThreadPoolExecutor(max_workers=engine.config["max_workers"]) as pool:
+            futures = {pool.submit(engine.call, f"swarm-{i}", provider, "plan", dict(context, role=role)): i
+                       for i, (provider, role) in enumerate(roles)}
+            results, errors = {}, []
+            for future in as_completed(futures):
+                try:
+                    results[futures[future]] = future.result()
+                except Exception as exc:
+                    errors.append(exc)
+            if errors:
+                raise errors[0]
+            perspectives = [results[i] for i in sorted(results)]
+    elif mode != "loop":
+        raise RunError("Modo inválido")
+
+    plan = None
+    plan_assessment = None
+    for round_no in range(1, engine.config["workflow"]["plan_rounds"] + 1):
+        plan_provider, plan_override = role_v2(route, "plan")
+        plan_packet = dict(context, role="Planeje a entrega com critérios testáveis.", perspectives=perspectives)
+        if plan is not None:
+            plan_packet.update(previous_plan=plan, review=plan_review, checks=plan_assessment)
+            plan_packet["role"] = "Repare somente os problemas comprovados no plano e mantenha passos verificáveis."
+        plan = engine.call(f"plan-{round_no}", plan_provider, "plan", plan_packet, plan_override)
+        review_provider, review_override = role_v2(route, "plan_review")
+        plan_review = engine.call(f"plan-review-{round_no}", review_provider, "review", dict(
+            context, plan=plan,
+            role="Revise o plano independentemente. Copie cada critério EXATAMENTE em checks. Uma evidência específica por critério. Se houver issues ou critério falho, approved=false."), review_override)
+        plan_assessment = assess(plan_review, job["criteria"], json.dumps(plan, ensure_ascii=False), [])
+        atomic(engine.run / f"plan-assessment-{round_no}.json", plan_assessment)
+        if plan_assessment["accepted"]:
+            break
+    else:
+        atomic(engine.run / "plan.md", json.dumps(plan, ensure_ascii=False, indent=2))
+        return {"status": "plan_rejected", "plan_rounds": engine.config["workflow"]["plan_rounds"],
+                "plan_review_approved": False, "review_approved": False,
+                "code_executed": False, "accepted": False, "issues": plan_review["issues"]}
+
+    atomic(engine.run / "plan.md", json.dumps(plan, ensure_ascii=False, indent=2))
+    accepted_plan_rounds = round_no
+    if "initial_candidate" in job:
+        candidate = {"summary": "Rascunho fornecido para revisão", "content": job["initial_candidate"],
+                     "limitations": ["Conteúdo inicial fornecido no brief."]}
+    else:
+        candidate_provider, candidate_override = role_v2(route, "candidate")
+        candidate = engine.call("candidate-1", candidate_provider, "candidate", dict(context, plan=plan,
+            role="Produza a entrega completa no campo content. Não execute código."), candidate_override)
+    previous = set()
+    for round_no in range(1, engine.config["max_rounds"] + 1):
+        marker = digest(candidate)
+        if marker in previous:
+            raise RunError("Estagnação: candidato repetido")
+        previous.add(marker)
+        final_provider, final_override = role_v2(route, "final_review")
+        review = engine.call(f"review-{round_no}", final_provider, "review", dict(context, candidate=candidate,
+            role="Revise independentemente. Copie cada critério EXATAMENTE em checks. Uma evidência específica por critério. Se houver issues ou critério falho, approved=false."), final_override)
+        assessment = assess(review, job["criteria"], candidate["content"], job.get("assertions", []))
+        atomic(engine.run / f"assessment-{round_no}.json", assessment)
+        if assessment["accepted"]:
+            atomic(engine.run / "candidate.md", candidate["content"])
+            return {"status": "review_approved", "rounds": round_no, "plan_rounds": accepted_plan_rounds,
+                    "plan_review_approved": True, **assessment, "limitations": candidate["limitations"]}
+        if round_no < engine.config["max_rounds"]:
+            candidate_provider, candidate_override = role_v2(route, "candidate")
+            candidate = engine.call(f"candidate-{round_no+1}", candidate_provider, "candidate", dict(context,
+                plan=plan, previous=candidate, review=review, checks=assessment,
+                role="Corrija os problemas comprovados e entregue o conteúdo completo."), candidate_override)
+    atomic(engine.run / "candidate.md", candidate["content"])
+    return {"status": "needs_attention", "rounds": engine.config["max_rounds"],
+            "plan_rounds": accepted_plan_rounds, "plan_review_approved": True, **assessment}
+
+
 def probe(engine):
     nonce = uuid.uuid4().hex[:16]
     manifest_file = engine.run / "probe-nonce.json"
@@ -416,7 +811,7 @@ def probe(engine):
     a = engine.call("probe-claude", "claude", "probe", {"instruction": "Copie nonce para echo e escreva uma frase curta em reply.", "nonce": nonce})
     if a["echo"] != nonce:
         raise RunError("Claude não devolveu o marcador")
-    probe_provider = engine.config.get("roles", {}).get("probe", "codex")
+    probe_provider = resolve_role_provider(engine, "probe", "codex")
     b = engine.call("probe-codex", probe_provider, "probe", {"instruction": "Copie previous.reply EXATAMENTE para echo e escreva outra frase curta em reply.", "previous": a})
     if b["echo"] != a["reply"]:
         raise RunError("Codex não recebeu a resposta do Claude corretamente")
@@ -426,10 +821,13 @@ def probe(engine):
     return {"status": "verified", "roundtrip_verified": True, "calls": 3}
 
 
-def create_run(config, job, mode):
+def create_run(config, job, mode, public_orchestration=None):
     run = ROOT / "runs" / (datetime.now().strftime("%y%m%d_%H%M%S") + "_" + uuid.uuid4().hex[:8])
     run.mkdir(parents=True)
-    atomic(run / "manifest.json", {"created_at": now(), "mode": mode, "config": config, "job": job})
+    manifest = {"created_at": now(), "mode": mode, "config": config, "job": job}
+    if public_orchestration:
+        manifest["public_orchestration"] = public_orchestration
+    atomic(run / "manifest.json", manifest)
     return run
 
 
@@ -438,18 +836,28 @@ def execute(run, backend=None):
     with run_lock(run):
         if (run / "result.json").exists():
             result = read_json(run / "result.json")
-            if result.get("status") in ("review_approved", "verified"):
+            if result.get("status") in ("review_approved", "verified", "plan_rejected"):
                 return result
         engine = Engine(manifest["config"], run, backend)
         atomic(run / "state.json", {"status": "running", "at": now()})
+        engine.quota_event("before_run", force=True)
         try:
-            result = probe(engine) if manifest["mode"] == "probe" else workflow(engine, manifest["job"])
+            if manifest["mode"] == "probe":
+                result = probe(engine)
+            elif manifest["config"].get("version", 1) == 2:
+                result = workflow_v2(engine, manifest["job"])
+            else:
+                result = workflow(engine, manifest["job"])
             atomic(run / "result.json", result)
             atomic(run / "state.json", {"status": result["status"], "at": now()})
             return result
         except BaseException as exc:
             atomic(run / "state.json", {"status": "needs_attention", "at": now(), "error": str(exc)})
             raise
+        finally:
+            engine.quota_event("after_run", force=True)
+            if engine.quota:
+                refresh_quota_summary(manifest["config"])
 
 
 def resolve_run(name):
@@ -472,7 +880,6 @@ def main():
         p = sub.add_parser(command)
         p.add_argument("run_id")
     args = parser.parse_args()
-    config = load_config()
     if args.command in ("resume", "status", "stop"):
         run = resolve_run(args.run_id)
         if args.command == "status":
@@ -482,10 +889,12 @@ def main():
             atomic(run / "STOP", "Parar antes do próximo despacho.\n")
             print("Parada gravada; chamadas em curso encerram pelo retorno ou timeout configurado.")
             return 0
-        auth = auth_status(read_json(run / "manifest.json")["config"])
+        config = read_json(run / "manifest.json")["config"]
+        auth = auth_status(config)
         if not all(a["ok"] for a in auth.values()):
             raise RunError("Assinatura não confirmada na retomada; execute doctor")
     else:
+        config = load_config()
         auth = auth_status(config)
         if args.command == "doctor":
             quotas = Quotas(config)

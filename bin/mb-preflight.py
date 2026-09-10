@@ -328,6 +328,39 @@ def cheque_plugin(central: Path) -> tuple[bool, str]:
     return True, "derivação fonte→plugin em dia"
 
 
+def cheque_pets(central: Path, home: Path | None = None) -> tuple[bool, str]:
+    """Confere a integração opcional e descreve o estado sem fingir instalação."""
+    obrigatorios = (
+        central / "bin" / "mb-pet.py",
+        u.achar(central, "skills/pet/SKILL.md"),
+        u.achar(central, "skills/marcelinhopet/SKILL.md"),
+        central / "pets" / "scripts" / "install.ps1",
+    )
+    faltam = [str(path) for path in obrigatorios if not path.is_file()]
+    if faltam:
+        return False, "integração incompleta; ausente: " + "; ".join(faltam)
+
+    local = os.environ.get("LOCALAPPDATA")
+    if not local:
+        base_home = home or Path(os.environ.get("USERPROFILE") or Path.home())
+        return True, f"integração pronta; instalação por usuário NÃO MEDIDA em {base_home}"
+    data = Path(local) / "MegabrainPets"
+    instalado = Path(local) / "Programs" / "MegabrainPets" / "MegabrainPets.exe"
+    marker = data / "integration-offer.json"
+    choice = None
+    if marker.is_file():
+        try:
+            choice = json.loads(marker.read_text(encoding="utf-8-sig")).get("choice")
+        except (OSError, ValueError, AttributeError):
+            return False, f"marcador da oferta ilegível: {marker}"
+    if choice == "installed" and not instalado.is_file():
+        return False, "oferta registra instalado, mas MegabrainPets.exe está ausente"
+    if instalado.is_file():
+        return True, f"instalado para o usuário: {instalado}"
+    suffix = f"; escolha registrada: {choice}" if choice else ""
+    return True, "integração pronta; aplicativo opcional NÃO INSTALADO" + suffix
+
+
 def iter_texto(raiz: Path):
     for dirpath, dirs, files in os.walk(raiz):
         dirs[:] = [d for d in dirs if d not in PULAR_DIRS]
@@ -600,6 +633,7 @@ def main() -> int:
         "git": cheque_git(repo, args.fetch),
         "skills": cheque_skills(central, args.agentes),
         "plugin": cheque_plugin(central),
+        "pets": cheque_pets(central),
         "estado": cheque_estado(central, modo_frescor),
         "fatos": cheque_fatos(central),
         "legado": cheque_legado(raizes_legado),

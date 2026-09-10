@@ -140,7 +140,7 @@ const CORE = `## megabrain — ativo nesta sessão
 Em ENTREGA não-trivial (arquivo, peça, proposta, deck, código, análise) rode os gates.
 Em pergunta rápida ou conversa casual NÃO rode — aqui o protocolo é o próprio slop.
 
-Modos opcionais: /orquestracao1 para trabalho multiagente · /orquestracao4 para Codex + Claude + Gemini com uso medido · /hypadododiabo para explorar o melhor caso com limites reais.
+Orquestração: /orquestracao1 é a V6 primária para trabalho multiagente novo; /orquestracao2 mantém a V5 apenas para retomada ou pedido explícito. /hypadododiabo explora o melhor caso com limites reais.
 Em projeto grande, sugerir /quaseultracode uma vez; não sugerir em conversa ordinária ou tarefa pequena.
 
 ASSUMIR (multi-agente) — antes de tocar em arquivo de projeto compartilhado com o

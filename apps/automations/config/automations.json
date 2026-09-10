@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "central": "AUTO",
   "providers": {
     "codex": {
@@ -9,7 +9,7 @@
     },
     "claude": {
       "executable": "claude",
-      "model": "claude-fable-5",
+      "model": "claude-fable-5-1",
       "effort": "low",
       "review_effort": "medium"
     },
@@ -17,15 +17,49 @@
       "executable": "codex",
       "model": "gpt-5.3-codex-spark",
       "effort": "low"
+    },
+    "ollama": {
+      "model": "llama3.1:latest",
+      "effort": "low",
+      "local_url": "http://127.0.0.1:11434",
+      "context_tokens": 8192,
+      "max_output_tokens": 512,
+      "keep_alive": "60s",
+      "health_timeout_seconds": 3,
+      "dispatch_timeout_seconds": 45
     }
   },
   "roles": {
-    "probe": "spark",
-    "checklist": "spark"
+    "probe": "spark_preferido",
+    "checklist": "spark_preferido",
+    "sensitivity": "equilibrado"
+  },
+  "workflow": {
+    "plan_rounds": 2,
+    "profiles": {
+      "micro": {
+        "plan": {"provider": "claude", "effort": "low"},
+        "plan_review": {"provider": "codex", "effort": "medium"},
+        "candidate": {"provider": "codex", "effort": "medium"},
+        "final_review": {"provider": "claude", "effort": "low"}
+      },
+      "normal": {
+        "plan": {"provider": "claude", "effort": "low"},
+        "plan_review": {"provider": "codex", "effort": "high"},
+        "candidate": {"provider": "codex", "effort": "high"},
+        "final_review": {"provider": "claude", "effort": "medium"}
+      },
+      "frontier": {
+        "plan": {"provider": "claude", "effort": "high"},
+        "plan_review": {"provider": "codex", "effort": "high"},
+        "candidate": {"provider": "codex", "effort": "high"},
+        "final_review": {"provider": "claude", "effort": "high"}
+      }
+    }
   },
   "max_rounds": 2,
   "max_workers": 2,
   "timeout_seconds": 240,
-  "max_input_chars": 50000,
+  "max_input_chars": 150000,
   "max_output_chars": 120000
 }

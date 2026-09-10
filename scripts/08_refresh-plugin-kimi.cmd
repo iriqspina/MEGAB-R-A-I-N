@@ -15,7 +15,7 @@ set "DESKTOP=<USER_HOME>\AppData\Roaming\kimi-desktop\daimon-share\daimon\skills
 rem  260825: skills que nasceram DEPOIS do plugin Kimi e ficavam de fora do
 rem  refresh — o Kimi tinha 4 de 6 e /grelhar nao existia pra ele. A fonte de
 rem  skill e sempre motor\skills\<nome>, nunca a copia dentro do plugin.
-set "SKILLS_EXTRA=grelhar traycer leigolanguage conclusao-megabrain figma-flex orquestracao1 orquestracao3 hypadododiabo quaseultracode advogadododiabo"
+set "SKILLS_EXTRA=grelhar traycer leigolanguage conclusao-megabrain figma-flex orquestracao1 orquestracao2 hypadododiabo quaseultracode advogadododiabo pet marcelinhopet"
 
 echo.
 echo  ================================================================
@@ -45,7 +45,7 @@ rem --- 2. plugin (manifesto, SYSTEM.md, hooks, commands, seed) ----
 echo  [2/4] copiando motor/plugin-megabrain/ da central:
 robocopy "%FONTE%\motor\plugin-megabrain" "%PLUGIN%" /E /XF LEIAME.txt /R:1 /W:1 >nul
 if errorlevel 8 (echo        FALHOU & pause & exit /b 1) else (echo        OK)
-robocopy "%FONTE%\bin" "%PLUGIN%\bin" mb-sync.py mb-sync-memoria.py /R:1 /W:1 >nul
+robocopy "%FONTE%\bin" "%PLUGIN%\bin" mb-sync.py mb-sync-memoria.py mb-pet.py /R:1 /W:1 >nul
 
 rem --- 3. skill /megabrain (SKILL.md, MEGABRAIN.md, referencias) --
 echo  [3/4] copiando a skill /megabrain da central:
@@ -66,6 +66,9 @@ for %%S in (%SKILLS_EXTRA%) do (
   if exist "%FONTE%\motor\skills\%%S\SKILL.md" robocopy "%FONTE%\motor\skills\%%S" "%PLUGIN%\skills\%%S" /E /R:1 /W:1 >nul
   if exist "%PLUGIN%\skills\%%S\SKILL.md" echo        OK    %%S
 )
+for %%S in (orquestracao3 orquestracao4 orquestracao5) do (
+  if exist "%PLUGIN%\skills\%%S" rmdir /s /q "%PLUGIN%\skills\%%S"
+)
 
 rem --- 4. verificacao: o hook instalado E o da fonte? -------------
 echo  [4/4] verificando o hook (fc /b fonte x instalado):
@@ -81,5 +84,7 @@ echo.
 echo  Pronto. Na PROXIMA sessao do Kimi o hook novo ja vale
 echo  (observabilidade em .mb-log/ + contexto unificado via mb-contexto.py).
 echo  Backup do estado anterior em: %BACKUP%
+echo.
+where python >nul 2>nul && python "%FONTE%\bin\mb-pet.py" --central "%FONTE%" offers
 echo.
 pause

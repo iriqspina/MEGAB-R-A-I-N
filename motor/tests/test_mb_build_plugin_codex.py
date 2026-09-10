@@ -53,7 +53,9 @@ class TestBuildPluginCodex(unittest.TestCase):
         self.assertTrue((destino / ".codex-plugin/plugin.json").is_file())
         self.assertTrue((destino / "skills/registrar-licao/SKILL.md").is_file())
         self.assertTrue((destino / "skills/orquestracao1/SKILL.md").is_file())
-        self.assertTrue((destino / "skills/orquestracao4/SKILL.md").is_file())
+        self.assertTrue((destino / "skills/orquestracao1/SKILL.md").is_file())
+        self.assertTrue((destino / "skills/orquestracao2/SKILL.md").is_file())
+        self.assertFalse((destino / "skills/orquestracao4/SKILL.md").exists())
         self.assertTrue((destino / "skills/hypadododiabo/SKILL.md").is_file())
         self.assertTrue((destino / "skills/quaseultracode/SKILL.md").is_file())
         self.assertEqual(

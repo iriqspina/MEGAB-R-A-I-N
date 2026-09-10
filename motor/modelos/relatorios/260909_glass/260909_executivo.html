@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Relatório Caderno 01 — 09 SET 2026</title>
+  <style>
+:root{color-scheme:dark;--ink:#eef2e8;--muted:#b7c4ba;--accent:#e7b875}
+*{box-sizing:border-box}body{margin:0;background:#0b1614;color:var(--ink);font:15px/1.45 "Segoe UI",sans-serif;min-height:100vh;padding:24px;background-image:radial-gradient(ellipse at 8% 10%,#35615477,transparent 46%),radial-gradient(ellipse at 95% 92%,#93713c55,transparent 40%)}
+a{color:inherit;text-underline-offset:4px}button,a{touch-action:manipulation}button:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
+.report{max-width:1440px;margin:auto;padding:28px 32px 20px;border:1px solid #ffffff2e;border-radius:24px;background:#14231dcc;box-shadow:0 25px 80px #0004;backdrop-filter:blur(22px);display:grid;grid-template-columns:minmax(0,1.35fr) minmax(340px,1fr);grid-template-areas:"head head" "verdict priorities" "status evidences" "flow evidences" "footer footer";gap:20px 36px}
+.header{grid-area:head;display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid #ffffff24;padding-bottom:20px;gap:20px}.kicker,.section-title{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}h1{font-size:clamp(28px,3vw,43px);line-height:1.1;letter-spacing:-.04em;margin:12px 0 14px;font-weight:500}.badges{display:flex;gap:8px}.badge{font-size:12px;border:1px solid #a7d8bb40;border-radius:20px;padding:4px 10px;color:#cee8d9}.view-toggle{display:flex;gap:4px;background:#08151088;padding:4px;border:1px solid #ffffff20;border-radius:12px}.btn{border:0;background:transparent;color:var(--muted);padding:10px 12px;font:inherit;font-size:13px;cursor:pointer;border-radius:8px}.btn[aria-pressed="true"]{background:#dce7d7;color:#14241d}.section-title{margin:0 0 10px}.verdict{grid-area:verdict}.verdict-text{font-size:22px;line-height:1.35;max-width:40ch;margin:0;color:#f2f5e9}.small{color:var(--muted);font-size:14px}.meta{grid-area:priorities;padding-left:22px;border-left:1px solid #ffffff25}.base-list{display:grid;grid-template-columns:1fr 1fr;gap:6px 20px;list-style:none;padding:0;margin:0;font-size:14px}.base-list b{color:var(--accent);font-size:20px;font-weight:500;margin-right:8px}
+.prioridades{grid-area:status}.prioridades ol{margin:0;padding:0;list-style:none;counter-reset:priority}.prioridades li{counter-increment:priority;position:relative;padding:13px 0 13px 38px;border-top:1px solid #ffffff20}.prioridades li:before{content:"0" counter(priority);position:absolute;left:0;top:15px;font-size:13px;color:var(--accent)}.prioridades strong{font-weight:600}.prioridades .cost{display:block;color:var(--muted);font-size:13px;margin-top:4px}.status{grid-area:flow}.flow-line{display:flex;flex-wrap:wrap;list-style:none;margin:0;padding:0;gap:6px;color:#cedbd0;font-size:13px}.flow-line li:not(:last-child):after{content:"→";padding-left:6px;color:var(--accent)}
+.evidences{grid-area:evidences;border-radius:16px;background:#07181266;border:1px solid #ffffff21;padding:20px;align-self:start}.compact-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}.evidence-card{border-top:1px solid #ffffff20;padding:12px 0}.evidence-card a{text-decoration:none;font-size:14px;display:block}.evidence-card a:hover{text-decoration:underline}.evidence-card .small{font-size:12px;margin-top:5px}.proof-note{font-size:12px;color:var(--muted);margin-top:10px}.panel-footer{grid-area:footer;display:flex;justify-content:space-between;gap:20px;border-top:1px solid #ffffff20;padding-top:14px;color:var(--muted);font-size:12px}.propostas{display:none}
+[data-view="editorial"] .report{grid-template-columns:.9fr 1.2fr;grid-template-areas:"head head" "verdict status" "priorities status" "evidences flow" "footer footer";background:#201e19dd}[data-view="editorial"]{background-color:#211d17;background-image:radial-gradient(ellipse at 85% 20%,#8b744855,transparent 55%)}[data-view="editorial"] h1{font:italic 42px/1.1 Georgia,serif;letter-spacing:-.04em}[data-view="editorial"] .verdict-text{font:26px/1.3 Georgia,serif}[data-view="editorial"] .meta{padding:0;border:0}[data-view="editorial"] .prioridades li{padding-top:18px;padding-bottom:18px}[data-view="editorial"] .evidences{background:transparent;border:0;padding:0}[data-view="editorial"] .status{align-self:end}
+@media(min-width:1100px) and (max-height:800px){body{padding:14px}.report{gap:14px 30px;padding:22px 28px 16px}.header{padding-bottom:14px}h1{font-size:36px;margin:8px 0 10px}.prioridades li{padding-top:10px;padding-bottom:10px}.evidence-card{padding:10px 0}.verdict-text{font-size:20px}}
+@media(max-width:900px){body{padding:12px}.report,[data-view="editorial"] .report{padding:22px;grid-template-columns:1fr;grid-template-areas:"head" "verdict" "status" "flow" "priorities" "evidences" "footer";gap:24px}.header{display:block}.view-toggle{margin-top:16px;width:max-content;max-width:100%}.meta{padding:0;border:0}.panel-footer{display:block}.panel-footer div+div{margin-top:8px}.verdict-text{font-size:21px}[data-view="editorial"] h1{font-size:34px}}
+@media(max-width:420px){.compact-grid{grid-template-columns:1fr}.base-list{grid-template-columns:1fr}.btn{padding:10px 8px;font-size:12px}}
+@media print{@page{size:A4 landscape;margin:10mm}*{color:#14211a!important;box-shadow:none!important;text-shadow:none!important}body{padding:0;background:white!important;font-size:12px}.report,[data-view="editorial"] .report{max-width:none;padding:0;display:grid;grid-template-columns:1.3fr 1fr;grid-template-areas:"head head" "verdict priorities" "status evidences" "flow evidences" "footer footer";gap:12px 22px;background:white!important;border:0;backdrop-filter:none}.view-toggle{display:none}.evidences{background:white;border:1px solid #ccc}.prioridades li,.header,.evidence-card,.panel-footer{border-color:#ccc}h1,[data-view="editorial"] h1{font-size:28px}.verdict-text,[data-view="editorial"] .verdict-text{font:18px/1.4 "Segoe UI",sans-serif}}
+@media(min-width:1100px) and (max-height:800px){[data-view="editorial"] .report{gap:10px 30px}[data-view="editorial"] .verdict-text{font-size:23px}[data-view="editorial"] .prioridades li{padding-top:12px;padding-bottom:12px}[data-view="editorial"] .evidence-card{padding:8px 0}[data-view="editorial"] h1{font-size:36px}}</style>
+</head>
+<body data-view="executive">
+  <main class="report">
+    <header class="card header">
+      <div>
+        <div class="kicker">MB · CADERNO 01 · 09 SET 2026</div>
+        <h1 class="title">Menos repasse. Mais entrega.</h1>
+        <div class="badges">
+          <span class="badge">6 fontes</span>
+          <span class="badge">transcrições lidas</span>
+        </div>
+      </div>
+      <div class="view-toggle" aria-label="Alternar modelo visual do relatório">
+        <button class="btn" id="viewExec" aria-pressed="true" aria-label="Ativar visão executiva">Visão executiva</button>
+        <button class="btn" id="viewEd" aria-pressed="false" aria-label="Ativar parecer editorial">Parecer editorial</button>
+      </div>
+    </header>
+
+    <section class="card verdict">
+      <h2 class="section-title">Veredito</h2>
+      <p class="verdict-text">A estrutura já existe. O ganho está em escolher quem trabalha, limitar o ciclo e cobrar prova.</p>
+      <p class="small">Aplicar melhor o que já temos. As mudanças abaixo são propostas.</p>
+    </section>
+
+    <section class="card meta" id="compact-status">
+      <h2 class="section-title">Já temos</h2>
+      <ul class="base-list"><li><b>01</b> Divide o trabalho</li><li><b>03</b> Confere o plano</li><li><b>04</b> Mede o uso</li><li><b>05</b> Coordena os agentes</li></ul>
+    </section>
+
+    <section class="card status">
+      <h2 class="section-title">Divisão sugerida · *revisão conforme o risco</h2>
+      <ul class="flow-line">
+        <li>Spark extrai</li>
+        <li>Executor produz</li>
+        <li>Revisor confere*</li>
+        <li><USUARIO> decide</li>
+      </ul>
+    </section>
+
+    <section class="card prioridades">
+      <h2 class="section-title">Prioridades</h2>
+      <ol><li><strong>Spark na coleta.</strong> Pedido curto + fontes delimitadas. Modelo maior entra onde há julgamento.<span class="cost">Custo: conferir o resumo antes de decidir.</span></li><li><strong>Ciclo com limite.</strong> Tarefa pronta, dependências claras e parada quando não houver avanço.<span class="cost">Custo: preparar a fila antes de executar.</span></li><li><strong>Prova por requisito.</strong> Ligar cada pedido a um teste ou uma tela real.<span class="cost">Custo: validar o resultado fora da conversa.</span></li></ol>
+    </section>
+
+    <section class="card evidences" id="evidences-grid">
+      <h2 class="section-title">Fontes</h2>
+      <div class="compact-grid">
+        <div class="evidence-card"><a href="https://www.youtube.com/watch?v=L7NPhaUBpZE&t=269" target="_blank" rel="noopener">Revisão cruzada</a><div class="small">Chase AI · 04:29</div></div>
+        <div class="evidence-card"><a href="https://www.youtube.com/watch?v=XK6S1hbYv7I&t=110" target="_blank" rel="noopener">Referência antes de variantes</a><div class="small">Chase AI · 01:50</div></div>
+        <div class="evidence-card"><a href="https://www.youtube.com/watch?v=WRkVuebZqLU&t=110" target="_blank" rel="noopener">Rotina não é meta</a><div class="small">Owain Lewis · 01:50</div></div>
+        <div class="evidence-card"><a href="https://www.youtube.com/watch?v=RVEaDvh6f5A&t=171" target="_blank" rel="noopener">Gerente + executor</a><div class="small">Owain Lewis · 02:51</div></div>
+        <div class="evidence-card"><a href="https://www.youtube.com/watch?v=kB9iMD0EjT8&t=118" target="_blank" rel="noopener">Conhecimento compartilhado</a><div class="small">Nate Herk · 01:58</div></div>
+        <div class="evidence-card"><a href="https://www.youtube.com/watch?v=ZDh1005AOtM&t=226" target="_blank" rel="noopener">Frentes isoladas</a><div class="small">Sean Kochel · 03:46</div></div>
+      </div>
+      <div class="proof-note"><a href="260909_evidencias.md">Notas e evidências ↗</a> · <a href="../../memoria/cerebro/INDICE.md">Abrir cérebro ↗</a></div>
+    </section>
+
+    <section class="card propostas">
+      <h2 class="section-title">Propostas não implementadas</h2>
+      <p class="small">Sem implementação automática nesta versão. Alterações permanecem propostas e editáveis para teste controlado.</p>
+    </section>
+
+    <footer class="panel-footer"><div>Fonte: seis transcrições automáticas + documentos locais.<br>Demonstrações visuais e economia de cota não medidas.</div><div>Pesquisa e rascunho: GPT Spark · Revisão: Codex<br>MEGABRAIN / REFERÊNCIAS / 09.09.2026</div></footer>
+  </main>
+
+  <script>
+    const bExec = document.getElementById('viewExec');
+    const bEd = document.getElementById('viewEd');
+    const root = document.body;
+    const setMode = (m) => {
+      root.setAttribute('data-view', m);
+      bExec.setAttribute('aria-pressed', String(m === 'executive'));
+      bEd.setAttribute('aria-pressed', String(m === 'editorial'));
+    };
+    bExec.addEventListener('click', ()=>setMode('executive'));
+    bEd.addEventListener('click', ()=>setMode('editorial'));
+  </script>
+</body>
+</html>
