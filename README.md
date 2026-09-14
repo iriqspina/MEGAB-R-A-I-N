@@ -16,13 +16,44 @@ auditados no projeto.
 - Skills, scripts, locks por arquivo, estado, handoff e testes para reduzir
   retrabalho entre pessoas e agentes.
 
+## Cotas IA na tela — instale com 1 clique (recomendado)
+
+O MEGABRAIN vem com um **widget de cotas na tela** (`apps/ia-quota-widget`):
+um quadradinho sempre visível que mostra quanto você já usou de cada IA
+(Codex, Claude, Z.ai, Gemini…) em cada janela de limite — 5 horas, semana,
+mês — com uma barrinha colorida por janela.
+
+Por que usar: cota é o recurso que mais se perde por falta de visão. Com o
+widget, você vê antes de abrir um chat se vale trocar de IA, se a semana
+está no fim ou se a janela de 5 horas acabou de renovar. Ele lê as
+credenciais que JÁ EXISTEM no seu computador (as mesmas que os CLIs Codex,
+Claude e Gemini usam) — não pede senha, não guarda token, não manda nada
+pra fora.
+
+Instalação: entre em `apps/ia-quota-widget` e dê dois cliques em
+**`INSTALAR-E-ABRIR.cmd`**. O script faz tudo sozinho: cria o ambiente
+Python privado do widget, instala as dependências, cria o atalho na área de
+trabalho, configura pra abrir junto com o Windows e já abre o widget. Rodar
+de novo é seguro — só atualiza, nunca duplica. Se o Python não estiver
+instalado, ele aponta o download. Pra não abrir junto com o Windows:
+`Win+R` → `shell:startup` → apague o atalho "Cotas IA".
+
+Como usar no dia a dia: cada IA é um card. **Segure e arraste o nome** de
+uma IA até a coluna de bolinhas à esquerda para tirá-la da vista; arraste a
+bolinha de volta para a lista, na altura entre dois cards, e ela volta
+exatamente ali. Arraste um card por cima dos outros para reordenar. Duplo
+clique no cabeçalho ajusta o tamanho ao conteúdo; `Ctrl+,` abre as
+configurações (fonte, cores, frequência de consulta, avisos de limite).
+
 ## Começo rápido
 
-1. Leia [SKILL.md](SKILL.md) para entender os gates e os limites de autonomia.
-2. Rode `python bin/mb-inicio-sessao.py` para listar as skills disponíveis.
-3. Para uma entrega multiagente, use `/orquestracao1` e crie um brief com
+1. Instale o widget de cotas: dois cliques em
+   `apps/ia-quota-widget/INSTALAR-E-ABRIR.cmd` (ver seção acima).
+2. Leia [SKILL.md](SKILL.md) para entender os gates e os limites de autonomia.
+3. Rode `python bin/mb-inicio-sessao.py` para listar as skills disponíveis.
+4. Para uma entrega multiagente, use `/orquestracao1` e crie um brief com
    objetivo, critérios verificáveis e contexto.
-4. Antes de aplicar uma proposta, valide o artefato real. `review_approved`
+5. Antes de aplicar uma proposta, valide o artefato real. `review_approved`
    confirma revisão textual; não substitui teste, build ou inspeção visual.
 
 ## Privacidade e limites
@@ -39,6 +70,7 @@ lei permitir; para outro uso, fale com o titular.
 
 - `motor/skills/`: instruções canônicas para agentes.
 - `apps/automations/`: motor local da orquestração.
+- `apps/ia-quota-widget/`: widget de cotas na tela (instalação de 1 clique).
 - `bin/`: scripts de verificação, sincronização e export.
 - `docs/`: referências e documentação.
 

@@ -1,0 +1,24 @@
+- Running health check...
+
+=== Health Check Results ===
+
+✓ PATH
+✗ API Key & Network
+  API key not configured
+✓ Git Environment
+✗ GLM Coding Plan
+  GLM Coding Plan not configured. Run 'chelper init' to configure.
+✓ Tool: Claude Code (claude-code)
+✓ Tool: Codex (codex)
+✓ Tool: OpenCode (opencode)
+✗ Tool: Crush (crush)
+  Tool not found: Crush
+✗ Tool: Factory Droid (factory-droid)
+  Tool not found: Factory Droid
+
+
+Suggestions:
+- Run "chelper init" to configure missing settings
+- Check your network connection
+- Ensure required tools are installed
+

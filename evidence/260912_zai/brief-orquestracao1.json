@@ -1,0 +1,24 @@
+{
+  "objective": "Produzir e revisar um plano operacional verificável para configurar a assinatura GLM Coding Pro de <USUARIO> no Windows e integrá-la ao MEGABRAIN, incluindo ZCode desktop, clientes CLI suportados, terminal, permissões, orquestradores/workers e controle pelo celular por último. O plano não executa instalações nem configura chaves.",
+  "profile": "micro",
+  "criteria": [
+    "Separar fatos confirmados no painel pessoal, documentação oficial e hipóteses a testar.",
+    "Preservar Claude Code e Codex da OpenAI atuais, sem sobrescrever seus perfis, segredos ou trabalho não commitado.",
+    "Definir para cada cliente suportado instalação, autenticação, endpoint do Coding Plan, permissão, teste real, evidência e rollback.",
+    "Não propor acesso direto do motor próprio apps/automations à cota do Coding Plan, pois a assinatura é restrita a ferramentas oficialmente suportadas.",
+    "Explicitar hierarquia Codex orquestrador, ZCode orquestrador de tarefa e subagentes workers, com limite de aninhamento, escopo e critérios de aceite.",
+    "Tratar o celular como última etapa: Remote Control oficial por navegador, com validação em aparelho e encerramento do link."
+  ],
+  "context": "Fontes consultadas em 2026-09-12: https://docs.z.ai/devpack/overview ; https://docs.z.ai/devpack/tool/others ; https://docs.z.ai/devpack/tool/codex ; https://docs.z.ai/devpack/tool/claude ; https://docs.z.ai/devpack/tool/opencode ; https://docs.z.ai/legal-agreement/subscription-terms ; https://zcode.z.ai/en/docs/install ; https://zcode.z.ai/en/docs/configuration ; https://zcode.z.ai/en/docs/safety-confirm ; https://zcode.z.ai/en/docs/subagents ; https://zcode.z.ai/en/docs/skill ; https://zcode.z.ai/en/docs/remote-control . Painel Z.ai aberto em 2026-09-12: GLM Coding Pro trimestral válido; 12K créditos/5h e 60K/semana; 0 usado na leitura. Inventário local: Windows 11 Pro, PowerShell 7.6.5, Node 24.16.0, npm 11.13.0, Python 3.14.6, Git 2.55, Claude Code 2.1.269, Codex CLI 0.154.0; nenhum CLI GLM ou OpenCode no PATH; ZCode ainda não confirmado instalado. MEGABRAIN V6 hoje suporta apenas Codex/Claude como providers. Git possui alterações preexistentes e HANDOFF marca trava geral livre.",
+  "ideal": "<USUARIO> recebe plano auditável que especifica ordem, dependências, comandos e telas exatas, testes de conta/modelo/cota/permissão por cliente, segregação de credenciais, rollback e uma etapa móvel final; consegue aprovar cada mudança sabendo o que será instalado e o que ainda depende dele.",
+  "generic_rejected": "Uma lista genérica 'instale Z.ai, cole a chave e use GLM' apagaria clientes existentes, confundiria quota do plano com API geral e não provaria a execução.",
+  "questions": [],
+  "milestones": [
+    {"name": "1. Baseline e requisitos", "exit": "Plano Pro, limites, Windows, clientes existentes, trava e estado Git registrados com fonte e data."},
+    {"name": "2. ZCode e perfis CLI", "exit": "Procedimentos isolados de instalação, login, chave, endpoints e permissões descritos com teste e rollback por cliente."},
+    {"name": "3. Orquestração MEGABRAIN", "exit": "Papéis, limites contratuais, provas de cota e handoff entre orquestradores/workers explicitados sem integração API própria."},
+    {"name": "4. Verificação e celular", "exit": "Matriz de aceite ponta a ponta e controle móvel oficial posicionados depois do desktop/CLI."}
+  ],
+  "effort_policy": "Usar perfil micro somente se a prévia não despachar Astra; verificar rota e cotas vivas antes de run. Autocrítica de escopo, premissas, risco e verificação; revisão humana do arquivo entregue continua obrigatória.",
+  "quota_side": "Z.ai Pro 0/12K e 0/60K na leitura do painel 2026-09-12 13:28 local. Codex 8% semanal, Claude 98% semanal e Fable 100% no snapshot 2026-09-12T16:27:41Z; confirmar novamente antes de despachar. NAO_MEDIDO para consumo futuro GLM."
+}

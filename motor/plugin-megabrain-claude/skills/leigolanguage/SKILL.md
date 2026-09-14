@@ -127,14 +127,14 @@ Onde fica o nível vigente: linha `LEIGO-GATE:` no arquivo de identidade
 Quem ajusta o nível edita essa linha na FONTE com data e motivo e roda a sincronização de
 identidade (`01_acoes/06_sincronizar-identidade.cmd`). Nunca guarde o nível só na conversa.
 
-### Forma do bloco no modo contínuo
+### Forma da abertura única no modo contínuo
 
-Versão curta do método, 2–5 linhas, logo depois do TL;DR (ou colada na parte complicada,
-se a resposta for longa):
+Versão curta do método, 2–5 linhas, colada ao TL;DR. Ela substitui os dois blocos por uma
+abertura única e usa o nome da skill de forma inequívoca para agentes:
 
 ```
-🗣️ EM PORTUGUÊS — <o que é, no mundo dele, 1 frase> · <o que muda pra ele> ·
-<o que dói se der errado e se volta atrás>
+TL;DR + /leigolanguage — <resultado direto> · <o que é, no mundo dele> ·
+<o que muda pra ele> · <o que dói se der errado e se volta atrás>
 ```
 
 O formato completo de 5 partes fica reservado para quando você pede uma decisão. Termo
@@ -147,8 +147,8 @@ técnico aparece E é definido uma vez; não some.
 - **Desce 1 nível:** "sei disso", "muito básico", "pula", "sem a explicação", ele usa o
   termo corretamente por conta própria, ou três respostas seguidas em que o bloco não
   gerou reação nem pergunta.
-- **Pergunta de calibração:** no máximo **uma a cada 5 respostas com bloco**, uma linha, no
-  fim da resposta: `(calibração do leigo-gate: esse "em português" foi útil, sobrou ou faltou?)`.
+- **Pergunta de calibração:** no máximo **uma a cada 5 respostas com abertura**, uma linha, no
+  fim da resposta: `(calibração do /leigolanguage: essa abertura foi útil, sobrou ou faltou?)`.
 - Duas respostas consistentes no mesmo sentido → aplicar o ajuste, registrar na fonte
   (`LEIGO-GATE: nível N · AAMMDD · motivo`) e parar de perguntar por ~10 respostas.
 - Nunca ajustar dois níveis de uma vez; nunca perguntar quando ele pediu resposta curta.

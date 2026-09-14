@@ -97,6 +97,15 @@ def _enriquecer(d: dict) -> dict:
                 d["pct"] = round(100 * float(d["n"]) / total, 3)
         except (TypeError, ValueError):
             pass
+    # spark-barras: altura relativa ao MÁXIMO (não ao total) — barra do
+    # maior valor toca o teto, as outras escalam por ele.
+    if "n" in d and "max" in d and "h_pct" not in d:
+        try:
+            mx = float(d["max"] or 0)
+            if mx:
+                d["h_pct"] = round(100 * float(d["n"]) / mx, 2)
+        except (TypeError, ValueError):
+            pass
     return d
 
 
@@ -148,6 +157,11 @@ def _preparo(ident: str, dados: dict) -> dict:
     if ident == "barra-segmentos" and d.get("segmentos") and not d.get("total"):
         try:
             d["total"] = sum(float(s.get("n") or 0) for s in d["segmentos"])
+        except (TypeError, ValueError):
+            pass
+    if ident == "spark-barras" and d.get("pontos"):
+        try:
+            d["max"] = max(float(p.get("n") or 0) for p in d["pontos"])
         except (TypeError, ValueError):
             pass
     return d

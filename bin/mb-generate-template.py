@@ -41,7 +41,17 @@ DESTINO_DEFAULT = os.path.join(CENTRAL_DEFAULT, "_github/export")
 
 # Não copiar: exclusivamente pessoais ou gerados (match por substring no caminho relativo)
 EXCLUIR = {
-    "02_entrada", "apps/ia-quota-widget",  # private input and personal account widget
+    "02_entrada",  # private input
+    # 260914: o widget de cotas agora FAZ parte do pacote público (decisão do
+    # <USUARIO>: usuários instalam com 1 clique). O que não sai é o ESTADO
+    # pessoal dele: settings/telemetria da conta, saídas e caches.
+    "apps/ia-quota-widget/app/data",
+    "apps/ia-quota-widget/out",
+    "apps/ia-quota-widget/.tmp",
+    # 260914: instaladores binários de evidência (ex.: ZCode-3.11.2 de
+    # 155 MB em 260912_zai) estouram o limite de 100 MB do GitHub no push.
+    # Binário de terceiro não é código nem prova auditável — fora do pacote.
+    "evidence/260912_zai/downloads",
     # `dados/` contém estado e telemetria reais da conta/máquina (fila,
     # percentuais de cota, janelas e histórico compacto). O template leva o
     # código que os recria, nunca uma fotografia do uso de uma pessoa.

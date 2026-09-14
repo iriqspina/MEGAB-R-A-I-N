@@ -156,6 +156,28 @@ class EngineTests(unittest.TestCase):
         self.assertIn("não medida", route["reason"])
         self.assertEqual(route["quota"], {"status": "NAO_MEDIDO"})
 
+    def test_v2_auto_route_reduces_to_micro_when_measured_quota_is_slow(self):
+        config = self.v2_config()
+        run = self.make_run(config=config)
+        engine = app.Engine(config, run, FakeBackend())
+        engine.quota = Mock()
+        engine.quota.snapshot.return_value = {"status": "ok", "pacing": {"status": "desacelerar"}}
+        route = app.resolve_route_v2(engine, dict(JOB, profile="auto"))
+        self.assertEqual(route["effective_profile"], "micro")
+        self.assertIn("desacelerar", route["reason"])
+
+    def test_alias_provider_uses_its_native_client_and_quota_bucket(self):
+        config = copy.deepcopy(CONFIG)
+        config["providers"]["astra"] = {"executable": "codex", "client": "codex",
+                                          "quota_provider": "codex", "model": "gpt-6-astra", "effort": "medium"}
+        config["providers"]["opus"] = {"executable": "claude", "client": "claude",
+                                         "quota_provider": "claude", "model": "claude-opus-5", "effort": "high"}
+        with patch.object(app, "executable", return_value="client"):
+            self.assertEqual(app.commands(config, "astra", self.root, "plan")[1], "exec")
+            self.assertEqual(app.commands(config, "opus", self.root, "review")[1], "-p")
+        self.assertEqual(app.quota_provider(config, "astra"), "codex")
+        self.assertEqual(app.quota_provider(config, "opus"), "claude")
+
     def test_v2_preview_does_not_persist_or_reuse_a_previous_profile(self):
         config = self.v2_config()
         run = self.make_run(config=config)

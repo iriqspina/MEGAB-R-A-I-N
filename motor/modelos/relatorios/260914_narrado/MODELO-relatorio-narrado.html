@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-tema="1">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TÍTULO DO RELATÓRIO}} — {{DATA AA/MM/DD}}</title>
+<!--
+═══════════════════════════════════════════════════════════════════════
+MODELO-relatorio-narrado · v1.0 · 260914 · MEGABRAIN motor/modelos
+Deck narrado (PowerPoint comentado) — autocontido, offline, sem CDN.
+
+COMO USAR (skill: motor/skills/relatorio-narrado/SKILL.md)
+1. Copie este arquivo para 00_PARA-VOCE/<data>_<entrega>/ do projeto.
+ 2. Procure os blocos "═══ EDITE" e preencha: temas, telas e o array NARR.
+ 3. Gere os mp3 (speech_synthesize cloud_tts, pt-BR) com o MESMO texto do
+    NARR — um arquivo por tela: narr_01.mp3, narr_02.mp3, ... MESMA pasta.
+ 4. Confira nomes de classe únicos (lição T1) e abra no navegador.
+
+ESTRUTURA: 6 telas de exemplo (capa · selos · cards+fluxo · comparação ·
+donut · listas+fecho). Duplique/remova <section class="slide"> à vontade —
+o JS conta sozinho e os dots/contador/hud se ajustam.
+
+TECLADO: ← → espaço navega · G TOCAR TUDO · N narra a tela · 1/2/3 tema ·
+F tela cheia · Home/End. Touch: swipe.
+═══════════════════════════════════════════════════════════════════════
+-->
+<style>
+/* ═══ EDITE: TEMAS — 3 paletas; troque os valores (tokens do projeto, se houver) */
+:root{
+  --acento:#EC0F7C;            /* constante em todos os temas */
+  --ok:#2FBF71; --meio:#F5A623; --ruim:#E5484D; --sem:#9AA0B4;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,monospace;
+  --sans:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+}
+html[data-tema="1"]{ --bg:#5B14D2;--bg2:#3C0B97;--fg:#EEF0F6;--fg2:rgba(238,240,246,.74);
+  --card:#5A18C4;--card2:#7A35E0;--linha:rgba(255,255,255,.16);
+  --chipbg:rgba(122,53,224,.35);--sombra:rgba(28,11,67,.45);--ghost:rgba(255,255,255,.14); }
+html[data-tema="2"]{ --bg:#EEF0F6;--bg2:#E3E6EF;--fg:#140A2D;--fg2:#5E5871;
+  --card:#FFFFFF;--card2:#F7F8FC;--linha:#D4D4DE;
+  --chipbg:rgba(91,20,210,.08);--sombra:rgba(20,10,45,.14);--ghost:rgba(20,10,45,.10); }
+html[data-tema="3"]{ --bg:#140A2D;--bg2:#0E0820;--fg:#EEF0F6;--fg2:rgba(238,240,246,.74);
+  --card:#1C0B43;--card2:#241057;--linha:rgba(255,255,255,.16);
+  --chipbg:rgba(90,24,196,.35);--sombra:rgba(6,3,18,.6);--ghost:rgba(255,255,255,.10); }
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--sans);background:var(--bg);color:var(--fg);overflow:hidden;
+  transition:background-color .7s ease,color .7s ease}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+
+/* granulado sutil (opcional — remova se não quiser textura) */
+.grain{position:fixed;inset:0;pointer-events:none;z-index:3;opacity:.5;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.16'/%3E%3C/svg%3E");}
+.orb{position:fixed;border-radius:50%;filter:blur(90px);z-index:0;pointer-events:none;opacity:.5}
+.orb.o1{width:46vmin;height:46vmin;left:-12vmin;top:-14vmin;background:var(--bg2);animation:fl1 26s ease-in-out infinite}
+.orb.o2{width:38vmin;height:38vmin;right:-10vmin;bottom:-12vmin;background:var(--card2);opacity:.35;animation:fl2 31s ease-in-out infinite}
+@keyframes fl1{0%,100%{transform:translate(0,0)}50%{transform:translate(6vmin,4vmin)}}
+@keyframes fl2{0%,100%{transform:translate(0,0)}50%{transform:translate(-5vmin,-4vmin)}}
+
+/* topbar */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:20;height:64px;display:flex;align-items:center;
+  gap:18px;padding:0 28px;background:color-mix(in srgb,var(--bg) 82%,transparent);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--linha)}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:13px;letter-spacing:.14em;font-weight:700;white-space:nowrap}
+.logo .lg{width:30px;height:30px;border:2px solid var(--fg);display:grid;place-items:center;border-radius:8px;font-size:12px}
+.logo b{color:var(--acento)}
+.top-title{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--fg2);
+  flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:0;transform:translateY(4px)}
+.top-title.on{animation:sobe .5s .15s both}
+.top-right{display:flex;align-items:center;gap:12px}
+.tocar-btn{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;
+  font-weight:700;border:1px solid var(--acento);border-radius:99px;padding:8px 16px;
+  background:rgba(236,15,124,.14);transition:transform .25s,box-shadow .25s;white-space:nowrap}
+.tocar-btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px var(--sombra)}
+.tocar-btn .eq{display:inline-flex;gap:2.5px;align-items:flex-end;height:12px}
+.tocar-btn .eq i{width:3px;background:var(--acento);border-radius:2px;height:4px}
+.tocar-btn.on .eq i{animation:eqz .7s ease-in-out infinite}
+.tocar-btn.on .eq i:nth-child(2){animation-delay:.15s}
+.tocar-btn.on .eq i:nth-child(3){animation-delay:.3s}
+@keyframes eqz{0%,100%{height:4px}50%{height:12px}}
+.temas{display:flex;gap:8px;align-items:center;padding:6px 10px;border:1px solid var(--linha);border-radius:99px}
+.temas .lb{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--fg2)}
+.tema-btn{width:22px;height:22px;border-radius:50%;border:2px solid transparent;transition:transform .25s}
+.tema-btn:hover{transform:scale(1.18)}
+.tema-btn[aria-pressed="true"]{border-color:var(--fg);transform:scale(1.12)}
+.tema-btn.t1{background:#5B14D2}.tema-btn.t2{background:#EEF0F6}.tema-btn.t3{background:#140A2D;border-color:rgba(255,255,255,.35)}
+.fs-btn{font-family:var(--mono);font-size:11px;border:1px solid var(--linha);border-radius:8px;padding:7px 12px}
+.fs-btn:hover{background:var(--chipbg)}
+
+.progresso{position:fixed;top:64px;left:0;right:0;height:3px;z-index:20}
+.progresso i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--acento),var(--card2));
+  transition:width .55s cubic-bezier(.22,1,.36,1);box-shadow:0 0 12px var(--acento)}
+
+/* legenda da narração (fixa) — NÃO reutilize o nome .legenda em outro bloco (lição T1) */
+.legenda{position:fixed;left:50%;bottom:96px;transform:translate(-50%,14px);z-index:22;
+  max-width:min(880px,86vw);padding:13px 22px;border-radius:14px;text-align:center;
+  background:color-mix(in srgb,var(--bg) 88%,#000 12%);border:1px solid var(--linha);
+  box-shadow:0 16px 40px var(--sombra);backdrop-filter:blur(8px);
+  font-size:clamp(13px,1.15vw,15.5px);line-height:1.55;
+  opacity:0;visibility:hidden;transition:opacity .4s,transform .4s,visibility 0s .4s}
+.legenda.on{opacity:1;visibility:visible;transform:translate(-50%,0);transition-delay:0s}
+.legenda::before{content:"NARRAÇÃO";display:block;font-family:var(--mono);font-size:9.5px;
+  letter-spacing:.3em;color:var(--acento);margin-bottom:5px;font-weight:700}
+
+/* deck */
+.deck{position:fixed;inset:64px 0 76px 0;z-index:5}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;
+  padding:30px clamp(28px,6vw,110px);visibility:hidden;opacity:0;
+  transform:translateX(60px) scale(.985);transition:opacity .55s,transform .55s cubic-bezier(.22,1,.36,1),visibility 0s .55s}
+.slide.esq{transform:translateX(-60px) scale(.985)}
+.slide.ativa{visibility:visible;opacity:1;transform:none;transition-delay:0s}
+.ghostn{position:absolute;right:clamp(16px,4vw,70px);top:50%;transform:translateY(-54%);
+  font-size:clamp(160px,30vh,340px);font-weight:900;line-height:1;letter-spacing:-.05em;
+  color:transparent;-webkit-text-stroke:2px var(--ghost);z-index:-1;user-select:none}
+.slide [data-anim]{opacity:0}
+.slide.ativa [data-anim]{animation:sobe .7s cubic-bezier(.22,1,.36,1) both;animation-delay:var(--d,0ms)}
+@keyframes sobe{from{opacity:0;transform:translateY(26px);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+
+.kicker{font-family:var(--mono);font-size:clamp(11px,1.1vw,13px);letter-spacing:.3em;text-transform:uppercase;
+  color:var(--acento);font-weight:700;margin-bottom:14px}
+.h1{font-size:clamp(34px,4.6vw,64px);font-weight:800;letter-spacing:-.03em;line-height:1.04;margin-bottom:18px}
+.h1 .mg{color:var(--acento)}
+.lead{font-size:clamp(16px,1.55vw,21px);color:var(--fg2);line-height:1.55;max-width:62ch}
+.src{position:absolute;bottom:18px;left:clamp(28px,6vw,110px);font-family:var(--mono);font-size:10px;
+  letter-spacing:.12em;color:var(--fg2);opacity:.75}
+.chips{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
+.chip{font-family:var(--mono);font-size:clamp(11px,1vw,13px);padding:9px 16px;border-radius:99px;
+  border:1px solid var(--linha);background:var(--chipbg);transition:transform .25s,box-shadow .25s}
+.chip:hover{transform:translateY(-3px);box-shadow:0 8px 20px var(--sombra)}
+.chip b{color:var(--acento)}
+.card{background:var(--card);border:1px solid var(--linha);border-radius:18px;
+  padding:clamp(16px,1.6vw,26px);box-shadow:0 14px 34px var(--sombra);transition:transform .3s}
+.card:hover{transform:translateY(-4px)}
+
+/* capa */
+.cap .h1{font-size:clamp(44px,6vw,86px)}
+.cap .selo{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;
+  letter-spacing:.2em;border:1px solid var(--linha);border-radius:99px;padding:8px 14px;color:var(--fg2)}
+.cap .selo i{width:8px;height:8px;border-radius:50%;background:var(--ok);animation:pulsa 2s infinite}
+@keyframes pulsa{0%,100%{box-shadow:0 0 0 0 rgba(47,191,113,.5)}50%{box-shadow:0 0 0 7px rgba(47,191,113,0)}}
+.marquee{position:absolute;left:0;right:0;bottom:-8px;overflow:hidden;border-top:1px solid var(--linha);padding:12px 0}
+.marquee .trilho{display:flex;width:max-content;animation:rola 26s linear infinite}
+.marquee span{font-family:var(--mono);font-size:12px;letter-spacing:.28em;text-transform:uppercase;white-space:nowrap;padding-right:60px}
+.marquee b{color:var(--acento)}
+@keyframes rola{to{transform:translateX(-50%)}}
+.dica-nav{position:absolute;bottom:64px;right:clamp(28px,6vw,110px);font-family:var(--mono);font-size:11px;
+  color:var(--fg2);letter-spacing:.1em;animation:seta 1.6s ease-in-out infinite;text-align:right;line-height:1.8}
+.dica-nav b{color:var(--acento)}
+@keyframes seta{0%,100%{transform:translateX(0);opacity:.65}50%{transform:translateX(8px);opacity:1}}
+
+/* selos / números */
+.selos{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:34px}
+.selo2{border:1px solid var(--linha);border-radius:16px;padding:20px;background:var(--card);box-shadow:0 10px 26px var(--sombra)}
+.selo2 .n{font-family:var(--mono);font-size:12px;color:var(--acento);font-weight:700;margin-bottom:8px}
+.selo2 .t{font-weight:700;font-size:clamp(14px,1.25vw,17px);margin-bottom:6px}
+.selo2 .d{font-size:clamp(12px,1vw,14px);color:var(--fg2);line-height:1.45}
+.frase{font-size:clamp(30px,4vw,58px);font-weight:800;letter-spacing:-.03em;line-height:1.12;max-width:24ch}
+.frase em{font-style:normal;color:var(--acento)}
+.nota{margin-top:26px;display:inline-flex;font-family:var(--mono);font-size:12px;border:1px dashed var(--linha);
+  border-radius:10px;padding:10px 14px;color:var(--fg2)}
+
+/* cards + fluxo */
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:30px}
+.lugar .tag{font-family:var(--mono);font-size:11px;letter-spacing:.18em;border:1px solid var(--fg);border-radius:8px;
+  display:inline-grid;place-items:center;width:44px;height:36px;margin-bottom:14px;font-weight:700}
+.lugar h3{font-size:clamp(16px,1.5vw,20px);font-weight:800;margin-bottom:4px}
+.lugar .sub{font-family:var(--mono);font-size:10.5px;color:var(--acento);text-transform:uppercase;margin-bottom:10px}
+.lugar p{font-size:clamp(12.5px,1vw,14.5px);color:var(--fg2);line-height:1.5}
+.lugar .estado{margin-top:12px;font-size:clamp(12px,.95vw,14px);line-height:1.45;border-top:1px solid var(--linha);padding-top:10px}
+.lugar .estado b{color:var(--fg)}
+.fluxo{display:flex;align-items:center;margin-top:30px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--fg2)}
+.fluxo .no{border:1px solid var(--linha);border-radius:99px;padding:8px 16px;background:var(--chipbg)}
+.fluxo .st{flex:1;height:1px;min-width:60px;background:linear-gradient(90deg,var(--linha),var(--acento),var(--linha));position:relative}
+.fluxo .st::after{content:"";position:absolute;top:-3px;left:0;width:7px;height:7px;border-radius:50%;
+  background:var(--acento);box-shadow:0 0 10px var(--acento);animation:anda 2.6s linear infinite}
+@keyframes anda{to{left:calc(100% - 7px)}}
+
+/* comparação 2 colunas */
+.vs{display:grid;grid-template-columns:1fr auto 1fr;gap:clamp(14px,2vw,30px);align-items:stretch;margin-top:28px}
+.coluna{padding:clamp(18px,1.8vw,28px)}
+.coluna h3{font-size:clamp(17px,1.6vw,22px);font-weight:800;margin-bottom:4px}
+.coluna .sub{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:16px}
+.coluna.a{border-top:4px solid var(--ok)}
+.coluna.b{border-top:4px solid var(--meio)}
+.lista-chips{display:flex;flex-direction:column;gap:9px}
+.marc{display:flex;gap:10px;align-items:flex-start;font-size:clamp(12.5px,1.05vw,15px);line-height:1.4}
+.marc i{flex:none;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-style:normal;margin-top:1px}
+.marc.ok i{background:rgba(47,191,113,.18);color:var(--ok)}
+.marc.falta i{background:rgba(154,160,180,.18);color:var(--sem)}
+.marc b{font-weight:700}
+.marc small{display:block;color:var(--fg2);font-size:.88em;margin-top:2px}
+.ponte{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;min-width:130px}
+.ponte .st2{font-size:34px;animation:empurra 1.8s ease-in-out infinite}
+@keyframes empurra{0%,100%{transform:translateX(-5px)}50%{transform:translateX(5px)}}
+.ponte .lb{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;text-align:center;color:var(--fg2);line-height:1.6}
+.ponte .lb b{color:var(--acento)}
+.alerta{font-family:var(--mono);font-size:11.5px;border-radius:10px;padding:10px 14px;border:1px solid var(--ruim);background:rgba(229,72,77,.12)}
+.alerta b{color:var(--ruim)}
+.divida{margin-top:22px;display:flex;gap:12px;flex-wrap:wrap}
+
+/* donut — a legenda do gráfico usa .leg-donut (NUNCA .legenda — lição T1) */
+.aprov{display:grid;grid-template-columns:auto 1fr;gap:clamp(24px,4vw,70px);align-items:center;margin-top:10px}
+.donut-wrap{position:relative;width:clamp(240px,26vw,340px)}
+.donut-wrap svg{width:100%;transform:rotate(-90deg)}
+.donut-wrap circle{fill:none;stroke-width:20}
+.donut-c{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+.donut-c .big{font-size:clamp(40px,4.5vw,64px);font-weight:900;letter-spacing:-.04em;line-height:1}
+.donut-c .sm{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--fg2);margin-top:6px}
+.leg-donut{display:flex;flex-direction:column;gap:14px}
+.leg{display:grid;grid-template-columns:14px 1fr auto;gap:12px;align-items:baseline;font-size:clamp(13.5px,1.15vw,16px)}
+.leg i{width:13px;height:13px;border-radius:4px;align-self:center}
+.leg .num{font-family:var(--mono);font-weight:700;font-size:clamp(16px,1.5vw,20px)}
+.leg small{display:block;color:var(--fg2);font-size:.85em}
+.destravam{margin-top:24px;padding:16px 18px;border-radius:14px;border:1px solid var(--acento);background:rgba(236,15,124,.08)}
+.destravam .tt{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--acento);margin-bottom:10px;font-weight:700}
+.destravam .hs{display:flex;gap:10px;flex-wrap:wrap}
+.destravam .h{font-family:var(--mono);font-weight:700;font-size:14px;border:1px solid var(--fg);border-radius:8px;padding:8px 12px}
+
+/* listas numeradas */
+.pends{display:flex;flex-direction:column;gap:12px;margin-top:26px;max-width:900px}
+.pend{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;padding:15px 18px}
+.pend .pn{font-family:var(--mono);font-weight:700;font-size:15px;color:var(--acento);width:34px}
+.pend .pt b{display:block;font-size:clamp(14px,1.2vw,16.5px)}
+.pend .pt small{color:var(--fg2);font-size:.88em;line-height:1.4;display:block;margin-top:2px}
+.pend .quem{font-family:var(--mono);font-size:10px;letter-spacing:.14em;border:1px solid var(--ok);color:var(--ok);border-radius:99px;padding:5px 11px;white-space:nowrap}
+
+/* fecho */
+.fecho{margin-top:30px;font-size:clamp(19px,2vw,26px);font-weight:800;letter-spacing:-.02em;line-height:1.35;max-width:34ch}
+.fecho b{color:var(--ok)}
+.teclas{margin-top:26px;display:flex;gap:10px;flex-wrap:wrap}
+.tecla{font-family:var(--mono);font-size:10.5px;border:1px solid var(--linha);border-radius:8px;padding:7px 11px;color:var(--fg2)}
+.tecla kbd{color:var(--fg);font-weight:700}
+
+/* controles */
+.controls{position:fixed;bottom:0;left:0;right:0;height:76px;z-index:20;display:flex;align-items:center;gap:16px;
+  padding:0 28px;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(10px);border-top:1px solid var(--linha)}
+.nav-btn{width:46px;height:46px;border-radius:12px;border:1px solid var(--linha);display:grid;place-items:center;font-size:18px}
+.nav-btn:hover{background:var(--chipbg)}
+.nav-btn:disabled{opacity:.3;cursor:default}
+.narr-btn{width:46px;height:46px;border-radius:12px;border:1px solid var(--acento);display:grid;place-items:center;
+  font-size:17px;background:rgba(236,15,124,.12);position:relative}
+.narr-btn .eq{position:absolute;bottom:5px;left:50%;transform:translateX(-50%);display:none;gap:2px;align-items:flex-end;height:8px}
+.narr-btn .eq i{width:2.5px;background:var(--acento);border-radius:1px;height:3px}
+.narr-btn.tocando .eq{display:inline-flex}
+.narr-btn.tocando .eq i{animation:eqz .7s ease-in-out infinite}
+.dots{flex:1;display:flex;gap:9px;justify-content:center;flex-wrap:wrap}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--linha);transition:all .3s}
+.dot.on{background:var(--acento);box-shadow:0 0 10px var(--acento);transform:scale(1.35)}
+.contador{font-family:var(--mono);font-size:12px;letter-spacing:.18em;color:var(--fg2)}
+
+@media (max-width:1080px){
+  .grid4,.selos{grid-template-columns:repeat(2,1fr)}
+  .vs{grid-template-columns:1fr}.ponte{flex-direction:row;min-height:60px}
+  .aprov{grid-template-columns:1fr;justify-items:center}.ghostn{display:none}}
+@media (max-width:640px){.top-title{display:none}.tocar-btn .lb{display:none}
+  .slide{justify-content:flex-start;padding-top:26px;overflow-y:auto}}
+</style>
+</head>
+<body>
+<div class="orb o1"></div><div class="orb o2"></div>
+<div class="grain"></div>
+
+<header class="topbar">
+  <div class="logo"><span class="lg">HS</span><span>{{PROJETO}} <b>·</b> {{TIPO DE RELATÓRIO}}</span></div>
+  <div class="top-title" id="topTitle"></div>
+  <div class="top-right">
+    <button class="tocar-btn" id="guiadoBtn" title="Narra e avança sozinho (G)">
+      <span class="eq"><i></i><i></i><i></i></span><span class="lb" id="guiadoLb">▶ TOCAR TUDO</span>
+    </button>
+    <div class="temas" role="group" aria-label="Tema de cor">
+      <span class="lb">TEMA</span>
+      <button class="tema-btn t1" data-t="1" title="Tema 1 (1)"></button>
+      <button class="tema-btn t2" data-t="2" title="Tema 2 (2)"></button>
+      <button class="tema-btn t3" data-t="3" title="Tema 3 (3)"></button>
+    </div>
+    <button class="fs-btn" id="fsBtn" title="Tela cheia (F)">[ TELA CHEIA ]</button>
+  </div>
+</header>
+<div class="progresso"><i id="barra"></i></div>
+<div class="legenda" id="legenda" aria-live="polite"></div>
+
+<main class="deck" id="deck">
+
+<!-- ═══ EDITE: TELA 1 — CAPA (TL;DR de 3 chips + marquee) ═══ -->
+<section class="slide cap" data-title="Capa">
+  <div class="ghostn">01</div>
+  <span class="selo" data-anim><i></i>{{ESTADO EM UMA FRASE}} · {{DATA}}</span>
+  <h1 class="h1" data-anim style="margin-top:22px">{{TÍTULO}}<br>{{DESTAQUE <span class="mg">NA COR DE ACENTO</span>}}</h1>
+  <p class="lead" data-anim>{{UM PARÁGRAFO: o retrato em N telas — onde cada coisa está, o que decide o próximo passo.}}</p>
+  <div class="chips" data-anim>
+    <span class="chip"><b>N</b> {{fato 1 com número}}</span>
+    <span class="chip"><b>N</b> {{fato 2 com número}}</span>
+    <span class="chip">{{garantia: nada se apaga / tem backup}}</span>
+  </div>
+  <div class="dica-nav" data-anim>🔊 <b>▶ TOCAR TUDO</b> no topo narra e vira as telas<br>→ ou avance no seu ritmo</div>
+  <div class="marquee" data-anim><div class="trilho" id="trilho"></div></div>
+</section>
+
+<!-- ═══ EDITE: TELA 2 — OBJETIVO + SELOS DO CRITÉRIO DE PRONTO ═══ -->
+<section class="slide" data-title="Objetivo">
+  <div class="ghostn">02</div>
+  <p class="kicker" data-anim>02 · OBJETIVO ({{fonte}})</p>
+  <h2 class="frase" data-anim>{{O objetivo numa frase, com <em>destaque</em>.}}</h2>
+  <p class="lead" data-anim style="margin-top:18px">{{O "pronto" tem N condições mensuráveis:}}</p>
+  <div class="selos">
+    <div class="selo2" data-anim><div class="n">SELO 1</div><div class="t">{{título}}</div><div class="d">{{descrição}}</div></div>
+    <div class="selo2" data-anim><div class="n">SELO 2</div><div class="t">{{título}}</div><div class="d">{{descrição}}</div></div>
+    <div class="selo2" data-anim><div class="n">SELO 3</div><div class="t">{{título}}</div><div class="d">{{descrição}}</div></div>
+    <div class="selo2" data-anim><div class="n">SELO 4</div><div class="t">{{título}}</div><div class="d">{{descrição}}</div></div>
+  </div>
+  <div class="nota" data-anim>{{ressalva importante (ex.: escopo suspenso, decisão pendente)}}</div>
+  <div class="src" data-anim>FONTE · {{caminho do documento-fonte}}</div>
+</section>
+
+<!-- ═══ EDITE: TELA 3 — CARDS (os lugares/frentes) + FLUXO ═══ -->
+<section class="slide" data-title="Os lugares">
+  <div class="ghostn">03</div>
+  <p class="kicker" data-anim>03 · {{ONDE AS COISAS EXISTEM}}</p>
+  <h2 class="h1" data-anim>{{N lugares, <span class="mg">um fluxo</span>}}</h2>
+  <div class="grid4">
+    <div class="card lugar" data-anim>
+      <span class="tag">AA</span><h3>{{Nome}}</h3><div class="sub">{{papel}}</div>
+      <p>{{o que é, em linguagem leiga.}}</p>
+      <div class="estado"><b>Hoje:</b> {{estado medido}}</div>
+    </div>
+    <!-- repita o card lugar até 4× -->
+  </div>
+  <div class="fluxo" data-anim>
+    <span class="no">{{ETAPA A}}</span><span class="st"></span>
+    <span class="no">{{ETAPA B}}</span><span class="st"></span>
+    <span class="no">{{ETAPA C}}</span><span class="st"></span>
+    <span class="no">{{ETAPA D}}</span>
+  </div>
+</section>
+
+<!-- ═══ EDITE: TELA 4 — COMPARAÇÃO (antes×depois, local×produção, opção A×B) ═══ -->
+<section class="slide" data-title="Comparação">
+  <div class="ghostn">04</div>
+  <p class="kicker" data-anim>04 · {{A LACUNA OU A ESCOLHA}}</p>
+  <h2 class="h1" data-anim>{{Tese da comparação <span class="mg">destacada</span>}}</h2>
+  <div class="vs">
+    <div class="card coluna a" data-anim>
+      <h3>{{Lado A}}</h3><div class="sub" style="color:var(--ok)">{{RÓTULO}}</div>
+      <div class="lista-chips">
+        <div class="marc ok"><i>✓</i><span><b>{{item}}</b><small>{{detalhe}}</small></span></div>
+        <!-- mais .marc ok / .marc falta -->
+      </div>
+    </div>
+    <div class="ponte" data-anim>
+      <span class="st2">➜</span>
+      <span class="lb"><b>{{AÇÃO}}</b><br>{{condição}}</span>
+    </div>
+    <div class="card coluna b" data-anim><!-- lado B no mesmo formato --></div>
+  </div>
+  <div class="divida" data-anim>
+    <span class="alerta"><b>⚠ {{risco conhecido}}</b> {{detalhe}}</span>
+  </div>
+</section>
+
+<!-- ═══ EDITE: TELA 5 — DONUT + CONTADORES (números-chave) ═══
+     Segments do donut: edite o array SEGS no JS (cores fixas ok/sem/meio/ruim) -->
+<section class="slide" data-title="Números-chave">
+  <div class="ghostn">05</div>
+  <p class="kicker" data-anim>05 · {{O QUE OS NÚMEROS DIZEM}}</p>
+  <h2 class="h1" data-anim>{{Total, <span class="mg">destaque</span>}}</h2>
+  <div class="aprov">
+    <div class="donut-wrap" data-anim>
+      <svg viewBox="0 0 200 200" id="donut">
+        <circle cx="100" cy="100" r="80" stroke="var(--linha)" opacity=".35"/>
+        <circle class="seg" cx="100" cy="100" r="80" stroke="#2FBF71" id="segV"/>
+        <circle class="seg" cx="100" cy="100" r="80" stroke="#F5A623" id="segL"/>
+        <circle class="seg" cx="100" cy="100" r="80" stroke="#E5484D" id="segR"/>
+        <circle class="seg" cx="100" cy="100" r="80" stroke="#9AA0B4" id="segC"/>
+      </svg>
+      <div class="donut-c"><div><div class="big"><span data-count="30">0</span></div><div class="sm">{{unidade}}</div></div></div>
+    </div>
+    <div>
+      <div class="leg-donut">
+        <div class="leg" data-anim><i style="background:#9AA0B4"></i><span><span class="num" data-count="20">0</span> {{categoria}}<small>{{nota}}</small></span></div>
+        <!-- mais .leg por segmento -->
+      </div>
+      <div class="destravam" data-anim>
+        <div class="tt">{{OS QUE DESTRAVAM}}</div>
+        <div class="hs"><span class="h">A01</span><span class="h">A02</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="src" data-anim>FONTE · {{onde os números foram medidos e quando}}</div>
+</section>
+
+<!-- ═══ EDITE: TELA 6 — LISTA NUMERADA + FECHO + TECLAS ═══ -->
+<section class="slide" data-title="Próximos passos">
+  <div class="ghostn">06</div>
+  <p class="kicker" data-anim>06 · {{PRÓXIMOS PASSOS OU PENDÊNCIAS}}</p>
+  <h2 class="h1" data-anim>{{Título, <span class="mg">dono: quem resolve</span>}}</h2>
+  <div class="pends">
+    <div class="card pend" data-anim><span class="pn">01</span>
+      <span class="pt"><b>{{pendência}}</b><small>{{detalhe leigo}}</small></span><span class="quem">{{DONO}}</span></div>
+    <!-- mais .pend -->
+  </div>
+  <p class="fecho" data-anim>{{Fecho em uma frase.}}<br>{{O que é garantido — <b>em verde</b>.}}</p>
+  <div class="teclas" data-anim>
+    <span class="tecla"><kbd>G</kbd> tocar tudo</span>
+    <span class="tecla"><kbd>N</kbd> narração da tela</span>
+    <span class="tecla"><kbd>←</kbd> <kbd>→</kbd> navegar</span>
+    <span class="tecla"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> tema</span>
+    <span class="tecla"><kbd>F</kbd> tela cheia</span>
+  </div>
+  <div class="src" data-anim>ENTREGA · {{pasta}} · leitura-only: nada foi alterado em {{áreas intocadas}}</div>
+</section>
+
+</main>
+
+<footer class="controls">
+  <button class="narr-btn" id="narrBtn" title="Narrar esta tela (N)">🔊<span class="eq"><i></i><i></i><i></i></span></button>
+  <button class="nav-btn" id="prevB" title="Anterior (←)">←</button>
+  <div class="dots" id="dots"></div>
+  <span class="contador" id="contador">01 / 06</span>
+  <button class="nav-btn" id="nextB" title="Próximo (→)">→</button>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* ═══ EDITE: NARRAÇÃO — texto IGUAL ao dos mp3; src = nome do arquivo na mesma pasta ═══ */
+var NARR=[
+ {src:"narr_01.mp3",text:"{{fala da tela 1 — 15 a 35 segundos, números por extenso}}"},
+ {src:"narr_02.mp3",text:"{{fala da tela 2}}"},
+ {src:"narr_03.mp3",text:"{{fala da tela 3}}"},
+ {src:"narr_04.mp3",text:"{{fala da tela 4}}"},
+ {src:"narr_05.mp3",text:"{{fala da tela 5}}"},
+ {src:"narr_06.mp3",text:"{{fala da tela 6}}"}
+];
+/* ═══ EDITE: SEGMENTOS DO DONUT — .n = quantidade; total = soma; ordem: verde, laranja, vermelho, cinza ═══ */
+var SEGS=[
+ {el:document.getElementById('segV'), n:2},
+ {el:document.getElementById('segL'), n:6},
+ {el:document.getElementById('segR'), n:2},
+ {el:document.getElementById('segC'), n:20}
+];
+/* ═══ EDITE: TEXTO DO MARQUEE DA CAPA (repete 3× automaticamente) ═══ */
+var MARQUEE='{{PROJETO}} · <b>{{TIPO}}</b> · {{DATA}} · {{TAGS}} · <b>{{NÚMERO-CHAVE}}</b> · ';
+
+var slides=Array.prototype.slice.call(document.querySelectorAll('.slide'));
+var dotsBox=document.getElementById('dots'), barra=document.getElementById('barra');
+var contador=document.getElementById('contador'), topTitle=document.getElementById('topTitle');
+var legendaEl=document.getElementById('legenda');
+var narrBtn=document.getElementById('narrBtn'), guiadoBtn=document.getElementById('guiadoBtn');
+var guiadoLb=document.getElementById('guiadoLb');
+var atual=-1, guiado=false, tocando=false, fallbackAtivo=false;
+
+/* ---------- narração (com as 3 lições de revisão já aplicadas) ---------- */
+var audio=new Audio(); audio.preload="auto";
+function mostraLegenda(i){ legendaEl.textContent=NARR[i].text; legendaEl.classList.add('on'); }
+function escondeLegenda(){ legendaEl.classList.remove('on'); }
+function setTocando(v){ tocando=v; narrBtn.classList.toggle('tocando',v);
+  narrBtn.title=v?"Pausar narração (N)":"Narrar esta tela (N)"; guiadoBtn.classList.toggle('on',v); }
+function paraTudo(){ try{audio.pause();}catch(_){}
+  if(window.speechSynthesis&&fallbackAtivo){try{speechSynthesis.cancel();}catch(_){}}
+  fallbackAtivo=false; setTocando(false); escondeLegenda(); }
+function vozPtBR(){ if(!window.speechSynthesis)return null; var vs=speechSynthesis.getVoices();
+  for(var i=0;i<vs.length;i++) if(/pt[-_]BR/i.test(vs[i].lang))return vs[i];
+  for(var j=0;j<vs.length;j++) if(/^pt/i.test(vs[j].lang))return vs[j]; return null; }
+function narraBrowser(i){ /* fallback: voz do navegador — tela CERTA (i) e com legenda */
+  if(!window.speechSynthesis){escondeLegenda();return;}
+  fallbackAtivo=true; mostraLegenda(i);
+  var u=new SpeechSynthesisUtterance(NARR[i].text);
+  var v=vozPtBR(); if(v)u.voice=v;
+  u.lang=(v&&v.lang)||"pt-BR"; u.rate=1.02;
+  u.onend=function(){fimNarra();}; u.onerror=function(){setTocando(false);escondeLegenda();};
+  try{speechSynthesis.cancel();speechSynthesis.speak(u);}catch(_){escondeLegenda();}
+}
+function narra(i){ paraTudo(); mostraLegenda(i); setTocando(true);
+  audio.src=NARR[i].src;
+  var p=audio.play();
+  if(p&&p.catch)p.catch(function(){ if(!fallbackAtivo) narraBrowser(i); }); /* 1× só (lição T3) */
+}
+function fimNarra(){ setTocando(false); escondeLegenda();
+  if(guiado){ setTimeout(function(){ if(!guiado)return;
+    if(atual<slides.length-1) go(atual+1); else setGuiado(false); },900); } }
+audio.addEventListener('ended',function(){ if(!fallbackAtivo) fimNarra(); });
+function setGuiado(v){ guiado=v; guiadoLb.textContent=v?"⏸ PAUSAR TUDO":"▶ TOCAR TUDO";
+  guiadoBtn.classList.toggle('on',v&&tocando); if(!v) paraTudo(); }
+guiadoBtn.addEventListener('click',function(){ if(guiado)setGuiado(false); else{setGuiado(true);narra(atual);} });
+narrBtn.addEventListener('click',function(){ /* N durante o guiado devolve controle manual */
+  if(guiado){setGuiado(false);} else if(tocando){paraTudo();} else narra(atual); });
+if(window.speechSynthesis&&speechSynthesis.getVoices)speechSynthesis.getVoices();
+
+/* ---------- deck ---------- */
+slides.forEach(function(s,i){ var d=document.createElement('button');
+  d.className='dot'; d.title=(i+1)+' · '+s.dataset.title; d.setAttribute('aria-label','Ir para tela '+(i+1));
+  d.addEventListener('click',function(){go(i);}); dotsBox.appendChild(d); });
+var dots=Array.prototype.slice.call(dotsBox.children);
+slides.forEach(function(s){ var els=s.querySelectorAll('[data-anim]');
+  Array.prototype.forEach.call(els,function(el,i){el.style.setProperty('--d',(120+i*95)+'ms');}); });
+
+function animaCount(el){ var fim=parseInt(el.getAttribute('data-count'),10),t0=null,dur=1100;
+  function p(t){ if(!t0)t0=t; var k=Math.min((t-t0)/dur,1),e=1-Math.pow(1-k,3);
+    el.textContent=Math.round(fim*e); if(k<1)requestAnimationFrame(p); }
+  requestAnimationFrame(p); }
+
+var C=2*Math.PI*80;
+SEGS.forEach(function(s){ if(s.el){s.el.setAttribute('stroke-dasharray','0 '+C);s.el.setAttribute('stroke-dashoffset','0');} });
+function animaDonut(){ var total=0; SEGS.forEach(function(s){total+=s.n;});
+  var t0=null,dur=1300;
+  function p(t){ if(!t0)t0=t; var k=Math.min((t-t0)/dur,1),e=1-Math.pow(1-k,3),acc=0;
+    SEGS.forEach(function(s){ if(!s.el)return;
+      var fim=s.n/total, vis=fim*Math.max(0,Math.min(1,(e*1.15)-acc*0.15)), len=vis*C;
+      s.el.setAttribute('stroke-dasharray',len+' '+(C-len));
+      s.el.setAttribute('stroke-dashoffset',String(-acc*C)); acc+=fim; });
+    if(k<1)requestAnimationFrame(p); }
+  requestAnimationFrame(p); }
+
+function go(n){ n=Math.max(0,Math.min(slides.length-1,n)); if(n===atual)return;
+  paraTudo();
+  slides.forEach(function(s,i){ s.classList.toggle('ativa',i===n); s.classList.toggle('esq',i<n); });
+  dots.forEach(function(d,i){d.classList.toggle('on',i===n);});
+  barra.style.width=((n+1)/slides.length*100)+'%';
+  contador.textContent=('0'+(n+1)).slice(-2)+' / '+('0'+slides.length).slice(-2);
+  topTitle.classList.remove('on'); void topTitle.offsetWidth;
+  topTitle.textContent=('0'+(n+1)).slice(-2)+' · '+slides[n].dataset.title.toUpperCase();
+  topTitle.classList.add('on');
+  document.getElementById('prevB').disabled=(n===0);
+  document.getElementById('nextB').disabled=(n===slides.length-1);
+  if(location.hash!=='#'+(n+1)) history.replaceState(null,'','#'+(n+1));
+  atual=n;
+  if(slides[n].querySelector('#donut')) setTimeout(animaDonut,350);
+  Array.prototype.forEach.call(slides[n].querySelectorAll('[data-count]'),animaCount);
+  if(guiado) narra(n);
+}
+document.getElementById('nextB').addEventListener('click',function(){go(atual+1);});
+document.getElementById('prevB').addEventListener('click',function(){go(atual-1);});
+document.addEventListener('keydown',function(e){
+  if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){e.preventDefault();go(atual+1);}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(atual-1);}
+  else if(e.key==='Home'){go(0);} else if(e.key==='End'){go(slides.length-1);}
+  else if(e.key==='f'||e.key==='F'){toggleFS();}
+  else if(e.key==='n'||e.key==='N'){ if(guiado){setGuiado(false);} else if(tocando){paraTudo();} else narra(atual); }
+  else if(e.key==='g'||e.key==='G'){ guiadoBtn.click(); }
+  else if(e.key==='1'){setTema('1');} else if(e.key==='2'){setTema('2');} else if(e.key==='3'){setTema('3');}
+});
+var tx=null;
+document.addEventListener('touchstart',function(e){tx=e.touches[0].clientX;},{passive:true});
+document.addEventListener('touchend',function(e){ if(tx===null)return;
+  var dx=e.changedTouches[0].clientX-tx; if(Math.abs(dx)>60) go(atual+(dx<0?1:-1)); tx=null; },{passive:true});
+
+function setTema(t){ document.documentElement.setAttribute('data-tema',t);
+  Array.prototype.forEach.call(document.querySelectorAll('.tema-btn'),function(b){
+    b.setAttribute('aria-pressed',String(b.dataset.t===t)); });
+  try{localStorage.setItem('hs-deck-tema',t);}catch(_){} }
+Array.prototype.forEach.call(document.querySelectorAll('.tema-btn'),function(b){
+  b.addEventListener('click',function(){setTema(b.dataset.t);}); });
+try{var st=localStorage.getItem('hs-deck-tema'); if(st) setTema(st);}catch(_){}
+function toggleFS(){ if(!document.fullscreenElement){ if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen(); }
+  else{ if(document.exitFullscreen)document.exitFullscreen(); } }
+document.getElementById('fsBtn').addEventListener('click',toggleFS);
+
+/* marquee */
+var trilho=document.getElementById('trilho'), metade='';
+for(var i=0;i<3;i++) metade+=MARQUEE;
+trilho.innerHTML='<span>'+metade+'</span><span>'+metade+'</span>';
+
+var ini=parseInt((location.hash||'#1').slice(1),10);
+go(isNaN(ini)?0:ini-1);
+})();
+</script>
+</body>
+</html>

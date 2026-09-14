@@ -13,6 +13,20 @@
       "effort": "low",
       "review_effort": "medium"
     },
+    "astra": {
+      "executable": "codex",
+      "client": "codex",
+      "quota_provider": "codex",
+      "model": "gpt-6-astra",
+      "effort": "medium"
+    },
+    "opus": {
+      "executable": "claude",
+      "client": "claude",
+      "quota_provider": "claude",
+      "model": "claude-opus-5",
+      "effort": "high"
+    },
     "spark": {
       "executable": "codex",
       "model": "gpt-5.3-codex-spark",
@@ -38,24 +52,61 @@
     "plan_rounds": 2,
     "profiles": {
       "micro": {
-        "plan": {"provider": "claude", "effort": "low"},
-        "plan_review": {"provider": "codex", "effort": "medium"},
-        "candidate": {"provider": "codex", "effort": "medium"},
-        "final_review": {"provider": "claude", "effort": "low"}
+        "plan": {
+          "provider": "opus",
+          "effort": "low"
+        },
+        "plan_review": {
+          "provider": "codex",
+          "effort": "medium"
+        },
+        "candidate": {
+          "provider": "codex",
+          "effort": "medium"
+        },
+        "final_review": {
+          "provider": "opus",
+          "effort": "medium"
+        }
       },
       "normal": {
-        "plan": {"provider": "claude", "effort": "low"},
-        "plan_review": {"provider": "codex", "effort": "high"},
-        "candidate": {"provider": "codex", "effort": "high"},
-        "final_review": {"provider": "claude", "effort": "medium"}
+        "plan": {
+          "provider": "astra",
+          "effort": "medium"
+        },
+        "plan_review": {
+          "provider": "opus",
+          "effort": "medium"
+        },
+        "candidate": {
+          "provider": "astra",
+          "effort": "high"
+        },
+        "final_review": {
+          "provider": "opus",
+          "effort": "high"
+        }
       },
       "frontier": {
-        "plan": {"provider": "claude", "effort": "high"},
-        "plan_review": {"provider": "codex", "effort": "high"},
-        "candidate": {"provider": "codex", "effort": "high"},
-        "final_review": {"provider": "claude", "effort": "high"}
+        "plan": {
+          "provider": "astra",
+          "effort": "high"
+        },
+        "plan_review": {
+          "provider": "opus",
+          "effort": "high"
+        },
+        "candidate": {
+          "provider": "astra",
+          "effort": "xhigh"
+        },
+        "final_review": {
+          "provider": "opus",
+          "effort": "high"
+        }
       }
-    }
+    },
+    "profile_evidence": "260910: politica operacional, ainda sem medicao comparativa na assinatura. DeepSWE v1.1: Astra medium/high/max com 73% arredondados a US$4,38/5,72/12,37 por tarefa de API; nao prova equivalencia estatistica. Curva de pesquisa Anthropic medida em Fable 5; curva de codigo em Opus 5, sem transferencia automatica entre modelos. Limites Fable nao demonstram multiplicador de consumo frente a Opus. Fonte: memoria/cerebro/wiki/260910_niveis-de-esforco-o-que-muda-e-como-um-low-chega-perto.md"
   },
   "max_rounds": 2,
   "max_workers": 2,

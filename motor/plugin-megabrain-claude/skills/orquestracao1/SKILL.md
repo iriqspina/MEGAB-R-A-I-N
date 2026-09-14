@@ -23,10 +23,56 @@ python <CENTRAL>/bin/mb-orquestracao.py prepare --projeto <PROJETO> --brief <BRI
 
 O perfil é `micro`, `normal`, `frontier` ou `auto`. `auto` é conservador: enquanto a cota não estiver medida, usa `normal` e declara isso na rota; não finge escolher o modelo mais barato.
 
+## Pipeline obrigatória de prompt (260910)
+
+Todo brief passa por esta sequência antes de `prepare`. É uma política operacional
+para testar qualidade com menos chamadas. A combinação ainda não foi medida contra
+ultracode: o estudo da Anthropic sobre tokens é de pesquisa web e não demonstra
+equivalência entre um modelo `medium` e esse modo do Claude Code.
+Evidência e números: `memoria/cerebro/wiki/260910_niveis-de-esforco-o-que-muda-e-como-um-low-chega-perto.md`.
+
+1. **Contexto primeiro, pedido por último.** Documentos e fontes no topo do brief,
+   a instrução no fim; pedir citação dos trechos relevantes antes de responder.
+2. **Ideal antes do plano.** Escrever artefato ideal, leitor, decisão que ele
+   permite e critérios verificáveis (mesmo contrato do `/quaseultracode`).
+3. **Versão genérica nomeada e recusada.** Uma frase: "a versão que qualquer um
+   entregaria é X; não é o alvo".
+4. **Perguntas de esclarecimento, no máximo 3, só as que mudam o resultado.**
+   Oferecer opções quando ajudarem, sem responder pelo <USUARIO>. Se `/grelhar` já
+   resolveu a dúvida, pular. Escolha visual, versão-base e mudança material de
+   escopo aguardam resposta; trabalho independente pode continuar.
+5. **Plano com 2 a 5 marcos e critério de saída por marco**, um marco "em
+   progresso" por vez; o revisor de plano critica contra uma taxonomia de erro
+   (escopo, premissa, risco, verificação), não em texto livre.
+6. **Esforço por papel, não por sessão.** No perfil `normal`: `plan` medium ·
+   `plan_review` medium · `candidate` high · `final_review` high. Os demais perfis
+   seguem a configuração exibida por `prepare`. `xhigh`/`max` só com flag explícita e
+   motivo escrito; `low` só para worker delimitado. Reexecutar em esforço maior
+   apenas o que falhou no teste (estratégia low→reexecução da Anthropic).
+7. **Lado da cota.** Antes de despachar, conferir idade e saldo de todas as janelas
+   aplicáveis em `dados/orcamento_ia.json`. Comparar ritmo apenas entre janelas
+   equivalentes, usando `used_percent ÷ (100 × elapsed_fraction)`; início de janela
+   sem denominador válido é `NAO_MEDIDO`. Essa comparação é proposta manual, ainda
+   não roteamento do motor. Se ambos estiverem `desacelerar`, não declarar um lado
+   saudável nem trocar modelo sozinho. Respeitar também o limite específico do Fable;
+   a relação de consumo de cota por tarefa entre Fable e Opus não foi medida.
+8. **Autocrítica em turno separado, com rubrica** (critérios do item 2), antes da
+   revisão cruzada. Para respostas verificáveis, múltiplas amostras são uma opção
+   com custo adicional, não obrigação. Confiança declarada não substitui prova.
+   Em ideação visual, gerar alternativas sem votação automática; <USUARIO> seleciona.
+9. **Verificação é camada própria.** Plano gerado não prova plano seguido:
+   testar, abrir o artefato ou rodar o comando de prova antes de `review_approved`.
+
+Campos do brief que carregam a pipeline: `ideal`, `generic_rejected`, `questions`
+(lista; `answer_recommended` é opcional e não equivale à resposta do usuário),
+`milestones`, `effort_policy`, `quota_side`.
+O orquestrador confere `ideal` e `generic_rejected` antes de `run`. Hoje esse bloqueio
+é regra da skill: o código de `prepare`/`run` ainda não valida esses campos.
+
 ## Fluxo V6
 
-1. Claude planeja. Codex revisa o plano de forma independente. Se o plano não passar, o motor repara/revisa dentro do limite ou entrega `plan_rejected` sem produzir um candidato enganoso.
-2. Codex produz/corrige a partir do plano aprovado. Claude faz revisão final independente.
+1. `prepare` mostra os quatro papéis do perfil. Em `normal`, Astra planeja e Opus revisa o plano. Em `micro`, Opus planeja e Sol revisa. Se o plano não passar, o motor repara/revisa dentro do limite ou entrega `plan_rejected` sem produzir um candidato enganoso.
+2. O produtor configurado produz/corrige a partir do plano aprovado; o outro fornecedor faz a revisão final. Em `normal`, Astra produz e Opus revisa.
 3. Cada execução congela brief, fontes, configuração, rota e respostas em `<PROJETO>/.automations/runs/ID/`. O documento humano vai para `<PROJETO>/00_PARA-VOCE/orquestracao1-ID/`.
 4. `review_approved` significa somente que a revisão textual passou. O orquestrador ainda testa, abre o artefato ou valida o runtime quando isso fizer parte do escopo autorizado.
 

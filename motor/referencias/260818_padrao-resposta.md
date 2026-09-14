@@ -122,10 +122,11 @@ não muda entre respostas, está em `motor/skills/orquestracao1/SKILL.md`
 (seção "Cabeçalho fixo de resposta", v0.3). Fora de orquestração, o contrato
 acima continua igual: TL;DR primeiro.
 
-## Leigo-gate contínuo (260905)
+## Abertura única TL;DR + /leigolanguage (260910)
 
 Toda resposta N1+ que explica algo mais complicado (mecanismo, arquitetura, fluxo entre
-agentes, ≥2 termos técnicos novos) ganha um bloco `🗣️ EM PORTUGUÊS` de 2–5 linhas logo
-após o TL;DR, com sensibilidade em 4 níveis calibrada pelo agente e confirmada por ele.
-Nível vigente na linha `LEIGO-GATE:` do arquivo de identidade; método e calibração em
+agentes, ≥2 termos técnicos novos) abre com `TL;DR + /leigolanguage`: resultado direto,
+tradução do termo, o que muda e a dor/reversibilidade. Não criar um segundo bloco nem usar
+o rótulo "EM PORTUGUÊS". A sensibilidade em 4 níveis é calibrada pelo agente e confirmada
+por <USUARIO>. Nível vigente na linha `LEIGO-GATE:` do arquivo de identidade; método e calibração em
 `motor/skills/leigolanguage/SKILL.md` §"Modo contínuo" (v1.1).

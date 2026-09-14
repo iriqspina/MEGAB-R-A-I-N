@@ -1,0 +1,305 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   TEMA 03 · VITRAL                                              260914
+   Vidro escuro: duas auroras (violeta e azul) no fundo, cartões
+   translúcidos com blur, um acento lavanda por estado vivo.
+
+   Linha de pensamento: o relatório como vitral iluminado por trás —
+   a luz (gradiente) mora no FUNDO, as superfícies são vidro fosco
+   que deixam a luz vazar. Nada de cor chapada competindo: quem
+   impressiona é a profundidade, não o grito.
+   Estados continuam no contrato ok/info/warn/signal, em tons que
+   atravessam o vidro sem estourar.
+
+   Escuro é o modo NATURAL do tema (vidro precisa de luz atrás).
+   O modo claro existe para não quebrar o seletor: porcelana fria
+   com as mesmas auroras bem discretas.
+
+   Cascata (padrão Pico/Primer): blocos mutuamente exclusivos por
+   :not(), igual aos temas 01/02.
+   @nome: Vitral
+   @amostra: #14111f,#c4b5fd,#7dd3fc
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── invariantes do tema: não mudam com claro/escuro ────────────────── */
+[data-tema="03-vitral"]{
+  --sans: "Segoe UI", system-ui, "Helvetica Neue", Arial, sans-serif;
+  --mono: "Cascadia Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+  --s1:.35rem; --s2:.7rem; --s3:1.15rem; --s4:2rem;
+  --r: 10px;                 /* vidro tem canto: raio médio, nunca reto */
+  --tracking-rotulo: .14em;
+  --peso-titulo: 650;
+  --malha: 0;
+  --vidro-borda: rgb(255 255 255 / .14);
+  --vidro-borda-forte: rgb(255 255 255 / .24);
+  --vidro-preenchimento: rgb(255 255 255 / .055);
+  --vidro-blur: 14px;
+}
+
+/* ── ESCURO (modo natural) — explícito, ou quando não há escolha ────── */
+[data-tema="03-vitral"][data-modo="escuro"],
+[data-tema="03-vitral"]:not([data-modo="claro"]){
+  --paper:        oklch(17%   .028 295);   /* base translúcida p/ o fundo vazar */
+  --paper-high:   oklch(99%   .000 295 / .055);   /* vidro */
+  --paper-sunk:   oklch(99%   .000 295 / .025);   /* vidro mais fundo */
+  --ink:          oklch(95%   .012 295);
+  --ink-soft:     oklch(78%   .022 295);
+  --ink-faint:    oklch(67%   .026 295);
+  --line:         oklch(99%   .000 295 / .13);
+  --line-strong:  oklch(99%   .000 295 / .26);
+
+  --ok:           oklch(84%   .15  155);   /* menta que atravessa o vidro */
+  --ok-soft:      oklch(84%   .15  155 / .10);
+  --info:         oklch(78%   .13  265);   /* azul-céu: água da segunda aurora */
+  --info-soft:    oklch(78%   .13  265 / .12);
+  --warn:         oklch(83%   .14   85);   /* âmbar */
+  --warn-soft:    oklch(83%   .14   85 / .10);
+  --signal:       oklch(76%   .14   8);    /* coral */
+  --signal-soft:  oklch(76%   .14    8 / .12);
+
+  --ok-dim:       oklch(64%   .09  155);
+  --bar-bg:       oklch(99%    0   295 / .10);
+  --bar-ink:      oklch(90%   .012 295);
+  --bar-line:     oklch(99%   .000 295 / .18);
+  --brilho-vivo: 0 0 0 1px oklch(78% .13 265 / .40), 0 0 26px oklch(78% .13 265 / .20);
+  --aurora-1: oklch(45% .14 295 / .55);   /* violeta */
+  --aurora-2: oklch(50% .11 235 / .45);   /* azul */
+  color-scheme: dark;
+}
+
+/* ── CLARO explícito — porcelana fria, auroras discretas ────────────── */
+[data-tema="03-vitral"][data-modo="claro"]{
+  --paper:        oklch(96%   .008 295);
+  --paper-high:   oklch(100%  .000 295 / .62);
+  --paper-sunk:   oklch(100%  .000 295 / .38);
+  --ink:          oklch(22%   .030 295);
+  --ink-soft:     oklch(42%   .026 295);
+  --ink-faint:    oklch(56%   .024 295);
+  --line:         oklch(40%   .03  295 / .18);
+  --line-strong:  oklch(40%   .03  295 / .34);
+
+  --ok:           oklch(52%   .14  155);
+  --ok-soft:      oklch(52%   .14  155 / .12);
+  --info:         oklch(50%   .14  265);
+  --info-soft:    oklch(50%   .14  265 / .12);
+  --warn:         oklch(62%   .13   85);
+  --warn-soft:    oklch(62%   .13   85 / .14);
+  --signal:       oklch(52%   .16    8);
+  --signal-soft:  oklch(52%   .16    8 / .12);
+
+  --ok-dim:       oklch(60%   .09  155);
+  --bar-bg:       oklch(40%   .03  295 / .10);
+  --bar-ink:      oklch(25%   .03  295);
+  --bar-line:     oklch(40%   .03  295 / .20);
+  --brilho-vivo: 0 0 0 1px oklch(50% .14 265 / .35), 0 0 22px oklch(50% .14 265 / .15);
+  --aurora-1: oklch(80% .07 295 / .55);
+  --aurora-2: oklch(84% .06 235 / .45);
+  color-scheme: light;
+}
+
+/* ── o que o tema muda ALÉM da cor ──────────────────────────────────── */
+
+/* A luz mora no fundo: duas auroras fixas atrás de tudo. */
+[data-tema="03-vitral"] body{
+  background:
+    radial-gradient(56rem 30rem at 88% -6%, var(--aurora-1) 0%, transparent 62%),
+    radial-gradient(50rem 28rem at 2% 104%, var(--aurora-2) 0%, transparent 60%),
+    var(--paper);
+  background-attachment: fixed;
+}
+
+/* Toda superfície "cartão" do relatório vira vidro fosco. */
+[data-tema="03-vitral"] .cartao,
+[data-tema="03-vitral"] .versao,
+[data-tema="03-vitral"] .etapas,
+[data-tema="03-vitral"] .etapa--fazendo,
+[data-tema="03-vitral"] .etapa--bloqueado,
+[data-tema="03-vitral"] .notas,
+[data-tema="03-vitral"] table,
+[data-tema="03-vitral"] .acao,
+[data-tema="03-vitral"] .voce,
+[data-tema="03-vitral"] .mbv-kpi,
+[data-tema="03-vitral"] .mbv-camada,
+[data-tema="03-vitral"] .mbv-raia,
+[data-tema="03-vitral"] .mbv-mtz__rolo,
+[data-tema="03-vitral"] .mbv-mtz table,
+[data-tema="03-vitral"] .mbv-sem__grade,
+[data-tema="03-vitral"] .mbv-fluxo__trilho,
+[data-tema="03-vitral"] .mbv-barra__trilho,
+[data-tema="03-vitral"] .wsbar,
+[data-tema="03-vitral"] .mbtabs .tab,
+[data-tema="03-vitral"] .rail,
+[data-tema="03-vitral"] .cer-tile{
+  background: var(--vidro-preenchimento);
+  border-color: var(--vidro-borda);
+  backdrop-filter: blur(var(--vidro-blur)) saturate(1.25);
+  -webkit-backdrop-filter: blur(var(--vidro-blur)) saturate(1.25);
+}
+
+/* Superfícies "afundadas" (thead, rótulo de raia): vidro mais fundo. */
+[data-tema="03-vitral"] .mbv-mtz thead th,
+[data-tema="03-vitral"] .mbv-mtz tbody th,
+[data-tema="03-vitral"] .mbv-raia__rot{
+  background: var(--paper-sunk);
+}
+
+/* Vidro em cima de vidro: item interno não desfoca de novo (economia
+   e nitidez), só pega um véu mais claro. */
+[data-tema="03-vitral"] .mbv-item,
+[data-tema="03-vitral"] .copiar,
+[data-tema="03-vitral"] .acao > summary{
+  background: oklch(99% 0 295 / .04);
+}
+[data-tema="03-vitral"][data-modo="claro"] .mbv-item,
+[data-tema="03-vitral"][data-modo="claro"] .copiar,
+[data-tema="03-vitral"][data-modo="claro"] .acao > summary{
+  background: oklch(100% 0 295 / .55);
+}
+
+/* O elemento vivo é o único que brilha — regra herdada do wildfire. */
+[data-tema="03-vitral"] .mbv-etapa--ativo,
+[data-tema="03-vitral"] .step--now .step__body::before{ box-shadow: var(--brilho-vivo); }
+
+/* Título principal: cor viva com leve halo — clip:text quebra em
+   headless e leitores antigos, então não usamos gradiente no texto. */
+[data-tema="03-vitral"] h1{
+  background: none;
+  color: var(--ink);
+  text-shadow: 0 0 34px oklch(78% .13 265 / .35);
+}
+
+/* Rótulo caixa-alta: tracking positivo só em caixa-alta pequena. */
+[data-tema="03-vitral"] .mbv-kpi__r,
+[data-tema="03-vitral"] .mbv-camada__nome,
+[data-tema="03-vitral"] .slot__tit,
+[data-tema="03-vitral"] .faixa{ letter-spacing: var(--tracking-rotulo); }
+
+/* Aba ativa: vidro iluminado, não cor chapada. */
+[data-tema="03-vitral"] .mbtabs .tab.on{
+  background: var(--vidro-preenchimento);
+  color: var(--ink);
+  border-color: var(--vidro-borda-forte);
+  box-shadow: inset 0 1px 0 oklch(99% 0 295 / .18), var(--brilho-vivo);
+}
+
+/* Hover em ação: véu de coral por cima do vidro. */
+[data-tema="03-vitral"] .acao > summary:hover{ background: var(--signal-soft); }
+
+/* Barra de segmentos: borda de vidro. */
+[data-tema="03-vitral"] .mbv-barra__trilho{ border-color: var(--vidro-borda); }
+
+/* Botão copiar: contorno de vidro. */
+[data-tema="03-vitral"] .copiar{ border-color: var(--vidro-borda-forte); }
+
+/* Versão anterior riscada: em vidro escuro o "apagado" do tema base
+   desaparece — segura o contraste sem tirar a ideia de "não é mais a atual". */
+[data-tema="03-vitral"] .versao .anterior .big{ color: var(--ink-soft); }
+
+/* Contra prefers-reduced-motion nada muda: o tema não anima nada. */
+
+/* ═══════════════════════════════════════════════════════════════════════
+   260914b — SÍNTESE RAYCAST + WARP + DUOLINGO (escolha do <USUARIO>)
+   Raycast: a luz de cima (spotlight) + borda de luz no canto do cartão.
+   Warp: o dado é o herói — número grande tabular, medidor, sparkline.
+   Duolingo: setor com vida própria — hover responde, vivo pulsa, entrada
+   suave, e uma barra de progresso de leitura no topo (quanto falta).
+   Anti-verticalidade (queixa central): wrap mais largo, espaçamento mais
+   curto — mais informação por tela, menos scroll.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* RAYCAST — spotlight central no topo, mais presente que as auroras */
+[data-tema="03-vitral"] body{
+  background:
+    radial-gradient(46rem 20rem at 50% -8%, oklch(70% .13 280 / .30) 0%, transparent 60%),
+    radial-gradient(56rem 30rem at 88% -6%, var(--aurora-1) 0%, transparent 62%),
+    radial-gradient(50rem 28rem at 2% 104%, var(--aurora-2) 0%, transparent 60%),
+    var(--paper);
+  background-attachment: fixed;
+}
+
+/* Raycast — todo cartão nasce com fio de luz no canto superior */
+[data-tema="03-vitral"] .cartao,
+[data-tema="03-vitral"] .versao,
+[data-tema="03-vitral"] .etapas,
+[data-tema="03-vitral"] .notas,
+[data-tema="03-vitral"] table,
+[data-tema="03-vitral"] .acao,
+[data-tema="03-vitral"] .voce,
+[data-tema="03-vitral"] .mbv-kpi,
+[data-tema="03-vitral"] .mbv-camada,
+[data-tema="03-vitral"] .mbv-raia,
+[data-tema="03-vitral"] .mbv-mtz__rolo,
+[data-tema="03-vitral"] .mbv-sem__grade,
+[data-tema="03-vitral"] .mbv-fluxo__trilho,
+[data-tema="03-vitral"] .mbv-anel__grade,
+[data-tema="03-vitral"] .mbv-spark__palco,
+[data-tema="03-vitral"] .mbtabs .tab,
+[data-tema="03-vitral"] .wsbar{
+  box-shadow: inset 0 1px 0 oklch(99% 0 295 / .10), 0 6px 22px oklch(10% .03 295 / .28);
+}
+
+/* DUOLINGO — hover responde em 160ms: o cartão sobe 1px e acende a borda */
+[data-tema="03-vitral"] .cartao,
+[data-tema="03-vitral"] .acao,
+[data-tema="03-vitral"] .mbv-kpi,
+[data-tema="03-vitral"] .mbtabs .tab,
+[data-tema="03-vitral"] .copiar{
+  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+[data-tema="03-vitral"] .acao > summary{ cursor:pointer; }
+[data-tema="03-vitral"] .acao:hover,
+[data-tema="03-vitral"] .cartao:hover,
+[data-tema="03-vitral"] .mbv-kpi:hover{
+  transform: translateY(-1px);
+  border-color: var(--vidro-borda-forte);
+}
+
+/* DUOLINGO — o que está vivo respira (opacidade suave, não pisca duro) */
+@keyframes mbv-vitral-respira{ 50%{ opacity:.45; } }
+[data-tema="03-vitral"] .etapa--fazendo .ic,
+[data-tema="03-vitral"] .mbv-etapa--ativo .mbv-etapa__glifo{ animation: mbv-vitral-respira 2.2s ease-in-out infinite; }
+
+/* DUOLINGO — barra de progresso de leitura no topo: quanto falta.
+   animation-timeline:scroll() é Chrome 115+; navegadores sem suporte
+   simplesmente não veem a barra (@supports). */
+@supports (animation-timeline: scroll()){
+  [data-tema="03-vitral"] body::after{
+    content:""; position:fixed; top:0; left:0; right:0; height:3px; z-index:60;
+    background: linear-gradient(90deg, var(--info), oklch(85% .10 295));
+    transform-origin: 0 50%;
+    animation: mbv-vitral-leitura linear both;
+    animation-timeline: scroll(root block);
+  }
+  @keyframes mbv-vitral-leitura{ from{ transform:scaleX(0);} to{ transform:scaleX(1);} }
+}
+
+/* DUOLINGO — entrada suave dos blocos do painel (uma vez, 320ms) */
+@keyframes mbv-vitral-surge{ from{ opacity:0; transform:translateY(6px);} to{ opacity:1; transform:none;} }
+[data-tema="03-vitral"] .pane.on .slot,
+[data-tema="03-vitral"] .pane.on .cartao,
+[data-tema="03-vitral"] .pane.on figure{ animation: mbv-vitral-surge .32s ease both; }
+
+/* WARP — o dado é o herói: número KPI maior, tabular, com brilho próprio */
+[data-tema="03-vitral"] .mbv-kpi__v{
+  font-size:1.7rem; letter-spacing:-.04em;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 30px oklch(78% .13 265 / .18);
+}
+[data-tema="03-vitral"] .versao .big{ font-size:1.5rem; font-variant-numeric:tabular-nums; }
+[data-tema="03-vitral"] td, [data-tema="03-vitral"] th{ font-variant-numeric:tabular-nums; }
+
+/* WARP — hover na barra do spark acende; legenda mono já é padrão */
+[data-tema="03-vitral"] .mbv-spark__col--ativo .mbv-spark__barra{
+  box-shadow: 0 0 14px oklch(78% .13 265 / .40);
+}
+
+/* ANTI-VERTICAL — mais largura e menos ar entre blocos: rápida leitura */
+[data-tema="03-vitral"] .wrap{ max-width:74rem; }
+[data-tema="03-vitral"] h2{ margin:1.3rem 0 .45rem; }
+[data-tema="03-vitral"] .duo{ gap:1rem; }
+[data-tema="03-vitral"] .notas li{ padding:.35rem .8rem; }
+[data-tema="03-vitral"] th, [data-tema="03-vitral"] td{ padding:.32rem .55rem; }
+
+/* Acessibilidade: com reduced-motion, nada se move — só o vidro fica. */
+@media (prefers-reduced-motion: reduce){
+  [data-tema="03-vitral"] *{ animation:none !important; transition:none !important; }
+}

@@ -36,3 +36,8 @@ resolvido ganha `RESOLVIDO: <data>`, nunca se apaga.
   entre um `git add` desta sessão e um commit de outra, minutos atrás.
 - Como: antes de um commit/push amplo, checar `ps`/sessões ativas na mesma
   pasta (ou perguntar ao <USUARIO>) em vez de assumir exclusividade.
+
+## 260913 — tarefa do Portfolio mudou de ação (wrapper VBS; não reverter sem ler)
+- Checar: `\PortfolioHS-Local-Disponibilidade-260912` aponta para `WScript.exe "<PROJETOS_ROOT>\Portfolio\tools\260912_manter-local-hidden.vbs"` e `Portfolio\evidencias\260912_disponibilidade-local\260912_ultimo-estado.json` segue `healthy` com timestamp recente (a cada 2 min).
+- Por quê: a ação antiga (`powershell -WindowStyle Hidden` direto) piscava uma janela de terminal roubando o foco a cada 2 min; "corrigir" a tarefa de volta reativa o sintoma que levou a sessão de 260913 a caçar.
+- Como: `schtasks /query /tn "\PortfolioHS-Local-Disponibilidade-260912" /xml` (conferir Command/Arguments) e ler o JSON de estado.

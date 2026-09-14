@@ -1,0 +1,54 @@
+<!--@mb-visual
+id: medidor-anel
+nome: Medidor de anel (gauge)
+quando: um número que é fração de um todo e MERECE atenção — cota usada, projetos em dia, cobertura de teste, share de um agente
+dados: titulo, legenda, aneis[]{rotulo, pct, valor, unidade, status}
+status: ok | ativo | espera | trava (cor do anel; default = tinta neutra)
+custo: ~1 linha por anel. pct entra pronto (0–100); valor é o texto do centro.
+nota: Warp data-driven — o dado é o herói, o anel é a moldura.
+-->
+<style>
+.mbv-anel{margin:var(--s3) 0}
+.mbv-anel__cab{display:flex;align-items:baseline;gap:var(--s2);flex-wrap:wrap;margin-bottom:var(--s2)}
+.mbv-anel__tit{font-weight:700;font-size:.9rem}
+.mbv-anel__leg{font-size:.72rem;color:var(--ink-faint)}
+.mbv-anel__grade{display:flex;flex-wrap:wrap;gap:var(--s2) var(--s3);border:1px solid var(--line);border-radius:var(--r);background:var(--paper-high);padding:var(--s2) var(--s3)}
+.mbv-anel__i{display:flex;align-items:center;gap:var(--s2);padding:var(--s1) 0}
+.mbv-anel__svg{width:4.6rem;height:4.6rem;flex:0 0 auto;transform:rotate(-90deg)}
+.mbv-anel__trilha{fill:none;stroke:var(--line);stroke-width:9}
+.mbv-anel__arco{fill:none;stroke:var(--ink-soft);stroke-width:9;stroke-linecap:round;
+  stroke-dasharray:113.1;stroke-dashoffset:calc(113.1px * (1 - var(--p,0) / 100));
+  transition:stroke-dashoffset .9s cubic-bezier(.22,1,.36,1)}
+.mbv-anel__i--ok    .mbv-anel__arco{stroke:var(--ok)}
+.mbv-anel__i--ativo .mbv-anel__arco{stroke:var(--info)}
+.mbv-anel__i--espera .mbv-anel__arco{stroke:var(--warn)}
+.mbv-anel__i--trava .mbv-anel__arco{stroke:var(--signal)}
+.mbv-anel__centro{position:relative}
+.mbv-anel__palco{display:grid;place-items:center;position:absolute;inset:0;transform:rotate(90deg)}
+.mbv-anel__v{font-family:var(--mono);font-size:1.02rem;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.mbv-anel__u{font-size:.6rem;color:var(--ink-faint)}
+.mbv-anel__r{font-size:.78rem;font-weight:700;line-height:1.25}
+.mbv-anel__d{font-size:.68rem;color:var(--ink-soft);line-height:1.35}
+</style>
+<template>
+<figure class="mbv-anel">
+  <figcaption class="mbv-anel__cab"><span class="mbv-anel__tit">{{titulo}}</span><span class="mbv-anel__leg">{{legenda}}</span></figcaption>
+  <div class="mbv-anel__grade">
+    {{#aneis}}
+    <div class="mbv-anel__i mbv-anel__i--{{status}}" title="{{rotulo}}: {{valor}}{{unidade}}">
+      <span class="mbv-anel__centro">
+        <svg class="mbv-anel__svg" viewBox="0 0 84 84" aria-hidden="true" style="--p:{{pct}}">
+          <circle class="mbv-anel__trilha" cx="42" cy="42" r="18"></circle>
+          <circle class="mbv-anel__arco" cx="42" cy="42" r="18"></circle>
+        </svg>
+        <span class="mbv-anel__palco"><span class="mbv-anel__v">{{valor}}<small class="mbv-anel__u">{{unidade}}</small></span></span>
+      </span>
+      <span>
+        <span class="mbv-anel__r">{{rotulo}}</span><br>
+        <span class="mbv-anel__d">{{det}}</span>
+      </span>
+    </div>
+    {{/aneis}}
+  </div>
+</figure>
+</template>

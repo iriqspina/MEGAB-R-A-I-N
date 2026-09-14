@@ -126,6 +126,16 @@ def executable(config, provider):
     return result
 
 
+def client_type(config, provider):
+    """Native CLI behind a named routing provider (for example Astra -> Codex)."""
+    return config["providers"][provider].get("client", provider)
+
+
+def quota_provider(config, provider):
+    """Measured subscription bucket behind a routing provider; never infer from a model name."""
+    return config["providers"][provider].get("quota_provider", provider)
+
+
 def auth_status(config):
     results = {}
     for provider, args in [("claude", ["auth", "status"]), ("codex", ["login", "status"])]:
@@ -450,12 +460,20 @@ def resolve_route_v2(engine, job):
     snapshots = {}
     if engine.quota:
         providers = {role["provider"] for role in route["roles"].values()}
-        snapshots = {provider: engine.quota.snapshot(provider) for provider in sorted(providers)}
+        snapshots = {provider: engine.quota.snapshot(quota_provider(engine.config, provider))
+                     for provider in sorted(providers)}
     measured = bool(snapshots) and all(item.get("status") != "NAO_MEDIDO" for item in snapshots.values())
     if snapshots:
         route["quota"] = snapshots
     if route["requested_profile"] == "auto" and measured:
-        route["reason"] = "auto conservador: perfil normal"
+        degraded = any((item.get("pacing") or {}).get("status") in ("desacelerar", "pause")
+                       for item in snapshots.values())
+        if degraded:
+            route["effective_profile"] = "micro"
+            route["roles"] = engine.config["workflow"]["profiles"]["micro"]
+            route["reason"] = "auto conservador: cota medida em desacelerar; reduziu para micro"
+        else:
+            route["reason"] = "auto: cotas medidas saudáveis; perfil normal"
     atomic(route_file, route)
     return route
 
@@ -468,7 +486,7 @@ def role_v2(route, stage):
 def commands(config, provider, folder, kind, override=None):
     settings = provider_settings(config, provider, kind, override)
     exe = executable(config, provider)
-    if provider == "claude":
+    if client_type(config, provider) == "claude":
         return [exe, "-p", "--safe-mode", "--tools", "", "--strict-mcp-config",
                 "--mcp-config", '{"mcpServers":{}}', "--permission-mode", "dontAsk", "--no-session-persistence",
                 "--model", settings["model"], "--effort", settings["effort"],
@@ -565,7 +583,8 @@ class Engine:
         prompt = json.dumps(request, ensure_ascii=False)
         if len(prompt) > self.config["max_input_chars"]:
             raise RunError("Pacote excede limite de contexto; reduza o brief")
-        usage = self.quota.snapshot(provider) if self.quota else {"status": "TEST_DOUBLE"}
+        measured_provider = quota_provider(self.config, provider)
+        usage = self.quota.snapshot(measured_provider) if self.quota else {"status": "TEST_DOUBLE"}
         self.quota_event("during_before_dispatch", stage=stage, provider=provider, snapshot=usage)
         self.event(stage=stage, provider=provider, event="before_dispatch", quota=usage,
                    context_chars=len(prompt), tokens="NAO_MEDIDO", **settings)
@@ -573,7 +592,7 @@ class Engine:
         model = self.config["providers"][provider]["model"].lower()
         for window in usage.get("windows", []) or []:
             scoped = str(window.get("id", ""))
-            relevant = provider in ("codex", "spark") or ":" not in scoped or scoped.split(":", 1)[1].lower() in model
+            relevant = measured_provider in ("codex", "spark") or ":" not in scoped or scoped.split(":", 1)[1].lower() in model
             if usage.get("status") == "ok" and relevant and (window.get("used_percent") or 0) >= 100:
                 raise RunError(f"Cota medida esgotada: {provider}; não houve despacho")
         atomic(folder / "request.json", request)
@@ -597,7 +616,7 @@ class Engine:
                     raise RunError(f"{provider} saiu com código {proc.returncode}; veja {folder}")
                 if (folder / "stdout.jsonl").stat().st_size > self.config["max_output_chars"] * 4:
                     raise RunError("Saída excede limite; preservada para diagnóstico")
-                value, telemetry = parse_response(provider, (folder / "stdout.jsonl").read_text(encoding="utf-8"), folder)
+                value, telemetry = parse_response(client_type(self.config, provider), (folder / "stdout.jsonl").read_text(encoding="utf-8"), folder)
             validate(value, spec)
             if len(json.dumps(value)) > self.config["max_output_chars"]:
                 raise RunError("Resposta excede limite de saída")
@@ -900,7 +919,7 @@ def main():
             quotas = Quotas(config)
             report = {"auth": auth, "clients": {p: {"path": executable(config, p),
                 **config["providers"][p]} for p in config["providers"]},
-                "quota": {p: quotas.snapshot(p) for p in config["providers"]},
+            "quota": {p: quotas.snapshot(quota_provider(config, p)) for p in config["providers"]},
                 "megabrain": (ROOT / "MEGABRAIN/VERSAO.txt").exists()}
             atomic(ROOT / "evidence/doctor.json", report)
             print(json.dumps(report, ensure_ascii=False, indent=2))

@@ -1,0 +1,19 @@
+{
+  "captured_at": "2026-09-12T14:07:28.9419707-03:00",
+  "powershell": "7.6.5",
+  "node": "v24.16.0",
+  "npm": "11.13.0",
+  "git": "git version 2.55.0.windows.3",
+  "python": "Python 3.14.6",
+  "claude": "2.1.269 (Claude Code)",
+  "codex": "codex-cli 0.154.0",
+  "opencode": "1.18.30",
+  "zcode_app_version": "3.11.2.6792",
+  "zcode_app_signature": "Valid",
+  "installer_bytes": 163369016,
+  "installer_sha256": "4DB76B6785C10FBC852DD9C9D257F574EA46F2A889D0BEB9398AE0885D716717",
+  "installer_signature": "Valid",
+  "proof_bytes": 7,
+  "proof_sha256": "0E6591C2868FBBA3A0E46D0F22185C5EC62785F444E7F8770564D34761D493B3",
+  "proof_text": "GLM-OK"
+}

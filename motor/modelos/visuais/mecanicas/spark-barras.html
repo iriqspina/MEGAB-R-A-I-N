@@ -1,0 +1,40 @@
+<!--@mb-visual
+id: spark-barras
+nome: Sparkline de barras
+quando: uma série curta que precisa ser VISTA em vez de lida — eventos por dia, uso por semana, custo por mês
+dados: titulo, legenda, unidade, pontos[]{rotulo, n, status}
+status: ok | ativo | espera | trava (default = tinta neutra)
+custo: ~1 linha por ponto. Altura relativa ao máximo (calculada pelo renderizador em h_pct).
+nota: Warp data-driven — formato compacto de leitura rápida, cabe em qualquer slot.
+-->
+<style>
+.mbv-spark{margin:var(--s3) 0}
+.mbv-spark__cab{display:flex;align-items:baseline;gap:var(--s2);flex-wrap:wrap;margin-bottom:var(--s2)}
+.mbv-spark__tit{font-weight:700;font-size:.9rem}
+.mbv-spark__leg{font-size:.72rem;color:var(--ink-faint)}
+.mbv-spark__palco{display:flex;align-items:flex-end;gap:var(--s1);border:1px solid var(--line);border-radius:var(--r);background:var(--paper-high);padding:var(--s2) var(--s3);height:6.4rem}
+.mbv-spark__col{flex:1 1 0;min-width:1.6rem;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:var(--s1);height:100%}
+.mbv-spark__barra{width:100%;max-width:2.2rem;background:var(--ink-soft);border-radius:calc(var(--r) / 2) calc(var(--r) / 2) 0 0;
+  height:calc(var(--h,0) * .82%);min-height:2px;transition:filter .15s ease}
+.mbv-spark__col:hover .mbv-spark__barra{filter:brightness(1.25)}
+.mbv-spark__col--ok    .mbv-spark__barra{background:var(--ok)}
+.mbv-spark__col--ativo .mbv-spark__barra{background:var(--info)}
+.mbv-spark__col--espera .mbv-spark__barra{background:var(--warn)}
+.mbv-spark__col--trava .mbv-spark__barra{background:var(--signal)}
+.mbv-spark__rot{font-family:var(--mono);font-size:.58rem;color:var(--ink-faint);white-space:nowrap}
+.mbv-spark__n{font-family:var(--mono);font-size:.6rem;font-weight:700;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+</style>
+<template>
+<figure class="mbv-spark">
+  <figcaption class="mbv-spark__cab"><span class="mbv-spark__tit">{{titulo}}</span><span class="mbv-spark__leg">{{legenda}}</span></figcaption>
+  <div class="mbv-spark__palco">
+    {{#pontos}}
+    <div class="mbv-spark__col mbv-spark__col--{{status}}" title="{{rotulo}}: {{n}}{{unidade}}" style="--h:{{h_pct}}">
+      <span class="mbv-spark__n">{{n}}</span>
+      <i class="mbv-spark__barra"></i>
+      <span class="mbv-spark__rot">{{rotulo}}</span>
+    </div>
+    {{/pontos}}
+  </div>
+</figure>
+</template>

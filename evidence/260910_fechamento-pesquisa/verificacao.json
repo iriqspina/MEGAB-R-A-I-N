@@ -1,0 +1,110 @@
+{
+  "status": "PASS",
+  "raws": 7,
+  "wikis": 3,
+  "wikilinks_checked": 31,
+  "report_links": "PASS",
+  "source_sha256": "ac98dcca3aedde33e4daefbc76d08087662355d9f492770f393b6452cdbad637",
+  "copies_checked": [
+    "S:\\projetos multi i.a\\MEGA B R A I  N\\motor\\plugin-megabrain-claude\\skills\\orquestracao1\\SKILL.md",
+    "C:\\Users\\<USUARIO>\\.claude\\skills\\orquestracao1\\SKILL.md",
+    "C:\\Users\\<USUARIO>\\.codex\\skills\\orquestracao1\\SKILL.md",
+    "C:\\Users\\<USUARIO>\\.gemini\\skills\\orquestracao1\\SKILL.md",
+    "C:\\Users\\<USUARIO>\\.kimi-code\\plugins\\managed\\megabrain\\skills\\orquestracao1\\SKILL.md",
+    "C:\\Users\\<USUARIO>\\plugins\\megabrain\\skills\\orquestracao1\\SKILL.md",
+    "C:\\Users\\<USUARIO>\\.codex\\plugins\\cache\\personal\\megabrain\\1.6.3+codex.20260825202815\\skills\\orquestracao1\\SKILL.md"
+  ],
+  "raw_sha256": {
+    "260910_pesquisa-niveis-de-esforco-mecanica": "df35ff42696411b00faef1cea4a917d883ee97a77d081775fd399bf631973d8e",
+    "260910_pesquisa-benchmarks-custo-vs-qualidade-por-esforco": "dda0a72075e8adba1db6fb03943a52a4a33be14587b34c6b1feaf58da12a7fe4",
+    "260910_pesquisa-ultracode-e-orquestracao-multiagente": "1d43b683d5f7caa88852cf57fe117c9cffe6a1c02113bdc751d28c18353e7ea3",
+    "260910_pesquisa-taticas-prompt-planejamento-e-perguntas": "35fd949bbf3ad2b5c67fcb8d112d4ffd873a68075e299ea1aeb831408918aed9",
+    "260910_youtube-5EhrMJ9HIfU-astra-wrong-e-claudex-loop": "e80daa506cf862aa17b6bb1f7545bb800edfda9d66d9eb9bfaf3138fb3b5cd58",
+    "260910_pesquisa-cotas-chatgpt-pro-e-claude-pro-x5": "f40975ea55034237ef78bee96890c1511a0306faf10af58256ed4e2e6fd8f4c5",
+    "260910_pesquisa-double-diamond-fragmentacao-e-modelo-por-etapa": "e092431f477b5bc0c23b7b7b97c1fd8465f74f9467d4ce8788ad0c83e2c965f0"
+  },
+  "profile_previews": {
+    "micro": {
+      "version": 2,
+      "requested_profile": "micro",
+      "effective_profile": "micro",
+      "reason": "perfil explícito no brief",
+      "quota": {
+        "status": "NAO_MEDIDO"
+      },
+      "roles": {
+        "plan": {
+          "provider": "opus",
+          "effort": "low"
+        },
+        "plan_review": {
+          "provider": "codex",
+          "effort": "medium"
+        },
+        "candidate": {
+          "provider": "codex",
+          "effort": "medium"
+        },
+        "final_review": {
+          "provider": "opus",
+          "effort": "medium"
+        }
+      }
+    },
+    "normal": {
+      "version": 2,
+      "requested_profile": "normal",
+      "effective_profile": "normal",
+      "reason": "perfil explícito no brief",
+      "quota": {
+        "status": "NAO_MEDIDO"
+      },
+      "roles": {
+        "plan": {
+          "provider": "astra",
+          "effort": "medium"
+        },
+        "plan_review": {
+          "provider": "opus",
+          "effort": "medium"
+        },
+        "candidate": {
+          "provider": "astra",
+          "effort": "high"
+        },
+        "final_review": {
+          "provider": "opus",
+          "effort": "high"
+        }
+      }
+    },
+    "frontier": {
+      "version": 2,
+      "requested_profile": "frontier",
+      "effective_profile": "frontier",
+      "reason": "perfil explícito no brief",
+      "quota": {
+        "status": "NAO_MEDIDO"
+      },
+      "roles": {
+        "plan": {
+          "provider": "astra",
+          "effort": "high"
+        },
+        "plan_review": {
+          "provider": "opus",
+          "effort": "high"
+        },
+        "candidate": {
+          "provider": "astra",
+          "effort": "xhigh"
+        },
+        "final_review": {
+          "provider": "opus",
+          "effort": "high"
+        }
+      }
+    }
+  },
+  "provider_calls": 0
+}
