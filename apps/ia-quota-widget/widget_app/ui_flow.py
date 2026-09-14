@@ -60,24 +60,43 @@ class FlowLayout(QLayout):
         widths = [item.sizeHint().width() for item in self._items if item.widget() is not None]
         return max(widths) if widths else 0
 
+    # Largura máxima de um card expandido: além disso o espaço sobra vazio.
+    MAX_CARD_WIDTH = 560
+
     def _do_layout(self, rect: QRect, apply: bool) -> int:
         margins = self.contentsMargins()
         effective = rect.adjusted(margins.left(), margins.top(), -margins.right(), -margins.bottom())
-        uniform = self._uniform_width()
-        if uniform <= 0 or uniform > effective.width():
-            uniform = effective.width()
+        natural = self._uniform_width()
+        if natural <= 0:
+            natural = effective.width()
+        # Fileiras pela largura NATURAL (cards não encolhem abaixo dela)...
+        rows: list[list] = []
+        current: list = []
+        used = 0
+        for item in self._items:
+            width = natural
+            if current and used + width + self._spacing > effective.width():
+                rows.append(current)
+                current, used = [], 0
+            current.append(item)
+            used += width + self._spacing
+        if current:
+            rows.append(current)
+        # ...mas cada fileira DISTRIBUI a largura disponível entre os cards
+        # (com teto): janela larga alarga o card e as barrinhas dele viram
+        # lado a lado — horizontalidade sem escalar fonte.
         x, y = effective.x(), effective.y()
         line_height = 0
-        for item in self._items:
-            height = item.sizeHint().height()
-            next_x = x + uniform + self._spacing
-            if next_x - self._spacing > effective.right() + 1 and line_height > 0:
-                x = effective.x()
-                y += line_height + self._spacing
-                next_x = x + uniform + self._spacing
-                line_height = 0
-            if apply:
-                item.setGeometry(QRect(QPoint(x, y), QSize(uniform, height)))
-            x = next_x
-            line_height = max(line_height, height)
-        return y + line_height - rect.y() + margins.bottom()
+        for row in rows:
+            share = min(self.MAX_CARD_WIDTH, (effective.width() - self._spacing * (len(row) - 1)) // len(row))
+            share = max(share, natural)
+            for index, item in enumerate(row):
+                height = item.sizeHint().height()
+                if apply:
+                    item.setGeometry(QRect(QPoint(x, y), QSize(share, height)))
+                x += share + self._spacing
+                line_height = max(line_height, height)
+            x = effective.x()
+            y += line_height + self._spacing
+            line_height = 0
+        return y - self._spacing - rect.y() + margins.bottom()

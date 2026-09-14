@@ -31,25 +31,40 @@ foram corrigidos NA FONTE daqui.
 
 ## Os 7 passos
 
+0. **Escolha a variante ANTES de começar** (regra 260914, pedido do <USUARIO>:
+   "template pra baratear"):
+   - **LEVE (padrão do dia adia)** — `MODELO-relatorio-narrado-LEVE.html`:
+     1 arquivo único, narração pela voz do PRÓPRIO navegador (Web Speech,
+     grátis, offline), sem mp3, sem TTS cloud, sem cota de modelo. Se o
+     navegador não tiver voz pt-BR, vira leitura cronometrada (legenda +
+     avanço automático). Custo: zero. Use por padrão, inclusive em rascunhos
+     pra ele julgar visual.
+   - **PREMIUM (exceção)** — `MODELO-relatorio-narrado.html` + mp3 TTS cloud:
+     voz de qualidade gravada. Só quando: a entrega é decisão importante que
+     ele vai rever mais de uma vez, vai pra terceiros, ou a voz do sistema
+     decepcionou na audição. Nesse caso anote o custo (9 telas ≈ 225 s de
+     TTS + eventuais runs de revisão).
 1. **Roteiro primeiro.** Uma fala por tela, 15–35 s cada (uma frase de tese +
    2–4 fatos + o que decide). Linguagem leiga: termo técnico traduzido NA HORA
    ("deploy (publicação)"). Números por extenso na fala ("cento e oitenta e
    nove", "H zero um") para o TTS não engolir. Total recomendado: 2–5 min.
-2. **TTS.** `speech_synthesize` do video-agent-kit (provider cloud_tts),
-   `language: pt-BR`, `output_format: mp3`, um arquivo por tela:
+2. **(Só PREMIUM) TTS.** `speech_synthesize` do video-agent-kit (provider
+   cloud_tts), `language: pt-BR`, `output_format: mp3`, um arquivo por tela:
    `narr_01.mp3...narr_NN.mp3` na MESMA pasta do HTML. Registrar durações.
-3. **Montar do modelo.** Copiar `motor/modelos/relatorios/260914_narrado/
-   MODELO-relatorio-narrado.html` e preencher os blocos `═══ EDITE ═══`.
-   O array `NARR` do JS recebe EXATAMENTE o mesmo texto dos mp3 (é a legenda).
+   Na LEVE, este passo não existe — o texto vive só no array `NARR`.
+3. **Montar do modelo.** Copiar o MODELO da variante escolhida e preencher os
+   blocos `═══ EDITE`. O array `NARR` recebe EXATAMENTE o texto da fala
+   (é a legenda; na PREMIUM, o mesmo texto dos mp3).
 4. **3 temas de cor** editáveis nos tokens do `:root` (se o projeto tiver
    modos/tokens próprios, usar os reais — ex.: Portfolio usa claro/roxo/escuro
    de `260822_modos-cor_tokens.md`).
 5. **Conferência técnica mínima** (checklist das lições abaixo) e abrir no
    navegador por `cmd //c start` na sessão.
-6. **Entrega:** pasta inteira (HTML + mp3 + LEIA-PRIMEIRO) em `00_PARA-VOCE/`
-   do projeto. O LEIA-PRIMEIRO explica: manter pasta junta, TOCAR TUDO, teclas.
-7. **Registro:** entrada no ESTADO.md com hash do HTML, duração total dos mp3
-   e o fato de ser leitura-only.
+6. **Entrega:** PREMIUM = pasta inteira (HTML + mp3 + LEIA-PRIMEIRO); LEVE =
+   o HTML único já basta (LEIA-PRIMEIRO de 3 linhas). Tudo em `00_PARA-VOCE/`
+   do projeto.
+7. **Registro:** entrada no ESTADO.md com variante usada, hash do HTML,
+   duração total (PREMIUM) e o fato de ser leitura-only.
 
 ## Regras de qualidade (herdadas da revisão aprovada)
 
@@ -85,9 +100,9 @@ foram corrigidos NA FONTE daqui.
 
 ## Variações úteis do modelo
 
-- **Sem áudio:** apague o array `NARR` vazio → botões de narração escondidos
-  (deck animado mudo ainda vale).
-- **Dashboard vivo:** os contadores (`data-count`) e o donut aceitam números
-  reais medidos na hora; refeche o HTML por script na entrega.
+- **LEVE sem voz:** se nem a voz do navegador existir, o modo guiado vira
+  leitura cronometrada sozinho (legenda + avanço) — já embutido no modelo.
+- **Dashboard vivo:** os contadores (`data-count`) e as barras (`data-bar`)
+  aceitam números reais medidos na hora; refeche o HTML por script na entrega.
 - **Vídeo de verdade:** se ele pedir MP4, renderizar as telas + mp3 por
-  ffmpeg depois — o roteiro e os assets são os mesmos.
+  ffmpeg depois — o roteiro e os assets são os mesmos (comece da PREMIUM).

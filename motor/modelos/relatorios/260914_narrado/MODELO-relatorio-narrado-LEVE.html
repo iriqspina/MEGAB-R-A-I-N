@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-tema="1">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TÍTULO}} — {{DATA AA/MM/DD}}</title>
+<!--
+═══════════════════════════════════════════════════════════════════════
+MODELO-relatorio-narrado-LEVE · v1.0 · 260914 · MEGABRAIN motor/modelos
+VARIANTE BARATA do deck narrado — 1 ARQUIVO ÚNICO, custo zero de cota:
+  · narração pela voz do PRÓPRIO NAVEGADOR (Web Speech, grátis, offline);
+  · sem mp3, sem TTS cloud, sem rede, sem CDN;
+  · se o navegador não tiver voz pt-BR, o modo guiado vira "leitura
+    cronometrada": legenda + avanço automático por tempo estimado.
+
+COMO USAR (skill: motor/skills/relatorio-narrado/SKILL.md)
+1. Copie este ÚNICO arquivo para 00_PARA-VOCE/<data>_<entrega>/ do projeto.
+2. Preencha os blocos "═══ EDITE": temas, telas e o array NARR (texto da fala).
+3. Abra no navegador e confira. Não há passo de áudio — a voz é do sistema.
+
+ESCOLHA DA VARIANTE: LEVE = padrão do dia a dia (custo zero) · PREMIUM
+(MODELO-relatorio-narrado.html + mp3 TTS cloud) = relatório de decisão
+importante, apresentação pra terceiros, ou quando a voz do sistema decepcionar.
+
+TECLADO: ← → espaço navega · G TOCAR TUDO · N narra a tela · 1/2/3 tema ·
+F tela cheia · Home/End. Touch: swipe.
+═══════════════════════════════════════════════════════════════════════
+-->
+<style>
+/* ═══ EDITE: TEMAS — troque os valores (tokens do projeto, se houver) */
+:root{
+  --acento:#EC0F7C;
+  --ok:#2FBF71; --meio:#F5A623; --sem:#9AA0B4;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,monospace;
+  --sans:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+}
+html[data-tema="1"]{ --bg:#5B14D2;--bg2:#3C0B97;--fg:#EEF0F6;--fg2:rgba(238,240,246,.74);
+  --card:#5A18C4;--card2:#7A35E0;--linha:rgba(255,255,255,.16);
+  --chipbg:rgba(122,53,224,.35);--sombra:rgba(28,11,67,.45);--ghost:rgba(255,255,255,.14); }
+html[data-tema="2"]{ --bg:#EEF0F6;--bg2:#E3E6EF;--fg:#140A2D;--fg2:#5E5871;
+  --card:#FFFFFF;--card2:#F7F8FC;--linha:#D4D4DE;
+  --chipbg:rgba(91,20,210,.08);--sombra:rgba(20,10,45,.14);--ghost:rgba(20,10,45,.10); }
+html[data-tema="3"]{ --bg:#140A2D;--bg2:#0E0820;--fg:#EEF0F6;--fg2:rgba(238,240,246,.74);
+  --card:#1C0B43;--card2:#241057;--linha:rgba(255,255,255,.16);
+  --chipbg:rgba(90,24,196,.35);--sombra:rgba(6,3,18,.6);--ghost:rgba(255,255,255,.10); }
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--sans);background:var(--bg);color:var(--fg);overflow:hidden;
+  transition:background-color .7s ease,color .7s ease}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+
+/* topbar */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:20;height:60px;display:flex;align-items:center;
+  gap:16px;padding:0 24px;background:color-mix(in srgb,var(--bg) 85%,transparent);
+  backdrop-filter:blur(8px);border-bottom:1px solid var(--linha)}
+.logo{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:12px;
+  letter-spacing:.14em;font-weight:700;white-space:nowrap}
+.logo .lg{width:28px;height:28px;border:2px solid var(--fg);display:grid;place-items:center;border-radius:8px;font-size:11px}
+.logo b{color:var(--acento)}
+.top-title{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--fg2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top-right{display:flex;align-items:center;gap:10px}
+.tocar-btn{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;
+  letter-spacing:.12em;font-weight:700;border:1px solid var(--acento);border-radius:99px;
+  padding:7px 14px;background:rgba(236,15,124,.14);white-space:nowrap}
+.tocar-btn:hover{box-shadow:0 6px 16px var(--sombra)}
+.tocar-btn .eq{display:inline-flex;gap:2.5px;align-items:flex-end;height:12px}
+.tocar-btn .eq i{width:3px;background:var(--acento);border-radius:2px;height:4px}
+.tocar-btn.on .eq i{animation:eqz .7s ease-in-out infinite}
+.tocar-btn.on .eq i:nth-child(2){animation-delay:.15s}
+.tocar-btn.on .eq i:nth-child(3){animation-delay:.3s}
+@keyframes eqz{0%,100%{height:4px}50%{height:12px}}
+.temas{display:flex;gap:7px;align-items:center;padding:5px 9px;border:1px solid var(--linha);border-radius:99px}
+.tema-btn{width:20px;height:20px;border-radius:50%;border:2px solid transparent}
+.tema-btn[aria-pressed="true"]{border-color:var(--fg)}
+.tema-btn.t1{background:#5B14D2}.tema-btn.t2{background:#EEF0F6}.tema-btn.t3{background:#140A2D;border-color:rgba(255,255,255,.35)}
+.fs-btn{font-family:var(--mono);font-size:10.5px;border:1px solid var(--linha);border-radius:8px;padding:6px 10px}
+
+.progresso{position:fixed;top:60px;left:0;right:0;height:3px;z-index:20}
+.progresso i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--acento),var(--card2));
+  transition:width .55s cubic-bezier(.22,1,.36,1)}
+
+/* legenda da narração (nome ÚNICO no arquivo — lição T1) */
+.legenda{position:fixed;left:50%;bottom:92px;transform:translate(-50%,14px);z-index:22;
+  max-width:min(860px,86vw);padding:12px 20px;border-radius:14px;text-align:center;
+  background:color-mix(in srgb,var(--bg) 88%,#000 12%);border:1px solid var(--linha);
+  box-shadow:0 14px 34px var(--sombra);font-size:clamp(13px,1.1vw,15px);line-height:1.55;
+  opacity:0;visibility:hidden;transition:opacity .4s,transform .4s,visibility 0s .4s}
+.legenda.on{opacity:1;visibility:visible;transform:translate(-50%,0);transition-delay:0s}
+.legenda::before{content:"NARRAÇÃO";display:block;font-family:var(--mono);font-size:9px;
+  letter-spacing:.3em;color:var(--acento);margin-bottom:4px;font-weight:700}
+
+/* deck */
+.deck{position:fixed;inset:60px 0 70px 0;z-index:5}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;
+  padding:26px clamp(24px,6vw,100px);visibility:hidden;opacity:0;
+  transform:translateX(50px) scale(.99);transition:opacity .5s,transform .5s cubic-bezier(.22,1,.36,1),visibility 0s .5s}
+.slide.esq{transform:translateX(-50px) scale(.99)}
+.slide.ativa{visibility:visible;opacity:1;transform:none;transition-delay:0s}
+.ghostn{position:absolute;right:clamp(14px,4vw,60px);top:50%;transform:translateY(-54%);
+  font-size:clamp(140px,26vh,300px);font-weight:900;line-height:1;letter-spacing:-.05em;
+  color:transparent;-webkit-text-stroke:2px var(--ghost);z-index:-1;user-select:none}
+.slide [data-anim]{opacity:0}
+.slide.ativa [data-anim]{animation:sobe .65s cubic-bezier(.22,1,.36,1) both;animation-delay:var(--d,0ms)}
+@keyframes sobe{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+
+.kicker{font-family:var(--mono);font-size:clamp(10.5px,1vw,12px);letter-spacing:.28em;
+  text-transform:uppercase;color:var(--acento);font-weight:700;margin-bottom:12px}
+.h1{font-size:clamp(30px,4.2vw,56px);font-weight:800;letter-spacing:-.03em;line-height:1.05;margin-bottom:16px}
+.h1 .mg{color:var(--acento)}
+.lead{font-size:clamp(15px,1.45vw,19px);color:var(--fg2);line-height:1.55;max-width:60ch}
+.src{position:absolute;bottom:16px;left:clamp(24px,6vw,100px);font-family:var(--mono);
+  font-size:9.5px;letter-spacing:.12em;color:var(--fg2);opacity:.75}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.chip{font-family:var(--mono);font-size:clamp(10.5px,.95vw,12.5px);padding:8px 14px;border-radius:99px;
+  border:1px solid var(--linha);background:var(--chipbg)}
+.chip b{color:var(--acento)}
+.card{background:var(--card);border:1px solid var(--linha);border-radius:16px;
+  padding:clamp(14px,1.5vw,22px);box-shadow:0 10px 26px var(--sombra)}
+
+/* capa */
+.cap .h1{font-size:clamp(38px,5.4vw,76px)}
+.cap .selo{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10.5px;
+  letter-spacing:.2em;border:1px solid var(--linha);border-radius:99px;padding:7px 13px;color:var(--fg2)}
+.cap .selo i{width:8px;height:8px;border-radius:50%;background:var(--ok);animation:pulsa 2s infinite}
+@keyframes pulsa{0%,100%{box-shadow:0 0 0 0 rgba(47,191,113,.5)}50%{box-shadow:0 0 0 7px rgba(47,191,113,0)}}
+.dica-nav{position:absolute;bottom:52px;right:clamp(24px,6vw,100px);font-family:var(--mono);
+  font-size:10.5px;color:var(--fg2);animation:seta 1.6s ease-in-out infinite;text-align:right;line-height:1.8}
+.dica-nav b{color:var(--acento)}
+@keyframes seta{0%,100%{transform:translateX(0);opacity:.65}50%{transform:translateX(8px);opacity:1}}
+
+/* selos/números */
+.selos{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:28px}
+.selo2{border:1px solid var(--linha);border-radius:14px;padding:16px;background:var(--card)}
+.selo2 .n{font-family:var(--mono);font-size:11px;color:var(--acento);font-weight:700;margin-bottom:6px}
+.selo2 .t{font-weight:700;font-size:clamp(13px,1.15vw,16px);margin-bottom:5px}
+.selo2 .d{font-size:clamp(11.5px,.95vw,13.5px);color:var(--fg2);line-height:1.45}
+.frase{font-size:clamp(26px,3.6vw,50px);font-weight:800;letter-spacing:-.03em;line-height:1.14;max-width:24ch}
+.frase em{font-style:normal;color:var(--acento)}
+.nota{margin-top:22px;display:inline-flex;font-family:var(--mono);font-size:11.5px;
+  border:1px dashed var(--linha);border-radius:10px;padding:9px 13px;color:var(--fg2)}
+
+/* cards */
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:26px}
+.lugar h3{font-size:clamp(15px,1.4vw,19px);font-weight:800;margin-bottom:3px}
+.lugar .sub{font-family:var(--mono);font-size:10px;color:var(--acento);text-transform:uppercase;margin-bottom:8px}
+.lugar p{font-size:clamp(12px,.95vw,14px);color:var(--fg2);line-height:1.5}
+.lugar .estado{margin-top:10px;font-size:clamp(11.5px,.9vw,13.5px);line-height:1.45;
+  border-top:1px solid var(--linha);padding-top:8px}
+.lugar .estado b{color:var(--fg)}
+
+/* barras de número (substituto barato do donut) */
+.barras{display:flex;flex-direction:column;gap:13px;margin-top:26px;max-width:820px}
+.barra{display:grid;grid-template-columns:minmax(140px,220px) 1fr auto;gap:12px;align-items:center;
+  font-size:clamp(12.5px,1.05vw,15px)}
+.barra .bl{color:var(--fg2)}
+.barra .bt{height:12px;border-radius:99px;background:var(--chipbg);overflow:hidden}
+.barra .bt i{display:block;height:100%;width:0;border-radius:99px;background:var(--acento);
+  transition:width 1.1s cubic-bezier(.22,1,.36,1)}
+.barra .bn{font-family:var(--mono);font-weight:700;font-size:clamp(14px,1.3vw,18px);min-width:2.2em;text-align:right}
+.barra.destaque .bt i{background:var(--ok)}
+
+/* listas */
+.pends{display:flex;flex-direction:column;gap:10px;margin-top:22px;max-width:880px}
+.pend{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;padding:13px 16px}
+.pend .pn{font-family:var(--mono);font-weight:700;font-size:14px;color:var(--acento);width:30px}
+.pend .pt b{display:block;font-size:clamp(13px,1.1vw,15.5px)}
+.pend .pt small{color:var(--fg2);font-size:.87em;line-height:1.4;display:block;margin-top:2px}
+.pend .quem{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;border:1px solid var(--ok);
+  color:var(--ok);border-radius:99px;padding:4px 10px;white-space:nowrap}
+
+/* fecho */
+.fecho{margin-top:26px;font-size:clamp(17px,1.9vw,24px);font-weight:800;letter-spacing:-.02em;line-height:1.35;max-width:34ch}
+.fecho b{color:var(--ok)}
+.teclas{margin-top:22px;display:flex;gap:9px;flex-wrap:wrap}
+.tecla{font-family:var(--mono);font-size:10px;border:1px solid var(--linha);border-radius:8px;
+  padding:6px 10px;color:var(--fg2)}
+.tecla kbd{color:var(--fg);font-weight:700}
+
+/* controles */
+.controls{position:fixed;bottom:0;left:0;right:0;height:70px;z-index:20;display:flex;align-items:center;
+  gap:14px;padding:0 24px;background:color-mix(in srgb,var(--bg) 85%,transparent);
+  backdrop-filter:blur(8px);border-top:1px solid var(--linha)}
+.nav-btn{width:44px;height:44px;border-radius:12px;border:1px solid var(--linha);
+  display:grid;place-items:center;font-size:17px}
+.nav-btn:hover{background:var(--chipbg)}
+.nav-btn:disabled{opacity:.3;cursor:default}
+.narr-btn{width:44px;height:44px;border-radius:12px;border:1px solid var(--acento);display:grid;
+  place-items:center;font-size:16px;background:rgba(236,15,124,.12);position:relative}
+.narr-btn .eq{position:absolute;bottom:5px;left:50%;transform:translateX(-50%);display:none;
+  gap:2px;align-items:flex-end;height:8px}
+.narr-btn .eq i{width:2.5px;background:var(--acento);border-radius:1px;height:3px}
+.narr-btn.tocando .eq{display:inline-flex}
+.narr-btn.tocando .eq i{animation:eqz .7s ease-in-out infinite}
+.dots{flex:1;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--linha);transition:all .3s}
+.dot.on{background:var(--acento);transform:scale(1.35)}
+.contador{font-family:var(--mono);font-size:11.5px;letter-spacing:.18em;color:var(--fg2)}
+
+@media (max-width:1024px){.selos,.grid4{grid-template-columns:repeat(2,1fr)}.ghostn{display:none}}
+@media (max-width:640px){.top-title{display:none}.tocar-btn .lb{display:none}
+  .slide{justify-content:flex-start;padding-top:22px;overflow-y:auto}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="logo"><span class="lg">HS</span><span>{{PROJETO}} <b>·</b> {{TIPO}}</span></div>
+  <div class="top-title" id="topTitle"></div>
+  <div class="top-right">
+    <button class="tocar-btn" id="guiadoBtn" title="Narra e avança sozinho (G)">
+      <span class="eq"><i></i><i></i><i></i></span><span class="lb" id="guiadoLb">▶ TOCAR TUDO</span>
+    </button>
+    <div class="temas" role="group" aria-label="Tema">
+      <button class="tema-btn t1" data-t="1" title="Tema 1 (1)"></button>
+      <button class="tema-btn t2" data-t="2" title="Tema 2 (2)"></button>
+      <button class="tema-btn t3" data-t="3" title="Tema 3 (3)"></button>
+    </div>
+    <button class="fs-btn" id="fsBtn" title="Tela cheia (F)">[ tela cheia ]</button>
+  </div>
+</header>
+<div class="progresso"><i id="barra"></i></div>
+<div class="legenda" id="legenda" aria-live="polite"></div>
+
+<main class="deck" id="deck">
+
+<!-- ═══ EDITE: TELA 1 — CAPA ═══ -->
+<section class="slide cap" data-title="Capa">
+  <div class="ghostn">01</div>
+  <span class="selo" data-anim><i></i>{{ESTADO EM UMA FRASE}} · {{DATA}}</span>
+  <h1 class="h1" data-anim style="margin-top:18px">{{TÍTULO}}<br>{{DESTAQUE <span class="mg">NA COR</span>}}</h1>
+  <p class="lead" data-anim>{{UM PARÁGRAFO: o retrato em N telas e o que decide o próximo passo.}}</p>
+  <div class="chips" data-anim>
+    <span class="chip"><b>N</b> {{fato 1}}</span>
+    <span class="chip"><b>N</b> {{fato 2}}</span>
+    <span class="chip">{{garantia/backup}}</span>
+  </div>
+  <div class="dica-nav" data-anim>🔊 <b>▶ TOCAR TUDO</b> narra e vira as telas<br>→ ou avance no seu ritmo</div>
+</section>
+
+<!-- ═══ EDITE: TELA 2 — OBJETIVO + SELOS ═══ -->
+<section class="slide" data-title="Objetivo">
+  <div class="ghostn">02</div>
+  <p class="kicker" data-anim>02 · OBJETIVO ({{fonte}})</p>
+  <h2 class="frase" data-anim>{{Objetivo numa frase com <em>destaque</em>.}}</h2>
+  <p class="lead" data-anim style="margin-top:14px">{{O "pronto" tem N condições:}}</p>
+  <div class="selos">
+    <div class="selo2" data-anim><div class="n">SELO 1</div><div class="t">{{título}}</div><div class="d">{{descrição}}</div></div>
+    <div class="selo2" data-anim><div class="n">SELO 2</div><div class="t">{{título}}</div><div class="d">{{descrição}}</div></div>
+    <div class="selo2" data-anim><div class="n">SELO 3</div><div class="t">{{título}}</div><div class="d">{{descrição}}</div></div>
+    <div class="selo2" data-anim><div class="n">SELO 4</div><div class="t">{{título}}</div><div class="d">{{descrição}}</div></div>
+  </div>
+  <div class="nota" data-anim>{{ressalva}}</div>
+  <div class="src" data-anim>FONTE · {{caminho}}</div>
+</section>
+
+<!-- ═══ EDITE: TELA 3 — CARDS ═══ -->
+<section class="slide" data-title="Os lugares">
+  <div class="ghostn">03</div>
+  <p class="kicker" data-anim>03 · {{ONDE AS COISAS EXISTEM}}</p>
+  <h2 class="h1" data-anim>{{N lugares, <span class="mg">um fluxo</span>}}</h2>
+  <div class="grid4">
+    <div class="card lugar" data-anim>
+      <h3>{{Nome}}</h3><div class="sub">{{papel}}</div>
+      <p>{{o que é, em linguagem leiga.}}</p>
+      <div class="estado"><b>Hoje:</b> {{estado medido}}</div>
+    </div>
+    <!-- repita até 4× -->
+  </div>
+</section>
+
+<!-- ═══ EDITE: TELA 4 — BARRAS DE NÚMERO (data-bar = % da largura) ═══ -->
+<section class="slide" data-title="Números-chave">
+  <div class="ghostn">04</div>
+  <p class="kicker" data-anim>04 · {{O QUE OS NÚMEROS DIZEM}}</p>
+  <h2 class="h1" data-anim>{{Título, <span class="mg">destaque</span>}}</h2>
+  <div class="barras">
+    <div class="barra destaque" data-anim>
+      <span class="bl">{{categoria principal}}</span>
+      <span class="bt"><i data-bar="67"></i></span>
+      <span class="bn"><span data-count="20">0</span></span>
+    </div>
+    <div class="barra" data-anim>
+      <span class="bl">{{categoria}}</span>
+      <span class="bt"><i data-bar="20"></i></span>
+      <span class="bn"><span data-count="6">0</span></span>
+    </div>
+    <!-- mais .barra (data-bar = percentual relativo ao máximo) -->
+  </div>
+  <div class="src" data-anim>FONTE · {{onde/quando os números foram medidos}}</div>
+</section>
+
+<!-- ═══ EDITE: TELA 5 — LISTA + FECHO ═══ -->
+<section class="slide" data-title="Próximos passos">
+  <div class="ghostn">05</div>
+  <p class="kicker" data-anim>05 · {{PRÓXIMOS PASSOS}}</p>
+  <h2 class="h1" data-anim>{{Título, <span class="mg">dono: quem resolve</span>}}</h2>
+  <div class="pends">
+    <div class="card pend" data-anim><span class="pn">01</span>
+      <span class="pt"><b>{{pendência}}</b><small>{{detalhe leigo}}</small></span><span class="quem">{{DONO}}</span></div>
+    <!-- mais .pend -->
+  </div>
+  <p class="fecho" data-anim>{{Fecho em uma frase.}}<br>{{Garantia — <b>em verde</b>.}}</p>
+  <div class="teclas" data-anim>
+    <span class="tecla"><kbd>G</kbd> tocar tudo</span>
+    <span class="tecla"><kbd>N</kbd> narração da tela</span>
+    <span class="tecla"><kbd>←</kbd> <kbd>→</kbd> navegar</span>
+    <span class="tecla"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> tema</span>
+    <span class="tecla"><kbd>F</kbd> tela cheia</span>
+  </div>
+  <div class="src" data-anim>ENTREGA · {{pasta}} · leitura-only</div>
+</section>
+
+</main>
+
+<footer class="controls">
+  <button class="narr-btn" id="narrBtn" title="Narrar esta tela (N)">🔊<span class="eq"><i></i><i></i><i></i></span></button>
+  <button class="nav-btn" id="prevB" title="Anterior (←)">←</button>
+  <div class="dots" id="dots"></div>
+  <span class="contador" id="contador">01 / 05</span>
+  <button class="nav-btn" id="nextB" title="Próximo (→)">→</button>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* ═══ EDITE: NARRAÇÃO — só texto; a voz é do navegador (grátis). Números por extenso. ═══ */
+var NARR=[
+ "{{fala da tela 1 — 15 a 35 s}}",
+ "{{fala da tela 2}}",
+ "{{fala da tela 3}}",
+ "{{fala da tela 4}}",
+ "{{fala da tela 5}}"
+];
+
+var slides=Array.prototype.slice.call(document.querySelectorAll('.slide'));
+var dotsBox=document.getElementById('dots'), barra=document.getElementById('barra');
+var contador=document.getElementById('contador'), topTitle=document.getElementById('topTitle');
+var legendaEl=document.getElementById('legenda');
+var narrBtn=document.getElementById('narrBtn'), guiadoBtn=document.getElementById('guiadoBtn');
+var guiadoLb=document.getElementById('guiadoLb');
+var atual=-1, guiado=false, tocando=false, uttAtual=null, timerLeitura=null;
+
+/* ---------- narração: voz do navegador + leitura cronometrada como plano B ---------- */
+function vozPtBR(){ if(!window.speechSynthesis)return null; var vs=speechSynthesis.getVoices();
+  for(var i=0;i<vs.length;i++) if(/pt[-_]BR/i.test(vs[i].lang))return vs[i];
+  for(var j=0;j<vs.length;j++) if(/^pt/i.test(vs[j].lang))return vs[j]; return null; }
+function mostraLegenda(i){ legendaEl.textContent=NARR[i]; legendaEl.classList.add('on'); }
+function escondeLegenda(){ legendaEl.classList.remove('on'); }
+function setTocando(v){ tocando=v; narrBtn.classList.toggle('tocando',v);
+  narrBtn.title=v?"Pausar narração (N)":"Narrar esta tela (N)"; guiadoBtn.classList.toggle('on',v); }
+function paraTudo(){ if(window.speechSynthesis){try{speechSynthesis.cancel();}catch(_){}}
+  if(timerLeitura){clearTimeout(timerLeitura);timerLeitura=null;}
+  uttAtual=null; setTocando(false); escondeLegenda(); }
+function fimNarra(){ setTocando(false); escondeLegenda();
+  if(guiado){ setTimeout(function(){ if(!guiado)return;
+    if(atual<slides.length-1) go(atual+1); else setGuiado(false); },900); } }
+function narra(i){ /* índice da tela CERTA capturado (lição T2) */
+  paraTudo(); mostraLegenda(i); setTocando(true);
+  if(window.speechSynthesis&&vozPtBR()){
+    var u=new SpeechSynthesisUtterance(NARR[i]);
+    u.voice=vozPtBR(); u.lang=u.voice.lang||"pt-BR"; u.rate=1.02;
+    u.onend=function(){fimNarra();};
+    u.onerror=function(){ leituraCronometrada(i); };
+    uttAtual=u;
+    try{speechSynthesis.cancel();speechSynthesis.speak(u);}catch(_){leituraCronometrada(i);}
+  } else { leituraCronometrada(i); }
+}
+function leituraCronometrada(i){ /* sem voz no sistema: legenda + avanço por tempo de leitura */
+  mostraLegenda(i);
+  var seg=Math.max(8,Math.round(NARR[i].length/16)); /* ~16 chars/s de leitura confortável */
+  timerLeitura=setTimeout(function(){timerLeitura=null;fimNarra();},seg*1000);
+}
+function setGuiado(v){ guiado=v; guiadoLb.textContent=v?"⏸ PAUSAR TUDO":"▶ TOCAR TUDO";
+  guiadoBtn.classList.toggle('on',v&&tocando); if(!v) paraTudo(); }
+guiadoBtn.addEventListener('click',function(){ if(guiado)setGuiado(false); else{setGuiado(true);narra(atual);} });
+narrBtn.addEventListener('click',function(){ /* N durante o guiado devolve controle manual */
+  if(guiado){setGuiado(false);} else if(tocando){paraTudo();} else narra(atual); });
+if(window.speechSynthesis&&speechSynthesis.getVoices)speechSynthesis.getVoices();
+if(window.speechSynthesis)speechSynthesis.onvoiceschanged=function(){};
+
+/* ---------- deck ---------- */
+slides.forEach(function(s,i){ var d=document.createElement('button');
+  d.className='dot'; d.title=(i+1)+' · '+s.dataset.title; d.setAttribute('aria-label','Ir para tela '+(i+1));
+  d.addEventListener('click',function(){go(i);}); dotsBox.appendChild(d); });
+var dots=Array.prototype.slice.call(dotsBox.children);
+slides.forEach(function(s){ var els=s.querySelectorAll('[data-anim]');
+  Array.prototype.forEach.call(els,function(el,i){el.style.setProperty('--d',(110+i*90)+'ms');}); });
+
+function animaCount(el){ var fim=parseInt(el.getAttribute('data-count'),10),t0=null,dur=1000;
+  function p(t){ if(!t0)t0=t; var k=Math.min((t-t0)/dur,1),e=1-Math.pow(1-k,3);
+    el.textContent=Math.round(fim*e); if(k<1)requestAnimationFrame(p); }
+  requestAnimationFrame(p); }
+function animaBarras(sl){ Array.prototype.forEach.call(sl.querySelectorAll('[data-bar]'),function(el,i){
+  setTimeout(function(){ el.style.width=el.getAttribute('data-bar')+'%'; },250+i*140); }); }
+
+function go(n){ n=Math.max(0,Math.min(slides.length-1,n)); if(n===atual)return;
+  paraTudo();
+  Array.prototype.forEach.call(slides,function(s){ s.querySelectorAll('[data-bar]').forEach(function(el){el.style.width='0';}); });
+  slides.forEach(function(s,i){ s.classList.toggle('ativa',i===n); s.classList.toggle('esq',i<n); });
+  dots.forEach(function(d,i){d.classList.toggle('on',i===n);});
+  barra.style.width=((n+1)/slides.length*100)+'%';
+  contador.textContent=('0'+(n+1)).slice(-2)+' / '+('0'+slides.length).slice(-2);
+  topTitle.textContent=('0'+(n+1)).slice(-2)+' · '+slides[n].dataset.title.toUpperCase();
+  document.getElementById('prevB').disabled=(n===0);
+  document.getElementById('nextB').disabled=(n===slides.length-1);
+  if(location.hash!=='#'+(n+1)) history.replaceState(null,'','#'+(n+1));
+  atual=n;
+  animaBarras(slides[n]);
+  Array.prototype.forEach.call(slides[n].querySelectorAll('[data-count]'),animaCount);
+  if(guiado) narra(n);
+}
+document.getElementById('nextB').addEventListener('click',function(){go(atual+1);});
+document.getElementById('prevB').addEventListener('click',function(){go(atual-1);});
+document.addEventListener('keydown',function(e){
+  if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){e.preventDefault();go(atual+1);}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(atual-1);}
+  else if(e.key==='Home'){go(0);} else if(e.key==='End'){go(slides.length-1);}
+  else if(e.key==='f'||e.key==='F'){toggleFS();}
+  else if(e.key==='n'||e.key==='N'){ if(guiado){setGuiado(false);} else if(tocando){paraTudo();} else narra(atual); }
+  else if(e.key==='g'||e.key==='G'){ guiadoBtn.click(); }
+  else if(e.key==='1'){setTema('1');} else if(e.key==='2'){setTema('2');} else if(e.key==='3'){setTema('3');}
+});
+var tx=null;
+document.addEventListener('touchstart',function(e){tx=e.touches[0].clientX;},{passive:true});
+document.addEventListener('touchend',function(e){ if(tx===null)return;
+  var dx=e.changedTouches[0].clientX-tx; if(Math.abs(dx)>60) go(atual+(dx<0?1:-1)); tx=null; },{passive:true});
+
+function setTema(t){ document.documentElement.setAttribute('data-tema',t);
+  Array.prototype.forEach.call(document.querySelectorAll('.tema-btn'),function(b){
+    b.setAttribute('aria-pressed',String(b.dataset.t===t)); });
+  try{localStorage.setItem('hs-deck-tema-leve',t);}catch(_){} }
+Array.prototype.forEach.call(document.querySelectorAll('.tema-btn'),function(b){
+  b.addEventListener('click',function(){setTema(b.dataset.t);}); });
+try{var st=localStorage.getItem('hs-deck-tema-leve'); if(st) setTema(st);}catch(_){}
+function toggleFS(){ if(!document.fullscreenElement){ if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen(); }
+  else{ if(document.exitFullscreen)document.exitFullscreen(); } }
+document.getElementById('fsBtn').addEventListener('click',toggleFS);
+
+var ini=parseInt((location.hash||'#1').slice(1),10);
+go(isNaN(ini)?0:ini-1);
+})();
+</script>
+</body>
+</html>

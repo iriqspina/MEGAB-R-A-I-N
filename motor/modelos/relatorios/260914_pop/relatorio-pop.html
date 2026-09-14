@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MEGABRAIN — template POP (Raycast × Duolingo × Warp)</title>
+<!-- ═══ TEMPLATE POP de relatório · 260914 · v1.2 ═══
+     DNA (escolha do <USUARIO>): Raycast > Warp > Duolingo.
+     v1.2 (pedido do <USUARIO> 260914-noite):
+       · ORQUESTRAÇÕES é o setor protagonista (era "na realidade o que eu
+         queria ver"): gates V6 com estado real, runs, cotas AO VIVO, papéis.
+       · Página ENCOLHEU: hero baixo, telemetria geral rebaixada a details,
+         abas Ações/Skills/Cérebro/Documentos viraram PANES neste mesmo
+         design (nada de pular pro relatório velho com outra cara).
+     Regras: offline, zero recurso remoto. Contrato de interação: todo
+     elemento clicável responde (toast/cópia/link) e é operável por teclado.
+     Pontos de injeção (data-slot): hero-status · orc-gates · orc-runs ·
+     orc-cotas · acoes-voce · saude-chips · telemetria-geral ·
+     anel-projetos · tabela-projetos · pane-acoes · pane-skills ·
+     pane-cerebro · pane-docs.
+     Dívida conhecida: hrefs file:/// absolutos — o GERADOR resolve na adoção. -->
+<style>
+  :root{
+    --fundo:#0B0B16; --fundo2:#12121F; --card:#191927; --card2:#1F1F30;
+    --tinta:#FFFFFF; --corpo:#C9C7E0; --fraco:#8B89A6;
+    --linha:rgba(255,255,255,.10);
+    --coral:#FF4B4B; --verde:#58CC02; --azul:#1CB0F6; --amarelo:#FFC800; --roxo:#CE82FF; --rosa:#FF82C4;
+    --sombra-card:0 14px 38px rgba(0,0,0,.45);
+    --mono:ui-monospace,"Cascadia Mono",Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--fundo);color:var(--tinta);
+    font:16px/1.45 "Segoe UI",system-ui,sans-serif;overflow-x:hidden}
+  body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:
+      radial-gradient(58rem 30rem at 50% -12%, rgba(124,58,237,.55) 0%, transparent 65%),
+      radial-gradient(34rem 20rem at 82% 6%, rgba(236,72,153,.30) 0%, transparent 60%),
+      radial-gradient(30rem 18rem at 8% 12%, rgba(28,176,246,.20) 0%, transparent 60%),
+      linear-gradient(180deg, var(--fundo2) 0%, var(--fundo) 40%);}
+  .wrap{max-width:62rem;margin-inline:auto;padding:0 1.1rem 3rem}
+
+  @supports (animation-timeline: scroll()){
+    body::after{content:"";position:fixed;top:0;left:0;right:0;height:4px;z-index:99;
+      background:linear-gradient(90deg,var(--roxo),var(--verde),var(--amarelo),var(--coral));
+      transform-origin:0 50%;animation:ler linear both;animation-timeline:scroll(root block)}
+    @keyframes ler{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+  }
+
+  /* ═══ HERO compacto ═══ */
+  .hero{display:grid;grid-template-columns:auto 1fr;gap:1.1rem;align-items:center;
+    padding:2.4rem 0 1.6rem}
+  .mascote{width:92px;height:auto;display:block;cursor:pointer;
+    animation:flutua 4.5s ease-in-out infinite;transition:transform .18s ease}
+  .mascote:active{transform:scale(.94)}
+  .mascote.vibra{animation:vibra .5s ease}
+  @keyframes flutua{50%{transform:translateY(-7px)}}
+  @keyframes vibra{25%{transform:rotate(-7deg)}75%{transform:rotate(7deg)}}
+  .pill{display:inline-flex;align-items:center;gap:.45rem;padding:.32rem .85rem;border-radius:99px;
+    background:rgba(206,130,255,.16);border:1px solid rgba(206,130,255,.45);color:var(--roxo);
+    font:700 .74rem var(--mono);letter-spacing:.06em}
+  .pill i{width:.5rem;height:.5rem;border-radius:50%;background:var(--verde);box-shadow:0 0 10px var(--verde)}
+  .hero h1{margin:.45rem 0 .15rem;font-size:clamp(2.4rem,7vw,3.8rem);font-weight:800;letter-spacing:-.045em;line-height:1;
+    background:linear-gradient(180deg,#fff 30%,#C4B5FD 85%);-webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 8px 34px rgba(124,58,237,.45))}
+  .hero .sub{color:var(--corpo);font:500 .85rem var(--mono)}
+  .hero .sub b{color:var(--verde)}
+  .hero .frescor{margin:.35rem 0 0;color:var(--fraco);font-size:.72rem}
+
+  /* ═══ SETOR ═══ */
+  .setor{margin:1.5rem 0;border-radius:20px;background:var(--card);
+    border:3px solid var(--c,var(--linha));box-shadow:var(--sombra-card);overflow:hidden}
+  .setor > header{display:flex;align-items:center;gap:.8rem;padding:.85rem 1.1rem;
+    background:linear-gradient(90deg, color-mix(in oklab, var(--c) 22%, transparent), transparent 70%)}
+  .setor .ico{width:44px;height:44px;border-radius:13px;background:var(--c);display:grid;place-items:center;flex:0 0 auto;
+    box-shadow:0 5px 15px color-mix(in oklab, var(--c) 55%, transparent)}
+  .setor .ico svg{width:24px;height:24px}
+  .setor h2{margin:0;font-size:1.18rem;font-weight:800;letter-spacing:-.02em}
+  .setor .desc{margin:1px 0 0;color:var(--corpo);font-size:.8rem}
+  .setor .corpo{padding:.95rem 1.1rem 1.05rem}
+
+  /* ═══ ORQUESTRAÇÕES ═══ */
+  .gates{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin:0 0 .8rem}
+  @media(max-width:48rem){.gates{grid-template-columns:repeat(4,1fr)}}
+  .gate{border-radius:10px;padding:.45rem .5rem .4rem;background:var(--card2);border-top:4px solid var(--line,rgba(255,255,255,.2));cursor:pointer;position:relative}
+  .gate b{display:block;font:800 .8rem var(--mono)}
+  .gate span{font-size:.58rem;color:var(--fraco);line-height:1.25;display:block}
+  .gate--ok{border-top-color:var(--verde)} .gate--ok b{color:var(--verde)}
+  .gate--ativo{border-top-color:var(--azul);background:color-mix(in oklab,var(--azul) 14%,var(--card2));
+    animation:pulsa-gate 2.2s ease-in-out infinite}
+  .gate--ativo b{color:var(--azul)}
+  .gate--espera{border-top-color:rgba(255,255,255,.18)}
+  @keyframes pulsa-gate{50%{opacity:.55}}
+  .orc-grid{display:grid;gap:.7rem}
+  @media(min-width:52rem){.orc-grid{grid-template-columns:1.1fr .9fr}}
+  .runs{display:flex;flex-direction:column;gap:.5rem}
+  .run{display:grid;grid-template-columns:auto 1fr auto;gap:.6rem;align-items:center;
+    background:var(--card2);border-radius:12px;padding:.55rem .75rem;cursor:pointer}
+  .run .st{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:1rem}
+  .run--ok .st{background:color-mix(in oklab,var(--verde) 20%,transparent)}
+  .run--warn .st{background:color-mix(in oklab,var(--amarelo) 20%,transparent)}
+  .run b{font-size:.84rem;display:block}
+  .run small{color:var(--fraco);font-size:.68rem}
+  .run .q{font:700 .68rem var(--mono);color:var(--fraco)}
+  .run--ok .q{color:var(--verde)} .run--warn .q{color:var(--amarelo)}
+  .cotas{display:flex;flex-direction:column;gap:.45rem}
+  .cota{display:grid;grid-template-columns:auto 1fr auto;gap:.6rem;align-items:center;
+    background:var(--card2);border-radius:12px;padding:.5rem .7rem}
+  .cota .dot{width:11px;height:11px;border-radius:50%}
+  .cota--ok .dot{background:var(--verde);box-shadow:0 0 10px var(--verde)}
+  .cota--warn .dot{background:var(--amarelo);box-shadow:0 0 10px var(--amarelo)}
+  .cota b{font-size:.82rem}
+  .cota small{display:block;color:var(--fraco);font-size:.66rem}
+  .cota .ritmo{font:800 .64rem var(--mono);padding:.15rem .5rem;border-radius:8px}
+  .cota--ok .ritmo{color:var(--verde);background:color-mix(in oklab,var(--verde) 16%,transparent)}
+  .cota--warn .ritmo{color:var(--amarelo);background:color-mix(in oklab,var(--amarelo) 16%,transparent)}
+  .papeis{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.7rem}
+  .papel{font:700 .7rem var(--mono);padding:.28rem .6rem;border-radius:9px;background:var(--card2);
+    border:1px solid color-mix(in oklab,var(--roxo) 40%,transparent);cursor:pointer}
+  .papel b{color:var(--roxo)}
+
+  /* ═══ cards de ação + botões ═══ */
+  .acoes-voce{display:grid;gap:.7rem}
+  @media(min-width:56rem){.acoes-voce{grid-template-columns:repeat(3,1fr)}}
+  .acao{background:var(--card2);border:2px solid color-mix(in oklab, var(--c) 55%, transparent);
+    border-radius:16px;padding:.8rem .85rem;display:flex;flex-direction:column;gap:.45rem}
+  .acao .n{font:800 .68rem var(--mono);color:var(--c);letter-spacing:.12em}
+  .acao h3{margin:0;font-size:.95rem;line-height:1.3}
+  .acao p{margin:0;color:var(--corpo);font-size:.8rem;flex:1}
+  .acao .rodape-btn{display:flex;gap:.5rem;flex-wrap:wrap}
+  .btn{display:inline-block;text-align:center;padding:.58rem .95rem;border-radius:12px;border:0;cursor:pointer;
+    background:var(--c,var(--roxo));color:#0B0B16;font-weight:800;font-size:.85rem;text-decoration:none;
+    box-shadow:0 4px 0 color-mix(in oklab, var(--c,#CE82FF) 60%, #000);
+    transition:transform .08s ease, box-shadow .08s ease, filter .12s ease}
+  .btn:hover{filter:brightness(1.06)}
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 color-mix(in oklab, var(--c,#CE82FF) 60%, #000)}
+  .btn:focus-visible{outline:3px solid var(--roxo);outline-offset:2px}
+  .btn--sec{background:transparent;color:var(--tinta);border:2px solid color-mix(in oklab, var(--c) 55%, transparent);
+    box-shadow:0 3px 0 color-mix(in oklab, var(--c) 35%, #000)}
+  .btn--sec:active{box-shadow:0 1px 0 color-mix(in oklab, var(--c) 35%, #000)}
+
+  .saude{display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:.6rem}
+  .s-chip{background:var(--card2);border-radius:14px;padding:.7rem .8rem;display:flex;gap:.6rem;align-items:center;
+    border:2px solid transparent;cursor:pointer;transition:transform .12s ease}
+  .s-chip:hover{transform:translateY(-2px)}
+  .s-chip .si{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;flex:0 0 auto}
+  .s-chip .si svg{width:20px;height:20px}
+  .s-chip b{display:block;font-size:.9rem}
+  .s-chip span{color:var(--fraco);font-size:.68rem}
+  .ok   {border-color:color-mix(in oklab,var(--verde) 55%,transparent)} .ok .si{background:color-mix(in oklab,var(--verde) 22%,transparent)} .ok .si svg{color:var(--verde)}
+  .info {border-color:color-mix(in oklab,var(--azul) 55%,transparent)} .info .si{background:color-mix(in oklab,var(--azul) 22%,transparent)} .info .si svg{color:var(--azul)}
+
+  .fig{background:var(--card2);border:1px solid var(--linha);border-radius:14px;padding:.8rem .9rem .6rem;margin:0 0 .7rem}
+  .fig figcaption b{font:700 .74rem var(--mono);color:var(--azul)}
+  .fig .cap{margin:.4rem 0 0;color:var(--fraco);font:.66rem/1.4 var(--mono)}
+  .figs{display:grid;gap:.8rem}
+  @media(min-width:52rem){.figs{grid-template-columns:1.2fr .8fr}}
+  .share{display:flex;height:2.1rem;border-radius:11px;overflow:hidden;border:2px solid var(--linha)}
+  .share i{display:flex;align-items:center;justify-content:center;font:800 .74rem var(--mono);color:#0B0B16}
+  .legenda{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:.5rem;font-size:.74rem;color:var(--corpo)}
+  .legenda b{color:var(--tinta)}
+  .pt{display:inline-block;width:.65rem;height:.65rem;border-radius:3px;margin-right:.3rem;vertical-align:-1px}
+  .spark{display:flex;align-items:flex-end;gap:.45rem;height:5.6rem;padding:.2rem .1rem 0}
+  .spark .col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:.25rem;height:100%}
+  .spark .bar{width:100%;max-width:2.1rem;border-radius:5px 5px 0 0;background:var(--azul);height:calc(var(--h)*.78%);min-height:3px;
+    box-shadow:0 0 14px rgba(28,176,246,.28)}
+  .spark .col:hover .bar{filter:brightness(1.25)}
+  .spark .v{font:700 .58rem var(--mono);color:var(--corpo)}
+  .spark .r{font:.56rem var(--mono);color:var(--fraco);white-space:nowrap}
+
+  .resumo-1linha{display:flex;align-items:center;gap:.9rem;flex-wrap:wrap}
+  .anelzinho{position:relative;width:78px;height:78px;cursor:pointer}
+  .anelzinho .t{position:absolute;inset:0;display:grid;place-items:center;font:800 .95rem var(--mono)}
+  details.variancia{margin-top:.8rem}
+  details.variancia summary{cursor:pointer;font-weight:700;color:var(--azul);list-style:none;user-select:none}
+  details.variancia summary::-webkit-details-marker{display:none}
+  details.variancia summary:focus-visible{outline:3px solid var(--roxo);outline-offset:3px}
+  details.variancia summary::before{content:"▸ "}
+  details[open].variancia summary::before{content:"▾ "}
+  .tabela-wrap{max-height:14rem;overflow:auto;border:1px solid var(--linha);border-radius:11px;margin-top:.6rem}
+  table{width:100%;border-collapse:collapse;font-size:.76rem}
+  th{position:sticky;top:0;background:var(--card);text-align:left;font:700 .62rem var(--mono);text-transform:uppercase;
+    letter-spacing:.08em;color:var(--fraco);padding:.45rem .65rem;border-bottom:1px solid var(--linha)}
+  td{padding:.38rem .65rem;border-bottom:1px solid var(--linha);color:var(--corpo)}
+  td b{color:var(--tinta)}
+
+  /* ═══ PANES (abas no MESMO design) ═══ */
+  .panes-nav{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;margin:1.8rem 0 0}
+  .pn{display:inline-flex;align-items:center;gap:.45rem;padding:.6rem 1rem;border-radius:14px;cursor:pointer;
+    background:var(--card);border:1px solid var(--linha);color:var(--tinta);font-weight:700;font-size:.84rem;
+    transition:transform .12s ease,border-color .12s ease}
+  .pn:hover{transform:translateY(-2px);border-color:var(--roxo)}
+  .pn[aria-pressed="true"]{background:color-mix(in oklab,var(--roxo) 18%,var(--card));border-color:var(--roxo)}
+  .pn:focus-visible{outline:3px solid var(--roxo);outline-offset:2px}
+  .pn svg{width:17px;height:17px;color:var(--roxo)}
+  .pane-pop{margin:1rem 0 0;border:2px solid color-mix(in oklab,var(--roxo) 35%,transparent)}
+  .pane-pop[hidden]{display:none}
+  .lista-acoes{display:grid;gap:.45rem}
+  @media(min-width:52rem){.lista-acoes{grid-template-columns:1fr 1fr}}
+  .it{display:grid;grid-template-columns:auto 1fr auto;gap:.6rem;align-items:center;
+    background:var(--card2);border-radius:11px;padding:.5rem .7rem;cursor:pointer}
+  .it .num{font:800 .85rem var(--mono);color:var(--roxo);width:1.6rem}
+  .it b{font-size:.82rem;display:block}
+  .it small{color:var(--fraco);font-size:.68rem;display:block}
+  .it .go{font:800 .7rem var(--mono);color:var(--fraco)}
+  .it:hover .go{color:var(--roxo)}
+  .skills-grid{display:grid;gap:.45rem}
+  @media(min-width:52rem){.skills-grid{grid-template-columns:1fr 1fr}}
+  .sk{display:grid;grid-template-columns:1fr auto;gap:.5rem;align-items:center;
+    background:var(--card2);border-radius:11px;padding:.5rem .7rem;cursor:pointer}
+  .sk b{font:700 .8rem var(--mono);color:var(--azul)}
+  .sk small{color:var(--fraco);font-size:.68rem;display:block;margin-top:1px}
+  .sk .go{color:var(--fraco)}
+  .cerebro-3{display:grid;gap:.6rem}
+  @media(min-width:52rem){.cerebro-3{grid-template-columns:repeat(3,1fr)}}
+  .cb{background:var(--card2);border-radius:13px;padding:.7rem .8rem}
+  .cb b{font-size:.88rem}
+  .cb small{color:var(--fraco);font-size:.7rem;display:block;margin:.25rem 0 .5rem}
+  .docs-lista{display:grid;gap:.4rem}
+  .doc{display:grid;grid-template-columns:auto 1fr auto;gap:.55rem;align-items:center;
+    background:var(--card2);border-radius:10px;padding:.45rem .65rem;cursor:pointer}
+  .doc .ic{font-size:.9rem}
+  .doc b{font-size:.78rem}
+  .doc small{color:var(--fraco);font-size:.66rem;display:block}
+  .doc .go{font:700 .66rem var(--mono);color:var(--fraco)}
+
+  /* foco visível em tudo que é clicável */
+  .chip:focus-visible,.s-chip:focus-visible,.anelzinho:focus-visible,.mascote:focus-visible,
+  .gate:focus-visible,.run:focus-visible,.papel:focus-visible,.it:focus-visible,.sk:focus-visible,.doc:focus-visible{
+    outline:3px solid var(--roxo);outline-offset:2px}
+
+  /* ═══ TOAST ═══ */
+  #toasts{position:fixed;bottom:1.1rem;left:50%;transform:translateX(-50%);z-index:100;
+    display:flex;flex-direction:column;gap:.45rem;align-items:center;pointer-events:none;max-width:min(92vw,34rem)}
+  .toast{display:flex;align-items:center;gap:.55rem;padding:.62rem 1rem;border-radius:13px;
+    background:var(--card2);border:2px solid var(--verde);color:var(--tinta);font-weight:600;font-size:.85rem;
+    box-shadow:0 12px 34px rgba(0,0,0,.55);animation:surge-toast .22s ease both}
+  .toast.err{border-color:var(--coral)}
+  .toast .t-ico{color:var(--verde);flex:0 0 auto}
+  .toast.err .t-ico{color:var(--coral)}
+  .toast small{display:block;color:var(--fraco);font-weight:500}
+  @keyframes surge-toast{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:none}}
+  .toast.saindo{transition:opacity .25s ease, transform .25s ease;opacity:0;transform:translateY(8px)}
+
+  @keyframes surge{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  .hero,.setor,.panes-nav{animation:surge .45s ease both}
+  .setor:nth-of-type(1){animation-delay:.04s}.setor:nth-of-type(2){animation-delay:.09s}
+  .setor:nth-of-type(3){animation-delay:.14s}.setor:nth-of-type(4){animation-delay:.19s}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+  .nota{margin-top:1.8rem;color:var(--fraco);font-size:.7rem;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ═══ HERO compacto ═══ -->
+  <header class="hero" data-slot="hero-status">
+    <div>
+      <svg class="mascote" id="mascote" viewBox="0 0 120 110" aria-label="mascote cérebro do megabrain — clica pra ele falar" role="button" tabindex="0">
+        <path d="M60 8c-20 0-34 10-38 24-9 3-14 11-14 20 0 12 9 21 20 23 4 9 14 15 26 15 8 0 16-3 22-8 5 4 12 6 19 4 11-3 18-13 18-24 0-4-1-8-3-11 4-15-8-43-50-43z"
+          fill="#CE82FF" stroke="#8B5CF6" stroke-width="4"/>
+        <path d="M52 30c-8 6-10 16-6 24M74 26c4 10 2 22-6 28M40 52c8 4 18 4 26 0" fill="none" stroke="#8B5CF6" stroke-width="3.5" stroke-linecap="round"/>
+        <circle cx="47" cy="58" r="9" fill="#fff"/><circle cx="75" cy="56" r="9" fill="#fff"/>
+        <circle cx="49" cy="59" r="4" fill="#1B1B2A"/><circle cx="73" cy="57" r="4" fill="#1B1B2A"/>
+        <circle cx="51" cy="56" r="1.4" fill="#fff"/><circle cx="75" cy="54" r="1.4" fill="#fff"/>
+        <path d="M52 74q10 8 20 0" fill="none" stroke="#1B1B2A" stroke-width="3.5" stroke-linecap="round"/>
+        <ellipse cx="36" cy="68" rx="5" ry="3.4" fill="#FF82C4" opacity=".8"/>
+        <ellipse cx="86" cy="66" rx="5" ry="3.4" fill="#FF82C4" opacity=".8"/>
+      </svg>
+    </div>
+    <div>
+      <span class="pill"><i></i>GERAÇÃO 11/09 · trava livre</span>
+      <h1>MEGABRAIN</h1>
+      <p class="sub">v7.14 · relatório vivo · cotas lidas <b>hoje 21:37</b> · tudo local</p>
+      <p class="frescor">frescor confere (sha256) · este template é o retrato da geração de 11/09</p>
+    </div>
+  </header>
+
+  <!-- ═══ SETOR · ORQUESTRAÇÕES (protagonista) ═══ -->
+  <section class="setor" style="--c:var(--roxo)" id="orquestracoes">
+    <header>
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><path d="M9 6h6a3 3 0 0 1 3 3v6M15 18H9a3 3 0 0 1-3-3V9"/></svg></span>
+      <div><h2>ORQUESTRAÇÕES</h2><p class="desc">o motor V6 trabalhando — gates, runs, cotas e quem faz o quê · clique em tudo</p></div>
+    </header>
+    <div class="corpo">
+
+      <!-- pipeline V6 -->
+      <div class="gates" data-slot="orc-gates" role="list" aria-label="gates da V6">
+        <div class="gate gate--ok" role="button" tabindex="0" data-diz="Gate 0 · Assumir: preflight, pull, leitura de ESTADO→HANDOFF→DECISOES e checagem de trava. Estado: OK na última run."><b>0</b><span>Assumir</span></div>
+        <div class="gate gate--ok" role="button" tabindex="0" data-diz="Gate 1 · Enquadrar: artefato, leitor, 3 critérios de aceite e contraexemplo. Estado: OK."><b>1</b><span>Enquadrar</span></div>
+        <div class="gate gate--ok" role="button" tabindex="0" data-diz="Gate 2 · Orçar contexto: ler sob demanda, delegar barulho. Estado: OK."><b>2</b><span>Orçar</span></div>
+        <div class="gate gate--ok" role="button" tabindex="0" data-diz="Gate 3 · Gerar: estrutura antes de prosa. Estado: OK."><b>3</b><span>Gerar</span></div>
+        <div class="gate gate--ativo" role="button" tabindex="0" data-diz="Gate 4 · Auditar: anti-slop + 1 rodada de reparo — é AQUI que a última run formal parou (needs_attention)."><b>4</b><span>Auditar</span></div>
+        <div class="gate gate--espera" role="button" tabindex="0" data-diz="Gate 5 · Verificar: abre? caminho existe? número confere? Estado: esperando a run completa."><b>5</b><span>Verificar</span></div>
+        <div class="gate gate--espera" role="button" tabindex="0" data-diz="Gate 6 · Passar bastão: ESTADO, HANDOFF, DECISOES, commit, relatório. Esperando."><b>6</b><span>Bastão</span></div>
+        <div class="gate gate--espera" role="button" tabindex="0" data-diz="Gate 7 · Registrar: lição → índice → injeção automática. Esperando."><b>7</b><span>Registrar</span></div>
+      </div>
+
+      <div class="orc-grid">
+        <!-- runs -->
+        <div class="runs" data-slot="orc-runs">
+          <div class="run run--ok" role="button" tabindex="0" data-diz="Pets dev.5 'Marcelinho Jarvis' — a run V6 mais recente que chegou ao fim: plano reprovado na 1ª tentativa por contrato, corrigido, review_approved na 2ª. 88 testes, build 0/0, instalada com SHA conferido.">
+            <span class="st">✅</span><span><b>Pets dev.5 · Marcelinho Jarvis</b><small>13/09 · V6 review_approved</small></span><span class="q">APROVADA</span></div>
+          <div class="run run--warn" role="button" tabindex="0" data-diz="ZAI-GLM V6 (260912) — parou em needs_attention: timeout de 240s no primeiro Opus low, antes da revisão de plano. Nenhuma revisão formal ocorreu; plano humano em 00_PARA-VOCE/260912_zai-glm/.">
+            <span class="st">⚠️</span><span><b>ZAI-GLM implantação</b><small>12/09 · needs_attention</small></span><span class="q">ATENÇÃO</span></div>
+          <div class="run run--ok" role="button" tabindex="0" data-diz="Probe de rota (260910) — validou Claude → Spark → Claude de ponta a ponta; Spark com cota própria saudável. Estado: verified.">
+            <span class="st">✅</span><span><b>Probe Claude→Spark</b><small>10/09 · verified</small></span><span class="q">VERIFICADA</span></div>
+        </div>
+        <!-- cotas ao vivo -->
+        <div class="cotas" data-slot="orc-cotas">
+          <div class="cota cota--warn" role="button" tabindex="0" data-diz="Claude: rate_limited na última leitura — o motor recua sozinho pra não queimar a janela (429 vira pausa, não erro). Ritmo: desacelerar.">
+            <span class="dot"></span><span><b>claude</b><small>rate_limited · recuo automático</small></span><span class="ritmo">desacelerar</span></div>
+          <div class="cota cota--warn" role="button" tabindex="0" data-diz="Codex/Sol: janela de 7d em uso alto na última leitura — ritmo desacelerar; o motor reduz esforço antes de travar.">
+            <span class="dot"></span><span><b>codex · sol</b><small>janela 7d · uso alto</small></span><span class="ritmo">desacelerar</span></div>
+          <div class="cota cota--ok" role="button" tabindex="0" data-diz="Spark: cota própria saudável — é o worker leve preferencial (probe/checklist) quando o resto recua.">
+            <span class="dot"></span><span><b>spark</b><small>cota própria · folga</small></span><span class="ritmo">ok</span></div>
+          <div class="cota cota--ok" role="button" tabindex="0" data-diz="Z.ai/GLM: sessão 1,6% · semana 0,5% (plano pro) — leitura ok no widget.">
+            <span class="dot"></span><span><b>z.ai · glm</b><small>sessão 1,6% · semana 0,5%</small></span><span class="ritmo">ok</span></div>
+        </div>
+      </div>
+
+      <!-- papéis por modelo -->
+      <div class="papeis">
+        <span class="papel" role="button" tabindex="0" data-diz="Decisão 260910f: Astra high PRODUZ o trabalho (melhor custo×qualidade medido na pesquisa de esforço)."><b>produz</b> astra high</span>
+        <span class="papel" role="button" tabindex="0" data-diz="Opus medium revisa o PLANO antes de executar — barrar cedo é mais barato que reparar tarde."><b>plano</b> opus medium</span>
+        <span class="papel" role="button" tabindex="0" data-diz="Opus high faz a revisão FINAL — o gate forte do fim."><b>final</b> opus high</span>
+        <span class="papel" role="button" tabindex="0" data-diz="Spark leva probe e checklist quando a cota própria está ok — tarefa leve não gasta modelo caro."><b>leve</b> spark</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ SETOR · PRA VOCÊ ═══ -->
+  <section class="setor" style="--c:var(--coral)" id="pra-voce" data-slot="acoes-voce">
+    <header>
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11.5V5a1.5 1.5 0 0 1 3 0v6"/><path d="M12 11V4a1.5 1.5 0 0 1 3 0v7"/><path d="M15 11.5V6a1.5 1.5 0 0 1 3 0v8c0 4-2.5 7-6.5 7S5 18 5 14v-3a1.5 1.5 0 0 1 3 0"/></svg></span>
+      <div><h2>PRA VOCÊ AGORA</h2><p class="desc">o que depende de você — 3 coisas</p></div>
+    </header>
+    <div class="corpo acoes-voce">
+      <div class="acao"><span class="n">PASSO 1</span>
+        <h3>Rodar o preflight</h3>
+        <p>Confere runtimes e cópias com hash igual à fonte antes do dia começar.</p>
+        <div class="rodape-btn">
+          <button type="button" class="btn" data-copia="python bin\mb-preflight.py" data-diz="Comando do preflight copiado — cola no terminal da central.">copiar comando</button>
+        </div></div>
+      <div class="acao"><span class="n">PASSO 2</span>
+        <h3>Falta só o push público</h3>
+        <p>O <code>.cmd</code> de publicação foi barrado pelo classificador — passo seu.</p>
+        <div class="rodape-btn">
+          <button type="button" class="btn" data-copia="01_acoes\11_enviar-pro-github.cmd" data-diz="Ação 11 copiada — rode na pasta da central.">copiar ação 11</button>
+          <a class="btn btn--sec" href="file:///S:/projetos%20multi%20i.a/MEGA%20B%20R%20A%20I%20%20N/01_acoes/" target="_blank" rel="noopener" data-diz="Abrindo a pasta 01_acoes numa aba nova…">abrir pasta</a>
+        </div></div>
+      <div class="acao"><span class="n">PASSO 3</span>
+        <h3>Decidir o nome</h3>
+        <p><code>/orquestracao1</code> ainda é numeração de rascunho — e você digita isso todo dia.</p>
+        <div class="rodape-btn">
+          <button type="button" class="btn" data-diz="No relatório oficial este botão abre a seção de nomes do HANDOFF — por ora a discussão está em memoria/estado/HANDOFF.md, seção PARA VOCÊ.">onde decido?</button>
+        </div></div>
+    </div>
+  </section>
+
+  <!-- ═══ SETOR · SAÚDE (telemetria geral rebaixada a details) ═══ -->
+  <section class="setor" style="--c:var(--verde)" id="saude" data-slot="saude-chips">
+    <header>
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12l-8 8-4-4-6 6"/><path d="M3 14v5a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-8"/></svg></span>
+      <div><h2>SAÚDE DA CENTRAL</h2><p class="desc">4 medidores · clique ou Enter pro detalhe</p></div>
+    </header>
+    <div class="corpo">
+      <div class="saude">
+        <div class="s-chip ok" role="button" tabindex="0" data-diz="98 testes verdes na geração atual: 66 de apps/automations, 19 dos builders e 13 do export público."><span class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg></span><div><b>98 testes</b><span>automations+builders+export</span></div></div>
+        <div class="s-chip ok" role="button" tabindex="0" data-diz="Preflight PODE COMEÇAR: 5 runtimes e 6 cópias instaladas com hash igual à fonte (conferência de 11/09)."><span class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 17l6-6-6-6M12 19h8"/></svg></span><div><b>Preflight</b><span>PODE COMEÇAR · 5 runtimes ok</span></div></div>
+        <div class="s-chip info" role="button" tabindex="0" data-diz="Widget de cotas: 198 testes verdes e provedor z.ai lendo ok. Atalho 'Cotas IA' na Área de Trabalho."><span class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></span><div><b>Widget cotas</b><span>198 testes · z.ai ok</span></div></div>
+        <div class="s-chip info" role="button" tabindex="0" data-diz="275 lições no canônico memoria/nucleo/licoes-megabrain.md — o hook lê este arquivo no início de cada sessão."><span class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 6.5c-1.5-2-5-2-6.5.5-1.4 2.3.5 5 2 6.5L12 18l4.5-4.5c1.5-1.5 3.4-4.2 2-6.5-1.5-2.5-5-2.5-6.5-.5z"/></svg></span><div><b>275 lições</b><span>canônico íntegro</span></div></div>
+      </div>
+      <details class="variancia" id="det-telemetria">
+        <summary>telemetria geral · 2789 eventos em 23 dias</summary>
+        <div class="figs" data-slot="telemetria-geral" style="margin-top:.7rem">
+          <figure class="fig">
+            <figcaption><b>fig. 1 — quem trabalhou</b></figcaption>
+            <div class="share" style="margin-top:.5rem">
+              <i style="width:96%;background:var(--azul)">96%</i>
+              <i style="width:3%;background:var(--verde)"></i>
+              <i style="width:1%;background:var(--amarelo)"></i>
+            </div>
+            <div class="legenda">
+              <span><i class="pt" style="background:var(--azul)"></i><b>claude</b> 2683</span>
+              <span><i class="pt" style="background:var(--verde)"></i><b>kimi</b> 91</span>
+              <span><i class="pt" style="background:var(--amarelo)"></i><b>outros</b> 15</span>
+            </div>
+            <p class="cap">2789 eventos · .mb-log/*.jsonl · janela 90 dias</p>
+          </figure>
+          <figure class="fig">
+            <figcaption><b>fig. 2 — o que a central fez</b></figcaption>
+            <div class="spark">
+              <div class="col" title="arquivo: 875"><span class="v">875</span><i class="bar" style="--h:100;background:var(--azul)"></i><span class="r">arquivo</span></div>
+              <div class="col" title="contexto: 840"><span class="v">840</span><i class="bar" style="--h:96;background:var(--azul)"></i><span class="r">contexto</span></div>
+              <div class="col" title="prompt: 571"><span class="v">571</span><i class="bar" style="--h:65;background:var(--azul)"></i><span class="r">prompt</span></div>
+              <div class="col" title="stop: 315"><span class="v">315</span><i class="bar" style="--h:36;background:var(--roxo)"></i><span class="r">stop</span></div>
+              <div class="col" title="sessão: 173"><span class="v">173</span><i class="bar" style="--h:20;background:var(--roxo)"></i><span class="r">sessão</span></div>
+              <div class="col" title="slop: 9"><span class="v">9</span><i class="bar" style="--h:2;background:var(--amarelo)"></i><span class="r">slop</span></div>
+            </div>
+            <p class="cap">eventos por tipo · barra maior = mais uso</p>
+          </figure>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ═══ SETOR · 31 MEGABRAINS ═══ -->
+  <section class="setor" style="--c:var(--amarelo)" id="projetos" data-slot="anel-projetos">
+    <header>
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg></span>
+      <div><h2>OS 31 MEGABRAINS</h2><p class="desc">cópia por projeto — só 1 em dia, e isso é a informação</p></div>
+    </header>
+    <div class="corpo">
+      <div class="resumo-1linha">
+        <span class="anelzinho" role="button" tabindex="0" data-diz="1 de 31 cópias em dia (pets, v7.14). As outras 30 estão em v7.10–v7.11 — a ação 5 resolve todas.">
+          <svg width="78" height="78" viewBox="0 0 86 86" aria-hidden="true"><circle cx="43" cy="43" r="35" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="9"/><circle cx="43" cy="43" r="35" fill="none" stroke="#FFC800" stroke-width="9" stroke-linecap="round" stroke-dasharray="219.9" stroke-dashoffset="212.8"/></svg>
+          <span class="t">1/31</span>
+        </span>
+        <p style="margin:0;color:var(--corpo);font-size:.85rem;max-width:34ch"><b style="color:var(--tinta)">30 desatualizados.</b> Um comando resolve todos: <b style="color:var(--amarelo)">ação 5</b>.</p>
+        <div class="rodape-btn">
+          <button type="button" class="btn" data-copia="01_acoes\05_sincronizar-projetos.cmd" data-diz="Ação 5 copiada — cole no terminal da central pra sincronizar as 30 cópias.">copiar ação 5</button>
+          <a class="btn btn--sec" href="file:///S:/projetos%20multi%20i.a/MEGA%20B%20R%20A%20I%20%20N/01_acoes/" target="_blank" rel="noopener" data-diz="Abrindo a pasta 01_acoes numa aba nova…">abrir pasta</a>
+        </div>
+      </div>
+      <details class="variancia" id="det-projetos">
+        <summary>ver os 31 projetos (30 atrasados · 1 em dia)</summary>
+        <div class="tabela-wrap" data-slot="tabela-projetos">
+          <table><thead><tr><th>projeto</th><th>versão</th><th>estado</th><th>lições</th></tr></thead>
+          <tbody>
+            <tr><td><b>pets</b></td><td>v7.14</td><td style="color:var(--verde)">✓ em dia</td><td>288</td></tr>
+            <tr><td>Automations</td><td>v7.11</td><td style="color:var(--coral)">✕ desatualizada</td><td>276</td></tr>
+            <tr><td>Barato</td><td>v7.10</td><td style="color:var(--coral)">✕ desatualizada</td><td>263</td></tr>
+            <tr><td>Blender</td><td>v7.10</td><td style="color:var(--coral)">✕ desatualizada</td><td>263</td></tr>
+            <tr><td>Caçatrampo</td><td>v7.10</td><td style="color:var(--coral)">✕ desatualizada</td><td>263</td></tr>
+            <tr><td>Curriculo</td><td>v7.10</td><td style="color:var(--coral)">✕ desatualizada</td><td>263</td></tr>
+            <tr><td>Design Diamond</td><td>v7.10</td><td style="color:var(--coral)">✕ desatualizada</td><td>263</td></tr>
+            <tr><td>Diretoria</td><td>v7.10</td><td style="color:var(--coral)">✕ desatualizada</td><td>263</td></tr>
+            <tr><td>Estagi_a_rio</td><td>v7.10</td><td style="color:var(--coral)">✕ desatualizada</td><td>266</td></tr>
+            <tr><td>Figma</td><td>v7.10</td><td style="color:var(--coral)">✕ desatualizada</td><td>263</td></tr>
+            <tr><td>Financeiro da Silva</td><td>v7.10</td><td style="color:var(--coral)">✕ desatualizada</td><td>271</td></tr>
+            <tr><td>flux</td><td>v7.10</td><td style="color:var(--coral)">✕ desatualizada</td><td>263</td></tr>
+            <tr><td>flux-agent</td><td>v7.10</td><td style="color:var(--coral)">✕ desatualizada</td><td>263</td></tr>
+            <tr><td>flux-core</td><td>v7.10</td><td style="color:var(--coral)">✕ desatualizada</td><td>263</td></tr>
+            <tr><td>fluxkit</td><td>v7.10</td><td style="color:var(--coral)">✕ desatualizada</td><td>263</td></tr>
+            <tr><td>JanjaCast</td><td>v7.10</td><td style="color:var(--coral)">✕ desatualizada</td><td>263</td></tr>
+            <tr><td>Jarvis</td><td>v7.10</td><td style="color:var(--coral)">✕ desatualizada</td><td>263</td></tr>
+            <tr><td>Linkedolas</td><td>v7.10</td><td style="color:var(--coral)">✕ desatualizada</td><td>263</td></tr>
+            <tr><td>Marketeiro</td><td>v7.10</td><td style="color:var(--coral)">✕ desatualizada</td><td>263</td></tr>
+            <tr><td>mimde</td><td>v7.10</td><td style="color:var(--coral)">✕ desatualizada</td><td>263</td></tr>
+            <tr><td>Modelos locais</td><td>v7.10</td><td style="color:var(--coral)">✕ desatualizada</td><td>263</td></tr>
+            <tr><td>multi-ai-core</td><td>v7.10</td><td style="color:var(--coral)">✕ desatualizada</td><td>263</td></tr>
+            <tr><td>Pobrema no Pc</td><td>v7.10</td><td style="color:var(--coral)">✕ desatualizada</td><td>263</td></tr>
+            <tr><td>Portfolio</td><td>v7.10</td><td style="color:var(--coral)">✕ desatualizada</td><td>263</td></tr>
+            <tr><td>Rato de Olho</td><td>v7.10</td><td style="color:var(--coral)">✕ desatualizada</td><td>263</td></tr>
+            <tr><td>Rodada</td><td>v7.10</td><td style="color:var(--coral)">✕ desatualizada</td><td>263</td></tr>
+            <tr><td>Stremio</td><td>v7.10</td><td style="color:var(--coral)">✕ desatualizada</td><td>263</td></tr>
+            <tr><td>The Last of Us — Part II</td><td>v7.5</td><td style="color:var(--coral)">✕ desatualizada</td><td>0</td></tr>
+            <tr><td>The Last of Us — Part II</td><td>v7.10</td><td style="color:var(--coral)">✕ desatualizada</td><td>263</td></tr>
+            <tr><td>Traycer a.i</td><td>v7.10</td><td style="color:var(--coral)">✕ desatualizada</td><td>263</td></tr>
+            <tr><td>Ótica Hanada</td><td>v7.10</td><td style="color:var(--coral)">✕ desatualizada</td><td>263</td></tr>
+          </tbody></table>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ═══ PANES — ações/skills/cérebro/documentos NO MESMO DESIGN ═══ -->
+  <nav class="panes-nav" aria-label="mais conteúdo">
+    <button type="button" class="pn" data-pane="pane-acoes" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M13 2 3 14h7l-1 8 10-12h-7z"/></svg>ações</button>
+    <button type="button" class="pn" data-pane="pane-skills" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 2l2 4 4 .6-3 3 .7 4.4L12 12l-3.7 2 .7-4.4-3-3L10 6z"/></svg>skills</button>
+    <button type="button" class="pn" data-pane="pane-cerebro" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><circle cx="5" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M6.5 6.5 10 10m4 0 3.5-3.5M6.5 17.5 10 14m4 0 3.5 3.5"/></svg>cérebro</button>
+    <button type="button" class="pn" data-pane="pane-docs" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 19V5a2 2 0 0 1 2-2h13v18H6a2 2 0 0 1-2-2zM19 7H7"/></svg>documentos</button>
+  </nav>
+
+  <section class="setor pane-pop" id="pane-acoes" data-slot="pane-acoes" hidden style="--c:var(--roxo)">
+    <div class="corpo lista-acoes">
+      <div class="it" role="button" tabindex="0" data-copia="01_acoes\01_ABRIR-RELATORIO.cmd" data-diz="Ação 1 copiada — regenera e abre este painel."><span class="num">1</span><span><b>abrir relatório</b><small>regenera e abre o painel</small></span><span class="go">copiar ▸</span></div>
+      <div class="it" role="button" tabindex="0" data-copia="01_acoes\02_compreender-padroes.cmd" data-diz="Ação 2 copiada — cruza pendências, cérebro e telemetria e acha o que se repete."><span class="num">2</span><span><b>compreender padrões</b><small>o que já se repete e não virou modelo</small></span><span class="go">copiar ▸</span></div>
+      <div class="it" role="button" tabindex="0" data-copia="01_acoes\03_abrir-cerebro-obsidian.cmd" data-diz="Ação 3 copiada — abre memoria/cerebro no Obsidian com o grafo de wikilinks."><span class="num">3</span><span><b>cérebro no Obsidian</b><small>grafo de wikilinks montado</small></span><span class="go">copiar ▸</span></div>
+      <div class="it" role="button" tabindex="0" data-copia="01_acoes\04_novo-projeto.cmd" data-diz="Ação 4 copiada — cria projeto novo já com cópia do megabrain dentro."><span class="num">4</span><span><b>novo projeto</b><small>nasce com cópia do megabrain</small></span><span class="go">copiar ▸</span></div>
+      <div class="it" role="button" tabindex="0" data-copia="01_acoes\05_sincronizar-projetos.cmd" data-diz="Ação 5 copiada — leva lições, VERSAO e skills às 31 cópias. É a que resolve os 30 atrasados."><span class="num">5</span><span><b>sincronizar projetos</b><small>leva a central às 31 cópias</small></span><span class="go">copiar ▸</span></div>
+      <div class="it" role="button" tabindex="0" data-copia="01_acoes\06_sincronizar-identidade.cmd" data-diz="Ação 6 copiada — leva seu perfil e contrato de resposta aos 6 agentes."><span class="num">6</span><span><b>sincronizar identidade</b><small>perfil + contrato nos 6 agentes</small></span><span class="go">copiar ▸</span></div>
+      <div class="it" role="button" tabindex="0" data-copia="01_acoes\07_instalar-identidade.cmd" data-diz="Ação 7 copiada — primeira instalação do perfil numa máquina nova."><span class="num">7</span><span><b>instalar identidade</b><small>máquina nova</small></span><span class="go">copiar ▸</span></div>
+      <div class="it" role="button" tabindex="0" data-copia="01_acoes\08_refresh-plugin-kimi.cmd" data-diz="Ação 8 copiada — atualiza o plugin do Kimi com backup e hash do hook."><span class="num">8</span><span><b>refresh plugin Kimi</b><small>backup + hash do hook</small></span><span class="go">copiar ▸</span></div>
+      <div class="it" role="button" tabindex="0" data-copia="01_acoes\09_abrir-kimi-visual.cmd" data-diz="Ação 9 copiada — abre o Kimi apontado pra pasta visual."><span class="num">9</span><span><b>Kimi visual</b><small>abre na pasta visual</small></span><span class="go">copiar ▸</span></div>
+      <div class="it" role="button" tabindex="0" data-copia="01_acoes\10_publicar-e-fotografar.cmd" data-diz="Ação 10 copiada — gera pacote público sanitizado e espelha no clone local."><span class="num">10</span><span><b>publicar e fotografar</b><small>pacote sanitizado + clone local</small></span><span class="go">copiar ▸</span></div>
+      <div class="it" role="button" tabindex="0" data-copia="01_acoes\11_enviar-pro-github.cmd" data-diz="Ação 11 copiada — sobe o pacote público, pedindo confirmação."><span class="num">11</span><span><b>enviar pro GitHub</b><small>sobe o pacote · pede confirmação</small></span><span class="go">copiar ▸</span></div>
+      <div class="it" role="button" tabindex="0" data-copia="01_acoes\12_INICIAR-SESSAO-ORQUESTRADA.cmd" data-diz="Ação 12 copiada — abre a sessão orquestrada com o catálogo canônico. Porta de entrada da V6."><span class="num">12</span><span><b>iniciar sessão orquestrada</b><small>porta de entrada da V6</small></span><span class="go">copiar ▸</span></div>
+    </div>
+  </section>
+
+  <section class="setor pane-pop" id="pane-skills" data-slot="pane-skills" hidden style="--c:var(--azul)">
+    <div class="corpo skills-grid">
+      <div class="sk" role="button" tabindex="0" data-diz="/megabrain — o protocolo: gates 0–7 de entrega anti-slop, Duplo Diamante, roteamento e regras de ouro."><b>/megabrain</b><small>o protocolo: gates 0–7, Duplo Diamante, roteamento</small><span class="go">▸</span></div>
+      <div class="sk" role="button" tabindex="0" data-diz="/grelhar — entrevista em rodadas que esvazia o briefing antes de produzir."><b>/grelhar</b><small>entrevista que esvazia o briefing</small><span class="go">▸</span></div>
+      <div class="sk" role="button" tabindex="0" data-diz="/ingerir — pega fonte bruta (artigo, PDF, transcrição) e destila em wiki + card de pessoa."><b>/ingerir</b><small>fonte bruta → wiki + card</small><span class="go">▸</span></div>
+      <div class="sk" role="button" tabindex="0" data-diz="/traycer — o Traycer rodando sob os gates: o que faz, o que volta pra ESTADO/HANDOFF/DECISOES."><b>/traycer</b><small>Traycer sob os gates</small><span class="go">▸</span></div>
+      <div class="sk" role="button" tabindex="0" data-diz="/conclusao-megabrain — ponteiro pro Gate 6: fecha ESTADO/HANDOFF/DECISOES e esgota a autônoma antes de te chamar."><b>/conclusao-megabrain</b><small>ponteiro pro Gate 6</small><span class="go">▸</span></div>
+      <div class="sk" role="button" tabindex="0" data-diz="/leigolanguage — explica decisão técnica pra você decidir: o que é no seu mundo, como está, o que muda."><b>/leigolanguage</b><small>técnico traduzido pra decisão</small><span class="go">▸</span></div>
+      <div class="sk" role="button" tabindex="0" data-diz="/registrar-licao — grava lição no formato GATILHO / LIÇÃO / ATALHO."><b>/registrar-licao</b><small>GATILHO / LIÇÃO / ATALHO</small><span class="go">▸</span></div>
+      <div class="sk" role="button" tabindex="0" data-diz="/portfolio — router do portfólio (WordPress + Kadence + Figma): mede estado real e encaminha."><b>/portfolio</b><small>router do portfólio WP+Figma</small><span class="go">▸</span></div>
+      <div class="sk" role="button" tabindex="0" data-diz="/conferir-case — confere página de projeto contra o briefing, 1:1 com o editor e a identidade."><b>/conferir-case</b><small>página × briefing, 1:1</small><span class="go">▸</span></div>
+      <div class="sk" role="button" tabindex="0" data-diz="/sync-portfoliohs — sincroniza os 4 lados do portfólio: workspace, design, child theme e Figma."><b>/sync-portfoliohs</b><small>4 lados do portfólio em sync</small><span class="go">▸</span></div>
+      <div class="sk" role="button" tabindex="0" data-diz="/research — investiga pergunta contra fonte primária e devolve .md no cérebro."><b>/research</b><small>pergunta → fonte primária → wiki</small><span class="go">▸</span></div>
+      <div class="sk" role="button" tabindex="0" data-diz="/wait-what — detector de 'isso não fez sentido': para e reformula a última mensagem."><b>/wait-what</b><small>para e reformula</small><span class="go">▸</span></div>
+    </div>
+  </section>
+
+  <section class="setor pane-pop" id="pane-cerebro" data-slot="pane-cerebro" hidden style="--c:var(--verde)">
+    <div class="corpo cerebro-3">
+      <div class="cb" role="button" tabindex="0" data-diz="raw/ — as fontes cruas: artigos, PDFs, transcrições e briefings que entraram. Nada morre no chat."><b>📁 raw/</b><small>fontes cruas que entraram</small><a class="btn btn--sec" style="--c:var(--verde)" href="file:///S:/projetos%20multi%20i.a/MEGA%20B%20R%20A%20I%20%20N/memoria/cerebro/raw/" target="_blank" rel="noopener">abrir</a></div>
+      <div class="cb" role="button" tabindex="0" data-diz="wiki/ — um tópico por página, destilado das raws. Ex: o que você quer num relatório visual (260914)."><b>🧠 wiki/</b><small>um tópico por página, destilado</small><a class="btn btn--sec" style="--c:var(--verde)" href="file:///S:/projetos%20multi%20i.a/MEGA%20B%20R%20A%20I%20%20N/memoria/cerebro/wiki/" target="_blank" rel="noopener">abrir</a></div>
+      <div class="cb" role="button" tabindex="0" data-diz="pessoas/ — um card por contato: quem é, como trabalha, histórico."><b>👤 pessoas/</b><small>um card por contato</small><a class="btn btn--sec" style="--c:var(--verde)" href="file:///S:/projetos%20multi%20i.a/MEGA%20B%20R%20A%20I%20%20N/memoria/cerebro/pessoas/" target="_blank" rel="noopener">abrir</a></div>
+    </div>
+  </section>
+
+  <section class="setor pane-pop" id="pane-docs" data-slot="pane-docs" hidden style="--c:var(--amarelo)">
+    <div class="corpo docs-lista">
+      <div class="doc" role="button" tabindex="0" data-diz="ESTADO.md — onde estamos, bloqueios e próximo passo. A primeira leitura de toda sessão."><span class="ic">📍</span><span><b>ESTADO.md</b><small>onde estamos · bloqueio · próximo passo</small></span><span class="go">▸</span></div>
+      <div class="doc" role="button" tabindex="0" data-diz="HANDOFF.md — o bastão entre sessões: feito, provado, pendente, próximo verbo."><span class="ic">🤝</span><span><b>HANDOFF.md</b><small>o bastão entre sessões</small></span><span class="go">▸</span></div>
+      <div class="doc" role="button" tabindex="0" data-diz="DECISOES.md — cada decisão com alternativa descartada e verificação. Fim do arquivo primeiro."><span class="ic">⚖️</span><span><b>DECISOES.md</b><small>decisão + alternativa + verificação</small></span><span class="go">▸</span></div>
+      <div class="doc" role="button" tabindex="0" data-diz="licoes-megabrain.md — 275+ lições em GATILHO/LIÇÃO/ATALHO, lidas pelo hook no início da sessão."><span class="ic">🎓</span><span><b>licoes-megabrain.md</b><small>275 lições · lida pelo hook</small></span><span class="go">▸</span></div>
+      <div class="doc" role="button" tabindex="0" data-diz="RELATORIO.html (oficial) — o relatório vivo completo com histórico e telemetria detalhada."><span class="ic">📊</span><span><b>RELATORIO.html oficial</b><small>histórico + telemetria completa</small></span><a class="go" href="file:///S:/projetos%20multi%20i.a/MEGA%20B%20R%20A%20I%20%20N/00_painel/RELATORIO.html" target="_blank" rel="noopener">abrir ▸</a></div>
+    </div>
+  </section>
+
+  <p class="nota">template POP v1.2 · 260914 · orquestrações em primeiro lugar · dados reais (cotas 14/09 21:37 · geração 11/09) · todo clique responde</p>
+</div>
+
+<div id="toasts" role="status" aria-live="polite"></div>
+<script>
+(function(){
+  var fila = document.getElementById('toasts');
+  function toast(msg, sub, err){
+    var t = document.createElement('div');
+    t.className = 'toast' + (err ? ' err' : '');
+    var ico = document.createElement('span'); ico.className='t-ico'; ico.textContent = err ? '⚠' : '✓';
+    var box = document.createElement('span'); box.textContent = msg;
+    if (sub){ var s = document.createElement('small'); s.textContent = sub; box.appendChild(s); }
+    t.appendChild(ico); t.appendChild(box);
+    fila.appendChild(t);
+    while (fila.children.length > 3) fila.removeChild(fila.firstChild);
+    setTimeout(function(){ t.classList.add('saindo'); setTimeout(function(){ t.remove(); }, 280); }, 3400);
+  }
+  function copia(txt, diz){
+    var origem = document.activeElement;
+    var feito = function(ok){ toast(ok ? (diz || 'Copiado') : 'Não deu pra copiar', ok ? txt : 'copia na mão: ' + txt, !ok); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).then(function(){ feito(true); }, function(){ feito(fallback(txt)); });
+    } else { feito(fallback(txt)); }
+    setTimeout(function(){ if (origem && origem.focus) { try { origem.focus({preventScroll:true}); } catch(e){} } }, 60);
+  }
+  function fallback(txt){
+    var ta = document.createElement('textarea');
+    ta.value = txt; ta.setAttribute('readonly',''); ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    var ok = false; try { ok = document.execCommand('copy'); } catch(e){}
+    ta.remove(); return ok;
+  }
+  /* delegação única: clique */
+  document.addEventListener('click', function(e){
+    var c = e.target.closest('[data-copia]');
+    if (c){ e.preventDefault(); copia(c.getAttribute('data-copia'), c.getAttribute('data-diz')); return; }
+    var d = e.target.closest('[data-diz]');
+    if (d){ toast(d.getAttribute('data-diz')); }
+  });
+  /* delegação única: teclado */
+  document.addEventListener('keydown', function(e){
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    var t = e.target.closest ? e.target.closest('[data-diz],[data-copia]') : null;
+    if (t && t.tagName !== 'A' && t.tagName !== 'BUTTON' && t.tagName !== 'SUMMARY'){
+      e.preventDefault();
+      t.dispatchEvent(new MouseEvent('click', {bubbles:true, cancelable:true}));
+    }
+  });
+  /* panes: um aberto por vez, no MESMO design */
+  var pnBtns = document.querySelectorAll('.pn');
+  pnBtns.forEach(function(b){
+    b.addEventListener('click', function(){
+      var alvo = document.getElementById(b.dataset.pane);
+      var aberto = !alvo.hidden;
+      document.querySelectorAll('.pane-pop').forEach(function(p){ p.hidden = true; });
+      pnBtns.forEach(function(x){ x.setAttribute('aria-pressed','false'); });
+      if (!aberto){
+        alvo.hidden = false;
+        b.setAttribute('aria-pressed','true');
+        alvo.scrollIntoView({block:'nearest', behavior:'smooth'});
+        toast('Seção aberta: ' + b.textContent.trim());
+      } else {
+        toast('Seção fechada: ' + b.textContent.trim());
+      }
+    });
+  });
+  /* mascote */
+  var falas = [
+    'V6 no comando: gates 0–3 verdes, o 4 é onde a última run formal parou.',
+    'Cotas de agora: claude e sol em desacelerar, spark com folga.',
+    'Pets dev.5 foi a última run APROVADA — 88 testes e hash conferido.',
+    'Regra da casa: nenhum clique seu pode nascer mudo.'
+  ];
+  var mi = 0;
+  var m = document.getElementById('mascote');
+  m.addEventListener('click', function(){
+    m.classList.remove('vibra'); void m.offsetWidth; m.classList.add('vibra');
+    toast('🧠 ' + falas[mi % falas.length]); mi++;
+  });
+  /* details: feedback ao abrir */
+  document.getElementById('det-projetos').addEventListener('toggle', function(){ if (this.open) toast('30 de 31 cópias em v7.10/v7.11 — ação 5 resolve.'); });
+  document.getElementById('det-telemetria').addEventListener('toggle', function(){ if (this.open) toast('2789 eventos · tudo local, nada sai do PC.'); });
+})();
+</script>
+</body>
+</html>

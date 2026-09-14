@@ -1,5 +1,5 @@
 from PySide6.QtCore import QPoint, Qt
-from PySide6.QtGui import QColor, QPainter
+from PySide6.QtGui import QColor, QFont, QPainter
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QVBoxLayout, QWidget
 
 from . import theme, ui_motion
@@ -102,6 +102,10 @@ class IdentityDot(QWidget):
 class PercentTrack(QWidget):
     """Barra de percentual com preenchimento animado (overshoot elástico).
 
+    O percentual é desenhado DENTRO da barra, alinhado à esquerda — colado
+    no rótulo da janela, do lado de fora. Valor longe da barra a que pertence
+    obriga o olho a reassociar; junto, lê direto (Gestalt proximidade).
+
     ``_percent`` é o valor lógico final; ``_shown`` é o que está desenhado
     no momento — durante a animação passa do alvo e volta, cartoon style.
     """
@@ -113,12 +117,24 @@ class PercentTrack(QWidget):
         self._color = theme.STATUS_GREY
         self._background = theme.TRACK_BG
         self._anim = None
+        self._text = ""
+        self._text_px = 11
+        self._text_family = theme.FONT_FAMILY
+        self._empty_text_color = QColor(160, 166, 176)
         self.setFixedHeight(3)
         self.setMinimumWidth(40)
+
+    def set_text_style(self, family: str, px: int, empty_color):
+        self._text_family = family or theme.FONT_FAMILY
+        self._text_px = max(8, int(px))
+        self._empty_text_color = QColor(empty_color) if not isinstance(empty_color, QColor) else empty_color
+        self.setFixedHeight(max(12, self._text_px + 5))
+        self.update()
 
     def set_value(self, percent, color: str):
         self._percent = percent
         self._color = color
+        self._text = f"{round(percent)}%" if percent is not None else "—"
         start = self._shown if self._shown is not None else 0
         target = percent if percent is not None else None
         if self._anim is not None:
@@ -146,19 +162,34 @@ class PercentTrack(QWidget):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
         rect = self.rect()
-        radius = rect.height() / 2
+        radius = min(rect.height() / 2, 6)
         painter.setPen(Qt.NoPen)
         painter.setBrush(QColor(*self._background))
         painter.drawRoundedRect(rect, radius, radius)
+        fill_width = 0
         if self._shown is not None:
             fraction = max(0.0, min(1.0, self._shown / 100.0))
-            width = round(rect.width() * fraction)
-            if self._percent and self._percent > 0 and width > 0:
-                width = max(width, rect.height())  # 1 % ainda aparece como um ponto
-            if width > 0:
-                fill_rect = rect.adjusted(0, 0, -(rect.width() - width), 0)
+            fill_width = round(rect.width() * fraction)
+            if self._percent and self._percent > 0 and fill_width > 0:
+                fill_width = max(fill_width, rect.height())  # 1 % ainda aparece como um ponto
+            if fill_width > 0:
+                fill_rect = rect.adjusted(0, 0, -(rect.width() - fill_width), 0)
                 painter.setBrush(QColor(self._color))
                 painter.drawRoundedRect(fill_rect, radius, radius)
+        # Texto do percentual: sempre à esquerda, na mesma posição — não
+        # persegue o fim do preenchimento (posição estável lê melhor).
+        if self._text:
+            font = QFont(self._text_family)
+            font.setPixelSize(self._text_px)
+            font.setBold(True)
+            painter.setFont(font)
+            text_rect = rect.adjusted(self._text_px // 2 + 2, 0, 0, 0)
+            if fill_width >= painter.fontMetrics().horizontalAdvance(self._text) + self._text_px:
+                # O preenchimento claro passa por baixo do texto: escuro.
+                painter.setPen(QColor(26, 29, 34))
+            else:
+                painter.setPen(self._empty_text_color)
+            painter.drawText(text_rect, Qt.AlignVCenter | Qt.AlignLeft, self._text)
         painter.end()
 
 
@@ -209,26 +240,34 @@ class WindowBar(QWidget):
     def __init__(self, window: dict, parent=None):
         super().__init__(parent)
         self._category = theme.window_category(window)
-        row = QHBoxLayout(self)
-        row.setContentsMargins(0, 0, 0, 0)
-        row.setSpacing(7)
         used = window.get("used_percent")
 
         label_text = theme.WINDOW_CATEGORY_LABELS.get(self._category) or friendly_window_label(window.get("label"))
         self._label = QLabel(label_text)
         self._track = PercentTrack(self)
-        self._track.setFixedHeight(5)
-        self._track.setMinimumWidth(30)
+        self._track.setMinimumWidth(40)
+        # Portador oculto do % (alertas/testes leem); o texto visível vive
+        # DENTRO da barra, colado no rótulo — perto do que explica.
         self._pct = QLabel(percent_label(used) if used is not None else "—")
-        self._pct.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        self._pct.hide()
         self._extra = QLabel("")
         self._extra.setWordWrap(False)
         self._track.set_value(used, theme.window_category_color(self._category))
 
-        row.addWidget(self._label)
-        row.addWidget(self._track, 1)
-        row.addWidget(self._pct)
-        row.addWidget(self._extra)
+        # Coluna: rótulo + barra na linha de cima; renovação/ritmo embaixo.
+        # Largura mínima ESTÁVEL (rótulo+barra), o que impede o ciclo em que
+        # barras lado a lado inflariam o sizeHint do card e vice-versa.
+        column = QVBoxLayout(self)
+        column.setContentsMargins(0, 0, 0, 0)
+        column.setSpacing(2)
+        top = QWidget(self)
+        top_row = QHBoxLayout(top)
+        top_row.setContentsMargins(0, 0, 0, 0)
+        top_row.setSpacing(7)
+        top_row.addWidget(self._label)
+        top_row.addWidget(self._track, 1)
+        column.addWidget(top)
+        column.addWidget(self._extra)
         friendly = friendly_window_label(window.get("label"))
         self.setToolTip(friendly if friendly else label_text)
 
@@ -251,6 +290,9 @@ class WindowBar(QWidget):
         self._extra.setStyleSheet(
             f"color:{palette['text_secondary']}; font-family:'{family}'; font-size:{px_detail}px;"
         )
+        # A fonte do % dentro da barra segue a de hint: tamanho controlável
+        # nas Configurações, e a barra cresce junto com a fonte.
+        self._track.set_text_style(family, px_hint, palette["text_secondary"])
         self._track.set_background(palette.get("track_bg", theme.TRACK_BG))
 
 
@@ -290,12 +332,14 @@ class ProviderSegment(QFrame):
         name_layout.setSpacing(7)
         self._dot = IdentityDot(theme.PROVIDER_DOT_COLORS.get(provider_id, "#ffffff"), self._name_wrap)
         self._name = QLabel(label)
+        # Portador oculto do % da pior janela (alertas/testes leem). O número
+        # grande solto saiu da tela: % longe da barra confunde a que ele se
+        # refere — cada % vive dentro da sua barra agora.
         self._value = QLabel("—")
-        self._value.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        self._value.hide()
         name_layout.addWidget(self._dot, 0, Qt.AlignVCenter)
         name_layout.addWidget(self._name)
         name_layout.addStretch(1)
-        name_layout.addWidget(self._value)
         self._name_wrap.setToolTip(label)
 
         self._hint = QLabel("aguardando consulta")
@@ -308,9 +352,12 @@ class ProviderSegment(QFrame):
         self._track.setFixedHeight(3)
         self._track.hide()
 
+        # Barras por janela: EMPILHAM quando o card é estreito e ficam LADO A
+        # LADO quando há largura — a box usa horizontalidade e verticalidade.
         self._bars_wrap = QWidget(self)
         self._bars_layout = QVBoxLayout(self._bars_wrap)
         self._bars_layout.setSpacing(3)
+        self._bars_horizontal = False
 
         self._root.addWidget(self._name_wrap)
         self._root.addWidget(self._hint)
@@ -318,6 +365,42 @@ class ProviderSegment(QFrame):
         self._expanded = False
 
         self._restyle()
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._relayout_bars()
+
+    def _relayout_bars(self):
+        """Alterna as barras entre empilhadas (vertical) e lado a lado.
+
+        Critério: cada barrinha precisa de ~150 px escalados pra ser legível;
+        se todas cabem na largura interna do card, dividem a linha em partes
+        iguais — nada de fonte ou escala mudando sozinho, só organização.
+        """
+        if not self._bars:
+            return
+        available = self.width() - self._px(20)
+        wanted = len(self._bars) * self._px(150) + (len(self._bars) - 1) * self._px(6)
+        horizontal = wanted <= available
+        if horizontal == self._bars_horizontal:
+            return
+        self._bars_horizontal = horizontal
+        old_wrap = self._bars_wrap
+        self._bars_wrap = QWidget(self)
+        layout = QHBoxLayout() if horizontal else QVBoxLayout()
+        layout.setSpacing(self._px(6))
+        if not horizontal:
+            layout.setContentsMargins(self._px(16), self._px(2), 0, 0)
+        self._bars_wrap.setLayout(layout)
+        self._bars_layout = layout
+        for bar in self._bars:
+            bar.setParent(self._bars_wrap)
+            layout.addWidget(bar, 1 if horizontal else 0)
+        self._root.replaceWidget(old_wrap, self._bars_wrap)
+        old_wrap.deleteLater()
+        self._bars_wrap.show()
+        for bar in self._bars:
+            bar.set_expanded(self._expanded)
 
     # ------------------------------------------------------------ aninhamento (Spark no Codex)
 
@@ -397,10 +480,12 @@ class ProviderSegment(QFrame):
         self._track.set_background(self._palette.get("track_bg", theme.TRACK_BG))
         self._track.setFixedHeight(3)
         self._track.setMinimumWidth(40)
-        # Barrinhas alinhadas com o texto do nome (pulando o pontinho),
-        # indent escalado junto com a escala geral.
-        indent = self._px(16)
-        self._bars_layout.setContentsMargins(indent, self._px(2), 0, 0)
+        # Barrinhas alinhadas com o texto do nome (pulando o pontinho) quando
+        # empilhadas; lado a lado, começam na borda pra aproveitar a largura.
+        if self._bars_horizontal:
+            self._bars_layout.setContentsMargins(0, self._px(2), 0, 0)
+        else:
+            self._bars_layout.setContentsMargins(self._px(16), self._px(2), 0, 0)
         for bar in self._bars:
             bar.apply_style(self._palette, self._typo, self._scale)
 
