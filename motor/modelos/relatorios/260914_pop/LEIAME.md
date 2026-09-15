@@ -46,11 +46,24 @@ promessa que a página não cumpre (v1.1: pill diz "GERAÇÃO …" em vez de
 "ATUALIZA 15s" falso; dropdown lista os 31 de verdade; abas usam fragmentos
 `#acoes #skills #cerebro #docs #historico #painel` do relatório oficial).
 
+## Tema claro (opção · 260915)
+
+v1.3: o template carrega os DOIS temas embutidos (escuro = default; claro por
+`html[data-tema="claro"]`). O botão "Tema:" no header alterna sem recarregar e
+salva a escolha (`localStorage['megabrain.pop.tema']`); preferência salva válida
+vence o tema do arquivo; sem JS o botão fica visivelmente desabilitado e o
+relatório segue legível. Paleta clara própria (contraste AA medido, mín. 5.7:1
+nos textos reais) — não é filtro invertido. A fonte das definições nos geradores
+é `bin/mb_pop_tema.py`; este template carrega cópia espelhada (o teste
+`motor/tests/test_mb_relatorio_pop_tema.py` impede divergência).
+
 ## Como testar
 
 Abrir em Chrome e conferir: cada botão copia/abre/avisa; `details` abre;
 mascote fala (clique ou Enter); barra de leitura no topo cresce no scroll;
-`prefers-reduced-motion` desliga animações.
+`prefers-reduced-motion` desliga animações. Tema: botão do header alterna,
+recarregar mantém a escolha; prova funcional completa com
+`node bin/mb-verificar-pop-tema.mjs <html>`.
 
 ## Estado (260914)
 

@@ -39,6 +39,7 @@ import sys
 from pathlib import Path
 
 import mb_utils as u
+import mb_pop_tema
 
 u.utf8_console()
 
@@ -164,156 +165,268 @@ CONEXOES = [
 
 
 def css() -> str:
+    # Marca POP v1.2 (motor/modelos/relatorios/PADRAO.md): fundo escuro com
+    # auroras fixas, glow no topo, vidro raio 10px, paleta Duolingo nos estados
+    # (sempre com glifo além da cor), display pesado no h1, números tabulares.
     return """
     :root {
-      --bg: #0b0f14;
-      --surface: #111820;
-      --panel: #161f2a;
-      --border: #253244;
-      --text: #dbe1e8;
-      --muted: #8b9aae;
-      --accent: #7dd3fc;
-      --accent-2: #c084fc;
-      --ok: #4ade80;
-      --warn: #facc15;
-      --danger: #f87171;
+      --fundo: #0B0B16;
+      --fundo2: #12121F;
+      --vidro: rgba(31,31,48,.58);
+      --vidro-forte: rgba(25,25,39,.82);
+      --linha: rgba(255,255,255,.11);
+      --tinta: #FFFFFF;
+      --corpo: #C9C7E0;
+      --fraco: #9A98B6;
+      --coral: #FF6B6B;   /* signal · #FF4B4B clareado p/ texto no escuro */
+      --verde: #6BDB1A;   /* ok     · #58CC02 */
+      --azul: #3DBDF8;    /* info   · #1CB0F6 */
+      --amarelo: #FFC800; /* warn */
+      --roxo: #CE82FF;
       --radius: 10px;
+      --mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+      --sombra: 0 14px 38px rgba(0,0,0,.45);
     }
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.55;
+      font: 16px/1.55 "Segoe UI", system-ui, sans-serif;
+      font-variant-numeric: tabular-nums;
+      background: var(--fundo);
+      color: var(--corpo);
+      overflow-x: hidden;
     }
-    a { color: var(--accent); text-decoration: none; }
+    body::before {
+      content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+      background:
+        radial-gradient(60rem 30rem at 50% -14%, rgba(124,58,237,.62) 0%, transparent 64%),
+        radial-gradient(36rem 22rem at 86% 8%, rgba(28,176,246,.30) 0%, transparent 62%),
+        radial-gradient(32rem 20rem at 8% 18%, rgba(124,58,237,.30) 0%, transparent 60%),
+        radial-gradient(40rem 26rem at 70% 105%, rgba(28,176,246,.16) 0%, transparent 62%),
+        linear-gradient(180deg, var(--fundo2) 0%, var(--fundo) 45%);
+    }
+    a { color: var(--azul); text-decoration: none; }
     a:hover { text-decoration: underline; }
+    strong, b { color: var(--tinta); }
     header {
-      background: linear-gradient(90deg, rgba(125,211,252,.08), rgba(192,132,252,.08));
-      border-bottom: 1px solid var(--border);
-      padding: 2rem 1.5rem;
+      padding: 3rem 1.5rem 2rem;
       text-align: center;
     }
-    header h1 { margin: 0; font-size: 2.2rem; letter-spacing: -0.02em; }
-    header p { margin: .5rem 0 0; color: var(--muted); }
-    .badge {
-      display: inline-block;
-      padding: .25rem .7rem;
-      border-radius: 999px;
-      font-size: .75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      background: rgba(125,211,252,.12);
-      color: var(--accent);
-      border: 1px solid rgba(125,211,252,.25);
-      margin-top: .8rem;
+    header h1 {
+      margin: 0; font-size: clamp(3rem, 6.5vw, 4.6rem); font-weight: 900;
+      letter-spacing: -.05em; line-height: 1; color: #fff;
+      background: linear-gradient(180deg, #fff 35%, #C4B5FD 90%);
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 8px 34px rgba(124,58,237,.55));
     }
+    header p { margin: .7rem 0 0; color: var(--corpo); font: 500 .9rem var(--mono); }
+    .badge {
+      display: inline-flex; align-items: center; gap: .45rem;
+      padding: .32rem .85rem; margin-top: .9rem;
+      border-radius: 99px; font: 700 .74rem var(--mono); letter-spacing: .06em;
+      text-transform: uppercase;
+      background: rgba(206,130,255,.16); color: var(--roxo);
+      border: 1px solid rgba(206,130,255,.45);
+    }
+    .badge::before { content: "◆"; color: var(--verde); }
     nav {
-      position: sticky;
-      top: 0;
-      background: rgba(11,15,20,.92);
-      backdrop-filter: blur(8px);
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      gap: .5rem;
-      padding: .75rem 1.5rem;
-      flex-wrap: wrap;
-      z-index: 50;
+      position: sticky; top: 0; z-index: 50;
+      display: flex; gap: .5rem; flex-wrap: wrap; justify-content: center;
+      padding: .7rem 1.5rem;
+      background: rgba(11,11,22,.72);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--linha);
     }
     nav button {
-      background: var(--surface);
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: .45rem .9rem;
-      cursor: pointer;
-      font-size: .85rem;
+      font: 700 .85rem "Segoe UI", system-ui, sans-serif;
+      padding: .55rem 1rem; border-radius: var(--radius); cursor: pointer;
+      background: var(--vidro); color: var(--tinta);
+      border: 1px solid var(--linha);
+      transition: transform .12s ease, border-color .12s ease;
     }
-    nav button:hover, nav button.active { border-color: var(--accent); color: var(--accent); }
-    main { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
-    section { display: none; animation: fade .25s ease; }
+    nav button:hover { transform: translateY(-2px); border-color: var(--roxo); }
+    nav button.active {
+      background: color-mix(in oklab, var(--roxo) 22%, var(--vidro-forte));
+      border-color: var(--roxo);
+    }
+    nav button.active::before { content: "▸ "; color: var(--roxo); }
+    main { max-width: 1180px; margin: 0 auto; padding: 1.8rem 1.5rem; }
+    section { display: none; }
     section.active { display: block; }
-    @keyframes fade { from { opacity: 0; transform: translateY(6px);} to { opacity: 1; transform: translateY(0);} }
-    h2 { font-size: 1.35rem; border-bottom: 1px solid var(--border); padding-bottom: .5rem; margin-top: 0; }
-    h3 { color: var(--accent); font-size: 1.05rem; margin-top: 1.5rem; }
-    .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
-    .card {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1rem;
+    /* animação só na troca de aba: a carga inicial já nasce no estado final */
+    section.active.trocou { animation: surge .28s ease both; }
+    @keyframes surge { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    h2 {
+      margin-top: 0; padding-bottom: .55rem;
+      color: var(--tinta); font-size: 1.6rem; font-weight: 800; letter-spacing: -.02em;
+      border-bottom: 1px solid var(--linha);
     }
-    .card h4 { margin: 0 0 .4rem; color: var(--accent-2); }
-    .card p { margin: 0; color: var(--muted); font-size: .92rem; }
+    h3 { color: var(--azul); font-size: 1.08rem; font-weight: 800; margin-top: 1.6rem; }
+    .hint { color: var(--fraco); }
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+    .card, .detail-panel, details, .ai-box {
+      background: var(--vidro);
+      backdrop-filter: blur(16px) saturate(140%); -webkit-backdrop-filter: blur(16px) saturate(140%);
+      border: 1px solid var(--linha);
+      border-radius: var(--radius);
+      box-shadow: var(--sombra);
+    }
+    .card { padding: 1rem 1.05rem; border-top: 3px solid var(--roxo); }
+    .card h4 { margin: 0 0 .4rem; color: var(--tinta); font-size: 1rem; }
+    .card h4::before { content: "■ "; color: var(--roxo); font-size: .8em; }
+    .card p { margin: 0; color: var(--corpo); font-size: .92rem; }
 
     /* Árvore de desenvolvimento */
-    .tree-wrap { position: relative; overflow-x: auto; padding: 1rem 0; }
-    .tree {
-      position: relative;
-      width: 1080px;
-      height: 620px;
-      margin: 0 auto;
-      user-select: none;
+    .leg { font-weight: 700; white-space: nowrap; }
+    .leg-gate { color: var(--azul); }
+    .leg-ferramenta { color: var(--verde); }
+    .leg-metodo { color: var(--coral); }
+    .tree-wrap {
+      position: relative; overflow-x: auto; padding: 1rem 0;
+      background: rgba(11,11,22,.35); border: 1px solid var(--linha); border-radius: var(--radius);
     }
-    .tree svg {
-      position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none;
-    }
-    .tree svg line {
-      stroke: #334155; stroke-width: 2; stroke-linecap: round;
-    }
+    .tree { position: relative; width: 1110px; height: 600px; margin: 0 auto; user-select: none; }
+    .tree svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+    .tree svg line { stroke: rgba(206,130,255,.38); stroke-width: 2; stroke-linecap: round; }
     .node {
-      position: absolute;
-      transform: translate(-50%, -50%);
-      padding: .55rem .9rem;
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--text);
-      font-size: .82rem;
-      font-weight: 600;
-      cursor: pointer;
-      white-space: nowrap;
-      box-shadow: 0 4px 12px rgba(0,0,0,.25);
-      transition: transform .15s, box-shadow .15s, border-color .15s;
-      z-index: 10;
+      position: absolute; transform: translate(-50%, -50%); z-index: 10;
+      padding: .55rem .9rem; border-radius: var(--radius);
+      border: 2px solid var(--c, var(--linha));
+      background: color-mix(in oklab, var(--c, #fff) 14%, var(--vidro-forte));
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      color: var(--c, var(--tinta));
+      font-size: .82rem; font-weight: 700; white-space: nowrap; cursor: pointer;
+      box-shadow: 0 4px 0 color-mix(in oklab, var(--c, #fff) 38%, #000), 0 10px 24px rgba(0,0,0,.4);
+      transition: transform .12s ease, box-shadow .12s ease;
     }
-    .node:hover { transform: translate(-50%, -52%); box-shadow: 0 8px 22px rgba(0,0,0,.35); }
-    .node.raiz { background: linear-gradient(135deg, rgba(125,211,252,.18), rgba(192,132,252,.18)); border-color: var(--accent); color: #fff; font-size: 1rem; }
-    .node.gate { border-color: rgba(125,211,252,.45); color: var(--accent); }
-    .node.ferramenta { border-color: rgba(74,222,128,.45); color: var(--ok); }
-    .node.metodo { border-color: rgba(192,132,252,.45); color: var(--accent-2); }
-    .node.selected { box-shadow: 0 0 0 2px var(--warn); border-color: var(--warn); }
+    .node::before { margin-right: .4rem; }
+    .node:hover { transform: translate(-50%, -54%); }
+    .node:active { transform: translate(-50%, -46%); box-shadow: 0 1px 0 color-mix(in oklab, var(--c, #fff) 38%, #000); }
+    .node:focus-visible { outline: 3px solid var(--roxo); outline-offset: 3px; }
+    .node.raiz {
+      --c: var(--roxo); color: #fff; font-size: 1.05rem; font-weight: 900; letter-spacing: -.01em;
+      padding: .7rem 1.2rem;
+      background: linear-gradient(135deg, rgba(124,58,237,.75), rgba(28,176,246,.45));
+      box-shadow: 0 4px 0 #4C1D95, 0 0 34px rgba(124,58,237,.6);
+    }
+    .node.raiz::before { content: "✦"; color: var(--amarelo); }
+    .node.gate { --c: var(--azul); }
+    .node.gate::before { content: "◆"; }
+    .node.ferramenta { --c: var(--verde); }
+    .node.ferramenta::before { content: "■"; }
+    .node.metodo { --c: var(--coral); }
+    .node.metodo::before { content: "●"; }
+    .node.selected {
+      border-color: var(--amarelo);
+      box-shadow: 0 4px 0 #8A6D00, 0 0 0 3px rgba(255,200,0,.35), 0 0 26px rgba(255,200,0,.35);
+    }
+    .node.selected::after {
+      content: "★"; position: absolute; top: -.7rem; right: -.55rem;
+      width: 1.25rem; height: 1.25rem; border-radius: 50%; display: grid; place-items: center;
+      background: var(--amarelo); color: #0B0B16; font-size: .72rem;
+    }
 
-    .detail-panel {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.25rem;
-      margin-top: 1.5rem;
-      min-height: 120px;
-    }
-    .detail-panel h3 { margin: 0 0 .5rem; color: var(--accent); }
+    .detail-panel { padding: 1.25rem 1.35rem; margin-top: 1.5rem; min-height: 120px; border-left: 4px solid var(--amarelo); }
+    .detail-panel h3 { margin: 0 0 .5rem; color: var(--tinta); }
+    .detail-panel h3::before { content: "★ "; color: var(--amarelo); }
     .detail-panel p { margin: .4rem 0; }
-    .detail-panel .hint { color: var(--muted); font-size: .9rem; }
+    .detail-panel .hint { font-size: .9rem; }
 
-    details { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); margin: 1rem 0; }
-    summary { padding: .9rem 1.1rem; cursor: pointer; font-weight: 600; }
+    details { margin: 1rem 0; }
+    summary { padding: .9rem 1.1rem; cursor: pointer; font-weight: 700; color: var(--azul); list-style: none; }
+    summary::-webkit-details-marker { display: none; }
+    summary::before { content: "▸ "; }
+    details[open] summary::before { content: "▾ "; }
+    summary:focus-visible { outline: 3px solid var(--roxo); outline-offset: 2px; border-radius: var(--radius); }
     details > div { padding: 0 1.1rem 1rem; }
-    code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .9em; }
-    pre { background: var(--bg); padding: .75rem; border-radius: 6px; overflow-x: auto; }
-    .ai-box { background: rgba(125,211,252,.08); border-left: 4px solid var(--accent); padding: 1rem 1.25rem; border-radius: 0 var(--radius) var(--radius) 0; }
-    footer { text-align: center; color: var(--muted); font-size: .85rem; padding: 2rem 1rem; border-top: 1px solid var(--border); margin-top: 2rem; }
+    code, pre { font-family: var(--mono); font-size: .9em; }
+    code { color: #E4D4FF; }
+    pre {
+      position: relative; margin: .6rem 0;
+      background: rgba(11,11,22,.78); border: 1px solid var(--linha);
+      padding: .8rem .9rem; border-radius: var(--radius); overflow-x: auto;
+    }
+    pre[data-copia] { cursor: copy; padding-right: 6.5rem; transition: border-color .12s ease; }
+    pre[data-copia]:hover { border-color: var(--verde); }
+    pre[data-copia]:focus-visible { outline: 3px solid var(--roxo); outline-offset: 2px; }
+    pre[data-copia]::after {
+      content: "⧉ copiar"; position: absolute; top: .55rem; right: .6rem;
+      font: 800 .68rem var(--mono); color: #0B0B16; background: var(--verde);
+      padding: .15rem .5rem; border-radius: 6px; box-shadow: 0 2px 0 #2F6B00;
+    }
+    .ai-box { padding: 1rem 1.25rem; border-left: 4px solid var(--azul); }
+    .ai-box > p:first-child::before { content: "ⓘ "; color: var(--azul); font-weight: 800; }
+    footer {
+      text-align: center; color: var(--fraco); font-size: .85rem;
+      padding: 2rem 1rem; border-top: 1px solid var(--linha); margin-top: 2rem;
+    }
+
+    #toasts {
+      position: fixed; bottom: 1.1rem; left: 50%; transform: translateX(-50%); z-index: 100;
+      display: flex; flex-direction: column; gap: .45rem; align-items: center;
+      pointer-events: none; max-width: min(92vw, 34rem);
+    }
+    .toast {
+      display: flex; align-items: center; gap: .55rem; padding: .62rem 1rem; border-radius: var(--radius);
+      background: var(--vidro-forte); border: 2px solid var(--verde); color: var(--tinta);
+      font-weight: 600; font-size: .85rem; box-shadow: 0 12px 34px rgba(0,0,0,.55);
+      animation: surge .22s ease both;
+    }
+    .toast.err { border-color: var(--coral); }
+    .toast .t-ico { color: var(--verde); flex: 0 0 auto; }
+    .toast.err .t-ico { color: var(--coral); }
+    .toast small { display: block; color: var(--fraco); font-weight: 500; word-break: break-all; }
+    .toast.saindo { transition: opacity .25s ease, transform .25s ease; opacity: 0; transform: translateY(8px); }
+
     @media (max-width: 760px) {
       .tree { width: 100%; height: auto; min-height: 620px; }
       .node { font-size: .72rem; padding: .4rem .6rem; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      html { scroll-behavior: auto; }
+    }
+    @media print {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      nav, #toasts { display: none; }
+      section { display: block !important; }
     }
     """
 
 
 def js() -> str:
     return """
+    const fila = document.getElementById('toasts');
+    function toast(msg, sub, err) {
+      const t = document.createElement('div');
+      t.className = 'toast' + (err ? ' err' : '');
+      const ico = document.createElement('span'); ico.className = 't-ico'; ico.textContent = err ? '⚠' : '✓';
+      const box = document.createElement('span'); box.textContent = msg;
+      if (sub) { const s = document.createElement('small'); s.textContent = sub; box.appendChild(s); }
+      t.appendChild(ico); t.appendChild(box);
+      fila.appendChild(t);
+      while (fila.children.length > 3) fila.removeChild(fila.firstChild);
+      setTimeout(() => { t.classList.add('saindo'); setTimeout(() => t.remove(), 280); }, 3400);
+    }
+    function fallback(txt) {
+      const ta = document.createElement('textarea');
+      ta.value = txt; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      let ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+      ta.remove(); return ok;
+    }
+    function copia(txt, diz) {
+      const origem = document.activeElement;
+      const feito = ok => {
+        toast(ok ? (diz || 'Copiado') : 'Não deu pra copiar', ok ? txt : 'copia na mão: ' + txt, !ok);
+        if (origem && origem.focus) { try { origem.focus({preventScroll: true}); } catch (e) {} }
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(txt).then(() => feito(true), () => feito(fallback(txt)));
+      } else { feito(fallback(txt)); }
+    }
+
     const nodes = document.querySelectorAll('.node');
     const panelTitle = document.getElementById('detail-title');
     const panelDesc = document.getElementById('detail-desc');
@@ -321,8 +434,9 @@ def js() -> str:
 
     nodes.forEach(n => {
       n.addEventListener('click', () => {
-        nodes.forEach(x => x.classList.remove('selected'));
+        nodes.forEach(x => { x.classList.remove('selected'); x.setAttribute('aria-pressed', 'false'); });
         n.classList.add('selected');
+        n.setAttribute('aria-pressed', 'true');
         panelTitle.textContent = n.dataset.label;
         panelDesc.textContent = n.dataset.desc || '';
         panelDetalhe.textContent = n.dataset.detalhe || '';
@@ -333,12 +447,32 @@ def js() -> str:
     const sections = document.querySelectorAll('main section');
     navButtons.forEach(btn => {
       btn.addEventListener('click', () => {
-        navButtons.forEach(b => b.classList.remove('active'));
+        navButtons.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); });
         btn.classList.add('active');
-        sections.forEach(s => s.classList.remove('active'));
-        document.getElementById(btn.dataset.target).classList.add('active');
+        btn.setAttribute('aria-pressed', 'true');
+        sections.forEach(s => s.classList.remove('active', 'trocou'));
+        document.getElementById(btn.dataset.target).classList.add('active', 'trocou');
       });
     });
+
+    /* delegação única: clique e teclado (Enter/Espaço) em quem não é botão nativo */
+    document.addEventListener('click', e => {
+      const c = e.target.closest('[data-copia]');
+      if (c) { e.preventDefault(); copia(c.getAttribute('data-copia'), c.getAttribute('data-diz')); return; }
+      const d = e.target.closest('[data-diz]');
+      if (d) toast(d.getAttribute('data-diz'));
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      const t = e.target.closest ? e.target.closest('[role="button"]') : null;
+      if (t && t.tagName !== 'BUTTON' && t.tagName !== 'A' && t.tagName !== 'SUMMARY') {
+        e.preventDefault();
+        t.click();
+      }
+    });
+    document.querySelectorAll('details').forEach(det => det.addEventListener('toggle', () => {
+      toast((det.open ? 'Aberto: ' : 'Fechado: ') + det.querySelector('summary').textContent.trim());
+    }));
     """
 
 
@@ -362,35 +496,64 @@ def gerar_json_ld(versao: str, data_iso: str) -> dict:
     }
 
 
-def gerar_html(central: Path, versao: str, data_iso: str) -> str:
+def gerar_html(central: Path, versao: str, data_iso: str, tema: str | None = None) -> str:
     resumo_megabrain = ler_resumo_arquivo(central, "MEGABRAIN.md")
     resumo_skill = ler_resumo_arquivo(central, "skills/megabrain/SKILL.md")
+
+    # Posição de tela: espalha x (rótulos POP são mais pesados) e alterna a
+    # altura dos nós da mesma linha quando o vizinho fica perto demais.
+    pos = {no["id"]: [round(no["x"] * 1.1) - 20, no["y"] + 20] for no in NOS}
+    linhas_y: dict[int, list[dict]] = {}
+    for no in NOS:
+        linhas_y.setdefault(no["y"], []).append(no)
+    for linha in linhas_y.values():
+        if len(linha) >= 7:
+            for i, no in enumerate(sorted(linha, key=lambda n: n["x"])):
+                pos[no["id"]][1] += -26 if i % 2 == 0 else 26
 
     # Gera nós
     nos_html = []
     for no in NOS:
         cls = f"node {no['grupo']}"
+        x, y = pos[no["id"]]
         nos_html.append(
-            f'<div class="{cls}" style="left:{no["x"]}px;top:{no["y"]}px" '
+            f'<div class="{cls}" style="left:{x}px;top:{y}px" '
+            f'role="button" tabindex="0" aria-pressed="false" '
             f'data-id="{html.escape(no["id"])}" data-label="{html.escape(no["label"])}" '
             f'data-desc="{html.escape(no["desc"])}" data-detalhe="{html.escape(no["detalhe"])}">'
             f'{html.escape(no["label"])}</div>'
         )
 
     # Gera linhas SVG
-    mapa = {no["id"]: no for no in NOS}
     linhas = []
     for origem_id, destino_id in CONEXOES:
-        o = mapa[origem_id]
-        d = mapa[destino_id]
-        linhas.append(f'<line x1="{o["x"]}" y1="{o["y"]}" x2="{d["x"]}" y2="{d["y"]}" />')
+        (ox, oy), (dx, dy) = pos[origem_id], pos[destino_id]
+        linhas.append(f'<line x1="{ox}" y1="{oy}" x2="{dx}" y2="{dy}" />')
 
     json_ld = u.safe_json_dumps(gerar_json_ld(versao, data_iso), ensure_ascii=False, indent=2)
     meta_componentes = ", ".join(n["label"] for n in NOS)
 
+    def comando(texto: str) -> str:
+        """Bloco de comando que copia no clique (todo clique responde — PADRAO.md)."""
+        return (
+            f'<pre data-copia="{html.escape(texto)}" data-diz="Comando copiado" '
+            f'role="button" tabindex="0" title="Clique para copiar"><code>{html.escape(texto)}</code></pre>'
+        )
+
+    cmd_instalar = comando('python MEGABRAIN/bin/mb-check-version.py --projeto "./meu-projeto"')
+    cmd_git = comando('python MEGABRAIN/bin/mb-check-version.py --projeto "./meu-projeto" --verificar-git')
+    cmd_aspirador = comando(
+        'python MEGABRAIN/bin/mb-aspirador.py --dir "./meu-projeto"\n'
+        'python MEGABRAIN/bin/mb-aspirador.py --dir "./meu-projeto" --aplicar'
+    )
+    cmd_dna = comando('python bin/mb-relatorio-dna.py --central "./MEGABRAIN" --saida "./MEGABRAIN/dna/RELATORIO-DNA.html"')
+    cmd_projeto = comando('python bin/mb-relatorio-projeto.py --projeto "./meu-projeto" --titulo "Meu Projeto" --plano "ESTADO.md ou PLANO.md"')
+
+    html_attr = ' data-tema="claro"' if tema == "claro" else ""
     return f"""<!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR"{html_attr}>
 <head>
+{mb_pop_tema.JS_TEMA_HEAD}
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MEGABRAIN — Relatório DNA</title>
@@ -400,27 +563,28 @@ def gerar_html(central: Path, versao: str, data_iso: str) -> str:
 <meta name="megabrain:componentes" content="{html.escape(meta_componentes)}">
 <meta name="description" content="DNA completo do protocolo megabrain. Frontend humano, metadados para IA.">
 <script type="application/ld+json">{json_ld}</script>
-<style>{css()}</style>
+<style>{css()}{mb_pop_tema.CSS_TEMA}</style>
 </head>
 <body>
 <header>
+  <div class="tema-linha">{mb_pop_tema.HTML_TEMA_CONTROLE}</div>
   <h1>MEGABRAIN</h1>
   <p>Relatório DNA · {html.escape(versao)} · gerado em {html.escape(data_iso[:10])}</p>
   <span class="badge">Protocolo multi-agente + anti-slop</span>
 </header>
 
 <nav>
-  <button data-target="arvore" class="active">Árvore de desenvolvimento</button>
-  <button data-target="sobre">Sobre</button>
-  <button data-target="componentes">Componentes</button>
-  <button data-target="uso">Como usar</button>
-  <button data-target="ia">Para a IA</button>
+  <button type="button" data-target="arvore" class="active" aria-pressed="true">Árvore de desenvolvimento</button>
+  <button type="button" data-target="sobre" aria-pressed="false">Sobre</button>
+  <button type="button" data-target="componentes" aria-pressed="false">Componentes</button>
+  <button type="button" data-target="uso" aria-pressed="false">Como usar</button>
+  <button type="button" data-target="ia" aria-pressed="false">Para a IA</button>
 </nav>
 
 <main>
   <section id="arvore" class="active">
     <h2>Árvore de desenvolvimento</h2>
-    <p class="hint">Clique nos nós para ver detalhes. Cores: <span style="color:var(--accent)">gates</span>, <span style="color:var(--ok)">ferramentas</span>, <span style="color:var(--accent-2)">métodos</span>.</p>
+    <p class="hint">Clique nos nós para ver detalhes. Cores: <span class="leg leg-gate">◆ gates</span>, <span class="leg leg-ferramenta">■ ferramentas</span>, <span class="leg leg-metodo">● métodos</span>.</p>
     <div class="tree-wrap">
       <div class="tree">
         <svg>{''.join(linhas)}</svg>
@@ -515,22 +679,21 @@ def gerar_html(central: Path, versao: str, data_iso: str) -> str:
   <section id="uso">
     <h2>Como usar</h2>
     <h3>1. Instalar o megabrain num projeto</h3>
-    <pre><code>python MEGABRAIN/bin/mb-check-version.py --projeto "./meu-projeto"</code></pre>
+    {cmd_instalar}
     <p>Isso cria a pasta <code>MEGABRAIN/</code> dentro do projeto com o protocolo, referências, <code>bin/</code> inteiro e a pasta <code>dna/</code>.</p>
 
     <h3>2. Verificar se há atualização</h3>
-    <pre><code>python MEGABRAIN/bin/mb-check-version.py --projeto "./meu-projeto" --verificar-git</code></pre>
+    {cmd_git}
     <p>Consulta o repositório público e avisa se existe versão mais recente.</p>
 
     <h3>3. Rodar o aspirador</h3>
-    <pre><code>python MEGABRAIN/bin/mb-aspirador.py --dir "./meu-projeto"
-python MEGABRAIN/bin/mb-aspirador.py --dir "./meu-projeto" --aplicar</code></pre>
+    {cmd_aspirador}
 
     <h3>4. Gerar/atualizar este relatório DNA</h3>
-    <pre><code>python bin/mb-relatorio-dna.py --central "./MEGABRAIN" --saida "./MEGABRAIN/dna/RELATORIO-DNA.html"</code></pre>
+    {cmd_dna}
 
     <h3>5. Gerar o relatório de UM projeto (irmão do DNA)</h3>
-    <pre><code>python bin/mb-relatorio-projeto.py --projeto "./meu-projeto" --titulo "Meu Projeto" --plano "ESTADO.md ou PLANO.md"</code></pre>
+    {cmd_projeto}
     <p>Ver seção "Relatório de projeto" em <code>MEGABRAIN.md</code> para o guia completo de argumentos.</p>
   </section>
 
@@ -557,6 +720,7 @@ python MEGABRAIN/bin/mb-aspirador.py --dir "./meu-projeto" --aplicar</code></pre
   <p>MEGABRAIN · Relatório DNA · gerado por <code>mb-relatorio-dna.py</code> · vive em <code>dna/</code></p>
   <p>Backup automático em <code>dna/.dna-backup/</code></p>
 </footer>
+<div id="toasts" aria-live="polite"></div>
 
 <script>{js()}</script>
 </body>
@@ -582,6 +746,8 @@ def main():
     ap = argparse.ArgumentParser(description="Gerador do relatório DNA do megabrain")
     ap.add_argument("--central", default=None, help="pasta central do megabrain (default: detecta)")
     ap.add_argument("--saida", default=None, help="caminho do HTML de saída (default: dna/RELATORIO-DNA.html na central)")
+    ap.add_argument("--tema", default=None, choices=["claro", "escuro"],
+                    help="tema inicial do HTML gerado (default: escuro — o navegador do leitor pode lembrar a preferência)")
     args = ap.parse_args()
 
     central_default = detectar_central()
@@ -609,7 +775,7 @@ def main():
     versao = ler_versao(central)
     data_iso = dt.datetime.now().isoformat()
 
-    html_out = gerar_html(central, versao, data_iso)
+    html_out = gerar_html(central, versao, data_iso, tema=args.tema)
 
     # Backup do relatório anterior
     if saida.exists():

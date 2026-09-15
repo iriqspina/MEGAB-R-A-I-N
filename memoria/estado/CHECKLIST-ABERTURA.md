@@ -41,3 +41,13 @@ resolvido ganha `RESOLVIDO: <data>`, nunca se apaga.
 - Checar: `\PortfolioHS-Local-Disponibilidade-260912` aponta para `WScript.exe "<PROJETOS_ROOT>\Portfolio\tools\260912_manter-local-hidden.vbs"` e `Portfolio\evidencias\260912_disponibilidade-local\260912_ultimo-estado.json` segue `healthy` com timestamp recente (a cada 2 min).
 - Por quê: a ação antiga (`powershell -WindowStyle Hidden` direto) piscava uma janela de terminal roubando o foco a cada 2 min; "corrigir" a tarefa de volta reativa o sintoma que levou a sessão de 260913 a caçar.
 - Como: `schtasks /query /tn "\PortfolioHS-Local-Disponibilidade-260912" /xml` (conferir Command/Arguments) e ler o JSON de estado.
+
+## 260915 — gerador do Portfolio sobrescreve o RELATORIO.html atual por OUTRO conteúdo
+- Checar: antes de rodar `Portfolio/gerar-relatorio.ps1`, confirmar que trocar o `Portfolio/RELATORIO.html` da raiz (datado de 11/09, feito por outra fonte) pelo relatório "plano de renda" que o .ps1 emite é o desejado.
+- Por quê: o .ps1 NÃO gerou o RELATORIO.html que está na raiz — rodar o gerador substitui o conteúdo inteiro, não só a pele (achado do worker da padronização 260915).
+- Como: ler título/data do HTML atual vs. o que o .ps1 emite; se a intenção for só visual, o HTML já está no padrão POP (pele injetada) — não rode o gerador.
+
+## 260915 — pele POP do legado tem fonte única e 3 cópias manuais nos geradores
+- Checar: se `motor/modelos/relatorios/260914_pop/260915_pele-pop-legado.css` for editado, atualizar as cópias embutidas nos geradores de Curriculo (py), Financeiro da Silva (py) e Portfolio (.ps1).
+- Por quê: os 3 geradores carregam CÓPIA da pele (hash conferido na padronização 260915); mudar só a fonte diverge o visual entre projetos sem nenhum erro aparente.
+- Como: `diff` da fonte contra a constante de pele de cada gerador antes de qualquer ajuste; preferir regenerar a cópia a editar na mão.

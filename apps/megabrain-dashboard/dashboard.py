@@ -53,13 +53,13 @@ def main() -> int:
                 self.setWindowIcon(QIcon(str(icon)))
             self.resize(1050, 760)
             self.setStyleSheet("""
-                QMainWindow, QWidget#shell { background: #F0F0F4; }
-                QLabel { color: #5E5E6B; font: 12px 'Segoe UI'; }
-                QPushButton { color: #25252D; background: #FFFFFF;
-                    border: 1px solid #C9C9D3; border-radius: 8px;
-                    padding: 9px 12px; font: 12px 'Segoe UI'; min-height: 22px; }
-                QPushButton:hover { background: #F8EAF1; }
-                QPushButton:focus { border: 2px solid #AE205E; }
+                QMainWindow, QWidget#shell { background: #12121F; }
+                QLabel { color: #A3A1BD; font: 12px 'Segoe UI'; }
+                QPushButton { color: #FFFFFF; background: #1F1F30;
+                    border: 1px solid #5B4A7A; border-radius: 10px;
+                    padding: 9px 12px; font: bold 12px 'Segoe UI'; min-height: 22px; }
+                QPushButton:hover { background: #2C2540; }
+                QPushButton:focus { border: 2px solid #CE82FF; }
             """)
             root = QWidget(self)
             root.setObjectName("shell")

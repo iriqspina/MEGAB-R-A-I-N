@@ -65,7 +65,7 @@ def render(data: dict, *, native: bool = False) -> str:
     source_note = 'Fotografia dos dados locais; atualizar relê os arquivos, sem recalcular as medições.' if data.get('source_ok') else 'Leitura dos documentos locais. Medições ausentes permanecem como Não medido.'
     return f'''<!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="color-scheme" content="light"><title>MEGABRAIN · visão pessoal</title><style>{css}</style></head>
+<meta name="color-scheme" content="dark"><title>MEGABRAIN · visão pessoal</title><style>{css}</style></head>
 <body><a class="skip" href="#agora">Ir para o próximo passo</a><main>
 <header class="top"><div class="brand">{brand}<div><p class="eyebrow">MEGABRAIN <span>· visão pessoal</span></p><h1>{_text(data['name'])}</h1><p class="context">Acompanhando {'a central' if data['is_central'] else 'este projeto'}</p></div></div>{controls}</header>
 <section class="now glass" id="agora" tabindex="-1" aria-labelledby="now-title">

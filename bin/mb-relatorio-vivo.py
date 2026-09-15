@@ -1,29 +1,41 @@
 #!/usr/bin/env python3
 """
-mb-relatorio-vivo.py — RELATORIO-VIVO.html: retrato ao vivo do projeto pro
+mb-relatorio-vivo.py — RELATORIO.html: retrato ao vivo do projeto pro
 usuário deixar aberto no navegador enquanto os agentes trabalham (v6).
 
-A página se recarrega sozinha (JS, a cada 15s, preservando o scroll).
+A página se recarrega sozinha (JS, a cada 15s, preservando scroll, painel
+aberto e <details> abertos; não recarrega enquanto ele está mexendo).
 Limite declarado: em file:// o navegador não consegue detectar mudança do
 arquivo sem um servidor local, então o "ao vivo" é reload em intervalo fixo
 — o usuário não aperta F5, mas há até 15s de atraso.
 
 Fontes: PROGRESSO.json (etapas + notas, atualizado via --marcar/--nota),
 ESTADO.md, HANDOFF.md (trava + seção "PARA VOCÊ"), DECISOES.md (últimos
-títulos), .mb-log/ do dia, VERSAO.txt, git de _github/repo-local/ e os
-VERSAO.txt das cópias MEGABRAIN/ dos projetos irmãos.
+títulos), .mb-log/ do dia, VERSAO.txt, git da central e os VERSAO.txt das
+cópias MEGABRAIN/ dos projetos irmãos.
 
 v6.1 (260821) — bloco de VERSÃO no topo:
-  · versão atual do megabrain (VERSAO.txt) + commit git local (HEAD de
-    _github/repo-local), remoto conhecido (origin/main) e quantos commits
-    locais ainda não subiram;
+  · versão atual do megabrain (VERSAO.txt) + commit git local, remoto
+    conhecido (origin/main) e quantos commits locais ainda não subiram;
   · versão ANTERIOR (a que estava no ar na última troca de versão/commit);
   · tabela dos projetos: qual versão cada MEGABRAIN/ puxou vs a atual.
   Toda vez que a versão ou o commit muda, o HTML anterior é guardado em
-  .mb-backup/relatorio-vivo/ (YYMMDD_HHMM_RELATORIO-VIVO_<commit>.html) e o
-  par atual/anterior fica em .mb-backup/relatorio-vivo/versao-atual.json.
+  90_arquivo/relatorios-antigos/ (YYMMDD_HHMM_RELATORIO_<commit>.html) e o
+  par atual/anterior fica em versao-atual.json na mesma pasta.
   Regeneração sem troca de versão NÃO gera snapshot (senão acumula a cada 15s
   de --nota).
+
+v7.17 (260915) — pele e esqueleto do template POP v1.2
+(motor/modelos/relatorios/260914_pop/, contrato em PADRAO.md):
+  · ORQUESTRAÇÕES é o setor protagonista: pipeline da última run formal V6,
+    runs recentes de .automations/runs/ (central, subpastas e irmãos), cotas
+    de dados/orcamento_ia.json + dados/telemetria-orquestracao.json com a
+    DATA de cada leitura, e papéis por modelo lidos do manifest da run;
+  · a coleta de antes (frescor, versão, projetos, PROGRESSO, HANDOFF) alimenta
+    os slots do POP; ações/skills/cérebro/documentos/histórico viram painéis
+    no mesmo design;
+  · contrato de clique: data-diz (toast), data-copia (clipboard com fallback)
+    ou <a> real; o JS só usa textContent — dado do gerador nunca vira HTML.
 
 Uso:
     python bin/mb-relatorio-vivo.py                        # só regenera
@@ -31,6 +43,7 @@ Uso:
     python bin/mb-relatorio-vivo.py --marcar f2.2 fazendo
     python bin/mb-relatorio-vivo.py --nota "comecei a fase 2"
     python bin/mb-relatorio-vivo.py --snapshot    # força guardar o HTML atual
+    python bin/mb-relatorio-vivo.py --saida %TEMP%\\teste.html  # prova sem tocar no vivo
 
 Status válidos: pendente | fazendo | feito | bloqueado
 """
@@ -39,7 +52,6 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
-import importlib.util
 import sys
 import html
 import json
@@ -48,103 +60,26 @@ import re
 import shutil
 import subprocess
 from pathlib import Path
+from urllib.parse import quote
 
 import mb_utils as u
 import mb_trava as trava
 import mb_frescor as frescor
+import mb_pop_tema
 
 try:
-    import mb_visual as vis
-except Exception:  # biblioteca visual ausente: relatório degrada, não quebra
-    vis = None
-
-try:
-    import mb_workspace as ws  # v7.0: abas + workspace + feedback rail
-except Exception:  # sem o módulo: página degrada pro fluxo único antigo
+    import mb_workspace as ws  # cérebro e telemetria: só os DADOS, a pele é a do POP
+except Exception:  # sem o módulo: os painéis degradam para estado vazio
     ws = None
 
 u.utf8_console()
 
 
-# CSS do conteúdo agregado (.md) e dos slots fixos. Fica aqui, e não em
-# modelos/visuais/, porque descreve a PÁGINA — as mecânicas descrevem peças.
-CSS_CONTEUDO = """
-html.pre-carga *, html.pre-carga *::before { transition: none; }
-
-/* --- 260825: ações numeradas + skills expansíveis ------------------------
-   Regra do 260804 (feedback nasce no campo visual de quem clicou): o corpo
-   do <details> abre logo abaixo do próprio item, nunca em painel de rodapé.
-   O número é grande e monoespaçado porque a frase que ele vai ouvir é
-   "roda o 5" — o 5 tem que ser a primeira coisa que o olho acha. */
-.acao { border:1px solid var(--line); border-left:3px solid var(--ink);
-  background:var(--paper-high); margin:0 0 .35rem; }
-.acao[open] { border-left-color:var(--signal); }
-.acao > summary { display:grid; grid-template-columns:2.6rem minmax(9rem,auto) 1fr;
-  gap:.6rem; align-items:baseline; padding:.55rem .7rem; cursor:pointer;
-  list-style:none; }
-.acao > summary::-webkit-details-marker { display:none; }
-.acao > summary:hover { background:var(--signal-soft); }
-.acao__n { font:800 1.25rem/1 var(--mono); color:var(--signal);
-  text-align:right; font-variant-numeric:tabular-nums; }
-.acao__nome { font:700 .92rem/1.3 var(--sans); }
-.acao__faz { font:400 .82rem/1.45 var(--sans); color:var(--ink-soft); }
-.acao__falta { font:700 .7rem var(--mono); color:var(--signal); }
-.acao__corpo { padding:.2rem .7rem .7rem 3.9rem; border-top:1px solid var(--line); }
-.acao__corpo p { margin:.5rem 0; font-size:.86rem; }
-.acao--rotina > summary { grid-template-columns:minmax(15rem,auto) 1fr; }
-.acao--rotina .acao__corpo, .acao--skill .acao__corpo { padding-left:.7rem; }
-.acao--skill > summary { grid-template-columns:minmax(11rem,auto) 1fr; }
-.acao--skill .acao__nome { font-family:var(--mono); color:var(--info); }
-.skills__grupo { margin:1.1rem 0 .4rem; font:800 .68rem var(--mono);
-  text-transform:uppercase; letter-spacing:.12em; color:var(--ink-faint); }
-.copiar { font:600 .74rem var(--mono); padding:.3rem .6rem; cursor:pointer;
-  border:1px solid var(--ink); background:var(--paper); color:var(--ink); }
-.copiar:hover { background:var(--ink); color:var(--paper); }
-.copiar[data-ok] { border-color:var(--ok); color:var(--ok); }
-@media (max-width:640px) {
-  .acao > summary { grid-template-columns:2.2rem 1fr; }
-  .acao__faz { grid-column:1 / -1; }
-  .acao__corpo { padding-left:.7rem; }
-}
-.faixa { margin:2.4rem 0 .2rem; padding:.35rem 0; border-top:2px solid var(--ink);
-  border-bottom:1px solid var(--line); font:800 .7rem/1.3 var(--mono);
-  text-transform:uppercase; letter-spacing:.14em; }
-.faixa small { font-weight:400; letter-spacing:.04em; color:var(--ink-faint); text-transform:none; }
-.slot { margin:1.1rem 0; }
-.slot__tit { font-size:.8rem; font-weight:800; margin:0 0 .4rem; letter-spacing:.01em; }
-.slot__vazio { font-size:.78rem; color:var(--ink-faint); border:1px dashed var(--line-strong);
-  border-radius:2px; padding:.6rem .8rem; margin:0; background:var(--paper-high); }
-.indice { display:flex; flex-wrap:wrap; gap:.3rem .7rem; font-size:.74rem; padding:.5rem 0 0; }
-.indice a { color:var(--info); text-decoration:none; border-bottom:1px solid var(--line); }
-.indice a:hover { border-bottom-color:var(--info); }
-.doc section { border-top:1px solid var(--line); padding:1.4rem 0 .4rem; }
-.doc section h2 { font-size:1rem; margin:0 0 .2rem; }
-.doc .section-file { font:400 .68rem/1.3 var(--mono); color:var(--ink-faint); margin-bottom:.6rem; }
-.doc h3 { font-size:.86rem; margin:1.1rem 0 .3rem; }
-.doc h4 { font-size:.78rem; margin:.9rem 0 .25rem; color:var(--ink-soft); }
-.doc p { font-size:.84rem; line-height:1.6; margin:.5rem 0; }
-.doc ul, .doc ol { font-size:.84rem; line-height:1.6; padding-left:1.2rem; margin:.5rem 0; }
-.doc li { margin:.15rem 0; }
-.doc code { font-family:var(--mono); font-size:.78em; background:var(--paper-sunk);
-  border:1px solid var(--line); border-radius:2px; padding:0 .2em; }
-.doc pre { overflow-x:auto; background:var(--paper-sunk); border:1px solid var(--line);
-  padding:.7rem; font-family:var(--mono); font-size:.72rem; line-height:1.5; }
-.doc blockquote { margin:.6rem 0; padding:.3rem 0 .3rem .9rem; border-left:3px solid var(--line-strong);
-  color:var(--ink-soft); font-size:.82rem; }
-.doc .tbl-wrap { overflow-x:auto; margin:.7rem 0; }
-.doc .chk { font-family:var(--mono); font-size:.8em; color:var(--ink-faint); }
-.doc hr { border:0; border-top:1px solid var(--line); margin:1.2rem 0; }
-.doc a { color:var(--info); }
-@media (max-width: 720px) { .duo { grid-template-columns:1fr; } }
-"""
-
-# Tema que abre por padrão. O usuário troca no seletor e a escolha persiste;
-# este valor só vale na primeira visita (ou quando o storage está bloqueado).
-TEMA_PADRAO = "02-wildfire"
 RELOAD_SEGUNDOS = 15
 STATUS_VALIDOS = {"pendente", "fazendo", "feito", "bloqueado"}
 ICONE = {"feito": "✓", "fazendo": "●", "pendente": "○", "bloqueado": "✕"}
-SNAPSHOTS_MAX = 30  # HTMLs anteriores guardados em .mb-backup/relatorio-vivo/
+SNAPSHOTS_MAX = 30  # HTMLs anteriores guardados em 90_arquivo/relatorios-antigos/
+RUNS_MAX = 4  # cards de run no setor ORQUESTRAÇÕES
 
 
 def central() -> Path:
@@ -467,166 +402,7 @@ def fila_pendentes(c: Path) -> list[dict]:
     return fila
 
 
-
-# ---------------------------------------------------------------------------
-# v6.6 — fusão: o relatório vivo absorveu o agregador de .md
-# ---------------------------------------------------------------------------
-
-# Pastas da central que NÃO entram no conteúdo do relatório: são código,
-# derivado ou arquivo morto. Sem esta lista o rglob puxa referencias/,
-# github-export/ e repo-local/ e o HTML passa de 2 MB.
-#
-# O casamento é por PEDAÇO de caminho (rel.parts), então entrada composta
-# ("_github/export") NUNCA casa e o filtro vira no-op silencioso — foi o que
-# fez cada documento aparecer 3× no HTML até 260825. A asserção abaixo mata
-# a próxima tentativa na hora de importar, em vez de na conta do byte.
-IGNORAR_CENTRAL = {
-    "90_arquivo", "99_to_delete", "_github",
-    "00_painel", "dist", "referencias", "modelos", "skills", "tests",
-    "bin", "dna", "plugin-megabrain", "plugin-megabrain-claude",
-    "relatorio-megabrain", "gerenteneuron", ".claude", ".mb-backup", ".mb-log",
-    ".mb-aspirador", "__pycache__", ".git", "megabrain", "02_entrada",
-    "motor",  # v7.1: a máquina inteira mora aqui — nada dela entra no relatório
-}
-assert not any("/" in x or "\\" in x for x in IGNORAR_CENTRAL), (
-    "IGNORAR_CENTRAL casa por pedaço de caminho: entrada composta nunca casa")
-
-
-def _motor_md():
-    """Carrega mb-relatorio-projeto.py como módulo.
-
-    O hífen no nome impede o import normal — daí o importlib. Fundir por
-    composição e não copiando 400 linhas: o conversor de markdown continua
-    tendo UM dono, e corrigir um bug lá conserta os dois escopos.
-    """
-    arq = Path(__file__).resolve().parent / "mb-relatorio-projeto.py"
-    if not arq.is_file():
-        return None
-    spec = importlib.util.spec_from_file_location("mb_rel_projeto", arq)
-    if not spec or not spec.loader:
-        return None
-    mod = importlib.util.module_from_spec(spec)
-    sys.modules["mb_rel_projeto"] = mod
-    spec.loader.exec_module(mod)
-    return mod
-
-
-e = html.escape  # escape de modulo: `e` local so existe dentro de gerar_html
-
-
-def secao_acoes(c: Path) -> str:
-    """As ações numeradas 1..N — a única lista do painel com número.
-
-    260825: ele pediu pra poder ouvir "clica no script 3" em vez de decorar
-    nome. O número vem de mb_registro.ACOES (declarado, estável), não da ordem
-    da pasta — se viesse da pasta, um botão novo renumeraria os outros e a
-    frase "clica no 3" passaria a apontar pro lugar errado na semana seguinte.
-    """
-    try:
-        import mb_registro as reg
-    except ImportError:
-        return ""
-    pasta = c / "01_acoes"
-    linhas = []
-    for n, apelido, faz, quando in reg.ACOES:
-        arq = pasta / f"{n:02d}_{apelido}.cmd"
-        existe = arq.is_file()
-        rotulo = apelido.replace("-", " ")
-        estado = "" if existe else ' <span class="acao__falta">arquivo não encontrado</span>'
-        caminho = f"01_acoes\\{n:02d}_{apelido}.cmd"
-        linhas.append(f"""<details class="acao">
-<summary><span class="acao__n">{n}</span><span class="acao__nome">{e(rotulo)}</span>{estado}
-<span class="acao__faz">{e(faz)}</span></summary>
-<div class="acao__corpo">
-<p><strong>Quando usar:</strong> {e(quando)}</p>
-<p class="det">Está em <code>{e(caminho)}</code> — o número está no nome do arquivo,
-então na pasta ele aparece nesta mesma ordem.</p>
-<button class="copiar" data-copiar="{e(str(pasta / f'{n:02d}_{apelido}.cmd'))}">copiar caminho</button>
-</div>
-</details>""")
-    cab = ('<p class="det">Clique para abrir na pasta <code>01_acoes\\</code>. '
-           'O número é fixo: botão novo entra no fim e nunca renumera os outros — '
-           'então "roda o 5" continua sendo o 5 daqui a três meses.</p>')
-    return cab + "".join(linhas)
-
-
-def secao_rotina(c: Path) -> str:
-    """Comandos que rodam de vez em quando. Sem número de propósito: ele não
-    procura por eles na pasta, chama quando precisa."""
-    try:
-        import mb_registro as reg
-    except ImportError:
-        return ""
-    linhas = []
-    for cmd, faz, quando in reg.ROTINA:
-        linhas.append(f"""<details class="acao acao--rotina">
-<summary><span class="acao__nome"><code>{e(cmd)}</code></span>
-<span class="acao__faz">{e(faz)}</span></summary>
-<div class="acao__corpo"><p><strong>Quando:</strong> {e(quando)}</p>
-<button class="copiar" data-copiar="{e(cmd)}">copiar comando</button></div>
-</details>""")
-    return ('<p class="det">Sem número: você não procura estes na pasta, você chama '
-            'quando precisa. Os de uso único já executados saíram de <code>bin/</code> '
-            'e estão em <code>90_arquivo/scripts-uso-unico-260825/</code>.</p>'
-            + "".join(linhas))
-
-
-def secao_agente(c: Path) -> str:
-    """Os comandos que a IA roda nos gates. Aparecem no painel dele NÃO pra ele
-    rodar, mas porque comando que não está declarado em lugar nenhum não
-    acontece: `mb-mapa-refs.py` tinha 4 citações em SKILL.md e zero execuções
-    em 6 dias de log. Ver é a primeira condição de cobrar."""
-    try:
-        import mb_registro as reg
-    except ImportError:
-        return ""
-    if not getattr(reg, "AGENTE", None):
-        return ""
-    linhas = []
-    for cmd, gate, faz, quebra in reg.AGENTE:
-        linhas.append(f"""<details class="acao acao--rotina">
-<summary><span class="acao__nome"><code>{e(cmd)}</code></span>
-<span class="acao__faz"><b>{e(gate)}</b> — {e(faz)}</span></summary>
-<div class="acao__corpo"><p><strong>Se não rodar:</strong> {e(quebra)}</p>
-<button class="copiar" data-copiar="{e(cmd)}">copiar comando</button></div>
-</details>""")
-    return ('<p class="det">Isto <b>não é pra você rodar</b> — é o que a IA deve '
-            'rodar sozinha nos gates. Está aqui porque comando que não aparece em '
-            'lugar nenhum é comando que não acontece: em 260825 o do Gate 3 tinha '
-            '4 citações nas skills e zero execuções em 6 dias.</p>'
-            + "".join(linhas))
-
-
-def secao_skills(c: Path) -> str:
-    """As skills DELE, expansíveis. As de plugin de terceiro ficam de fora —
-    são 30+, ele não escreveu nem mantém, e listá-las é o próprio problema
-    que ele descreveu ('fico olhando vários e perdido')."""
-    try:
-        import mb_registro as reg
-    except ImportError:
-        return ""
-    por_origem: dict[str, list] = {}
-    for nome, origem, faz, gatilho in reg.SKILLS_DELE:
-        por_origem.setdefault(origem, []).append((nome, faz, gatilho))
-    ordem = ["central", "plugin", "projeto", "Matt Pocock (MIT)"]
-    rotulo = {"central": "Do protocolo (fonte em motor/skills/)",
-              "plugin": "Do plugin", "projeto": "Dos seus projetos",
-              "Matt Pocock (MIT)": "De fora — Matt Pocock, licença MIT"}
-    partes = []
-    for origem in ordem + [o for o in por_origem if o not in ordem]:
-        if origem not in por_origem:
-            continue
-        partes.append(f'<h4 class="skills__grupo">{e(rotulo.get(origem, origem))}</h4>')
-        for nome, faz, gatilho in por_origem[origem]:
-            partes.append(f"""<details class="acao acao--skill">
-<summary><span class="acao__nome">/{e(nome)}</span>
-<span class="acao__faz">{e(faz)}</span></summary>
-<div class="acao__corpo"><p><strong>Chama assim:</strong> {e(gatilho)}</p></div>
-</details>""")
-    return ('<p class="det">Só as suas. As de plugin de terceiro (cloudflare, figma, '
-            'adobe, wordpress, canva) não entram aqui — você não as escreveu nem as '
-            'mantém, e listar 30 a mais é o que faz você não achar as suas.</p>'
-            + "".join(partes))
+e = html.escape  # escape de modulo: `e` local so existe dentro de gerar_html  # escape de módulo: todo dado do gerador passa por aqui antes do HTML
 
 
 def _estado_json(c: Path) -> dict:
@@ -649,147 +425,6 @@ def _estado_json(c: Path) -> dict:
         return {}
 
 
-def secao_agentes(c: Path) -> str:
-    """Absorve o RELATORIO-AGENTES.html (aposentado em 260825)."""
-    d = _estado_json(c).get("agentes") or {}
-    if not d.get("eventos"):
-        return ""
-    linhas = "".join(f"<tr><td>{e(k)}</td><td>{v}</td></tr>"
-                     for k, v in list((d.get("por_agente") or {}).items())[:8])
-    evs = "".join(f"<tr><td>{e(k)}</td><td>{v}</td></tr>"
-                  for k, v in list((d.get("por_evento") or {}).items())[:8])
-    return (f'<p class="det">{d["eventos"]} evento(s) em {d.get("dias_com_registro", "?")} '
-            f'dia(s). Fonte: <code>{e(d.get("_fonte", ""))}</code></p>'
-            f'<div class="duo"><div><table><thead><tr><th>agente</th><th>eventos</th></tr>'
-            f'</thead><tbody>{linhas}</tbody></table></div>'
-            f'<div><table><thead><tr><th>tipo de evento</th><th>n</th></tr></thead>'
-            f'<tbody>{evs}</tbody></table></div></div>')
-
-
-def secao_padroes(c: Path) -> str:
-    """Absorve o AAMMDD_padroes.md (o compreensor continua rodando)."""
-    d = _estado_json(c).get("padroes") or {}
-    temas = d.get("temas") or []
-    if not temas:
-        return (f'<p class="det">Nada passou da régua — e isso é informação, não vazio. '
-                f'Régua: {e(str(d.get("regua", ""))[:200])}</p>')
-    itens = "".join(f"<li>{e(str(x)[:200])}</li>" for x in temas)
-    return f'<ul>{itens}</ul><p class="det">Régua: {e(str(d.get("regua", ""))[:200])}</p>'
-
-
-def secao_copias(c: Path) -> str:
-    """Os megabrains de projeto — absorve a auditoria de cópias."""
-    d = _estado_json(c).get("copias") or {}
-    itens = d.get("itens") or []
-    if not itens:
-        return ""
-    linhas = "".join(
-        f'<tr><td>{e(i["projeto"])}</td><td>{e(i["versao"])}</td>'
-        f'<td>{"✓" if i["em_dia"] else "✕ desatualizada"}</td>'
-        f'<td>{i["licoes"]}</td><td>{e(i["layout"])}</td></tr>' for i in itens)
-    return (f'<p class="det">{d.get("em_dia")}/{d.get("total")} em dia · '
-            f'{d.get("com_morto")} com arquivo aposentado. '
-            f'Desatualizada = rode a ação <b>5</b>.</p>'
-            f'<table><thead><tr><th>projeto</th><th>versão</th><th>estado</th>'
-            f'<th>lições</th><th>layout</th></tr></thead><tbody>{linhas}</tbody></table>')
-
-
-def secao_para_ia(c: Path) -> str:
-    """O bloco que fecha o ciclo: a IA não lê este HTML, lê o JSON."""
-    d = _estado_json(c)
-    if not d:
-        return ""
-    return (
-        '<p>Este HTML é a renderização <b>humana</b>. A renderização de máquina é '
-        '<code>dados/estado.json</code> — mesmo dado, mesma geração, sem prosa. '
-        'Qualquer IA (Claude, Kimi, GPT, Gemini, Codex, Qwen local) lê aquele arquivo '
-        'em vez de parsear cinco markdowns em cinco formatos.</p>'
-        f'<p class="det">schema {d.get("schema")} · gerado {e(str(d.get("gerado_em", "")))} · '
-        'cada número lá dentro carrega o <code>_fonte</code> de onde veio, e campo que '
-        'não pôde ser medido vem <code>null</code> — nunca zero.</p>'
-        '<button class="copiar" data-copiar="python bin/mb-estado.py --stdout">'
-        'copiar comando que gera o JSON</button>')
-
-
-def _titulo_md(relativo: str, texto: str) -> str:
-    for linha in texto.splitlines():
-        if linha.startswith("# "):
-            return linha[2:].strip()
-    return Path(relativo).stem.replace("_", " ").replace("-", " ")
-
-
-def conteudo_md(inst: Path, na_central: bool) -> tuple[list[tuple[str, str]], str]:
-    """ÍNDICE dos .md — não mais o conteúdo deles.
-
-    260825 (decisão 260825v): esta função embutia os 31 documentos inteiros no
-    HTML — 471 KB, 76% do arquivo. Ela existia porque uma IA precisava do texto
-    e o único jeito era o relatório agregar. Com `dados/estado.json` carregando
-    o índice (caminho, título, tamanho, quando mudou), a IA lê o arquivo de que
-    precisa e o painel volta a ser painel: uma lista de links, não um despejo.
-
-    O leitor humano ganha também — ele clicava e caía num poço de 31 seções
-    sem navegação. Agora vê o que existe e abre o que quer.
-    """
-    import json as _json
-    dados = _json.loads(u.safe_read_text(inst / "dados" / "estado.json") or "{}")
-    docs = (dados.get("documentos") or {}).get("itens") or []
-    if not docs:
-        return [], ('<p class="slot__vazio">índice ausente — rode '
-                    '<code>python bin/mb-estado.py</code></p>')
-    grupos: dict[str, list] = {}
-    for d in docs:
-        raiz = d["caminho"].split("/")[0] if "/" in d["caminho"] else "raiz"
-        grupos.setdefault(raiz, []).append(d)
-    partes = [f'<p class="det">{len(docs)} documento(s). Clique pra abrir o arquivo. '
-              'O texto não é embutido aqui de propósito: 76% deste relatório era '
-              'despejo de markdown que existia só pra IA ler — hoje ela lê '
-              '<code>dados/estado.json</code>.</p>']
-    navs = []
-    for raiz in sorted(grupos):
-        partes.append(f'<h4 class="skills__grupo">{e(raiz)}</h4><table>'
-                      '<thead><tr><th>documento</th><th>tamanho</th><th>mudou</th></tr></thead><tbody>')
-        for d in sorted(grupos[raiz], key=lambda x: x["caminho"]):
-            href = "../" + d["caminho"]
-            kb = f'{d["bytes"] // 1024} KB' if d["bytes"] >= 1024 else f'{d["bytes"]} B'
-            partes.append(f'<tr><td><a href="{e(href)}">{e(d["titulo"])}</a>'
-                          f'<br><code class="det">{e(d["caminho"])}</code></td>'
-                          f'<td>{e(kb)}</td><td>{e(str(d.get("modificado") or "—"))}</td></tr>')
-        partes.append("</tbody></table>")
-    return navs, "".join(partes)
-
-
-def _conteudo_md_antigo(inst: Path, na_central: bool) -> tuple[list[tuple[str, str]], str]:
-    """Todo o .md informacional da instância vira seção navegável.
-
-    É a metade que vinha do RELATORIO.html antigo. Retorna (índice, html).
-    """
-    mod = _motor_md()
-    if not mod:
-        return [], ""
-    if na_central:
-        achados = []
-        ignorar = {x.casefold() for x in IGNORAR_CENTRAL}
-        for caminho in sorted(inst.rglob("*.md"), key=lambda p: str(p).casefold()):
-            rel = caminho.relative_to(inst)
-            if {p.casefold() for p in rel.parts[:-1]} & ignorar:
-                continue
-            texto = mod.ler(caminho)
-            if texto:
-                achados.append((rel.as_posix(), texto))
-    else:
-        achados = mod.descobrir_markdowns(inst, set())
-
-    pendencias: list = []
-    navs, secoes = [], []
-    for relativo, texto in achados:
-        ident = mod.id_extra(relativo)
-        titulo = _titulo_md(relativo, texto)
-        corpo = mod.markdown_para_html(texto, pendencias, relativo)
-        secoes.append(mod.secao(ident, titulo, corpo, relativo))
-        navs.append((ident, titulo))
-    return navs, "".join(secoes)
-
-
 def _timeline_versao(c: Path, n: int = 6) -> list[dict]:
     """Histórico lido do VERSAO.txt — a fonte já existe, não invente outra."""
     txt = u.safe_read_text(u.achar(c, "VERSAO.txt")) or ""
@@ -809,91 +444,1062 @@ def _timeline_versao(c: Path, n: int = 6) -> list[dict]:
     return itens
 
 
-def pecas_visuais(c: Path, git: dict, versao: str, projetos: list,
-                  prog: dict, na_central: bool, saude_extra: list | None = None) -> dict:
-    """Uma peça visual por SLOT do dashboard.
+# CSS do template POP v1.2, copiado sem alteração de
+# motor/modelos/relatorios/260914_pop/relatorio-pop.html (bloco <style>).
+# O template é a fonte: mudou lá, copie de novo aqui; o que é só do gerador
+# fica em CSS_POP_EXTRA, que vem depois e sobrescreve.
+CSS_POP = """
+  :root{
+    --fundo:#0B0B16; --fundo2:#12121F; --card:#191927; --card2:#1F1F30;
+    --tinta:#FFFFFF; --corpo:#C9C7E0; --fraco:#8B89A6;
+    --linha:rgba(255,255,255,.10);
+    --coral:#FF4B4B; --verde:#58CC02; --azul:#1CB0F6; --amarelo:#FFC800; --roxo:#CE82FF; --rosa:#FF82C4;
+    --sombra-card:0 14px 38px rgba(0,0,0,.45);
+    --mono:ui-monospace,"Cascadia Mono",Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--fundo);color:var(--tinta);
+    font:16px/1.45 "Segoe UI",system-ui,sans-serif;overflow-x:hidden}
+  body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:
+      radial-gradient(58rem 30rem at 50% -12%, rgba(124,58,237,.55) 0%, transparent 65%),
+      radial-gradient(34rem 20rem at 82% 6%, rgba(236,72,153,.30) 0%, transparent 60%),
+      radial-gradient(30rem 18rem at 8% 12%, rgba(28,176,246,.20) 0%, transparent 60%),
+      linear-gradient(180deg, var(--fundo2) 0%, var(--fundo) 40%);}
+  .wrap{max-width:62rem;margin-inline:auto;padding:0 1.1rem 3rem}
 
-    Devolve dict — nunca uma string única — porque o layout do relatório é
-    FIXO: cada peça tem um lugar reservado na página e é montada lá. Peça
-    ausente vira estado vazio, não buraco que empurra o resto pra cima.
+  @supports (animation-timeline: scroll()){
+    body::after{content:"";position:fixed;top:0;left:0;right:0;height:4px;z-index:99;
+      background:linear-gradient(90deg,var(--roxo),var(--verde),var(--amarelo),var(--coral));
+      transform-origin:0 50%;animation:ler linear both;animation-timeline:scroll(root block)}
+    @keyframes ler{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+  }
 
-    Metade dos dados é viva (git, projetos, versão, PROGRESSO); a outra
-    metade é a descrição canônica do workflow em modelos/visuais/exemplos.json
-    — a mesma fonte do catálogo, para não existirem duas verdades.
-    """
-    vazio = {k: "" for k in ("kpi", "distribuicao", "saude", "gates", "trilha", "camadas", "historico")}
-    if vis is None:
-        return vazio
+  /* ═══ HERO compacto ═══ */
+  .hero{display:grid;grid-template-columns:auto 1fr;gap:1.1rem;align-items:center;
+    padding:2.4rem 0 1.6rem}
+  .mascote{width:92px;height:auto;display:block;cursor:pointer;
+    animation:flutua 4.5s ease-in-out infinite;transition:transform .18s ease}
+  .mascote:active{transform:scale(.94)}
+  .mascote.vibra{animation:vibra .5s ease}
+  @keyframes flutua{50%{transform:translateY(-7px)}}
+  @keyframes vibra{25%{transform:rotate(-7deg)}75%{transform:rotate(7deg)}}
+  .pill{display:inline-flex;align-items:center;gap:.45rem;padding:.32rem .85rem;border-radius:99px;
+    background:rgba(206,130,255,.16);border:1px solid rgba(206,130,255,.45);color:var(--roxo);
+    font:700 .74rem var(--mono);letter-spacing:.06em}
+  .pill i{width:.5rem;height:.5rem;border-radius:50%;background:var(--verde);box-shadow:0 0 10px var(--verde)}
+  .hero h1{margin:.45rem 0 .15rem;font-size:clamp(2.4rem,7vw,3.8rem);font-weight:800;letter-spacing:-.045em;line-height:1;
+    background:linear-gradient(180deg,#fff 30%,#C4B5FD 85%);-webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 8px 34px rgba(124,58,237,.45))}
+  .hero .sub{color:var(--corpo);font:500 .85rem var(--mono)}
+  .hero .sub b{color:var(--verde)}
+  .hero .frescor{margin:.35rem 0 0;color:var(--fraco);font-size:.72rem}
+
+  /* ═══ SETOR ═══ */
+  .setor{margin:1.5rem 0;border-radius:20px;background:var(--card);
+    border:3px solid var(--c,var(--linha));box-shadow:var(--sombra-card);overflow:hidden}
+  .setor > header{display:flex;align-items:center;gap:.8rem;padding:.85rem 1.1rem;
+    background:linear-gradient(90deg, color-mix(in oklab, var(--c) 22%, transparent), transparent 70%)}
+  .setor .ico{width:44px;height:44px;border-radius:13px;background:var(--c);display:grid;place-items:center;flex:0 0 auto;
+    box-shadow:0 5px 15px color-mix(in oklab, var(--c) 55%, transparent)}
+  .setor .ico svg{width:24px;height:24px}
+  .setor h2{margin:0;font-size:1.18rem;font-weight:800;letter-spacing:-.02em}
+  .setor .desc{margin:1px 0 0;color:var(--corpo);font-size:.8rem}
+  .setor .corpo{padding:.95rem 1.1rem 1.05rem}
+
+  /* ═══ ORQUESTRAÇÕES ═══ */
+  .gates{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin:0 0 .8rem}
+  @media(max-width:48rem){.gates{grid-template-columns:repeat(4,1fr)}}
+  .gate{border-radius:10px;padding:.45rem .5rem .4rem;background:var(--card2);border-top:4px solid var(--line,rgba(255,255,255,.2));cursor:pointer;position:relative}
+  .gate b{display:block;font:800 .8rem var(--mono)}
+  .gate span{font-size:.58rem;color:var(--fraco);line-height:1.25;display:block}
+  .gate--ok{border-top-color:var(--verde)} .gate--ok b{color:var(--verde)}
+  .gate--trava{border-top-color:var(--amarelo);background:color-mix(in oklab,var(--amarelo) 12%,var(--card2))}
+  .gate--trava b{color:var(--amarelo)}
+  .gate--espera{border-top-color:rgba(255,255,255,.18)}
+  .gates-leg{margin:.1rem 0 .55rem;font:600 .68rem var(--mono);color:var(--fraco)}
+  .gates-leg b{color:var(--amarelo)}
+  .orc-grid{display:grid;gap:.7rem}
+  @media(min-width:52rem){.orc-grid{grid-template-columns:1.1fr .9fr}}
+  .runs{display:flex;flex-direction:column;gap:.5rem}
+  .run{display:grid;grid-template-columns:auto 1fr auto;gap:.6rem;align-items:center;
+    background:var(--card2);border-radius:12px;padding:.55rem .75rem;cursor:pointer}
+  .run .st{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:1rem}
+  .run--ok .st{background:color-mix(in oklab,var(--verde) 20%,transparent)}
+  .run--warn .st{background:color-mix(in oklab,var(--amarelo) 20%,transparent)}
+  .run b{font-size:.84rem;display:block}
+  .run small{color:var(--fraco);font-size:.68rem}
+  .run .q{font:700 .68rem var(--mono);color:var(--fraco)}
+  .run--ok .q{color:var(--verde)} .run--warn .q{color:var(--amarelo)}
+  .cotas{display:flex;flex-direction:column;gap:.45rem}
+  .cota{display:grid;grid-template-columns:auto 1fr auto;gap:.6rem;align-items:center;
+    background:var(--card2);border-radius:12px;padding:.5rem .7rem}
+  .cota .dot{width:11px;height:11px;border-radius:50%}
+  .cota--ok .dot{background:var(--verde);box-shadow:0 0 10px var(--verde)}
+  .cota--warn .dot{background:var(--amarelo);box-shadow:0 0 10px var(--amarelo)}
+  .cota b{font-size:.82rem}
+  .cota small{display:block;color:var(--fraco);font-size:.66rem}
+  .cota .ritmo{font:800 .64rem var(--mono);padding:.15rem .5rem;border-radius:8px}
+  .cota--ok .ritmo{color:var(--verde);background:color-mix(in oklab,var(--verde) 16%,transparent)}
+  .cota--warn .ritmo{color:var(--amarelo);background:color-mix(in oklab,var(--amarelo) 16%,transparent)}
+  .papeis{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.7rem}
+  .papel{font:700 .7rem var(--mono);padding:.28rem .6rem;border-radius:9px;background:var(--card2);
+    border:1px solid color-mix(in oklab,var(--roxo) 40%,transparent);cursor:pointer}
+  .papel b{color:var(--roxo)}
+
+  /* ═══ cards de ação + botões ═══ */
+  .acoes-voce{display:grid;gap:.7rem}
+  @media(min-width:56rem){.acoes-voce{grid-template-columns:repeat(3,1fr)}}
+  .acao{background:var(--card2);border:2px solid color-mix(in oklab, var(--c) 55%, transparent);
+    border-radius:16px;padding:.8rem .85rem;display:flex;flex-direction:column;gap:.45rem}
+  .acao .n{font:800 .68rem var(--mono);color:var(--c);letter-spacing:.12em}
+  .acao h3{margin:0;font-size:.95rem;line-height:1.3}
+  .acao p{margin:0;color:var(--corpo);font-size:.8rem;flex:1}
+  .acao .rodape-btn{display:flex;gap:.5rem;flex-wrap:wrap}
+  .btn{display:inline-block;text-align:center;padding:.58rem .95rem;border-radius:12px;border:0;cursor:pointer;
+    background:var(--c,var(--roxo));color:#0B0B16;font-weight:800;font-size:.85rem;text-decoration:none;
+    box-shadow:0 4px 0 color-mix(in oklab, var(--c,#CE82FF) 60%, #000);
+    transition:transform .08s ease, box-shadow .08s ease, filter .12s ease}
+  .btn:hover{filter:brightness(1.06)}
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 color-mix(in oklab, var(--c,#CE82FF) 60%, #000)}
+  .btn:focus-visible{outline:3px solid var(--roxo);outline-offset:2px}
+  .btn--sec{background:transparent;color:var(--tinta);border:2px solid color-mix(in oklab, var(--c) 55%, transparent);
+    box-shadow:0 3px 0 color-mix(in oklab, var(--c) 35%, #000)}
+  .btn--sec:active{box-shadow:0 1px 0 color-mix(in oklab, var(--c) 35%, #000)}
+
+  .saude{display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:.6rem}
+  .s-chip{background:var(--card2);border-radius:14px;padding:.7rem .8rem;display:flex;gap:.6rem;align-items:center;
+    border:2px solid transparent;cursor:pointer;transition:transform .12s ease}
+  .s-chip:hover{transform:translateY(-2px)}
+  .s-chip .si{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;flex:0 0 auto}
+  .s-chip .si svg{width:20px;height:20px}
+  .s-chip b{display:block;font-size:.9rem}
+  .s-chip span{color:var(--fraco);font-size:.68rem}
+  .ok   {border-color:color-mix(in oklab,var(--verde) 55%,transparent)} .ok .si{background:color-mix(in oklab,var(--verde) 22%,transparent)} .ok .si svg{color:var(--verde)}
+  .info {border-color:color-mix(in oklab,var(--azul) 55%,transparent)} .info .si{background:color-mix(in oklab,var(--azul) 22%,transparent)} .info .si svg{color:var(--azul)}
+
+  .fig{background:var(--card2);border:1px solid var(--linha);border-radius:14px;padding:.8rem .9rem .6rem;margin:0 0 .7rem}
+  .fig figcaption b{font:700 .74rem var(--mono);color:var(--azul)}
+  .fig .cap{margin:.4rem 0 0;color:var(--fraco);font:.66rem/1.4 var(--mono)}
+  .figs{display:grid;gap:.8rem}
+  @media(min-width:52rem){.figs{grid-template-columns:1.2fr .8fr}}
+  .share{display:flex;height:2.1rem;border-radius:11px;overflow:hidden;border:2px solid var(--linha)}
+  .share i{display:flex;align-items:center;justify-content:center;font:800 .74rem var(--mono);color:#0B0B16}
+  .legenda{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:.5rem;font-size:.74rem;color:var(--corpo)}
+  .legenda b{color:var(--tinta)}
+  .pt{display:inline-block;width:.65rem;height:.65rem;border-radius:3px;margin-right:.3rem;vertical-align:-1px}
+  .spark{display:flex;align-items:flex-end;gap:.45rem;height:5.6rem;padding:.2rem .1rem 0}
+  .spark .col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:.25rem;height:100%}
+  .spark .bar{width:100%;max-width:2.1rem;border-radius:5px 5px 0 0;background:var(--azul);height:calc(var(--h)*.78%);min-height:3px;
+    box-shadow:0 0 14px rgba(28,176,246,.28)}
+  .spark .col:hover .bar{filter:brightness(1.25)}
+  .spark .v{font:700 .58rem var(--mono);color:var(--corpo)}
+  .spark .r{font:.56rem var(--mono);color:var(--fraco);white-space:nowrap}
+
+  .resumo-1linha{display:flex;align-items:center;gap:.9rem;flex-wrap:wrap}
+  .anelzinho{position:relative;width:78px;height:78px;cursor:pointer}
+  .anelzinho .t{position:absolute;inset:0;display:grid;place-items:center;font:800 .95rem var(--mono)}
+  details.variancia{margin-top:.8rem}
+  details.variancia summary{cursor:pointer;font-weight:700;color:var(--azul);list-style:none;user-select:none}
+  details.variancia summary::-webkit-details-marker{display:none}
+  details.variancia summary:focus-visible{outline:3px solid var(--roxo);outline-offset:3px}
+  details.variancia summary::before{content:"▸ "}
+  details[open].variancia summary::before{content:"▾ "}
+  .tabela-wrap{max-height:14rem;overflow:auto;border:1px solid var(--linha);border-radius:11px;margin-top:.6rem}
+  table{width:100%;border-collapse:collapse;font-size:.76rem}
+  th{position:sticky;top:0;background:var(--card);text-align:left;font:700 .62rem var(--mono);text-transform:uppercase;
+    letter-spacing:.08em;color:var(--fraco);padding:.45rem .65rem;border-bottom:1px solid var(--linha)}
+  td{padding:.38rem .65rem;border-bottom:1px solid var(--linha);color:var(--corpo)}
+  td b{color:var(--tinta)}
+
+  /* ═══ PANES (abas no MESMO design) ═══ */
+  .panes-nav{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;margin:1.8rem 0 0}
+  .pn{display:inline-flex;align-items:center;gap:.45rem;padding:.6rem 1rem;border-radius:14px;cursor:pointer;
+    background:var(--card);border:1px solid var(--linha);color:var(--tinta);font-weight:700;font-size:.84rem;
+    transition:transform .12s ease,border-color .12s ease}
+  .pn:hover{transform:translateY(-2px);border-color:var(--roxo)}
+  .pn[aria-pressed="true"]{background:color-mix(in oklab,var(--roxo) 18%,var(--card));border-color:var(--roxo)}
+  .pn:focus-visible{outline:3px solid var(--roxo);outline-offset:2px}
+  .pn svg{width:17px;height:17px;color:var(--roxo)}
+  .pane-pop{margin:1rem 0 0;border:2px solid color-mix(in oklab, var(--c,var(--roxo)) 45%,transparent)}
+  .pane-pop[hidden]{display:none}
+  .pane-pop > header{padding:.6rem .95rem}
+  .pane-pop > header .ico{width:36px;height:36px;border-radius:10px}
+  .pane-pop > header .ico svg{width:19px;height:19px}
+  .pane-pop > header h2{font-size:1rem}
+  .lista-acoes{display:grid;gap:.45rem}
+  @media(min-width:52rem){.lista-acoes{grid-template-columns:1fr 1fr}}
+  .it{display:grid;grid-template-columns:auto 1fr auto;gap:.6rem;align-items:center;
+    background:var(--card2);border-radius:11px;padding:.5rem .7rem;cursor:pointer}
+  .it .num{font:800 .85rem var(--mono);color:var(--roxo);width:1.6rem}
+  .it b{font-size:.82rem;display:block}
+  .it small{color:var(--fraco);font-size:.68rem;display:block}
+  .it .go{font:800 .7rem var(--mono);color:var(--fraco)}
+  .it:hover .go{color:var(--roxo)}
+  .skills-grid{display:grid;gap:.45rem}
+  @media(min-width:52rem){.skills-grid{grid-template-columns:1fr 1fr}}
+  .sk{display:grid;grid-template-columns:1fr auto;gap:.5rem;align-items:center;
+    background:var(--card2);border-radius:11px;padding:.5rem .7rem;cursor:pointer}
+  .sk b{font:700 .8rem var(--mono);color:var(--azul)}
+  .sk small{color:var(--fraco);font-size:.68rem;display:block;margin-top:1px}
+  .sk .go{color:var(--fraco)}
+  .cerebro-3{display:grid;gap:.6rem}
+  @media(min-width:52rem){.cerebro-3{grid-template-columns:repeat(3,1fr)}}
+  .cb{background:var(--card2);border-radius:13px;padding:.7rem .8rem}
+  .cb-tit{font-size:.88rem;cursor:pointer}
+  .cb-tit:focus-visible{outline:3px solid var(--roxo);outline-offset:2px}
+  .cb small{color:var(--fraco);font-size:.7rem;display:block;margin:.25rem 0 .5rem}
+  .docs-lista{display:grid;gap:.4rem}
+  .doc{display:grid;grid-template-columns:auto 1fr auto;gap:.55rem;align-items:center;
+    background:var(--card2);border-radius:10px;padding:.45rem .65rem;cursor:pointer}
+  .doc .ic{font-size:.9rem}
+  .doc b{font-size:.78rem}
+  .doc small{color:var(--fraco);font-size:.66rem;display:block}
+  .doc .go{font:700 .66rem var(--mono);color:var(--fraco)}
+
+  /* foco visível em tudo que é clicável */
+  .chip:focus-visible,.s-chip:focus-visible,.anelzinho:focus-visible,.mascote:focus-visible,
+  .gate:focus-visible,.run:focus-visible,.papel:focus-visible,.it:focus-visible,.sk:focus-visible,.doc:focus-visible,
+  .cota:focus-visible{
+    outline:3px solid var(--roxo);outline-offset:2px}
+
+  /* ═══ TOAST ═══ */
+  #toasts{position:fixed;bottom:1.1rem;left:50%;transform:translateX(-50%);z-index:100;
+    display:flex;flex-direction:column;gap:.45rem;align-items:center;pointer-events:none;max-width:min(92vw,34rem)}
+  .toast{display:flex;align-items:center;gap:.55rem;padding:.62rem 1rem;border-radius:13px;
+    background:var(--card2);border:2px solid var(--verde);color:var(--tinta);font-weight:600;font-size:.85rem;
+    box-shadow:0 12px 34px rgba(0,0,0,.55);animation:surge-toast .22s ease both}
+  .toast.err{border-color:var(--coral)}
+  .toast .t-ico{color:var(--verde);flex:0 0 auto}
+  .toast.err .t-ico{color:var(--coral)}
+  .toast small{display:block;color:var(--fraco);font-weight:500}
+  @keyframes surge-toast{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:none}}
+  .toast.saindo{transition:opacity .25s ease, transform .25s ease;opacity:0;transform:translateY(8px)}
+
+  /* sem animação de carga: a página nasce no estado final (print headless e leitores sem JS veem tudo) */
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+  .nota{margin-top:1.8rem;color:var(--fraco);font-size:.7rem;text-align:center}
+"""
+
+
+# ---------------------------------------------------------------------------
+# v7.17 — ORQUESTRAÇÕES: runs V6, cotas e papéis (fotografia com fonte e data)
+# ---------------------------------------------------------------------------
+
+def _ler_json(arq: Path):
+    txt = u.safe_read_text(arq)
+    if not txt:
+        return None
     try:
-        dados = vis.exemplos()
-    except Exception:
-        dados = {}
-    p = dict(vazio)
+        return json.loads(txt)
+    except (json.JSONDecodeError, ValueError):
+        return None
 
-    atrasados = [x for x in projetos if x.get("estado") == "desatualizado"]
-    etapas = prog.get("etapas", [])
-    feitas = sum(1 for x in etapas if x.get("status") == "feito")
 
-    kpi = [
-        {"valor": versao_resumida(versao), "rotulo": "versão", "status": "ok",
-         "det": (git.get("assunto") or "")[:46]},
-        {"valor": git.get("head_curto") or "—", "rotulo": "commit",
-         "status": "ok" if git.get("sem_push") == 0 else "espera",
-         "det": "= origin/main" if git.get("sem_push") == 0
-                else f"{git.get('sem_push') or '?'} commit sem push"},
-        {"valor": (f"{len(projetos) - len(atrasados)}/{len(projetos)}" if projetos else "—"),
-         "rotulo": "projetos na atual",
-         "status": "ok" if projetos and not atrasados else "espera",
-         "det": "05_sincronizar-projetos.cmd" if atrasados else ("nada a fazer" if projetos else "sem projetos irmãos")},
-        {"valor": (f"{feitas}/{len(etapas)}" if etapas else "—"), "rotulo": "etapas",
-         "status": "ok" if etapas and feitas == len(etapas) else "ativo",
-         "det": "PROGRESSO.json"},
-    ]
+def _quando(iso) -> str:
+    """ISO (UTC ou com fuso) → 'dd/mm HH:MM' no fuso local; '—' se não há data."""
+    if not iso:
+        return "—"
     try:
-        kpi.append({"valor": str(len(vis.ids())), "rotulo": "mecânicas visuais",
-                    "status": "ok", "det": "modelos/visuais/"})
-    except Exception:
+        d = dt.datetime.fromisoformat(str(iso).replace("Z", "+00:00"))
+    except ValueError:
+        return str(iso)[:16]
+    if d.tzinfo is not None:
+        d = d.astimezone()
+    return f"{d:%d/%m %H:%M}"
+
+
+def pastas_runs(c: Path) -> list[tuple[str, Path]]:
+    """(projeto, pasta) de toda .automations/runs/<run>/ conhecida, da mais nova
+    pra mais velha. Procura na central, nas subpastas dela (pets/ roda a V6
+    dentro da central) e nos projetos irmãos. O nome da pasta começa com
+    AAMMDD_HHMMSS, então ordenar pelo nome é ordenar pelo tempo."""
+    bases: list[tuple[str, Path]] = [("megabrain", c)]
+    try:
+        bases += [(p.name, p) for p in sorted(c.iterdir())
+                  if p.is_dir() and not p.name.startswith((".", "_", "9"))]
+    except OSError:
         pass
-    p["kpi"] = vis.render("kpi-linha", {"itens": kpi})
+    try:
+        bases += [(p.name, p) for p in sorted(raiz_projetos(c).iterdir())
+                  if p.is_dir() and p.resolve() != c.resolve()]
+    except OSError:
+        pass
+    achadas = []
+    for nome, base in bases:
+        runs = base / ".automations" / "runs"
+        if not runs.is_dir():
+            continue
+        try:
+            achadas += [(nome, r) for r in runs.iterdir()
+                        if r.is_dir() and re.match(r"\d{6}_\d{6}_", r.name)]
+        except OSError:
+            continue
+    achadas.sort(key=lambda x: x[1].name, reverse=True)
+    return achadas
 
-    if projetos:
-        por_versao: dict[str, int] = {}
-        for x in projetos:
-            chave = x.get("puxada") or "?"
-            por_versao[chave] = por_versao.get(chave, 0) + 1
-        atual = versao_resumida(versao)
-        segs = [{"rotulo": v, "n": n, "status": "ok" if v == atual else "espera"}
-                for v, n in sorted(por_versao.items(), key=lambda kv: -kv[1])]
-        p["distribuicao"] = vis.render("barra-segmentos", {
-            "titulo": f"Os {len(projetos)} projetos por versão do megabrain", "segmentos": segs})
 
-    saude = [
-        {"rotulo": "git", "estado": "ok" if git.get("sem_push") == 0 else "espera",
-         "det": f"{git.get('head_curto') or '—'} · " +
-                ("nada pendente" if git.get("sem_push") == 0 else "commit local sem push")},
-        {"rotulo": "árvore", "estado": "espera" if git.get("suja") else "ok",
-         "det": "mudanças não commitadas" if git.get("suja") else "limpa"},
-        {"rotulo": "projetos", "estado": "espera" if atrasados else "ok",
-         "det": f"{len(atrasados)} desatualizado(s)" if atrasados else "todos na versão atual"},
-        {"rotulo": "biblioteca visual", "estado": "ok" if vis.ids() else "trava",
-         "det": f"{len(vis.ids())} mecânicas em modelos/visuais/"},
-    ]
-    for extra in (saude_extra or []):
-        saude.append(extra)
-    p["saude"] = vis.render("semaforo", {"titulo": "Saúde do sistema", "itens": saude})
+def resumo_run(projeto: str, pasta: Path) -> dict:
+    """O que a run gravou no disco — state, result, manifest, route e o
+    status.json de cada estágio. Campo ausente fica None, nunca inventado."""
+    state = _ler_json(pasta / "state.json") or {}
+    result = _ler_json(pasta / "result.json") or {}
+    manifest = _ler_json(pasta / "manifest.json") or {}
+    route = _ler_json(pasta / "route.json") or {}
+    estagios = []
+    base = pasta / "stages"
+    if base.is_dir():
+        for s in base.iterdir():
+            st = _ler_json(s / "status.json") or {}
+            estagios.append({"id": s.name, "status": st.get("status") or "sem status",
+                             "provider": st.get("provider") or "?",
+                             "inicio": st.get("started_at"), "fim": st.get("finished_at"),
+                             "erro": st.get("error")})
+    estagios.sort(key=lambda x: (x["inicio"] or "", x["id"]))
+    aplicacao = None
+    m = re.search(r"^Aplica[çc][ãa]o ao projeto:\s*(.+)$",
+                  u.safe_read_text(pasta / "HANDOFF.md") or "", re.MULTILINE)
+    if m:
+        aplicacao = m.group(1).strip()
+    job = manifest.get("job") or {}
+    return {"projeto": projeto, "pasta": pasta, "nome": pasta.name,
+            "modo": manifest.get("mode") or "?",
+            "status": state.get("status") or result.get("status") or "sem state.json",
+            "em": state.get("at") or manifest.get("created_at"),
+            "erro": state.get("error"),
+            "objetivo": " ".join(str(job.get("objective") or "").split()),
+            "perfil": route.get("effective_profile"),
+            "result": result, "estagios": estagios, "aplicacao": aplicacao,
+            "config": manifest.get("config") or {}}
 
-    for chave, ident in (("gates", "fluxo-etapas"), ("trilha", "trilha-dupla"), ("camadas", "mapa-camadas")):
-        if ident in dados:
-            p[chave] = vis.render(ident, dados[ident])
 
+ROTULO_RUN = {
+    "verified": ("ok", "✅", "VERIFICADA"),
+    "review_approved": ("ok", "✅", "REVISÃO APROVADA"),
+    "needs_attention": ("warn", "⚠️", "PRECISA DE ATENÇÃO"),
+}
+
+FASES_V6 = [("plan", "Plano", "plano"),
+            ("plan-review", "Rev. plano", "revisão do plano"),
+            ("candidate", "Candidato", "candidato"),
+            ("review", "Rev. final", "revisão final")]
+
+
+def rotulo_run(status: str) -> tuple[str, str, str]:
+    return ROTULO_RUN.get(status, ("warn", "⚠️", status.replace("_", " ").upper()))
+
+
+def gates_run(run: dict) -> list[dict]:
+    """Trilha da pipeline V6 da run: cada fase só fica verde se o status.json
+    do estágio diz 'succeeded' (e, nas revisões, o result.json diz aprovado).
+    A fase onde a run parou fica amarela; o que vem depois fica 'não rodou'."""
+    res = run["result"]
+    gates: list[dict] = []
+    parou = False
+    for chave, curto, longo in FASES_V6:
+        est = [x for x in run["estagios"] if re.fullmatch(rf"{chave}-\d+", x["id"])]
+        if parou or not est:
+            gates.append({"curto": curto, "estado": "espera",
+                          "diz": f"{longo}: não rodou nesta run"
+                                 + (" — a pipeline parou antes." if parou else ".")})
+            continue
+        ultimo = est[-1]
+        quem = ", ".join(sorted({x["provider"] for x in est}))
+        if ultimo["status"] != "succeeded":
+            parou = True
+            gates.append({"curto": curto, "estado": "trava",
+                          "diz": f"{longo}: ONDE A RUN PAROU — estágio {ultimo['id']} "
+                                 f"{ultimo['status']}"
+                                 + (f" ({ultimo['erro']})" if ultimo["erro"] else "")
+                                 + f" · {quem} · {_quando(ultimo['fim'])}."})
+            continue
+        aprovado = {"plan-review": res.get("plan_review_approved"),
+                    "review": res.get("review_approved")}.get(chave)
+        if aprovado is False:
+            parou = True
+            gates.append({"curto": curto, "estado": "trava",
+                          "diz": f"{longo}: rodou ({len(est)} rodada(s), {quem}) mas NÃO aprovou."})
+            continue
+        gates.append({"curto": curto, "estado": "ok",
+                      "diz": f"{longo}: {len(est)} rodada(s) · {quem} · concluído "
+                             f"{_quando(ultimo['fim'])}"
+                             + (" · aprovado no result.json." if aprovado else ".")})
+    # run que terminou mal sem estágio falho (ex.: revisor não cobriu critério):
+    # a última fase que rodou é onde ela parou.
+    if rotulo_run(run["status"])[0] != "ok" and not any(g["estado"] == "trava" for g in gates):
+        feitos = [g for g in gates if g["estado"] == "ok"]
+        if feitos:
+            feitos[-1]["estado"] = "trava"
+            feitos[-1]["diz"] += (f" A run terminou em {run['status']}"
+                                  + (f": {run['erro']}" if run["erro"] else "") + ".")
+    checks = res.get("automated_checks")
+    if not res:
+        gates.append({"curto": "Checagem", "estado": "espera",
+                      "diz": "checagem automática: sem result.json nesta run."})
+    elif checks:
+        ok = res.get("automated_checks_passed") is True
+        gates.append({"curto": "Checagem", "estado": "ok" if ok else "trava",
+                      "diz": f"checagem automática: {len(checks)} item(ns) · "
+                             + ("passou." if ok else "NÃO passou.")})
+    else:
+        gates.append({"curto": "Checagem", "estado": "espera",
+                      "diz": "checagem automática: nenhuma rodou nesta run "
+                             f"(código executado: {res.get('code_executed')})."})
+    gates.append({"curto": "Aplicação", "estado": "espera",
+                  "diz": "aplicação ao projeto: " + (run["aplicacao"] or "não informada no HANDOFF da run")
+                         + " — a V6 não aplica sozinha; quem confere e aplica é o orquestrador."})
+    return gates
+
+
+PAPEIS_V6 = [("plan", "plano", "produz o plano"),
+             ("plan_review", "rev. plano", "revisa o plano antes de executar"),
+             ("candidate", "produz", "produz a entrega candidata"),
+             ("final_review", "final", "faz a revisão final")]
+
+
+def papeis_run(run: dict) -> list[dict]:
+    """Quem fez o quê na run, lido do manifest (perfil efetivo do route.json)."""
+    cfg = run["config"]
+    perfil = run["perfil"] or ""
+    papeis = ((cfg.get("workflow") or {}).get("profiles") or {}).get(perfil) or {}
+    provs = cfg.get("providers") or {}
+    saida = []
+    for chave, curto, longo in PAPEIS_V6:
+        p = papeis.get(chave) or {}
+        if not p.get("provider"):
+            continue
+        modelo = (provs.get(p["provider"]) or {}).get("model") or "modelo não declarado"
+        saida.append({"curto": curto, "quem": f"{p['provider']} {p.get('effort') or ''}".strip(),
+                      "diz": f"{longo}: {p['provider']} ({modelo}), esforço {p.get('effort') or '?'} — "
+                             f"perfil {perfil} da run {run['nome']} ({run['projeto']}). "
+                             "Fonte: manifest.json + route.json da run."})
+    return saida
+
+
+ORDEM_COTAS = ["claude", "codex", "spark", "zai"]
+
+
+def _rotulo_janela(ident: str) -> str:
+    if ident == "session":
+        return "sessão"
+    if ident == "weekly_all":
+        return "semana"
+    if ident.startswith("weekly_scoped:"):
+        return "semana " + ident.split(":", 1)[1]
+    return ident
+
+
+def cotas(c: Path) -> dict:
+    """Cotas por provedor. Duas fontes, cada uma com a data dela:
+    dados/orcamento_ia.json (ritmo por janela, updated_at por provedor) e o
+    último registro de cada provedor em dados/telemetria-orquestracao.json
+    (o que a última run viu). Nada aqui é 'ao vivo' — é a última fotografia."""
+    orc = _ler_json(c / "dados" / "orcamento_ia.json") or {}
+    tel = _ler_json(c / "dados" / "telemetria-orquestracao.json") or {}
+    recentes = tel.get("recent") or []
+    ultima_tel: dict[str, dict] = {}
+    for ev in recentes:
+        for prov, d in (ev.get("providers") or {}).items():
+            ultima_tel[prov] = {"at": ev.get("at"), "moment": ev.get("moment"),
+                                "status": d.get("status"), "pacing": d.get("pacing")}
+    provs = [p for p in ORDEM_COTAS if p in orc or p in ultima_tel]
+    provs += sorted(p for p in set(orc) | set(ultima_tel) if p not in provs)
+    itens = []
+    for prov in provs:
+        o = orc.get(prov) or {}
+        pacing = o.get("pacing") or {}
+        janelas = pacing.get("windows") or {}
+        partes = [f"{_rotulo_janela(k)} {float(v.get('used_percent')):.0f}%"
+                  for k, v in janelas.items() if isinstance(v, dict)
+                  and isinstance(v.get("used_percent"), (int, float))]
+        t = ultima_tel.get(prov)
+        status = pacing.get("status")
+        if status:
+            fonte = f"dados/orcamento_ia.json, leitura {_quando(o.get('updated_at'))}"
+        elif t:
+            status = t.get("pacing") or t.get("status")
+            fonte = f"telemetria-orquestracao.json, leitura {_quando(t.get('at'))}"
+        diz = (f"{prov}: ritmo {status or 'sem leitura'} ({fonte})."
+               + (f" Janelas usadas: {', '.join(partes)}." if partes else ""))
+        if t:
+            diz += (f" Na última run registrada ({_quando(t.get('at'))}, {t.get('moment')}) "
+                    f"o estado era {t.get('status')} e o ritmo {t.get('pacing')}.")
+        itens.append({"prov": prov, "status": status or "sem leitura",
+                      "ok": status == "ok", "janelas": " · ".join(partes[:3]),
+                      "lido": _quando(o.get("updated_at") or (t or {}).get("at")),
+                      "diz": diz})
+    datas = [o.get("updated_at") for o in orc.values() if isinstance(o, dict) and o.get("updated_at")]
+    return {"itens": itens, "orc_lido": _quando(max(datas)) if datas else None,
+            "tel_lido": _quando(tel.get("updated_at")) if tel.get("updated_at") else None,
+            "tel_n": len(recentes)}
+
+
+def orquestracoes(c: Path) -> dict:
+    todas = pastas_runs(c)
+    runs = [resumo_run(p, d) for p, d in todas[:RUNS_MAX]]
+    formal = next((r for r in runs if r["modo"] == "run"), None)
+    if formal is None:
+        for p, d in todas[RUNS_MAX:]:
+            if (_ler_json(d / "manifest.json") or {}).get("mode") == "run":
+                formal = resumo_run(p, d)
+                break
+    return {"runs": runs, "total": len(todas), "formal": formal,
+            "gates": gates_run(formal) if formal else [],
+            "papeis": papeis_run(formal) if formal else [],
+            "cotas": cotas(c)}
+
+
+# ---------------------------------------------------------------------------
+# v7.17 — pele POP v1.2 (CSS/JS embutidos: a saída é arquivo único e offline)
+# ---------------------------------------------------------------------------
+
+CSS_POP_EXTRA = """
+  /* ═══ v7.17 · peças do gerador sobre o esqueleto POP ═══ */
+  .gates{grid-template-columns:repeat(var(--n,8),1fr)}
+  @media(max-width:48rem){.gates{grid-template-columns:repeat(3,1fr)}}
+  .hero .tldr{margin:.4rem 0 0;color:var(--corpo);font-size:.78rem;max-width:70ch}
+  .hero .frescor b{color:var(--verde)} .hero .frescor b.alerta{color:var(--coral)}
+  code{font-family:var(--mono);font-size:.85em;background:rgba(255,255,255,.08);border-radius:5px;padding:0 .3em}
+  .vazio{margin:0;padding:.65rem .85rem;border:1px dashed rgba(255,255,255,.22);border-radius:12px;color:var(--fraco);font-size:.8rem}
+  .sub-tit{margin:1rem 0 .4rem;font:800 .66rem var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--fraco)}
+  .versao{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:.6rem;margin:0 0 .8rem}
+  .versao > div{background:var(--card2);border-radius:14px;padding:.7rem .85rem}
+  .versao .label{display:block;font:700 .62rem var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--fraco)}
+  .versao .big{display:block;margin:.2rem 0;font:800 1.75rem/1.1 var(--mono);letter-spacing:-.03em;color:var(--amarelo);font-variant-numeric:tabular-nums}
+  .versao .anterior .big{color:var(--fraco);text-decoration:line-through;text-decoration-thickness:2px}
+  .versao small{display:block;color:var(--corpo);font-size:.72rem;line-height:1.4}
+  .versao .alerta{color:var(--coral);font-weight:700} .versao .certo{color:var(--verde);font-weight:700}
+  .warn{border-color:color-mix(in oklab,var(--amarelo) 55%,transparent)} .warn .si{background:color-mix(in oklab,var(--amarelo) 22%,transparent)} .warn .si svg{color:var(--amarelo)}
+  .bad{border-color:color-mix(in oklab,var(--coral) 55%,transparent)} .bad .si{background:color-mix(in oklab,var(--coral) 22%,transparent)} .bad .si svg{color:var(--coral)}
+  td.st-atual{color:var(--verde)} td.st-desatualizado{color:var(--coral)} td.st-sem{color:var(--fraco)}
+  .acao .aviso{color:var(--amarelo);font-size:.72rem}
+  .acao p code{white-space:normal}
+  .barra{height:.6rem;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden;margin:.55rem 0}
+  .barra i{display:block;height:100%;background:linear-gradient(90deg,var(--verde),var(--amarelo))}
+  .etapas{list-style:none;margin:.3rem 0 0;padding:0;display:grid;gap:.35rem}
+  .etapa{display:grid;grid-template-columns:1.5rem 1fr;gap:.5rem;align-items:start;background:var(--card2);border-radius:10px;padding:.45rem .65rem;font-size:.8rem}
+  .etapa .ic{font:800 .9rem var(--mono);text-align:center}
+  .etapa--feito .ic{color:var(--verde)} .etapa--fazendo .ic{color:var(--azul)} .etapa--bloqueado .ic{color:var(--coral)} .etapa--pendente .ic{color:var(--fraco)}
+  .etapa small{display:block;color:var(--fraco);font-size:.7rem}
+  .notas,.simples{list-style:none;margin:.3rem 0 0;padding:0;max-height:14rem;overflow:auto;border:1px solid var(--linha);border-radius:11px}
+  .notas li,.simples li{padding:.38rem .65rem;border-bottom:1px solid var(--linha);font-size:.78rem;color:var(--corpo)}
+  .ts{font:600 .64rem var(--mono);color:var(--fraco);margin-right:.4rem}
+  .duo{display:grid;gap:.8rem} @media(min-width:52rem){.duo{grid-template-columns:1fr 1fr}}
+  tr.velha td{background:color-mix(in oklab,var(--coral) 12%,transparent)}
+  .hist{list-style:none;margin:0;padding:0;display:grid;gap:.4rem}
+  .hist li{background:var(--card2);border-radius:11px;padding:.5rem .75rem;font-size:.8rem;color:var(--corpo)}
+  .hist b{font-family:var(--mono);color:var(--amarelo)} .hist small{display:block;color:var(--fraco);font-size:.7rem}
+  a.doc,a.it{color:inherit;text-decoration:none}
+  a.doc:hover .go,a.it:hover .go{color:var(--roxo)}
+  .cb .n{display:block;font:800 1.6rem/1 var(--mono);color:var(--verde);margin:.3rem 0 .1rem}
+  .rodape{margin-top:1.6rem;color:var(--fraco);font:.68rem/1.55 var(--mono);text-align:center}
+  .rodape .btn{margin-top:.5rem}
+"""
+
+# Mesma delegação do template POP v1.2: um listener de clique e um de teclado
+# para a página inteira. Toast monta nó com textContent — o conteúdo que o
+# gerador escreveu em data-diz/data-copia nunca é interpretado como HTML.
+JS_POP = """
+(function(){
+  var dados = {};
+  try { dados = JSON.parse(document.getElementById('mb-pop-dados').textContent); } catch(e){}
+  var fila = document.getElementById('toasts');
+  function toast(msg, sub, err){
+    var t = document.createElement('div');
+    t.className = 'toast' + (err ? ' err' : '');
+    var ico = document.createElement('span'); ico.className = 't-ico'; ico.textContent = err ? '⚠' : '✓';
+    var box = document.createElement('span'); box.textContent = msg;
+    if (sub){ var s = document.createElement('small'); s.textContent = sub; box.appendChild(s); }
+    t.appendChild(ico); t.appendChild(box);
+    fila.appendChild(t);
+    while (fila.children.length > 3) fila.removeChild(fila.firstChild);
+    setTimeout(function(){ t.classList.add('saindo'); setTimeout(function(){ t.remove(); }, 280); }, 3400);
+  }
+  function fallback(txt){
+    var ta = document.createElement('textarea');
+    ta.value = txt; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    var ok = false; try { ok = document.execCommand('copy'); } catch(e){}
+    ta.remove(); return ok;
+  }
+  function copia(txt, diz){
+    var origem = document.activeElement;
+    var feito = function(ok){
+      toast(ok ? (diz || 'Copiado') : 'Não deu pra copiar', ok ? txt : 'copia na mão: ' + txt, !ok);
+      if (origem && origem.focus) { try { origem.focus({preventScroll:true}); } catch(e){} }
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).then(function(){ feito(true); }, function(){ feito(fallback(txt)); });
+    } else { feito(fallback(txt)); }
+  }
+  /* mascote: o listener do próprio elemento roda ANTES da delegação no
+     documento — troca a fala em data-diz e a delegação mostra */
+  var falas = dados.falas || [];
+  var mi = 0;
+  var m = document.getElementById('mascote');
+  if (m) m.addEventListener('click', function(){
+    m.classList.remove('vibra'); void m.offsetWidth; m.classList.add('vibra');
+    if (falas.length){ m.setAttribute('data-diz', '🧠 ' + falas[mi % falas.length]); mi++; }
+  });
+  /* panes: um aberto por vez, no MESMO design (o toast vem do data-diz) */
+  var pnBtns = document.querySelectorAll('.pn');
+  function abrePane(b, alvo){
+    document.querySelectorAll('.pane-pop').forEach(function(p){ p.hidden = true; });
+    pnBtns.forEach(function(x){ x.setAttribute('aria-pressed', 'false'); });
+    if (alvo){ alvo.hidden = false; b.setAttribute('aria-pressed', 'true'); }
+  }
+  pnBtns.forEach(function(b){
+    b.addEventListener('click', function(){
+      var alvo = document.getElementById(b.dataset.pane);
+      if (!alvo) return;
+      var aberto = !alvo.hidden;
+      abrePane(b, aberto ? null : alvo);
+      if (!aberto){
+        var suave = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        alvo.scrollIntoView({block:'nearest', behavior: suave ? 'smooth' : 'auto'});
+      }
+    });
+  });
+  /* delegação única: clique */
+  document.addEventListener('click', function(e){
+    var c = e.target.closest('[data-copia]');
+    if (c){ e.preventDefault(); copia(c.getAttribute('data-copia'), c.getAttribute('data-diz')); return; }
+    var d = e.target.closest('[data-diz]');
+    if (d){
+      /* controle nativo com ação própria DENTRO de um container data-diz:
+         o pai não fala por ele */
+      var proprio = e.target.closest('a,button,summary');
+      if (!proprio || proprio === d){ toast(d.getAttribute('data-diz')); }
+    }
+  });
+  /* delegação única: teclado */
+  document.addEventListener('keydown', function(e){
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    var t = e.target.closest ? e.target.closest('[data-diz],[data-copia]') : null;
+    if (t && t.tagName !== 'A' && t.tagName !== 'BUTTON' && t.tagName !== 'SUMMARY'){
+      e.preventDefault();
+      t.dispatchEvent(new MouseEvent('click', {bubbles:true, cancelable:true}));
+    }
+  });
+  /* reload em intervalo fixo (file:// não avisa quando o arquivo muda).
+     Guarda scroll, painel aberto e <details> abertos; não recarrega com toast
+     na tela nem enquanto ele mexe na página. */
+  var K = 'mb-pop-vivo';
+  try {
+    var s = JSON.parse(sessionStorage.getItem(K) || 'null');
+    if (s){
+      sessionStorage.removeItem(K);
+      (s.abertos || []).forEach(function(id){ var d = document.getElementById(id); if (d && d.tagName === 'DETAILS') d.open = true; });
+      if (s.pane){
+        var b = document.querySelector('.pn[data-pane="' + s.pane + '"]');
+        if (b) abrePane(b, document.getElementById(s.pane));
+      }
+      window.scrollTo(0, s.y || 0);
+    }
+  } catch(e){}
+  var seg = dados.reload || 0;
+  if (seg > 0){
+    var mexeu = Date.now();
+    ['click', 'keydown', 'scroll', 'pointermove', 'wheel', 'touchstart'].forEach(function(ev){
+      document.addEventListener(ev, function(){ mexeu = Date.now(); }, {passive:true});
+    });
+    setInterval(function(){
+      if (Date.now() - mexeu < 10000 || fila.children.length) return;
+      var abertos = [].map.call(document.querySelectorAll('details[open][id]'), function(d){ return d.id; });
+      var pane = document.querySelector('.pane-pop:not([hidden])');
+      try { sessionStorage.setItem(K, JSON.stringify({y: window.scrollY || 0, abertos: abertos, pane: pane ? pane.id : null})); } catch(e){}
+      location.reload();
+    }, seg * 1000);
+  }
+})();
+"""
+
+SVG_ORQ = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><path d="M9 6h6a3 3 0 0 1 3 3v6M15 18H9a3 3 0 0 1-3-3V9"/></svg>'
+SVG_MAO = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11.5V5a1.5 1.5 0 0 1 3 0v6"/><path d="M12 11V4a1.5 1.5 0 0 1 3 0v7"/><path d="M15 11.5V6a1.5 1.5 0 0 1 3 0v8c0 4-2.5 7-6.5 7S5 18 5 14v-3a1.5 1.5 0 0 1 3 0"/></svg>'
+SVG_ESTADO = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12l-8 8-4-4-6 6"/><path d="M3 14v5a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-8"/></svg>'
+SVG_RAIO = '<svg viewBox="0 0 24 24" fill="none" stroke="{cor}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7z"/></svg>'
+SVG_ESTRELA = '<svg viewBox="0 0 24 24" fill="none" stroke="{cor}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2 4 4 .6-3 3 .7 4.4L12 12l-3.7 2 .7-4.4-3-3L10 6z"/></svg>'
+SVG_REDE = '<svg viewBox="0 0 24 24" fill="none" stroke="{cor}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="5" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M6.5 6.5 10 10m4 0 3.5-3.5M6.5 17.5 10 14m4 0 3.5 3.5"/></svg>'
+SVG_LIVRO = '<svg viewBox="0 0 24 24" fill="none" stroke="{cor}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5a2 2 0 0 1 2-2h13v18H6a2 2 0 0 1-2-2zM19 7H7"/></svg>'
+SVG_RELOGIO = '<svg viewBox="0 0 24 24" fill="none" stroke="{cor}" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>'
+SVG_CHIP = {
+    "check": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg>',
+    "terminal": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 17l6-6-6-6M12 19h8"/></svg>',
+    "relogio": SVG_RELOGIO.format(cor="currentColor"),
+    "coracao": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 6.5c-1.5-2-5-2-6.5.5-1.4 2.3.5 5 2 6.5L12 18l4.5-4.5c1.5-1.5 3.4-4.2 2-6.5-1.5-2.5-5-2.5-6.5-.5z"/></svg>',
+    "copias": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/><path d="M10 6.5h7V14"/></svg>',
+}
+MASCOTE = """<svg class="mascote" id="mascote" viewBox="0 0 120 110" aria-label="mascote cérebro do megabrain — clica pra ele falar" role="button" tabindex="0" data-diz="{diz}">
+        <path d="M60 8c-20 0-34 10-38 24-9 3-14 11-14 20 0 12 9 21 20 23 4 9 14 15 26 15 8 0 16-3 22-8 5 4 12 6 19 4 11-3 18-13 18-24 0-4-1-8-3-11 4-15-8-43-50-43z"
+          fill="#CE82FF" stroke="#8B5CF6" stroke-width="4"/>
+        <path d="M52 30c-8 6-10 16-6 24M74 26c4 10 2 22-6 28M40 52c8 4 18 4 26 0" fill="none" stroke="#8B5CF6" stroke-width="3.5" stroke-linecap="round"/>
+        <circle cx="47" cy="58" r="9" fill="#fff"/><circle cx="75" cy="56" r="9" fill="#fff"/>
+        <circle cx="49" cy="59" r="4" fill="#1B1B2A"/><circle cx="73" cy="57" r="4" fill="#1B1B2A"/>
+        <circle cx="51" cy="56" r="1.4" fill="#fff"/><circle cx="75" cy="54" r="1.4" fill="#fff"/>
+        <path d="M52 74q10 8 20 0" fill="none" stroke="#1B1B2A" stroke-width="3.5" stroke-linecap="round"/>
+        <ellipse cx="36" cy="68" rx="5" ry="3.4" fill="#FF82C4" opacity=".8"/>
+        <ellipse cx="86" cy="66" rx="5" ry="3.4" fill="#FF82C4" opacity=".8"/>
+      </svg>"""
+
+
+def _href(saida: Path, alvo: Path, pasta: bool = False) -> str:
+    """Link que funciona de onde o HTML está: relativo quando dá (o vivo em
+    00_painel/ continua abrindo se a central mudar de disco), file:// absoluto
+    quando não dá (saída de teste em outro drive). Resolve a dívida dos hrefs
+    file:/// fixos do template."""
+    try:
+        rel = os.path.relpath(alvo, saida.parent)
+        href = quote(Path(rel).as_posix(), safe="/._-~")
+    except ValueError:
+        href = alvo.resolve().as_uri()
+    if pasta and not href.endswith("/"):
+        href += "/"
+    return href
+
+
+def _md_inline(texto: str) -> str:
+    """Markdown mínimo do HANDOFF (negrito e `código`) DEPOIS do escape."""
+    s = e(texto)
+    s = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", s)
+    return re.sub(r"`([^`]+)`", r"<code>\1</code>", s)
+
+
+def _sem_md(texto: str) -> str:
+    return re.sub(r"\*\*(.+?)\*\*|`([^`]+)`", lambda m: m.group(1) or m.group(2), texto)
+
+
+def _setor(ident: str, cor: str, svg: str, titulo: str, desc: str, corpo: str,
+           slot: str = "", classe_corpo: str = "") -> str:
+    ds = f' data-slot="{slot}"' if slot else ""
+    return (f'<section class="setor" style="--c:var(--{cor})" id="{ident}"{ds}>\n'
+            f'    <header><span class="ico">{svg}</span><div><h2>{e(titulo)}</h2>'
+            f'<p class="desc">{e(desc)}</p></div></header>\n'
+            f'    <div class="corpo {classe_corpo}">{corpo}</div>\n  </section>')
+
+
+def _pane(ident: str, cor: str, svg: str, titulo: str, desc: str, corpo: str) -> str:
+    return (f'<section class="setor pane-pop" id="{ident}" data-slot="{ident}" hidden style="--c:var(--{cor})">\n'
+            f'    <header><span class="ico">{svg.format(cor="#fff")}</span><div><h2>{e(titulo)}</h2>'
+            f'<p class="desc">{e(desc)}</p></div></header>\n'
+            f'    <div class="corpo">{corpo}</div>\n  </section>')
+
+
+def _vazio(texto: str) -> str:
+    return f'<p class="vazio">{e(texto)}</p>'
+
+
+def _chip(estado: str, icone: str, titulo: str, sub: str, diz: str) -> str:
+    return (f'<div class="s-chip {estado}" role="button" tabindex="0" data-diz="{e(diz)}">'
+            f'<span class="si">{SVG_CHIP[icone]}</span><div><b>{e(titulo)}</b>'
+            f'<span>{e(sub)}</span></div></div>')
+
+
+def html_orquestracoes(orq: dict) -> tuple[str, str]:
+    """(legenda + gates + runs + cotas + papéis, texto curto pro hero)."""
+    formal = orq["formal"]
+    if formal:
+        _cls, _ico, rot = rotulo_run(formal["status"])
+        trava_g = next((g for g in orq["gates"] if g["estado"] == "trava"), None)
+        onde = f" — parou em {trava_g['curto'].lower()}" if trava_g else ""
+        leg = (f'<p class="gates-leg">pipeline V6 da última run formal · <b>{e(formal["projeto"])} · '
+               f'{e(_quando(formal["em"]))} — {e(rot)}{e(onde)}</b> · '
+               f'{e(formal["nome"])}</p>')
+        gates = "".join(
+            f'<div class="gate gate--{g["estado"]}" role="button" tabindex="0" '
+            f'data-diz="{e(g["diz"])}"><b>{i}</b><span>{e(g["curto"])}</span></div>'
+            for i, g in enumerate(orq["gates"], 1))
+        bloco_gates = (f'{leg}<div class="gates" data-slot="orc-gates" role="list" '
+                       f'style="--n:{len(orq["gates"])}" aria-label="pipeline V6 da run {e(formal["nome"])}">'
+                       f'{gates}</div>')
+    else:
+        bloco_gates = ('<div class="gates" data-slot="orc-gates">'
+                       + _vazio("sem run formal registrada em .automations/runs/ — os gates aparecem "
+                                "quando a primeira /orquestracao1 terminar") + '</div>')
+
+    cards = []
+    for r in orq["runs"]:
+        cls, ico, rot = rotulo_run(r["status"])
+        titulo = (r["objetivo"][:58] + "…") if len(r["objetivo"]) > 58 else r["objetivo"]
+        if not titulo:
+            titulo = "probe de rota" if r["modo"] == "probe" else f"run {r['modo']}"
+        det = [_quando(r["em"]), r["modo"]]
+        if r["perfil"]:
+            det.append(f"perfil {r['perfil']}")
+        det.append(f"{len(r['estagios'])} estágio(s)")
+        diz = (f"{r['projeto']} · {r['nome']} — estado {r['status']}"
+               + (f" ({r['erro'][:160]})" if r["erro"] else "")
+               + (f". {len(r['result'].get('limitations') or [])} limitação(ões) declarada(s) no result.json"
+                  if r["result"].get("limitations") else "")
+               + ". Caminho das evidências copiado.")
+        cards.append(
+            f'<div class="run run--{cls}" role="button" tabindex="0" data-copia="{e(str(r["pasta"]))}" '
+            f'data-diz="{e(diz)}"><span class="st">{ico}</span><span><b>{e(r["projeto"])} · {e(titulo)}</b>'
+            f'<small>{e(" · ".join(det))}</small></span><span class="q">{e(rot)}</span></div>')
+    runs_html = ("".join(cards) if cards else
+                 _vazio("sem run registrada — nenhuma .automations/runs/ na central, nas subpastas ou nos projetos irmãos"))
+    if orq["total"] > len(orq["runs"]):
+        runs_html += (f'<p class="gates-leg" style="margin:.2rem 0 0">{len(orq["runs"])} mais recentes de '
+                      f'{orq["total"]} runs no disco</p>')
+
+    co = orq["cotas"]
+    fontes = []
+    if co["orc_lido"]:
+        fontes.append(f'orçamento <b>{e(co["orc_lido"])}</b>')
+    if co["tel_lido"]:
+        fontes.append(f'telemetria <b>{e(co["tel_lido"])}</b> ({co["tel_n"]} leituras)')
+    cota_cards = "".join(
+        f'<div class="cota cota--{"ok" if x["ok"] else "warn"}" role="button" tabindex="0" '
+        f'data-diz="{e(x["diz"])}"><span class="dot"></span><span><b>{e(x["prov"])}</b>'
+        f'<small>{e(x["janelas"] or "sem janela medida")} · {e(x["lido"])}</small></span>'
+        f'<span class="ritmo">{e(x["status"])}</span></div>' for x in co["itens"])
+    cotas_html = (
+        f'<p class="gates-leg" style="margin:0 0 .3rem">cotas · fotografia, não ao vivo · '
+        f'{" · ".join(fontes) if fontes else "sem data de leitura"}</p>'
+        + (cota_cards or _vazio("sem leitura de cota registrada (dados/orcamento_ia.json e "
+                                "dados/telemetria-orquestracao.json vazios ou ausentes)")))
+
+    papeis = "".join(
+        f'<span class="papel" role="button" tabindex="0" data-diz="{e(p["diz"])}">'
+        f'<b>{e(p["curto"])}</b> {e(p["quem"])}</span>' for p in orq["papeis"])
+    corpo = (f'{bloco_gates}<div class="orc-grid"><div class="runs" data-slot="orc-runs">{runs_html}</div>'
+             f'<div class="cotas" data-slot="orc-cotas">{cotas_html}</div></div>'
+             + (f'<div class="papeis">{papeis}</div>' if papeis else ""))
+    return corpo, (f"cotas: leitura {co['orc_lido']}" if co["orc_lido"] else "cotas: sem leitura")
+
+
+def html_para_voce(itens: list[str], saida: Path, c: Path) -> str:
+    handoff = _href(saida, u.achar(c, "HANDOFF.md"))
+    if not itens:
+        return _vazio("nada pendente do seu lado — a seção PARA VOCÊ do HANDOFF.md está vazia ou não existe")
+    cards = []
+    for n, item in enumerate(itens, 1):
+        m = re.match(r"\*\*(.+?)\*\*\s*(.*)", item)
+        titulo, corpo = (m.group(1), m.group(2)) if m else (_sem_md(item)[:70], item)
+        botoes = []
+        aviso = ""
+        for cod in re.findall(r"`([^`]+)`", item):
+            cmd = cod.strip()
+            if cmd.startswith("!"):
+                cmd = cmd[1:].strip()
+            # nome + extensão ("01_acoes\11_x.cmd"), não a extensão solta (".cmd")
+            if not re.search(r"\w[\w.-]*\.(cmd|py|ps1|bat)\b|^python\b", cmd):
+                continue
+            if any(ord(ch) < 32 for ch in cmd):
+                aviso = ('<span class="aviso">o comando no HANDOFF tem caractere de controle '
+                         '(provável barra invertida engolida) — corrija na fonte antes de copiar</span>')
+                continue
+            botoes.append(f'<button type="button" class="btn" data-copia="{e(cmd)}" '
+                          f'data-diz="Comando do passo {n} copiado — cola no terminal da central.">copiar comando</button>')
+            break
+        botoes.append(f'<a class="btn btn--sec" href="{e(handoff)}" target="_blank" rel="noopener" '
+                      f'data-diz="Abrindo o HANDOFF.md numa aba nova — seção PARA VOCÊ, item {n}.">abrir HANDOFF</a>')
+        cards.append(f'<div class="acao"><span class="n">PASSO {n}</span><h3>{_md_inline(titulo)}</h3>'
+                     f'<p>{_md_inline(corpo) if corpo else ""}</p>{aviso}'
+                     f'<div class="rodape-btn">{"".join(botoes)}</div></div>')
+    return "".join(cards)
+
+
+def html_figuras(estado_dados: dict, tel: dict | None) -> str:
+    ag = estado_dados.get("agentes") or {}
+    figs = []
+    por_agente = list((ag.get("por_agente") or {}).items())
+    total = sum(v for _, v in por_agente)
+    if total:
+        cores = ["azul", "verde", "amarelo"]
+        top = por_agente[:2]
+        resto = total - sum(v for _, v in top)
+        fatias = top + ([("outros", resto)] if resto else [])
+        barras = "".join(
+            f'<i style="width:{max(1, round(100 * v / total))}%;background:var(--{cores[i]})">'
+            f'{round(100 * v / total)}%</i>' if round(100 * v / total) >= 8 else
+            f'<i style="width:{max(1, round(100 * v / total))}%;background:var(--{cores[i]})"></i>'
+            for i, (k, v) in enumerate(fatias))
+        leg = "".join(f'<span><i class="pt" style="background:var(--{cores[i]})"></i><b>{e(str(k))}</b> {v}</span>'
+                      for i, (k, v) in enumerate(fatias))
+        figs.append(f'<figure class="fig" data-slot="fig-share"><figcaption><b>fig. 1 — quem trabalhou</b></figcaption>'
+                    f'<div class="share" style="margin-top:.5rem">{barras}</div><div class="legenda">{leg}</div>'
+                    f'<p class="cap">{total} eventos em {e(str(ag.get("dias_com_registro", "?")))} dia(s) · '
+                    f'{e(str(ag.get("_fonte", "")))}</p></figure>')
+    por_evento = list((ag.get("por_evento") or {}).items())[:6]
+    if por_evento:
+        topo = max(v for _, v in por_evento) or 1
+        cols = "".join(
+            f'<div class="col" title="{e(str(k))}: {v}"><span class="v">{v}</span>'
+            f'<i class="bar" style="--h:{max(2, round(100 * v / topo))}"></i><span class="r">{e(str(k)[:10])}</span></div>'
+            for k, v in por_evento)
+        figs.append(f'<figure class="fig" data-slot="fig-spark"><figcaption><b>fig. 2 — o que a central fez</b></figcaption>'
+                    f'<div class="spark">{cols}</div><p class="cap">eventos por tipo · fonte dados/estado.json '
+                    f'(gerado {e(str(estado_dados.get("gerado_em", "?"))[:16].replace("T", " "))})</p></figure>')
+    if tel and tel.get("eventos") and (tel.get("por") or {}).get("skill"):
+        skills = list(tel["por"]["skill"].items())[:6]
+        topo = max(v for _, v in skills) or 1
+        cols = "".join(
+            f'<div class="col" title="{e(str(k))}: {v}"><span class="v">{v}</span>'
+            f'<i class="bar" style="--h:{max(2, round(100 * v / topo))};background:var(--roxo)"></i>'
+            f'<span class="r">{e(str(k)[:10])}</span></div>' for k, v in skills)
+        figs.append(f'<figure class="fig"><figcaption><b>fig. 3 — skills mais usadas</b></figcaption>'
+                    f'<div class="spark">{cols}</div><p class="cap">janela 90 dias · .mb-log/telemetria-*.jsonl · '
+                    f'último registro {e(str(tel.get("ultimo") or "—"))}</p></figure>')
+    if not figs:
+        return _vazio("sem telemetria nesta instância (dados/estado.json sem bloco agentes)")
+    return "".join(figs)
+
+
+def html_pane_acoes(c: Path) -> str:
+    try:
+        import mb_registro as reg
+    except ImportError:
+        return _vazio("registro de ações ausente (bin/mb_registro.py)")
+    pasta = c / "01_acoes"
+    itens = []
+    for n, apelido, faz, quando in reg.ACOES:
+        arq = pasta / f"{n:02d}_{apelido}.cmd"
+        falta = "" if arq.is_file() else " · arquivo não encontrado"
+        itens.append(f'<div class="it" role="button" tabindex="0" data-copia="{e(str(arq))}" '
+                     f'data-diz="Ação {n} copiada — {e(quando)}"><span class="num">{n}</span>'
+                     f'<span><b>{e(apelido.replace("-", " "))}</b><small>{e(faz)}{e(falta)}</small></span>'
+                     f'<span class="go">copiar ▸</span></div>')
+    rotina = "".join(
+        f'<div class="it" role="button" tabindex="0" data-copia="{e(cmd)}" data-diz="Comando copiado — quando: {e(quando)}">'
+        f'<span class="num">·</span><span><b>{e(cmd)}</b><small>{e(faz)}</small></span><span class="go">copiar ▸</span></div>'
+        for cmd, faz, quando in reg.ROTINA)
+    agente = "".join(
+        f'<div class="it" role="button" tabindex="0" data-copia="{e(cmd)}" '
+        f'data-diz="Não é pra você rodar — {e(gate)}: {e(faz)} Se não rodar: {e(quebra)}">'
+        f'<span class="num">IA</span><span><b>{e(cmd)}</b><small>{e(gate)} — {e(faz)}</small></span>'
+        f'<span class="go">copiar ▸</span></div>'
+        for cmd, gate, faz, quebra in (getattr(reg, "AGENTE", None) or []))
+    return (f'<div class="lista-acoes">{"".join(itens)}</div>'
+            + (f'<p class="sub-tit">manutenção — sem número, você chama quando precisa</p>'
+               f'<div class="lista-acoes">{rotina}</div>' if rotina else "")
+            + (f'<p class="sub-tit">o que a IA roda nos gates — não é pra você clicar</p>'
+               f'<div class="lista-acoes">{agente}</div>' if agente else ""))
+
+
+def html_pane_skills() -> str:
+    try:
+        import mb_registro as reg
+    except ImportError:
+        return _vazio("sem skills declaradas (bin/mb_registro.py ausente)")
+    por_origem: dict[str, list] = {}
+    for nome, origem, faz, gatilho in reg.SKILLS_DELE:
+        por_origem.setdefault(origem, []).append((nome, faz, gatilho))
+    ordem = ["central", "plugin", "projeto", "Matt Pocock (MIT)"]
+    rotulo = {"central": "do protocolo (fonte em motor/skills/)", "plugin": "do plugin",
+              "projeto": "dos seus projetos", "Matt Pocock (MIT)": "de fora — Matt Pocock, licença MIT"}
+    partes = []
+    for origem in ordem + [o for o in por_origem if o not in ordem]:
+        if origem not in por_origem:
+            continue
+        cards = "".join(
+            f'<div class="sk" role="button" tabindex="0" data-diz="/{e(nome)} — {e(faz)} Chama assim: {e(gatilho)}">'
+            f'<span><b>/{e(nome)}</b><small>{e(faz[:90])}{"…" if len(faz) > 90 else ""}</small></span>'
+            f'<span class="go">▸</span></div>' for nome, faz, gatilho in por_origem[origem])
+        partes.append(f'<p class="sub-tit">{e(rotulo.get(origem, origem))}</p><div class="skills-grid">{cards}</div>')
+    return "".join(partes) or _vazio("sem skills declaradas")
+
+
+def html_pane_cerebro(c: Path, saida: Path) -> str:
+    if ws is None:
+        return _vazio("cérebro indisponível nesta instância (falta bin/mb_workspace.py)")
+    try:
+        d = ws.cerebro_dados(c)
+    except Exception:
+        return _vazio("não deu pra ler o cérebro nesta geração")
+    cer = Path(d["caminho"])
+    vence = f' · {d["vencidas"]} vencida(s)' if d["vencidas"] else ""
+    blocos = [("raw", "📁 raw/", d["raw"], "fontes cruas guardadas",
+               "raw/ — as fontes cruas que entraram (artigo, PDF, transcrição, briefing). Nada morre no chat."),
+              ("wiki", "🧠 wiki/", len(d["wiki"]), f"páginas destiladas{vence}",
+               f"wiki/ — um tópico por página. {d['vencidas']} vencida(s), {d['a_vencer']} vencendo em 14 dias."),
+              ("pessoas", "👤 pessoas/", d["pessoas"], "cards de contato",
+               "pessoas/ — um card por contato: quem é, como trabalha, histórico.")]
+    cards = "".join(
+        f'<div class="cb"><b class="cb-tit" role="button" tabindex="0" data-diz="{e(diz)}">{tit}</b>'
+        f'<span class="n">{n}</span><small>{e(sub)}</small>'
+        f'<a class="btn btn--sec" style="--c:var(--verde)" href="{e(_href(saida, cer / sub_p, pasta=True))}" '
+        f'target="_blank" rel="noopener" data-diz="Abrindo a pasta {sub_p}/ numa aba nova…">abrir</a></div>'
+        for sub_p, tit, n, sub, diz in blocos)
+    entrada = d["entrada"]
+    return (f'<div class="cerebro-3">{cards}</div>'
+            f'<p class="gates-leg" style="margin:.7rem 0 0">{len(entrada)} fonte(s) esperando /ingerir em 02_entrada · '
+            f'última manutenção do cérebro: <b>{e(str(d["ultima_manutencao"]))}</b></p>')
+
+
+def _titulo_doc(d: dict) -> str:
+    """Título do índice; se ele carrega URL (comentário de modelo de terceiro
+    virando '# título'), mostra o nome do arquivo — o painel é offline e não
+    escreve endereço remoto nem como texto."""
+    titulo = str(d.get("titulo") or "")
+    if not titulo or re.search(r"https?://", titulo, re.IGNORECASE):
+        return Path(d["caminho"]).name
+    return titulo
+
+
+def html_pane_docs(c: Path, saida: Path, estado_dados: dict) -> str:
+    principais = [("📍", "ESTADO.md", u.achar(c, "ESTADO.md"), "onde estamos · bloqueio · próximo passo"),
+                  ("🤝", "HANDOFF.md", u.achar(c, "HANDOFF.md"), "o bastão entre sessões"),
+                  ("⚖️", "DECISOES.md", u.achar(c, "DECISOES.md"), "decisão + alternativa + verificação"),
+                  ("🎓", "licoes-megabrain.md", c / "memoria" / "nucleo" / "licoes-megabrain.md", "lições lidas pelo hook"),
+                  ("🧾", "dados/estado.json", c / "dados" / "estado.json", "a mesma informação, pra IA ler"),
+                  ("🗂️", "relatórios antigos", pasta_arquivo(c) / "INDICE.md", "o painel antes de cada troca de versão")]
+    linhas = "".join(
+        f'<a class="doc" href="{e(_href(saida, arq))}" target="_blank" rel="noopener" '
+        f'data-diz="Abrindo {e(nome)} numa aba nova…"><span class="ic">{ic}</span>'
+        f'<span><b>{e(nome)}</b><small>{e(sub)}</small></span><span class="go">abrir ▸</span></a>'
+        for ic, nome, arq, sub in principais if arq.is_file())
+    docs = (estado_dados.get("documentos") or {}).get("itens") or []
+    grupos: dict[str, list] = {}
+    for d in docs:
+        raiz = d["caminho"].split("/")[0] if "/" in d["caminho"] else "raiz"
+        grupos.setdefault(raiz, []).append(d)
+    detalhes = []
+    for raiz in sorted(grupos):
+        ident = "docs-" + (re.sub(r"[^a-z0-9]+", "-", raiz.casefold()).strip("-") or "raiz")
+        itens = "".join(
+            f'<a class="doc" href="{e(_href(saida, c / d["caminho"]))}" target="_blank" rel="noopener" '
+            f'data-diz="Abrindo {e(d["caminho"])} numa aba nova…"><span class="ic">📄</span>'
+            f'<span><b>{e(_titulo_doc(d))}</b><small>{e(d["caminho"])} · mudou {e(str(d.get("modificado") or "—"))}</small></span>'
+            f'<span class="go">abrir ▸</span></a>'
+            for d in sorted(grupos[raiz], key=lambda x: x["caminho"]))
+        detalhes.append(f'<details class="variancia" id="{e(ident)}"><summary data-diz="Pasta {e(raiz)}: '
+                        f'{len(grupos[raiz])} documento(s).">{e(raiz)} · {len(grupos[raiz])}</summary>'
+                        f'<div class="docs-lista" style="margin-top:.5rem">{itens}</div></details>')
+    indice = ("".join(detalhes) if detalhes else
+              _vazio("índice de documentos ausente — rode python bin/mb-estado.py"))
+    return (f'<div class="docs-lista">{linhas}</div><p class="sub-tit">todos os documentos · '
+            f'{len(docs)} no índice de dados/estado.json</p>{indice}')
+
+
+def html_pane_historico(c: Path, saida: Path, anterior: dict, snapshot) -> str:
     linha = _timeline_versao(c)
-    if linha:
-        p["historico"] = vis.render("timeline", {"titulo": "Histórico de versão", "itens": linha})
-    return p
+    itens = "".join(f'<li><b>{e(x["titulo"])}</b> <span class="ts">{e(x["data"])}</span>'
+                    f'<small>{e(x["det"])}</small></li>' for x in linha)
+    ant = (f'versão anterior: <b>{e(anterior.get("versao", "?"))}</b> · commit {e(anterior.get("commit", "—"))}'
+           + (f' · saiu {e(anterior.get("saiu_em", "")[:16].replace("T", " "))}' if anterior.get("saiu_em") else "")
+           if anterior else "versão anterior: — (primeira versão registrada)")
+    snap = (f"HTML anterior guardado agora: {snapshot.name}" if snapshot else
+            "o HTML anterior só é guardado quando versão ou commit muda")
+    indice = pasta_arquivo(c) / "INDICE.md"
+    return (f'<p class="gates-leg" style="margin:0 0 .5rem">{ant} · {e(snap)}</p>'
+            + (f'<ul class="hist">{itens}</ul>' if itens else
+               _vazio("VERSAO.txt sem linhas no formato 'AAAA-MM-DD · vX.Y — título'"))
+            + f'<div class="rodape-btn" style="margin-top:.7rem"><a class="btn btn--sec" href="{e(_href(saida, indice))}" '
+              'target="_blank" rel="noopener" data-diz="Abrindo o índice de relatórios antigos numa aba nova…">'
+              'relatórios antigos</a></div>')
 
 
-def gerar_html(c: Path, forcar_snapshot: bool = False) -> bool:
-    e = html.escape
+def gerar_html(c: Path, forcar_snapshot: bool = False, saida: Path | None = None,
+               tema: str | None = None) -> bool:
+    """Monta o RELATORIO.html no esqueleto POP v1.2.
+
+    `saida` diferente do vivo = geração de prova: grava só o HTML pedido e NÃO
+    mexe em 90_arquivo/relatorios-antigos/ (nem snapshot, nem versao-atual.json).
+    """
+    vivo = u.achar(c, "RELATORIO.html")
+    saida = Path(saida) if saida else vivo
+    registrar = saida.resolve() == vivo.resolve()
     estado_dados = _estado_json(c)
     proveniencia = estado_dados.get("gerado_de") or {}
     fp = proveniencia.get("fingerprint") or {}
@@ -902,6 +1508,8 @@ def gerar_html(c: Path, forcar_snapshot: bool = False) -> bool:
         print("ERRO: dados/estado.json sem fingerprint atual — rode `python bin/mb-estado.py`")
         return False
     frescor_html = frescor.bloco_html(proveniencia)
+    agora_fp = frescor.calcular(c).get("valor")
+    frescor_ok = agora_fp == fp.get("valor")
     prog = carregar_progresso(c)
     etapas = prog.get("etapas", [])
     notas = prog.get("notas", [])[-30:][::-1]
@@ -921,433 +1529,270 @@ def gerar_html(c: Path, forcar_snapshot: bool = False) -> bool:
     atual = {"versao": versao_resumida(versao), "versao_linha": versao,
              "commit": git["head_curto"], "assunto": git["assunto"], "data_commit": git["data"],
              "visto_em": agora.astimezone().isoformat(timespec="minutes")}
-    ver = estado_versao(c, atual, forcar_snapshot)
+    if registrar:
+        ver = estado_versao(c, atual, forcar_snapshot)
+    else:
+        guardado = _ler_json(pasta_arquivo(c) / "versao-atual.json") or {}
+        mesmo = all((guardado.get("atual") or {}).get(k) == atual.get(k) for k in ("versao", "commit"))
+        ver = {"atual": atual, "snapshot": None,
+               "anterior": (guardado.get("anterior") or {}) if mesmo else (guardado.get("atual") or {})}
     anterior = ver["anterior"]
-    try:
-        import mb_registro as _mbreg
-        _reg_acoes = _mbreg.ACOES
-    except ImportError:
-        _reg_acoes = []
-    # v7.5: o h1 mostrava PROGRESSO.json["projeto"], string congelada na v6.7 —
-    # a primeira coisa que ele lê pra saber "onde estou" mentia a versão.
-    # Nome vem do PROGRESSO (sem o sufixo de versão), número vem do VERSAO.txt.
+    # v7.5: nome vem do PROGRESSO (sem o sufixo de versão), número vem do VERSAO.txt.
     nome_projeto = re.sub(r"\s+v\d+(\.\d+)*\b.*$", "",
                           str(prog.get("projeto", "megabrain"))).strip() or "megabrain"
-    titulo_h1 = f"{nome_projeto} {versao_resumida(versao)}"
     if git["sem_push"] is None:
         push_txt = "remoto desconhecido (git sem origin/main)" if git["repo"] else "sem repositório git"
-        push_cls = "det"
+        push_cls = ""
     elif git["sem_push"] == 0:
-        push_txt = f"origin/main = {git['origin_curto']} · nada pendente de push"
-        push_cls = "ok"
+        push_txt, push_cls = f"origin/main = {git['origin_curto']} · nada pendente de push", "certo"
     else:
-        push_txt = (f"origin/main conhecido = {git['origin_curto']} · "
-                    f"{git['sem_push']} commit{'s' if git['sem_push'] != 1 else ''} local"
-                    f"{'is' if git['sem_push'] != 1 else ''} SEM PUSH — rode git push")
+        push_txt = (f"origin/main conhecido = {git['origin_curto']} · {git['sem_push']} "
+                    f"commit(s) local(is) SEM PUSH")
         push_cls = "alerta"
-    suja_txt = " · árvore com mudanças não commitadas" if git["suja"] else ""
-    anterior_txt = (f"{e(anterior.get('versao', '?'))} · commit {e(anterior.get('commit', '—'))}"
-                    f"{' · saiu ' + e(anterior.get('saiu_em', '')[:16].replace('T', ' ')) if anterior.get('saiu_em') else ''}"
-                    if anterior else "— (primeira versão registrada)")
-    snapshot_txt = (f"HTML anterior guardado: {e(ver['snapshot'].name)}" if ver["snapshot"]
-                    else "guardado só quando versão/commit muda (90_arquivo/relatorios-antigos/)")
 
     projetos = projetos_versao(c, versao)
-    linhas_proj = "".join(
-        f'<tr class="proj--{e(p["estado"].split()[0])}"><td>{e(p["projeto"])}</td>'
-        f'<td>{e(p["puxada"])}</td><td>{e(p["commit"] or "—")}</td>'
-        f'<td>{e(p["quando"] or "—")}</td><td><span class="pill pill--{e(p["estado"].split()[0])}">{e(p["estado"])}</span></td></tr>'
-        for p in projetos
-    ) or '<tr><td colspan="5" class="det">nenhum projeto irmão com MEGABRAIN/ encontrado em ' \
-         f'{e(str(raiz_projetos(c)))}</td></tr>'
+    n_atual = sum(1 for p in projetos if p["estado"] == "atual")
     desatualizados = sum(1 for p in projetos if p["estado"] == "desatualizado")
-
     para_voce = secao_para_voce(c)
-    bloco_para_voce = ""
-    if para_voce:
-        itens = "".join(
-            "<li>" + re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>",
-                            re.sub(r"`([^`]+)`", r"<code>\1</code>", e(x))) + "</li>"
-            for x in para_voce)
-        bloco_para_voce = (f'<section class="voce"><span class="label">👉 para você — o que fazer agora '
-                           f'({len(para_voce)})</span><ol>{itens}</ol>'
-                           f'<p class="det">fonte: seção "PARA VOCÊ" do HANDOFF.md — edite lá, não aqui.</p></section>')
+    orq = orquestracoes(c)
+    orq_html, cotas_txt = html_orquestracoes(orq)
+    tel = ws.telemetria_dados(c) if ws is not None else None
+    memo = estado_dados.get("memoria") or {}
+    suite = estado_dados.get("suite") or {}
 
-    linhas_etapas = []
-    for et in etapas:
-        st = et.get("status", "pendente")
-        detalhe = et.get("detalhe") or ""
-        ts = (et.get("ts") or "")[11:16]
-        linhas_etapas.append(
-            f'<li class="etapa etapa--{e(st)}"><span class="ic">{ICONE.get(st, "○")}</span>'
-            f'<div><strong>{e(et.get("titulo", et.get("id", "?")))}</strong>'
-            f'{f" <span class=ts>{e(ts)}</span>" if ts and st == "feito" else ""}'
-            f'{f"<br><span class=det>{e(detalhe)}</span>" if detalhe else ""}</div></li>'
-        )
+    # --- hero ---
+    mascote_falas = []
+    if orq["formal"]:
+        trava_g = next((g for g in orq["gates"] if g["estado"] == "trava"), None)
+        mascote_falas.append(f"V6: última run formal ({orq['formal']['projeto']}, {_quando(orq['formal']['em'])}) "
+                             f"terminou em {rotulo_run(orq['formal']['status'])[2]}"
+                             + (f" — parou em {trava_g['curto'].lower()}." if trava_g else "."))
+    else:
+        mascote_falas.append("Nenhuma run formal da V6 no disco ainda.")
+    if orq["cotas"]["itens"]:
+        mascote_falas.append("Cotas (última fotografia): " + ", ".join(
+            f"{x['prov']} {x['status']}" for x in orq["cotas"]["itens"]) + ".")
+    if projetos:
+        mascote_falas.append(f"{n_atual} de {len(projetos)} cópias de projeto na versão atual.")
+    mascote_falas.append(f"{len(para_voce)} passo(s) dependem de você no HANDOFF." if para_voce
+                         else "Nada pendente do seu lado no HANDOFF.")
+    mascote_falas.append("Regra da casa: nenhum clique seu pode nascer mudo.")
+    frescor_txt = (f'<b>frescor confere</b> · {e(fp["algoritmo"])}:{e(fp["valor"][:12])} · '
+                   f'{len(proveniencia.get("fontes") or [])} fontes' if frescor_ok else
+                   f'<b class="alerta">frescor diverge</b> · estado.json tem {e(fp["valor"][:12])}, as fontes hoje '
+                   f'dão {e(str(agora_fp)[:12])} — rode <code>python bin/mb-estado.py</code>')
+    hero = f"""<header class="hero" data-slot="hero-status">
+    <div>
+      {MASCOTE.format(diz=e("🧠 " + mascote_falas[0]))}
+    </div>
+    <div>
+      {mb_pop_tema.HTML_TEMA_CONTROLE}
+      <span class="pill"><i></i>GERAÇÃO {agora:%d/%m %H:%M} · trava {e(quem)}{f" até {e(ate)}" if ate not in ("-", "—") else ""}</span>
+      <h1>{e(nome_projeto.upper())}</h1>
+      <p class="sub">{e(versao_resumida(versao))} · {e(git["head_curto"])} · relatório vivo · {e(cotas_txt)} · recarrega a cada {RELOAD_SEGUNDOS}s · tudo local</p>
+      <p class="frescor">{frescor_txt} · estado.json gerado {e(str(estado_dados.get("gerado_em", "?"))[:16].replace("T", " "))}</p>
+      {f'<p class="tldr" title="{e(tldr)}">{e(tldr[:260])}{"…" if len(tldr) > 260 else ""}</p>' if tldr else ""}
+    </div>
+  </header>"""
 
+    # --- ESTADO DA CENTRAL ---
+    versao_bloco = f"""<div class="versao">
+        <div><span class="label">versão atual</span><span class="big">{e(versao_resumida(versao).split(" ")[0])}</span>
+          <small title="{e(versao)}">{e(versao[:120])}{"…" if len(versao) > 120 else ""}</small></div>
+        <div><span class="label">base de geração</span><span class="big">{e(git["head_curto"])}</span>
+          <small>{e(git["assunto"][:80])}{" · " + e(git["data"]) if git["data"] else ""}</small>
+          <small class="{push_cls}">{e(push_txt)}{" · árvore com mudanças não commitadas" if git["suja"] else ""}</small></div>
+        <div class="anterior"><span class="label">versão anterior</span><span class="big">{e(str(anterior.get("versao", "—")).split(" ")[0]) if anterior else "—"}</span>
+          <small>commit {e(anterior.get("commit", "—")) if anterior else "—"}{" · saiu " + e(anterior.get("saiu_em", "")[:16].replace("T", " ")) if anterior and anterior.get("saiu_em") else ""}</small></div>
+      </div>"""
+    chips = [
+        _chip("ok" if git["sem_push"] == 0 else "warn", "terminal", f"git {git['head_curto']}",
+              "nada pendente" if git["sem_push"] == 0 else ("sem remoto conhecido" if git["sem_push"] is None else f"{git['sem_push']} sem push"),
+              f"git: HEAD {git['head_curto']} — {git['assunto']}. {push_txt}."),
+        _chip("warn" if git["suja"] else "ok", "check", "árvore " + ("com mudanças" if git["suja"] else "limpa"),
+              "mudanças não commitadas" if git["suja"] else "nada a commitar",
+              "git status --porcelain " + ("tem mudanças não commitadas." if git["suja"] else "vazio.")),
+        _chip("ok" if projetos and not desatualizados else "warn", "copias",
+              f"{n_atual}/{len(projetos)} cópias" if projetos else "sem cópias",
+              f"{desatualizados} desatualizada(s)" if desatualizados else "todas na atual",
+              f"{n_atual} de {len(projetos)} projetos com MEGABRAIN/ na versão atual; desatualizado = rode a ação 5."),
+        _chip("ok" if quem in ("livre", "-") else "warn", "relogio", f"trava {quem}",
+              f"até {ate}" if ate not in ("-", "—") else "HANDOFF.md",
+              f"TRAVADO_POR: {quem} · ATÉ: {ate} (última ocorrência no HANDOFF.md)."),
+        _chip("ok" if frescor_ok else "bad", "check", "frescor " + ("confere" if frescor_ok else "diverge"),
+              fp["algoritmo"], "fingerprint de dados/estado.json " + ("igual ao das fontes agora." if frescor_ok else
+              "diferente do calculado agora — rode python bin/mb-estado.py.")),
+    ]
+    if memo.get("licoes_no_arquivo") is not None:
+        chips.append(_chip("info", "coracao", f"{memo['licoes_no_arquivo']} lições",
+                           "índice em dia" if memo.get("indice_em_dia") else "índice atrasado",
+                           f"{memo['licoes_no_arquivo']} lições no arquivo, {memo.get('licoes_indexadas')} indexadas "
+                           f"(dados/estado.json, {str(estado_dados.get('gerado_em', '?'))[:10]})."))
+    chips.append(_chip("ok" if suite.get("verde") else "info", "check",
+                       f"{suite['testes']} testes" if suite.get("testes") is not None else "testes sem medição",
+                       "suíte verde" if suite.get("verde") else "rode python bin/mb-testar.py",
+                       f"Suíte: {suite.get('_fonte') or 'sem registro em dados/estado.json'} — número nulo fica nulo, nunca zero."))
+
+    def estado_cls(p):
+        return "st-" + p["estado"].split()[0]
+    linhas_proj = "".join(
+        f'<tr><td><b>{e(p["projeto"])}</b></td><td>{e(p["puxada"])}</td><td>{e(p["commit"] or "—")}</td>'
+        f'<td>{e(p["quando"] or "—")}</td><td class="{estado_cls(p)}">{"✓ " if p["estado"] == "atual" else "✕ "}{e(p["estado"])}</td></tr>'
+        for p in projetos)
+    circ = 219.9
+    offset = circ * (1 - (n_atual / len(projetos))) if projetos else circ
+    acao5 = c / "01_acoes" / "05_sincronizar-projetos.cmd"
+    projetos_html = (f"""<details class="variancia" id="det-projetos">
+        <summary data-diz="{e(f'{len(projetos)} projetos com MEGABRAIN/: {n_atual} na versão atual, {desatualizados} desatualizados. Fonte: VERSAO.txt + .mb-origem.json de cada cópia.')}">ver cópias por projeto ({desatualizados} desatualizada(s) · {n_atual} em dia)</summary>
+        <div class="resumo-1linha" style="margin-top:.6rem" data-slot="anel-projetos">
+          <span class="anelzinho" role="button" tabindex="0" data-diz="{e(f'{n_atual} de {len(projetos)} cópias na versão atual ({versao_resumida(versao)}).')}">
+            <svg width="78" height="78" viewBox="0 0 86 86" aria-hidden="true"><circle cx="43" cy="43" r="35" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="9"/><circle cx="43" cy="43" r="35" fill="none" stroke="{"#58CC02" if not desatualizados else "#FFC800"}" stroke-width="9" stroke-linecap="round" stroke-dasharray="{circ}" stroke-dashoffset="{offset:.1f}" transform="rotate(-90 43 43)"/></svg>
+            <span class="t">{n_atual}/{len(projetos)}</span>
+          </span>
+          <p style="margin:0;color:var(--corpo);font-size:.85rem;max-width:34ch">{f'<b style="color:var(--tinta)">{desatualizados} desatualizada(s).</b> Um comando resolve todas: <b style="color:var(--amarelo)">ação 5</b>.' if desatualizados else '<b style="color:var(--tinta)">Todas na versão atual.</b> Nada a sincronizar.'}</p>
+          <div class="rodape-btn">
+            <button type="button" class="btn" style="--c:var(--verde)" data-copia="{e(str(acao5))}" data-diz="Ação 5 copiada — cole no terminal da central pra sincronizar as cópias.">copiar ação 5</button>
+            <a class="btn btn--sec" style="--c:var(--verde)" href="{e(_href(saida, c / "01_acoes", pasta=True))}" target="_blank" rel="noopener" data-diz="Abrindo a pasta 01_acoes numa aba nova…">abrir pasta</a>
+          </div>
+        </div>
+        <div class="tabela-wrap" data-slot="tabela-projetos">
+          <table><thead><tr><th>projeto</th><th>puxou</th><th>commit</th><th>quando</th><th>estado</th></tr></thead>
+          <tbody>{linhas_proj}</tbody></table>
+        </div>
+      </details>""" if projetos else
+                     f'<div data-slot="anel-projetos"></div><div data-slot="tabela-projetos">'
+                     f'{_vazio("nenhum projeto irmão com MEGABRAIN/ encontrado em " + str(raiz_projetos(c)))}</div>')
+
+    ag = estado_dados.get("agentes") or {}
+    tele_html = f"""<details class="variancia" id="det-telemetria">
+        <summary data-diz="Telemetria local: {e(str(ag.get('eventos', 0)))} eventos. Tudo fica no seu PC.">telemetria geral · {e(str(ag.get("eventos", "—")))} eventos em {e(str(ag.get("dias_com_registro", "—")))} dias</summary>
+        <div class="figs" data-slot="telemetria-geral" style="margin-top:.7rem">{html_figuras(estado_dados, tel)}</div>
+      </details>"""
+
+    linhas_etapas = "".join(
+        f'<li class="etapa etapa--{e(et.get("status", "pendente"))}"><span class="ic">{ICONE.get(et.get("status", "pendente"), "○")}</span>'
+        f'<div><b>{e(et.get("titulo", et.get("id", "?")))}</b>'
+        f'{" <span class=ts>" + e((et.get("ts") or "")[11:16]) + "</span>" if et.get("ts") and et.get("status") == "feito" else ""}'
+        f'{"<small>" + e(et.get("detalhe")) + "</small>" if et.get("detalhe") else ""}</div></li>'
+        for et in etapas)
     linhas_notas = "".join(
-        f'<li><span class="ts">{e((n.get("ts") or "")[11:19])}</span> {e(n.get("texto", ""))}</li>'
-        for n in notas
-    ) or "<li class=det>sem notas ainda</li>"
-
+        f'<li><span class="ts">{e((n.get("ts") or "")[:16].replace("T", " "))}</span>{e(n.get("texto", ""))}</li>'
+        for n in notas) or '<li>sem notas ainda</li>'
+    linhas_dec = "".join(f"<li>{e(t)}</li>" for t in ultimas_decisoes(c)) or "<li>—</li>"
     linhas_ev = "".join(
-        f"<tr><td>{e(h)}</td><td>{e(ag)}</td><td>{e(ev)}</td><td>{e(res)}</td></tr>"
-        for h, ag, ev, res in eventos_hoje(c)
-    ) or '<tr><td colspan="4" class="det">nenhum evento hoje</td></tr>'
-
-    linhas_dec = "".join(f"<li>{e(t)}</li>" for t in ultimas_decisoes(c)) or "<li class=det>—</li>"
-
+        f"<tr><td>{e(h)}</td><td>{e(ag_)}</td><td>{e(ev)}</td><td>{e(res)}</td></tr>"
+        for h, ag_, ev, res in eventos_hoje(c)) or '<tr><td colspan="4">nenhum evento hoje</td></tr>'
     fila = fila_pendentes(c)
     linhas_fila = "".join(
-        f'<tr{" style=background:var(--signal-soft)" if item["idade"] >= 7 or not item["dono"] else ""}>'
-        f'<td>{e(item["pasta"])}</td>'
-        f'<td>{e(item["dono"] or "SEM DONO")}</td>'
-        f'<td>{item["idade"]}d</td></tr>'
-        for item in fila
-    ) or '<tr><td colspan="3" class="det">fila vazia</td></tr>'
+        f'<tr{" class=velha" if item["idade"] >= 7 or not item["dono"] else ""}><td>{e(item["pasta"])}</td>'
+        f'<td>{e(item["dono"] or "SEM DONO")}</td><td>{item["idade"]}d</td></tr>'
+        for item in fila) or '<tr><td colspan="3">fila vazia</td></tr>'
+    execucao_html = f"""<details class="variancia" id="det-execucao">
+        <summary data-diz="{e(f'Execução: {feitas} de {len(etapas)} etapas feitas no PROGRESSO.json, {len(notas)} nota(s), eventos de hoje e fila de pendências.')}">execução · {feitas}/{len(etapas)} etapas ({pct}%) · notas · decisões · eventos</summary>
+        <div style="margin-top:.6rem">
+          <p class="sub-tit" style="margin-top:0">progresso — {e(str(prog.get("projeto", "")))}</p>
+          <div class="barra"><i style="width:{pct}%"></i></div>
+          {f'<ul class="etapas">{linhas_etapas}</ul>' if linhas_etapas else _vazio("sem etapas no PROGRESSO.json")}
+          <div class="duo">
+            <div><p class="sub-tit">notas da execução</p><ul class="notas">{linhas_notas}</ul></div>
+            <div><p class="sub-tit">últimas decisões</p><ul class="simples">{linhas_dec}</ul></div>
+          </div>
+          <p class="sub-tit">eventos de hoje</p>
+          <div class="tabela-wrap"><table><thead><tr><th>hora</th><th>agente</th><th>evento</th><th>resumo</th></tr></thead><tbody>{linhas_ev}</tbody></table></div>
+          <p class="sub-tit">fila de pendências · destaque = 7+ dias ou sem dono</p>
+          <div class="tabela-wrap"><table><thead><tr><th>nota</th><th>dono</th><th>idade</th></tr></thead><tbody>{linhas_fila}</tbody></table></div>
+        </div>
+      </details>"""
 
-    # --- v6.6: peças visuais, conteúdo .md e CSS da biblioteca ---
-    na_central = u.e_central(c) if hasattr(u, "e_central") else True
-    pecas = pecas_visuais(c, git, versao, projetos, prog, na_central)
-    navs_md, secoes_md = conteudo_md(c, na_central)
+    estado_corpo = (f'{versao_bloco}<div class="saude" data-slot="saude-chips">{"".join(chips)}</div>'
+                    f'{projetos_html}{tele_html}{execucao_html}')
 
-    # --- v7.0: workspace (abas, controles, feedback rail) ---
-    if ws is not None:
-        modo = ws.modo_atual(c)
-        topbar = ws.html_topbar(modo)
-        tabnav = ws.tabs_nav()
-        rail = ws.html_rail()
-        js_ws = ws.js_workspace()
-        esquema_html = ws.html_esquema(_estado_json(c))
-        # 260825: a lista de acoes/skills sai de mb_registro (numerada,
-        # declarada), nao da varredura de comentario do .cmd — uma fonte so.
-        bloco_acoes = secao_acoes(c) + secao_rotina(c)
-        bloco_skills = secao_skills(c)
-        bloco_cerebro = ws.html_cerebro(ws.cerebro_dados(c))
-        bloco_telemetria = ws.html_telemetria(ws.telemetria_dados(c))
-        ask = ws.html_ask
-        pa, pf = ws.pane_abre, ws.pane_fecha
-    else:
-        topbar = tabnav = rail = js_ws = esquema_html = ""
-        bloco_acoes = bloco_skills = bloco_cerebro = bloco_telemetria = ""
-        ask = (lambda _p, rotulo="": "")
-        pa = (lambda _ident: "")
-        pf = (lambda: "")
-    css_extra = ""
-    antiflash = seletor_html = seletor_js = ""
-    if vis is not None:
-        try:
-            # ordem importa: tokens (contrato) → mecânicas → TEMAS → seletor.
-            # [data-tema=...] tem a mesma especificidade que :root, então quem
-            # vem depois manda. Os blocos de modo usam :not() (padrão Pico),
-            # e por isso a escolha explícita ganha do sistema nos dois sentidos.
-            css_extra = vis.css() + "\n" + vis.css_temas() + "\n" + vis.css_seletor()
-            antiflash = vis.script_antiflash()
-            seletor_html = vis.html_seletor(TEMA_PADRAO)
-            seletor_js = vis.js_seletor()
-        except Exception:
-            css_extra = ""
-    css_extra += CSS_CONTEUDO
-    if ws is not None:
-        css_extra += ws.CSS
-    # 260825: navs_md ficou vazio de propósito — o conteúdo virou índice com
-    # link pro arquivo, então não há âncora interna pra listar.
-    bloco_indice = ("".join(f'<a href="#{e(i)}">{e(tt)}</a>' for i, tt in navs_md)
-                    if navs_md else "")
+    setor_orq = _setor("orquestracoes", "roxo", SVG_ORQ, "ORQUESTRAÇÕES",
+                       "o motor V6 trabalhando — pipeline, runs, cotas e quem faz o quê · clique em tudo", orq_html)
+    setor_voce = _setor("pra-voce", "coral", SVG_MAO, "PRA VOCÊ AGORA",
+                        (f"o que depende de você — {len(para_voce)} passo(s) · fonte: HANDOFF.md, seção PARA VOCÊ"
+                         if para_voce else "nada pendente do seu lado"),
+                        html_para_voce(para_voce, saida, c), slot="acoes-voce",
+                        classe_corpo="acoes-voce" if para_voce else "")
+    setor_estado = _setor("estado-central", "verde", SVG_ESTADO, "ESTADO DA CENTRAL",
+                          "versão, saúde e cópias — resumo aberto, detalhe a um clique", estado_corpo)
 
-    def slot(ident: str, titulo: str, corpo: str, vazio: str = "sem dado nesta instância") -> str:
-        """Slot de posição fixa: existe sempre, mesmo vazio. É o que garante
-        que o relatório de um projeto e o da central tenham a MESMA planta."""
-        interno = corpo if corpo and corpo.strip() else f'<p class="slot__vazio">{e(vazio)}</p>'
-        cab = f'<h3 class="slot__tit">{e(titulo)}</h3>' if titulo else ""
-        return f'<section class="slot" id="{e(ident)}">{cab}{interno}</section>'
+    try:
+        import mb_registro as _mbreg
+        n_acoes = len(_mbreg.ACOES)
+    except ImportError:
+        n_acoes = 0
+    panes_def = [
+        ("pane-acoes", "roxo", SVG_RAIO, "ações", "AÇÕES DA CENTRAL",
+         f"os {n_acoes} comandos numerados de 01_acoes\\ — clique copia o caminho", html_pane_acoes(c)),
+        ("pane-skills", "azul", SVG_ESTRELA, "skills", "SUAS SKILLS",
+         "as suas, com gatilho — clique pra ver o que cada uma faz", html_pane_skills()),
+        ("pane-cerebro", "verde", SVG_REDE, "cérebro", "CÉREBRO",
+         "o que você sabe: raw · wiki · pessoas", html_pane_cerebro(c, saida)),
+        ("pane-docs", "amarelo", SVG_LIVRO, "documentos", "DOCUMENTOS",
+         "onde a máquina lê o estado — e você decide", html_pane_docs(c, saida, estado_dados)),
+        ("pane-historico", "rosa", SVG_RELOGIO, "histórico", "HISTÓRICO",
+         "linha do tempo de versões e relatórios antigos", html_pane_historico(c, saida, anterior, ver["snapshot"])),
+    ]
+    nav = "".join(
+        f'<button type="button" class="pn" data-pane="{ident}" aria-pressed="false" '
+        f'data-diz="{e(f"Seção {rotulo}: {desc}")}">{svg.format(cor="currentColor")}{e(rotulo)}</button>'
+        for ident, _cor, svg, rotulo, _tit, desc, _corpo in panes_def)
+    panes = "\n  ".join(_pane(ident, cor, svg, tit, desc, corpo)
+                        for ident, cor, svg, _rot, tit, desc, corpo in panes_def)
 
+    dados_js = json.dumps({"falas": mascote_falas, "reload": RELOAD_SEGUNDOS},
+                          ensure_ascii=False).replace("</", "<\\/")
     pagina = f"""<!doctype html>
-<html lang="pt-BR" data-tema="{TEMA_PADRAO}">
+<html lang="pt-BR"{" data-tema=\"claro\"" if tema == "claro" else ""}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="light dark">
+<meta name="color-scheme" content="{"dark light" if tema == "claro" else "dark"}">
+{mb_pop_tema.JS_TEMA_HEAD}
 {frescor_html}
-<script>{antiflash}</script>
-<title>MEGABRAIN — relatório vivo</title>
+<title>MEGABRAIN — relatório vivo · {e(versao_resumida(versao))}</title>
+<!-- ═══ esqueleto e pele: template POP v1.2 (motor/modelos/relatorios/260914_pop/) ═══
+     gerado por bin/mb-relatorio-vivo.py — edite o gerador, não este arquivo. -->
 <style>
-:root {{
-  --paper:#f2efe7; --paper-high:#fffdf8; --ink:#171716; --ink-soft:#55544f;
-  --ink-faint:#68665f; --line:#cec9bc; --signal:#a63025; --signal-soft:#f1d8d1;
-  --ok:#23613e; --ok-soft:#dce9df; --info:#245d7c; --info-soft:#dce9ef;
-  --mono:ui-monospace,"SFMono-Regular",Consolas,"Liberation Mono",monospace;
-  --sans:Arial,Helvetica,sans-serif;
-}}
-* {{ box-sizing:border-box; }}
-body {{ margin:0; background:var(--paper); color:var(--ink); font:16px/1.5 var(--sans); }}
-.wrap {{ max-width:64rem; margin-inline:auto; padding:clamp(1.25rem,4vw,2.5rem); }}
-header {{ border-bottom:2px solid var(--ink); padding-bottom:1rem; margin-bottom:1.5rem; }}
-h1 {{ margin:.3rem 0 .2rem; font-size:clamp(1.8rem,5vw,2.8rem); line-height:.95; letter-spacing:-.05em; }}
-h2 {{ margin:2rem 0 .6rem; font-size:1.15rem; letter-spacing:-.03em; }}
-.eyebrow,.label {{ /* rótulo é hierarquia, não estado */ color:var(--ink-faint); font:800 .66rem/1.3 var(--mono); letter-spacing:.1em; text-transform:uppercase; }}
-.meta {{ color:var(--ink-faint); font:.68rem/1.5 var(--mono); }}
-.pulse {{ display:inline-flex; align-items:center; gap:.4rem; }}
-.pulse::before {{ content:""; width:.5rem; height:.5rem; border-radius:50%; background:#2e8c57; box-shadow:0 0 0 .22rem rgb(46 140 87 / 18%); }}
-.barra {{ height:.7rem; border:1px solid var(--ink); background:var(--paper-high); margin:.6rem 0 .2rem; }}
-.barra > div {{ height:100%; background:var(--ok); width:{pct}%; }}
-.etapas {{ margin:0; padding:0; list-style:none; border:1px solid var(--line); background:var(--paper-high); }}
-.etapa {{ display:flex; gap:.7rem; padding:.55rem .8rem; border-bottom:1px solid var(--line); }}
-.etapa:last-child {{ border-bottom:0; }}
-.ic {{ font:800 1rem/1.4 var(--mono); width:1.2rem; text-align:center; }}
-.etapa--feito .ic {{ color:var(--ok); }}
-.etapa--feito strong {{ color:var(--ink-soft); font-weight:600; }}
-.etapa--fazendo {{ background:var(--info-soft); }}
-.etapa--fazendo .ic {{ color:var(--info); animation:pisca 1.2s infinite; }}
-.etapa--bloqueado {{ background:var(--signal-soft); }}
-.etapa--bloqueado .ic {{ color:var(--signal); }}
-.etapa--pendente .ic {{ color:var(--ink-faint); }}
-@keyframes pisca {{ 50% {{ opacity:.25; }} }}
-.det {{ color:var(--ink-soft); font-size:.82rem; }}
-.ts {{ color:var(--ink-faint); font:.66rem/1.4 var(--mono); }}
-.notas {{ margin:0; padding:0; list-style:none; border:1px solid var(--line); background:var(--paper-high); max-height:18rem; overflow:auto; }}
-.notas li {{ padding:.45rem .8rem; border-bottom:1px solid var(--line); font-size:.88rem; }}
-.notas li:last-child {{ border-bottom:0; }}
-table {{ width:100%; border-collapse:collapse; background:var(--paper-high); border:1px solid var(--line); }}
-th,td {{ padding:.4rem .6rem; border-bottom:1px solid var(--line); text-align:left; font-size:.8rem; }}
-th {{ font:800 .62rem/1.3 var(--mono); text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); }}
-.duo {{ display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; }}
-.cartao {{ border:1px solid var(--line); background:var(--paper-high); padding: .9rem 1rem; }}
-ul.simples {{ margin:.3rem 0 0; padding-left:1.1rem; font-size:.85rem; color:var(--ink-soft); }}
-.versao {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(14rem,1fr)); gap:0; border:2px solid var(--ink); background:var(--paper-high); margin:1rem 0 1.25rem; }}
-.versao > div {{ padding:.7rem .9rem; border-right:1px solid var(--line); }}
-.versao > div:last-child {{ border-right:0; }}
-.versao .label {{ display:block; margin-bottom:.2rem; }}
-.versao .big {{ font:800 1.35rem/1.1 var(--mono); letter-spacing:-.03em; }}
-.versao .anterior .big {{ color:var(--ink-faint); text-decoration:line-through; text-decoration-thickness:2px; }}
-.ok {{ color:var(--ok); font-weight:700; }}
-.alerta {{ color:var(--signal); font-weight:700; }}
-.voce {{ border:2px solid var(--signal); background:var(--signal-soft); padding:.8rem 1rem 0.6rem; margin:0 0 1.5rem; }}
-.voce ol {{ margin:.4rem 0 .4rem; padding-left:1.4rem; }}
-.voce li {{ margin:.25rem 0; font-size:.95rem; }}
-.pill {{ display:inline-block; padding:.05rem .45rem; border:1px solid currentColor; font:700 .62rem/1.5 var(--mono); text-transform:uppercase; letter-spacing:.06em; }}
-.pill--atual {{ color:var(--ok); }}
-.pill--desatualizado {{ color:var(--signal); }}
-.pill--sem {{ color:var(--ink-faint); }}
-tr.proj--desatualizado td {{ background:var(--signal-soft); }}
-@media (max-width:44rem) {{ .duo {{ grid-template-columns:1fr; }} .versao > div {{ border-right:0; border-bottom:1px solid var(--line); }} }}
-{css_extra}
+{CSS_POP}
+{CSS_POP_EXTRA}
+{mb_pop_tema.CSS_TEMA}
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <!-- ═══ D · DASHBOARD — planta fixa: D1→D5 nesta ordem, sempre ═══ -->
-  <header id="d1-identidade">
-    <span class="eyebrow">megabrain · relatório</span>
-    <h1>{e(titulo_h1)}</h1>
-    <p class="meta pulse">gerado {agora:%d/%m %H:%M:%S} · recarrega sozinho a cada {RELOAD_SEGUNDOS}s · trava: {e(quem)} (até {e(ate)})</p>
-    {f'<p class="det">{e(tldr)}</p>' if tldr else ""}
-  </header>
+  {hero}
 
-  {seletor_html}
-  {topbar}
-  {tabnav}
-  <div class="panes" id="panes" data-n="1">
-  {pa("painel")}
-  {ask("em que pé está o megabrain agora — e o que depende de mim?")}
+  {setor_orq}
 
-  <div class="versao">
-    <div>
-      <span class="label">versão ATUAL</span>
-      <span class="big">{e(versao_resumida(versao))}</span><br>
-      <span class="det" title="{e(versao)}">{e(versao[:110])}{"…" if len(versao) > 110 else ""}</span>
-    </div>
-    <div>
-      <span class="label">base de geração</span>
-      <span class="big">{e(git["head_curto"])}</span><br>
-      <span class="det">{e(git["assunto"][:80])}{" · " + e(git["data"]) if git["data"] else ""}</span><br>
-      <span class="{push_cls}">{e(push_txt)}</span><span class="det">{e(suja_txt)}</span>
-    </div>
-    <div class="anterior">
-      <span class="label">versão ANTERIOR</span>
-      <span class="big">{e(anterior.get("versao", "—")) if anterior else "—"}</span><br>
-      <span class="det">{anterior_txt}</span><br>
-      <span class="det">{snapshot_txt}</span>
-    </div>
+  {setor_voce}
+
+  {setor_estado}
+
+  <nav class="panes-nav" aria-label="mais conteúdo">{nav}</nav>
+
+  {panes}
+
+  <div class="rodape">
+    fonte: PROGRESSO.json · ESTADO.md · HANDOFF.md · DECISOES.md · VERSAO.txt · git · .mb-log/ · .automations/runs/ · dados/orcamento_ia.json · dados/telemetria-orquestracao.json<br>
+    frescor: {e(fp["algoritmo"])}:{e(fp["valor"][:12])} · {len(proveniencia.get("fontes") or [])} fontes · HEAD e horário são estado operacional<br>
+    sem servidor local o navegador não detecta mudança de arquivo — por isso o reload a cada {RELOAD_SEGUNDOS}s, que espera você parar de mexer<br>
+    este HTML é a leitura humana; a IA lê dados/estado.json (schema {e(str(estado_dados.get("schema", "?")))}) · template POP v1.2 · arquivo local, nada remoto<br>
+    <button type="button" class="btn btn--sec" style="--c:var(--roxo)" data-copia="python bin/mb-estado.py --stdout" data-diz="Comando que gera o JSON da IA copiado.">copiar comando do JSON</button>
   </div>
-
-  {slot("d2-kpi", "", pecas["kpi"], "biblioteca visual ausente — rode python bin/mb_visual.py")}
-  {slot("d3-acao", "Para você — o que fazer agora", bloco_para_voce, "nada pendente do seu lado (seção PARA VOCÊ do HANDOFF.md está vazia)")}
-  {slot("d4-saude", "", pecas["saude"])}
-  {slot("d5-distribuicao", "", pecas["distribuicao"] + f'<table><thead><tr><th>projeto</th><th>puxou</th><th>commit</th><th>quando</th><th>estado</th></tr></thead><tbody>{linhas_proj}</tbody></table><p class="det">fonte: <code>&lt;projeto&gt;/MEGABRAIN/VERSAO.txt</code> + <code>.mb-origem.json</code>. Desatualizado = rode <code>05_sincronizar-projetos.cmd</code>.</p>' if projetos else pecas["distribuicao"], "nenhum projeto irmão com MEGABRAIN/ encontrado")}
-
-  <!-- ═══ D7 · O QUE VOCÊ CLICA — a única lista numerada do painel ═══ -->
-  <h2 class="faixa">O que você clica <small>— 01_acoes\\, numerado de 1 a {len(_reg_acoes)}</small></h2>
-  {slot("d7-acoes", "", secao_acoes(c), "registro de ações ausente (bin/mb_registro.py)")}
-  {slot("d8-rotina", "Comandos de manutenção", secao_rotina(c), "sem comandos de rotina declarados")}
-  {slot("d9-skills", "Suas skills — clique pra ver o que cada uma faz", secao_skills(c), "sem skills declaradas")}
-  {slot("d10-agente", "O que a IA roda nos gates (não é pra você clicar)", secao_agente(c), "sem comandos de gate declarados")}
-
-  {slot("d6-telemetria", "Telemetria — o caderninho local desta central", bloco_telemetria, "sem telemetria nesta instância")}
-
-  <!-- ═══ D11-D14 · o que era artefato separado e agora mora aqui ═══ -->
-  <h2 class="faixa">O resto <small>— o que antes eram 5 arquivos separados</small></h2>
-  {slot("d11-agentes", "Uso por agente", secao_agentes(c), "sem eventos em .mb-log/")}
-  {slot("d12-padroes", "O que já se repete e não virou modelo", secao_padroes(c), "compreensor não rodou ainda — ação 2")}
-  {slot("d13-copias", "Os megabrains dos seus projetos", secao_copias(c), "nenhuma cópia de projeto encontrada")}
-  {slot("d14-para-ia", "Para a IA — este HTML não é a fonte", secao_para_ia(c), "dados/estado.json ausente — rode python bin/mb-estado.py")}
-
-  <!-- ═══ E · ESTADO DA EXECUÇÃO (segue na aba Painel) ═══ -->
-  <h2 class="faixa">Estado da execução <small>— PROGRESSO.json · HANDOFF.md · DECISOES.md · .mb-log/</small></h2>
-  <section class="slot" id="e1-progresso">
-    <span class="label">progresso — {feitas}/{len(etapas)} etapas ({pct}%)</span>
-    <div class="barra"><div></div></div>
-    <ul class="etapas">{"".join(linhas_etapas) or '<li class="det">sem etapas no PROGRESSO.json</li>'}</ul>
-  </section>
-  {slot("e2-notas", "Notas da execução", f'<ul class="notas">{linhas_notas}</ul>')}
-  <div class="duo">
-    <div>
-      <section class="slot" id="e3-decisoes">
-        <h3 class="slot__tit">Últimas decisões</h3>
-        <div class="cartao"><ul class="simples">{linhas_dec}</ul></div>
-      </section>
-    </div>
-    <div>
-      <section class="slot" id="e4-eventos">
-        <h3 class="slot__tit">Eventos de hoje</h3>
-        <table><thead><tr><th>hora</th><th>agente</th><th>evento</th><th>resumo</th></tr></thead>
-        <tbody>{linhas_ev}</tbody></table>
-        <h3 class="slot__tit" style="margin-top:1rem">Fila memoria/pendencias</h3>
-        <table><thead><tr><th>nota</th><th>dono</th><th>idade</th></tr></thead>
-        <tbody>{linhas_fila}</tbody></table>
-        <p class="det">destaque = 7+ dias parada ou sem dono.</p>
-      </section>
-    </div>
-  </div>
-
-  {pf()}
-
-  {pa("esquema")}
-  {ask("como era, como está agora e por onde cada informação passa?")}
-  <h2 class="faixa">Organização do megabrain <small>— antes × agora · mapa atual · fluxo de uma mudança</small></h2>
-  {esquema_html}
-  <h2 class="faixa">Workflow <small>— dados em modelos/visuais/exemplos.json; mecânicas em modelos/visuais/mecanicas/</small></h2>
-  {slot("w1-gates", "", pecas["gates"])}
-  {slot("w2-trilha", "", pecas["trilha"])}
-  {slot("w3-camadas", "", pecas["camadas"])}
-  {pf()}
-
-  {pa("acoes")}
-  {ask("quais botões existem e o que cada um faz quando eu clico?")}
-  <h2 class="faixa">Ações <small>— os botões da central, numerados de 1 a {len(_reg_acoes)}</small></h2>
-  <p class="det">A lista mora na primeira dobra do Painel, na seção <b>O que você clica</b> —
-  <a href="#d7-acoes">ir pra lá</a>. Está num lugar só de propósito: a mesma lista em
-  duas seções é como o número de uma delas começa a mentir.</p>
-  {pf()}
-
-  {pa("skills")}
-  {ask("que poderes o megabrain tem, e como eu chamo cada um?")}
-  <h2 class="faixa">Skills <small>— as suas, com gatilho e o que fazem</small></h2>
-  <p class="det">Também na primeira dobra do Painel, em <b>Suas skills</b> —
-  <a href="#d9-skills">ir pra lá</a>.</p>
-  {pf()}
-
-  {pa("cerebro")}
-  <h2 class="faixa">Cérebro <small>— memoria/cerebro: raw (fonte crua) · wiki (destilado) · pessoas · o que vence</small></h2>
-  {bloco_cerebro}
-  {pf()}
-
-  {pa("docs")}
-  <!-- ═══ C · CONTEÚDO — os .md da instância, agregados ═══ -->
-  <h2 class="faixa">Documentos <small>— o que existe nesta instância, com link pro arquivo</small></h2>
-  {bloco_indice}
-  <div class="doc">{secoes_md}</div>
-  {pf()}
-
-  {pa("historico")}
-  {ask("o que mudou de versão pra versão, e onde estão os relatórios antigos?")}
-  <h2 class="faixa">Histórico <small>— linha do tempo de versões e relatórios antigos</small></h2>
-  {slot("w4-historico", "", pecas["historico"], "VERSAO.txt sem linhas no formato 'AAAA-MM-DD · vX.Y — título'")}
-  <p class="det">Relatórios como estavam antes de cada troca de versão: <code>90_arquivo\\relatorios-antigos\\INDICE.md</code></p>
-  {pf()}
-  </div><!-- /panes -->
-  {rail}
-
-  <!-- ═══ R · RODAPÉ ═══ -->
-  <p class="meta" style="margin-top:2.5rem">fonte: PROGRESSO.json · ESTADO.md · HANDOFF.md · DECISOES.md · VERSAO.txt · git de {e("_github/repo-local" if git["repo"] else "—")} · .mb-log/ · os .md acima. Arquivo local, não sobe pro GitHub.<br>
-  frescor: <code>{e(fp["algoritmo"])}:{e(fp["valor"][:12])}</code> · {len(proveniencia.get("fontes") or [])} fontes; HEAD e horário são apenas estado operacional.<br>
-  sem servidor local o navegador não detecta mudança de arquivo — por isso o reload em intervalo fixo, preservando o scroll.<br>
-  planta fixa D1–D6 · W1–W4 · E1–E4 · C · CB (cérebro): cada bloco tem lugar reservado e aparece vazio quando não há dado, para o relatório de qualquer projeto ter a mesma leitura.</p>
 </div>
-<script>{seletor_js}</script>
-<script>{js_ws}</script>
-<script>
-requestAnimationFrame(function () {{ requestAnimationFrame(function () {{
-  document.documentElement.classList.remove("pre-carga");
-}}); }});
-(function () {{
-  var KEY = "mb-vivo-scroll";
-  var s = sessionStorage.getItem(KEY);
-  if (s !== null) {{
-    window.scrollTo(0, parseInt(s, 10) || 0);
-    sessionStorage.removeItem(KEY);
-  }}
-  setInterval(function () {{
-    sessionStorage.setItem(KEY, String(window.scrollY || document.documentElement.scrollTop || 0));
-    location.reload();
-  }}, {RELOAD_SEGUNDOS * 1000});
-}})();
 
-/* 260825 — o painel recarrega a cada {RELOAD_SEGUNDOS}s. Sem isto, tudo que ele
-   abre fecha sozinho antes de terminar de ler: expandir viraria uma armadilha
-   em vez de um recurso. Guarda quais <details> estão abertos e reabre. */
-(function () {{
-  var KEY = "mb-vivo-abertos";
-  var abertos;
-  try {{ abertos = JSON.parse(sessionStorage.getItem(KEY) || "[]"); }}
-  catch (e) {{ abertos = []; }}
-  var itens = document.querySelectorAll("details.acao");
-  itens.forEach(function (d, i) {{
-    var id = d.querySelector(".acao__nome");
-    id = id ? id.textContent.trim() : ("i" + i);
-    d.dataset.mbId = id;
-    if (abertos.indexOf(id) !== -1) {{ d.open = true; }}
-    d.addEventListener("toggle", function () {{
-      var lista = [];
-      document.querySelectorAll("details.acao[open]").forEach(function (x) {{
-        lista.push(x.dataset.mbId);
-      }});
-      try {{ sessionStorage.setItem(KEY, JSON.stringify(lista)); }} catch (e) {{}}
-    }});
-  }});
-}})();
-
-/* Copiar caminho/comando. Navegador não executa .cmd a partir de file:// —
-   por isso o botão entrega o texto pronto pra colar, e o número no NOME do
-   arquivo é o que faz você achar na pasta. */
-(function () {{
-  document.querySelectorAll("button.copiar").forEach(function (b) {{
-    b.addEventListener("click", function (ev) {{
-      ev.preventDefault();
-      var txt = b.getAttribute("data-copiar") || "";
-      var feito = function () {{
-        var antes = b.textContent;
-        b.textContent = "copiado";
-        b.setAttribute("data-ok", "1");
-        setTimeout(function () {{
-          b.textContent = antes; b.removeAttribute("data-ok");
-        }}, 1600);
-      }};
-      if (navigator.clipboard && navigator.clipboard.writeText) {{
-        navigator.clipboard.writeText(txt).then(feito, function () {{ prompt("copie:", txt); }});
-      }} else {{
-        prompt("copie:", txt);
-      }}
-    }});
-  }});
-}})();
-</script>
+<div id="toasts" role="status" aria-live="polite"></div>
+<script id="mb-pop-dados" type="application/json">{dados_js}</script>
+<script>{JS_POP}</script>
 </body>
 </html>
 """
     pagina = "\n".join(linha.rstrip() for linha in pagina.splitlines()) + "\n"
-    return u.atomic_write_text(u.achar(c, "RELATORIO.html"), pagina)
+    saida.parent.mkdir(parents=True, exist_ok=True)
+    return u.atomic_write_text(saida, pagina)
 
 
 def main() -> int:
@@ -1358,6 +1803,10 @@ def main() -> int:
     p.add_argument("--nota", default=None)
     p.add_argument("--snapshot", action="store_true",
                    help="guarda o HTML atual em 90_arquivo/relatorios-antigos/ mesmo sem troca de versão")
+    p.add_argument("--tema", default=None, choices=["claro", "escuro"],
+                   help="tema inicial do HTML gerado (default: escuro — o navegador do leitor pode lembrar a preferência)")
+    p.add_argument("--saida", default=None,
+                   help="grava em outro caminho (prova); não mexe no vivo nem em 90_arquivo/relatorios-antigos/")
     args = p.parse_args()
 
     c = central()
@@ -1397,15 +1846,16 @@ def main() -> int:
                         {"ts": agora, "texto": args.nota})
                 salvar_progresso(c, prog)
 
-        relatorio_path = u.achar(c, "RELATORIO.html")
+        relatorio_path = Path(args.saida).resolve() if args.saida else u.achar(c, "RELATORIO.html")
         with trava.travado(relatorio_path, agente_arquivo,
                            "regenera relatório e snapshots"):
-            if not gerar_html(c, forcar_snapshot=args.snapshot):
+            if not gerar_html(c, forcar_snapshot=args.snapshot, saida=relatorio_path,
+                              tema=args.tema):
                 return 1
     except trava.TravaOcupada as e:
         print(f"ERRO: {e}")
         return 1
-    print(f"relatório: {u.achar(c, 'RELATORIO.html')}")
+    print(f"relatório: {relatorio_path}")
     return 0
 
 
