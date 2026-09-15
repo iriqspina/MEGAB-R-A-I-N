@@ -898,6 +898,9 @@ class MainWindow(QWidget):
             return
         self._querying.update(visible_ids)
         self.poller.poll(visible_ids)
+        # Feedback imediato no card ("consultando…" no hint) sem apagar as
+        # barras: o dado anterior continua na tela até chegar o novo.
+        self._refresh_all_segments()
         self._update_refresh_feedback()
 
     def _request_mcp_health(self):

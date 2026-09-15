@@ -1,6 +1,6 @@
-from PySide6.QtCore import QPoint, Qt
+from PySide6.QtCore import QPoint, QSize, Qt
 from PySide6.QtGui import QColor, QFont, QPainter
-from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QSizePolicy, QVBoxLayout, QWidget
 
 from . import theme, ui_motion
 from .formatting import (
@@ -131,6 +131,16 @@ class PercentTrack(QWidget):
         self.setFixedHeight(max(12, self._text_px + 5))
         self.update()
 
+    def sizeHint(self):
+        # Dica ESTÁVEL (largura mínima, nunca a atual): sem isso a barra
+        # esticada pelo layout alimentava o sizeHint do card, que alimentava
+        # a largura da janela — e a leitura seguinte oscilava o formato todo
+        # (medido 260915: 800↔650 px a cada consulta).
+        return QSize(max(40, self.minimumWidth()), self.height())
+
+    def minimumSizeHint(self):
+        return self.sizeHint()
+
     def set_value(self, percent, color: str):
         # Leitura repetida (tique de idade, polling sem mudança) não reinicia
         # a animação: reiniciar de zero chamaria atenção a cada atualização.
@@ -244,19 +254,25 @@ class WindowBar(QWidget):
     def __init__(self, window: dict, parent=None):
         super().__init__(parent)
         self._category = theme.window_category(window)
-        used = window.get("used_percent")
+        # Chave de reuso: o segmento reutiliza esta linha quando a janela
+        # continua existindo na próxima leitura (id estável da fonte).
+        self.window_key = ""
 
-        label_text = theme.WINDOW_CATEGORY_LABELS.get(self._category) or friendly_window_label(window.get("label"))
-        self._label = QLabel(label_text)
+        self._label = QLabel("")
         self._track = PercentTrack(self)
         self._track.setMinimumWidth(40)
         # Portador oculto do % (alertas/testes leem); o texto visível vive
         # DENTRO da barra, colado no rótulo — perto do que explica.
-        self._pct = QLabel(percent_label(used) if used is not None else "—")
+        self._pct = QLabel("")
         self._pct.hide()
         self._extra = QLabel("")
         self._extra.setWordWrap(False)
-        self._track.set_value(used, theme.window_category_color(self._category))
+        # A linha de detalhe (renova/ritmo) nunca dita a largura do card: o
+        # texto de ritmo muda a cada leitura e a janela persegria o tamanho
+        # dele (medido 260915: largura oscilava a cada consulta). Texto
+        # completo em _extra_full; o visível recebe elipse na largura real.
+        self._extra.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
+        self._extra_full = ""
 
         # Coluna: rótulo + barra na linha de cima; renovação/ritmo embaixo.
         # Largura mínima ESTÁVEL (rótulo+barra), o que impede o ciclo em que
@@ -272,14 +288,44 @@ class WindowBar(QWidget):
         top_row.addWidget(self._track, 1)
         column.addWidget(top)
         column.addWidget(self._extra)
+        self.update_window(window)
+
+    def update_window(self, window: dict):
+        """Atualiza rótulo, % e barra NO MESMO widget. Recriar a linha a cada
+        leitura re-animava a barra do zero e mexia no layout inteiro — o
+        <USUARIO> pediu (260915) que a barra só deslize pro novo valor."""
+        used = window.get("used_percent")
+        label_text = theme.WINDOW_CATEGORY_LABELS.get(self._category) or friendly_window_label(window.get("label"))
+        self._label.setText(label_text)
+        self._pct.setText(percent_label(used) if used is not None else "—")
+        self._track.set_value(used, theme.window_category_color(self._category))
         friendly = friendly_window_label(window.get("label"))
         self.setToolTip(friendly if friendly else label_text)
 
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._apply_extra_text()
+
     def set_extra(self, parts: list[str]):
-        self._extra.setText(" · ".join(part for part in parts if part))
+        self._extra_full = " · ".join(part for part in parts if part)
+        self._apply_extra_text()
 
     def set_expanded(self, expanded: bool):
-        self._extra.setVisible(bool(self._extra.text()) and expanded)
+        self._extra.setVisible(bool(self._extra_full) and expanded)
+
+    def _apply_extra_text(self):
+        self._extra.setToolTip(self._extra_full)
+        if not self._extra_full:
+            self._extra.setText("")
+            return
+        width = self._extra.width()
+        if width < 150:
+            # Nunca deitou no layout (testes/headless): mostra o texto inteiro.
+            self._extra.setText(self._extra_full)
+            return
+        text = self._extra.fontMetrics().elidedText(self._extra_full, Qt.ElideRight, width)
+        if text != self._extra.text():
+            self._extra.setText(text)
 
     def apply_style(self, palette: dict, typo: dict, scale: float):
         family = str(typo.get("family") or theme.FONT_FAMILY).replace("'", "")
@@ -298,6 +344,7 @@ class WindowBar(QWidget):
         # nas Configurações, e a barra cresce junto com a fonte.
         self._track.set_text_style(family, px_hint, palette["text_secondary"])
         self._track.set_background(palette.get("track_bg", theme.TRACK_BG))
+        self._apply_extra_text()  # fonte nova -> remede a elipse
 
 
 class ProviderSegment(QFrame):
@@ -523,12 +570,14 @@ class ProviderSegment(QFrame):
     # ------------------------------------------------------------ render
 
     def show_querying(self):
-        self._last_display = None
+        # Mantém o último dado na tela (barras incluídas): apagar tudo a cada
+        # consulta fazia o card encolher e as barras re-enchermem do zero —
+        # mudança de forma que roubava a atenção (260915). A marca de que
+        # está consultando é o hint, não o sumiço do conteúdo.
         self._value.setText("—")
         self._track.set_value(None, self._palette["status"]["grey"])
         self._hint.setText("consultando…")
         self._hint.setToolTip("")
-        self._clear_bars()
 
     def update_from_store(self, store: SnapshotStore, expanded: bool, pacing: dict | None = None):
         display = store.display(self.store_key, self.window_filter)
@@ -602,20 +651,39 @@ class ProviderSegment(QFrame):
                 widget.hide()
                 widget.deleteLater()
 
+    @staticmethod
+    def _window_key(window: dict) -> str:
+        return str(window.get("id") or window.get("label") or theme.window_category(window))
+
     def _rebuild_bars(self, display: dict, pacing: dict | None = None):
-        self._clear_bars()
         pacing_windows = (pacing or {}).get("windows") or {}
         windows = sorted(
             display.get("windows") or [],
             key=lambda w: CATEGORY_ORDER.get(theme.window_category(w), 99),
         )
-        for window in windows:
-            bar = WindowBar(window, self._bars_wrap)
-            bar.apply_style(self._palette, self._typo, self._scale)
+        keys = [self._window_key(w) for w in windows]
+        reusable = {bar.window_key: bar for bar in self._bars}
+        if keys != [bar.window_key for bar in self._bars]:
+            # Conjunto/ordem de janelas mudou: recompõe a fileira, mas
+            # REAPROVEITA as barras que continuam existindo — recriá-las
+            # re-animava tudo do zero a cada leitura (260915).
+            for bar in self._bars:
+                self._bars_layout.removeWidget(bar)
+            self._bars = []
+            for window, key in zip(windows, keys):
+                bar = reusable.pop(key, None)
+                if bar is None:
+                    bar = WindowBar(window, self._bars_wrap)
+                    bar.apply_style(self._palette, self._typo, self._scale)
+                self._bars_layout.addWidget(bar, 1 if self._bars_horizontal else 0)
+                bar.window_key = key
+                self._bars.append(bar)
+            for bar in reusable.values():
+                bar.deleteLater()
+        for window, bar in zip(windows, self._bars):
+            bar.update_window(window)
             extras = [self._reset_text(window.get("resets_at"))]
             if self._options.get("show_pacing", True):
                 extras.append(pacing_text(pacing_windows.get(window.get("id"))))
             bar.set_extra(extras)
             bar.set_expanded(self._expanded)
-            self._bars_layout.addWidget(bar)
-            self._bars.append(bar)

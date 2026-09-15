@@ -62,6 +62,57 @@ def test_show_querying_blanks_value_and_never_shows_stale_number(parent):
     assert segment._hint.text() == "consultando…"
 
 
+def test_refresh_reuses_bars_instead_of_recreating_them(parent):
+    # 260915: leitura nova NÃO pode recriar as linhas — re-animar a barra do
+    # zero e mexer no layout do card roubava a atenção do <USUARIO>.
+    store = SnapshotStore()
+    windows = [
+        {"id": "session", "label": "Sessão", "used_percent": 20, "resets_at": None},
+        {"id": "week", "label": "Semana", "used_percent": 78, "resets_at": None},
+    ]
+    store.update("claude", _snapshot(windows))
+    segment = ProviderSegment("claude", "Claude", parent)
+    segment.update_from_store(store, expanded=False)
+    before = list(segment._bars)
+
+    windows[0]["used_percent"] = 45  # mesma janela, valor novo
+    store.update("claude", _snapshot(windows))
+    segment.update_from_store(store, expanded=False)
+
+    assert segment._bars[0] is before[0]  # MESMO widget: a barra desliza pro novo valor
+    assert segment._bars[0]._track._percent == 45
+    assert segment._bars[0]._pct.text() == "45%"
+    assert segment._bars[1] is before[1]
+
+
+def test_show_querying_keeps_last_data_on_screen(parent):
+    store = SnapshotStore()
+    store.update("claude", _snapshot(None))
+    segment = ProviderSegment("claude", "Claude", parent)
+    segment.update_from_store(store, expanded=False)
+    segment.show_querying()
+    assert segment._hint.text() == "consultando…"
+    assert len(segment._bars) == 1  # o card não encolhe durante a consulta
+    assert segment._bars[0]._track._percent == 50
+
+
+def test_window_set_change_reuses_surviving_bars_and_drops_gone_ones(parent):
+    store = SnapshotStore()
+    windows = [
+        {"id": "session", "label": "Sessão", "used_percent": 20, "resets_at": None},
+        {"id": "week", "label": "Semana", "used_percent": 78, "resets_at": None},
+    ]
+    store.update("claude", _snapshot(windows))
+    segment = ProviderSegment("claude", "Claude", parent)
+    segment.update_from_store(store, expanded=False)
+    session_bar = segment._bars[0]
+
+    store.update("claude", _snapshot([windows[0]]))  # a semana sumiu da conta
+    segment.update_from_store(store, expanded=False)
+    assert [bar.window_key for bar in segment._bars] == ["session"]
+    assert segment._bars[0] is session_bar
+
+
 def test_apply_theme_changes_text_color(parent):
     segment = ProviderSegment("codex", "Codex", parent)
     dark_style = segment._name.styleSheet()
