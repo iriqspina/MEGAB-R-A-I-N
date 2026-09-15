@@ -44,7 +44,8 @@ skills necessárias. O catálogo é uma triagem: **não substitui ler por inteir
 `SKILL.md` da skill que será usada.**
 
 Toda entrega nova que seja não trivial e decomponível entra por
-`/orquestracao1` (V6) como padrão, sem esperar uma segunda confirmação. Não
+`/orquestracao1` (V6) — modo prioritário em todos os projetos (decisão 260915) —
+sem esperar uma segunda confirmação. Não
 abra uma execução vazia nem use V6 para pergunta simples, conversa, agenda ou
 correção local óbvia; nesses casos o modo padrão é o trabalho direto. Retomada
 histórica ou pedido explícito de V5 usa `/orquestracao2`.
@@ -63,7 +64,7 @@ conversa com qualquer IA.
 No início de uma nova conversa ou projeto, oferecer uma vez, sem bloquear nem
 transformar em pergunta:
 
-> Orquestração: /orquestracao1 é a V6 primária para trabalho multiagente novo; /orquestracao2 mantém a V5 apenas para retomada ou pedido explícito. /hypadododiabo explora o melhor caso com limites reais.
+> Orquestração: /orquestracao1 é a V6 primária e o modo prioritário em todos os projetos para trabalho novo; /orquestracao2 mantém a V5 apenas para retomada ou pedido explícito. /hypadododiabo explora o melhor caso com limites reais.
 
 Se o início caracterizar **projeto grande**, sugerir também
 `/quaseultracode`: ciclo ideal-first de até 5 horas, com orçamento

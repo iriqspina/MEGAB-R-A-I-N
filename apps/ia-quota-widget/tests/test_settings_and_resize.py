@@ -83,19 +83,44 @@ def test_reset_label_absolute_today_tomorrow_and_weekday():
 # ------------------------------------------------------------------ redimensionar
 
 
-def test_manual_size_is_respected_and_fit_to_content_resets(window):
-    # 260914: sem scrollbar, tamanho manual ACIMA do conteúdo é respeitado;
-    # abaixo do conteúdo clampa no mínimo (não corta, não rola).
-    big = QSize(900, 700)
-    window.settings.window_width, window.settings.window_height = big.width(), big.height()
+def test_manual_width_respected_height_hugs_content(window, monkeypatch):
+    # 260914 (print "layout todo esquisito"): largura manual acima do
+    # conteúdo é respeitada — a sobra vira colunas no fluxo; altura cola no
+    # conteúdo, porque altura extra só deixava espaço morto embaixo.
+    monkeypatch.setattr(window, "_available_rect", lambda: QRect(0, 0, 2000, 2000))
+    window.settings.window_width, window.settings.window_height = 900, 700
     window._resize_to_content()
-    assert window.size() == big
+    assert window.width() == 900
+    assert window.height() == window.minimumHeight()
+    assert window.height() < 700
     window.settings.window_width, window.settings.window_height = 200, 150
     window._resize_to_content()
     assert window.size() == QSize(window.minimumWidth(), window.minimumHeight())
     window._fit_to_content()
     assert window.settings.window_width is None
     assert persistence.load_settings().window_width is None
+
+
+def test_flow_layout_stretches_cards_in_row_to_tallest(qt_app):
+    # Bases alinhadas: todos os cards da fileira recebem a altura do mais
+    # alto — escada de bases lia como layout quebrado (print 260914).
+    from PySide6.QtWidgets import QLabel, QWidget
+
+    from widget_app.ui_flow import FlowLayout
+
+    host = QWidget()
+    flow = FlowLayout(host, margin=0, spacing=8)
+    short = QLabel("curto")
+    tall = QLabel("bem\nmais\nalto")
+    flow.addWidget(short)
+    flow.addWidget(tall)
+    host.resize(600, 200)
+    host.show()
+    qt_app.processEvents()
+    tallest = max(short.sizeHint().height(), tall.sizeHint().height())
+    assert short.height() == tallest
+    assert tall.height() == tallest
+    assert short.height() == tall.height()
 
 
 def test_dragging_right_edge_resizes_and_persists_without_system_resize(window, monkeypatch):

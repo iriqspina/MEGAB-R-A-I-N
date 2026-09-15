@@ -132,6 +132,10 @@ class PercentTrack(QWidget):
         self.update()
 
     def set_value(self, percent, color: str):
+        # Leitura repetida (tique de idade, polling sem mudança) não reinicia
+        # a animação: reiniciar de zero chamaria atenção a cada atualização.
+        if percent == self._percent and color == self._color:
+            return
         self._percent = percent
         self._color = color
         self._text = f"{round(percent)}%" if percent is not None else "—"
@@ -362,6 +366,9 @@ class ProviderSegment(QFrame):
         self._root.addWidget(self._name_wrap)
         self._root.addWidget(self._hint)
         self._root.addWidget(self._bars_wrap)
+        # Card esticado à altura do mais alto da fileira: a sobra fica aqui,
+        # embaixo — nome, status e barras continuam colados no topo.
+        self._root.addStretch(1)
         self._expanded = False
 
         self._restyle()
@@ -411,7 +418,9 @@ class ProviderSegment(QFrame):
         self._nested = child
         child.setProperty("nested", True)
         child._restyle()
-        self._root.addWidget(child)
+        # Antes do stretch final: o Spark encosta nas barras do Codex, não
+        # desce até a base do card esticado.
+        self._root.insertWidget(self._root.count() - 1, child)
         child.show()
 
     def clear_nested(self):

@@ -86,17 +86,18 @@ class FlowLayout(QLayout):
         # (com teto): janela larga alarga o card e as barrinhas dele viram
         # lado a lado — horizontalidade sem escalar fonte.
         x, y = effective.x(), effective.y()
-        line_height = 0
         for row in rows:
             share = min(self.MAX_CARD_WIDTH, (effective.width() - self._spacing * (len(row) - 1)) // len(row))
             share = max(share, natural)
-            for index, item in enumerate(row):
-                height = item.sizeHint().height()
+            # Fileira tem a altura do card mais alto e TODOS os cards dela
+            # recebem essa altura: bases alinhadas, nada de escada (print
+            # 260914 — cards de alturas diferentes topo-alinhados liam como
+            # quebrado). A altura a mais acumula embaixo, dentro do card.
+            line_height = max((item.sizeHint().height() for item in row), default=0)
+            for item in row:
                 if apply:
-                    item.setGeometry(QRect(QPoint(x, y), QSize(share, height)))
+                    item.setGeometry(QRect(QPoint(x, y), QSize(share, line_height)))
                 x += share + self._spacing
-                line_height = max(line_height, height)
             x = effective.x()
             y += line_height + self._spacing
-            line_height = 0
         return y - self._spacing - rect.y() + margins.bottom()

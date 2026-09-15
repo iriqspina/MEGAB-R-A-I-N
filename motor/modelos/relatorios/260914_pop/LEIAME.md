@@ -21,13 +21,20 @@ morto (lição 260914).
 
 ## Pontos de injeção pro gerador
 
-- `data-slot="hero-status"` → pills + chips de estado (dados: PROGRESSO/estado.json)
-- `data-slot="acoes-voce"` → passos do HANDOFF "PARA VOCÊ" (1 card por passo)
-- `data-slot="saude-chips"` → testes/preflight/widget/lições
-- `data-slot="fig-share"` → share por agente (barra-segmentos style)
-- `data-slot="fig-spark"` → eventos por tipo (spark-barras style)
-- `data-slot="anel-projetos"` + `data-slot="tabela-projetos"` → N/M em dia + details
-- `.abas-resto` → panes que continuam no relatório oficial
+Slots no CONTEÚDO (nunca no setor inteiro — o gerador substitui o dado,
+o cabeçalho e os controles ficam):
+
+- `hero-status` → pill + sub + frescor do header
+- `orc-gates` → trilha de gates da ÚLTIMA RUN FORMAL IDENTIFICADA (com legenda dizendo qual)
+- `orc-runs` → cards de run (estado preciso: "REVISÃO APROVADA" ≠ entrega; evidência copiável)
+- `orc-cotas` → cotas com DATA da leitura e fonte (fotografia, não "ao vivo")
+- `acoes-voce` → passos do HANDOFF "PARA VOCÊ"
+- `saude-chips` → medidores de saúde
+- `anel-projetos` / `tabela-projetos` → resumo N/M + tabela de cópias
+- `telemetria-geral` (details) → envolve `fig-share` e `fig-spark`
+- `pane-acoes` / `pane-skills` / `pane-cerebro` / `pane-docs` → panes locais
+  (EXCEÇÃO EXPLÍCITA à navegação antiga por abas do relatório oficial:
+  aqui o conteúdo vive no mesmo arquivo e design, sem pular de pele)
 
 Convenção de interação: `data-diz="…"` mostra toast; `data-copia="…"` copia
 para a área de transferência (fallback `execCommand`, foco devolvido ao
@@ -48,9 +55,14 @@ mascote fala (clique ou Enter); barra de leitura no topo cresce no scroll;
 ## Estado (260914)
 
 v1 aprovada visualmente pelo <USUARIO>; v1.1 corrige os 5 bloqueantes + 6
-achados médios da revisão Codex Sol high (5/10 → retestado verde em todos:
-7 data-slot reais, teclado em 8 controles, abas com fragmento, 31 linhas,
-pill honesta, toast anti-XSS, type=button, reduced-motion com scroll).
+médios da revisão Codex Sol high. **v1.2** (pedido do <USUARIO>: "tá enorme
+e não fala das orquestrações"): setor ORQUESTRAÇÕES protagonista (gates da
+run identificada, runs com estado preciso, cotas com data da leitura,
+papéis por modelo), página encolhida (hero compacto, saúde+cópias fundidos
+no setor ESTADO DA CENTRAL com details, telemetria rebaixada), e as abas
+Ações/Skills/Cérebro/Documentos viram PANES neste mesmo design — fim da
+incoerência com o relatório oficial antigo. Correções orquestradas pelo
+Astra low (8 itens P1/P2) aplicadas e retestadas.
 Dívida para a adoção: hrefs `file:///` absolutos amarram ao disco S: — o
 gerador resolve URLs relativas no momento de gerar. Relatório oficial
 (`00_painel/RELATORIO.html`) segue intocado; adotar o POP lá é decisão do

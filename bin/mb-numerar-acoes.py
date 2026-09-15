@@ -133,7 +133,7 @@ def main() -> int:
 
     movs = plano(central)
     if not movs:
-        print("nada a renomear — os 11 já estão numerados")
+        print(f"nada a renomear — os {len(REGISTRO)} já estão numerados")
     else:
         print(f"renomear {len(movs)}:")
         for velho, novo in movs:

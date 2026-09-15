@@ -23,6 +23,12 @@ from __future__ import annotations
 
 # (número, apelido do arquivo sem prefixo, o que faz em uma linha, quando usar)
 ACOES = [
+    # EXCEÇÃO À REGRA 1 (260914, pedido explícito do dono): o 00 entra no TOPO
+    # pra ser o primeiro da pasta. Não vira precedente — botão novo continua
+    # entrando no fim com o próximo número livre.
+    (0, "abrir-sessao",
+     "Ressincroniza a central com o projeto e confere o git (só busca e avança; nunca commit nem push).",
+     "Ao sentar pra trabalhar: duplo clique abre a central; arraste a pasta de um projeto em cima pra abrir ele."),
     (1, "ABRIR-RELATORIO",
      "Regenera e abre este painel.",
      "Sempre que sentar no PC e quiser saber onde as coisas estão."),

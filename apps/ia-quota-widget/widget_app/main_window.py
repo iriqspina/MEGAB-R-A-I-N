@@ -22,7 +22,7 @@ from .demo_data import demo_snapshot
 from .formatting import age_label, friendly_window_label, percent_label
 from .poll_backoff import PollBackoff
 from .snapshot_store import SnapshotStore
-from .ui_dock import DockRail, DragBall
+from .ui_dock import DOCK_WIDTH, DockRail, DragBall
 from .ui_flow import FlowLayout
 from .ui_provider_segment import ProviderSegment, options_from, typography_from
 
@@ -40,6 +40,12 @@ DRAG_HOLD_MS = 320
 RESIZE_GRIP = 7
 RESIZE_CORNER = 18
 MIN_WINDOW_SIZE = QSize(240, 150)
+
+# Da borda da janela até o fluxo de cards: 2 bordas de arraste (RESIZE_GRIP),
+# margens horizontais do painel (16+16), dock de bolinhas (DOCK_WIDTH) e o
+# espaçamento do body_row (4). Serve pra medir o fluxo pela LARGURA ALVO da
+# janela — a geometria real dos filhos ainda não existe antes do show().
+FLOW_CHROME_W = 2 * RESIZE_GRIP + 32 + DOCK_WIDTH + 4
 
 POLL_MINUTE_STEPS = (2, 5, 10, 15, 30)
 ALERT_STEPS = (0, 75, 90)
@@ -698,6 +704,9 @@ class MainWindow(QWidget):
         point = screen_geometry.clamp_top_left(self.settings.pos_x, self.settings.pos_y, self.size())
         self.move(point)
         self.show()
+        # Métricas de fonte finais só assentam depois do show(); o tamanho
+        # pré-show é estimativa. Reajusta já, sem esperar o primeiro dado.
+        self._schedule_fit()
 
     def _has_manual_size(self) -> bool:
         return bool(self.settings.window_width and self.settings.window_height)
@@ -710,33 +719,40 @@ class MainWindow(QWidget):
         self._programmatic_resize = True
         try:
             available = self._available_rect()
-            # Sem barra de rolagem (pedido 260914): o MÍNIMO da janela é o
-            # conteúdo inteiro — não existe encolher a ponto de cortar. O que
-            # sobra de largura o FlowLayout usa pra reorganizar em colunas,
-            # sem escalar nada.
             if self.layout() is not None:
                 self.layout().activate()
-            minimum = self.layout().totalMinimumSize() if self.layout() is not None else QSize()
-            # FlowLayout.minimumSize() devolve a altura de UMA fileira; na
-            # largura mínima os cards empilham numa coluna só — o mínimo
-            # verdadeiro é a altura do fluxo NA largura mínima.
+            base = self.layout().totalMinimumSize() if self.layout() is not None else QSize()
             flow = self._body_layout
+            # Largura alvo: manual (a sobra vira colunas no fluxo) ou a do
+            # conteúdo — nunca abaixo do mínimo de 1 coluna (sem scrollbar).
+            if self._has_manual_size():
+                target_w = int(self.settings.window_width)
+            else:
+                target_w = self.sizeHint().width()
+            target_w = max(target_w, base.width(), MIN_WINDOW_SIZE.width())
+            if available is not None:
+                target_w = min(target_w, available.width())
+            # Altura que o conteúdo precisa NESSA largura: janela estreita
+            # empilha os cards, larga faz fileiras. Pela largura ALVO e não
+            # pela geometria atual — antes do show() os filhos ainda não têm
+            # geometria (print 260914: janela ficava com a altura da pilha
+            # inteira mesmo larga, 65% de espaço morto embaixo).
+            needed_h = base.height()
             if flow is not None and flow.count():
                 flow_min = flow.minimumSize()
-                minimum.setHeight(
-                    minimum.height() - flow_min.height() + flow.heightForWidth(max(1, flow_min.width()))
-                )
-            minimum = minimum.expandedTo(MIN_WINDOW_SIZE)
+                needed_h = base.height() - flow_min.height() + flow.heightForWidth(max(1, target_w - FLOW_CHROME_W))
+            minimum = QSize(base.width(), needed_h).expandedTo(MIN_WINDOW_SIZE)
             if available is not None:
                 minimum = minimum.boundedTo(available.size())
             self.setMinimumSize(minimum)
-            if self._has_manual_size():
-                target = QSize(int(self.settings.window_width), int(self.settings.window_height)).expandedTo(minimum)
-                if available is not None:
-                    target = target.boundedTo(available.size())
-                self.resize(target)
-            else:
-                self.resize(self.sizeHint().expandedTo(minimum))
+            # Largura manual é respeitada; altura cola no conteúdo. A altura
+            # também é escrita no settings pra persistir o tamanho real.
+            target = QSize(target_w, minimum.height())
+            if available is not None:
+                target = target.boundedTo(available.size())
+            if self._has_manual_size() and self.settings.window_height != target.height():
+                self.settings.window_height = target.height()
+            self.resize(target)
         finally:
             self._programmatic_resize = False
         point = screen_geometry.clamp_top_left(self.pos().x(), self.pos().y(), self.size())
@@ -798,6 +814,10 @@ class MainWindow(QWidget):
         self._user_resize_active = False
         self._resize_edges = None
         self.settings.window_width, self.settings.window_height = self.width(), self.height()
+        # Reajusta na hora: a altura arrastada que não tem conteúdo embaixo
+        # encolhe de volta imediatamente — o mouse escolhe a largura, o
+        # conteúdo decide a altura.
+        self._resize_to_content()
         self._save_settings()
 
     def mousePressEvent(self, event):
