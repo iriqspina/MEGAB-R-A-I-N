@@ -1,0 +1,21 @@
+{
+  "objective": "Auditar a organizacao do MEGABRAIN para humano e IA e revisar um plano de melhoria local sem piorar capacidades. Produzir especificacao revisada executavel, nao alegar implementacao.",
+  "profile": "normal",
+  "ideal": "Uma entrada humana fixa, destinos abríveis/copiáveis com caminho absoluto, contrato de pastas estável, todo prompt triado pela mesma esteira que só ativa os gates pertinentes, sensibilidade compreensível sem desligar verificação ou autorização. Diagnóstico fonteado e plano por etapas com baseline, testes de regressão e reversão.",
+  "generic_rejected": "Mais um relatório longo, outro dashboard concorrente ou mover pastas indiscriminadamente e chamar isso de plataforma.",
+  "criteria": [
+    "Distinguir achados medidos, hipóteses e limites; citar caminhos das fontes fornecidas.",
+    "Preservar funções, tema POP claro/escuro, arquivos modificados por outras sessões e caminhos de consumidores; nenhuma mutação git/publicação.",
+    "Mesma triagem para papo, pergunta simples, artefato e alto risco; ativar só o necessário sem reduzir o piso de qualidade, revisao de artefatos, verificação factual e autorização.",
+    "Definir uma porta fixa, contrato de entrega com caminho absoluto + abrir/copiar + projeto/sessão e dados com fonte/idade.",
+    "Planejar sensibilidade com limites e precedência humana, templates por tipo e histórico de rotas sem prompts privados por padrão; nunca chamar protótipo de integração universal.",
+    "No plano exigir testes previstos e rollback; no candidato exigir especificação fechada de critérios e escopo; execução e screenshots serão validados pelo host depois."
+  ],
+  "context": "Pedido direto 260916: analisar MEGABRAIN inteiro por UX/UI humana e arquitetura/uso pela IA; organizar pastas, padronizar caminhos completos e clicar/copiar nas respostas, adaptar os gatilhos da esteira conforme cada prompt, controlar sensibilidade e melhoria contínua. Reforço explícito: não pode piorar; mudanças precisam ter dados e sentido. Fontes atuais: root tem motor, memoria, bin, dados, 00_painel, 00_PARA-VOCE, 03_docs, docs, apps (6 apps), pets, evidence, out, arquivos. Preflight atual: skills instaladas divergem; estado/fingerprint antigo; lições duplicadas raiz/canônico; 2 cmd LF. Trabalho de outras sessões está modificado em 196 entradas, inclusive relatório, skills, identidade, state, pets/apps. POP v1.2 claro/escuro já aprovado; não redesenhar aparência por gosto. V6 motor cria 4 arquivos por run em 00_PARA-VOCE/orquestracao1-ID, inclusive runs falhas. mb-entrega.py só copia arquivo datado na raiz humana, sem projeto/tarefa/estado/links. mb-contexto.py já é hook pré-prompt em Claude/Kimi; injeta instrução de alinhar todo prompt, mas a skill megabrain isenta papo e simples dos gates. ESTADO 160+ linhas e HANDOFF 480+ acumulam blocos contraditórios (pendente vs aprovado). Proposta: catálogo fixo 00_PARA-VOCE/INICIO.html gerado de registro, navegação por tarefa/projeto; origem única dos dados, link para relatório técnico existente; fixar pastas sem mover fontes executáveis; indexar passado com idade e estado não verificado, registro de entregas futuras; CLI determinística de triagem + casos adversariais; hook utiliza triagem; configuração de sensibilidade só muda custo de etapas opcionais; identidade sincronizada com contrato de destinos; medição antes/depois, inspeção de UI real e revisão independente. Avalie trade-offs e evite prometer zero regressão global por testes limitados.",
+  "milestones": [
+    {"name":"Diagnóstico", "exit":"inventário e consumidores medidos"},
+    {"name":"Contrato", "exit":"plano revisado com critérios por estágio"},
+    {"name":"Implementação local", "exit":"catálogo, roteador, identidade e integração verificáveis"},
+    {"name":"Verificação", "exit":"testes, revisão, evidências e reversão"}
+  ]
+}

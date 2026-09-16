@@ -36,11 +36,12 @@ echo.
 "%PY%" "%SCRIPT%" --source "%FONTE%" --target kimi   --modo conteudo --dir "%USERPROFILE%\.kimi"
 "%PY%" "%SCRIPT%" --source "%FONTE%" --target kimi   --modo conteudo --dir "%USERPROFILE%\.kimi-code"
 "%PY%" "%SCRIPT%" --source "%FONTE%" --target codex      --modo conteudo --dir "%USERPROFILE%\.codex"
+"%PY%" "%SCRIPT%" --source "%FONTE%" --target codex      --modo conteudo --dir "%USERPROFILE%\.codex-gpt2"
 "%PY%" "%SCRIPT%" --source "%FONTE%" --target claude-style --modo conteudo --dir "%USERPROFILE%\.claude"
 
 echo.
 echo == Conferencia
-for %%F in ("%USERPROFILE%\.claude\CLAUDE.md" "%USERPROFILE%\.gemini\GEMINI.md" "%USERPROFILE%\.kimi\AGENTS.md" "%USERPROFILE%\.kimi-code\AGENTS.md" "%USERPROFILE%\.codex\AGENTS.md" "%USERPROFILE%\.claude\output-styles\megabrain.md") do (
+for %%F in ("%USERPROFILE%\.claude\CLAUDE.md" "%USERPROFILE%\.gemini\GEMINI.md" "%USERPROFILE%\.kimi\AGENTS.md" "%USERPROFILE%\.kimi-code\AGENTS.md" "%USERPROFILE%\.codex\AGENTS.md" "%USERPROFILE%\.codex-gpt2\AGENTS.md" "%USERPROFILE%\.claude\output-styles\megabrain.md") do (
   if exist %%F ( echo    OK    %%~zF bytes  %%~F ) else ( echo    FALTA %%~F )
 )
 echo.

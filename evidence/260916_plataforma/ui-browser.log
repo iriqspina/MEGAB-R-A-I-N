@@ -1,0 +1,77 @@
+[
+  {
+    "name": "entrada carregada",
+    "pass": true
+  },
+  {
+    "name": "nenhum overflow desktop",
+    "pass": true
+  },
+  {
+    "name": "legado começa recolhido",
+    "pass": true
+  },
+  {
+    "name": "bussola explicita aparece",
+    "pass": true
+  },
+  {
+    "name": "destinos locais existem",
+    "pass": true,
+    "details": {
+      "links": 97,
+      "missing": []
+    }
+  },
+  {
+    "name": "tema claro",
+    "pass": true
+  },
+  {
+    "name": "tema persiste",
+    "pass": true
+  },
+  {
+    "name": "busca vazia",
+    "pass": true
+  },
+  {
+    "name": "busca encontra tarefa",
+    "pass": true
+  },
+  {
+    "name": "copia caminho absoluto",
+    "pass": true
+  },
+  {
+    "name": "falha copia nao mente",
+    "pass": true
+  },
+  {
+    "name": "nenhum overflow 390",
+    "pass": true
+  },
+  {
+    "name": "teclado ativa tema",
+    "pass": true
+  },
+  {
+    "name": "analise abre",
+    "pass": true
+  },
+  {
+    "name": "fontes da analise existem",
+    "pass": true,
+    "details": {
+      "links": 18,
+      "missing": []
+    }
+  },
+  {
+    "name": "zero recurso remoto",
+    "pass": true,
+    "details": {
+      "requests": 0
+    }
+  }
+]

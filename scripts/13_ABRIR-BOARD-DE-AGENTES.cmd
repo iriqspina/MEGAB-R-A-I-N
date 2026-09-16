@@ -1,18 +1,21 @@
 @echo off
 rem ===========================================================================
-rem 13_ABRIR-BOARD-DE-AGENTES.cmd - quadro vivo de agentes (Agent Flow)
-rem Uso opcional (a pedido do dono, 260915, no padrao do ia-quota-widget).
+rem 13_ABRIR-BOARD-DE-AGENTES.cmd - Agentes IA na area de trabalho (260916)
 rem
-rem O que faz: abre o board dos agentes em janela propria (Chrome/Edge app).
-rem Roda quando voce abre o icone; PARA sozinho quando voce fecha a janela.
-rem Na primeira vez pode demorar ate ~45s (baixa o pacote via npx).
+rem O que faz: abre o WIDGET VAZADO "Agentes IA" - so os cartoes dos processos
+rem flutuando na area de trabalho, sem fundo, sem moldura. Cliques fora dos
+rem cartoes passam pro desktop normalmente. Hover no canto superior esquerdo
+rem (ou clique ali) revela os controles: modo Mapa, nevoa, reexibir, fechar.
+rem Fechar o widget encerra o server do board.
 rem
-rem Parar a forca (sem fechar janela): powershell -File
+rem Board completo no navegador (moldura normal de janela):
+rem   powershell -File "<MEGABRAIN_ROOT>\bin\mb-board.ps1"
+rem
+rem Parar a forca (sem fechar widget): powershell -File
 rem   "<MEGABRAIN_ROOT>\bin\mb-board.ps1" -Parar
 rem
-rem Observacao: e um app de terceiros (patoles/agent-flow, Apache-2.0) rodando
-rem LOCAL, via npx, em http://localhost:3001. Nada sai da maquina.
+rem Requisito: venv do Cotas IA (PySide6 + QtWebEngine) em apps\ia-quota-widget\.venv
 rem ===========================================================================
 setlocal
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "<MEGABRAIN_ROOT>\bin\mb-board.ps1"
+cscript //nologo "<MEGABRAIN_ROOT>\apps\agentes-ia\launch.vbs"
 endlocal

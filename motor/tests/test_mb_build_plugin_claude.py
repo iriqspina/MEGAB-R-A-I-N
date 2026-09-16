@@ -131,7 +131,7 @@ class TestContratosDeOrquestracao(unittest.TestCase):
 
     def test_v6_declara_rota_revisao_e_limites(self):
         self.assertIn("V6 primária", self.orq)
-        self.assertIn("Codex revisa o plano de forma independente", self.orq)
+        self.assertIn("revisa o plano antes de produzir", self.orq)  # rota do dono 260915: Opus/fable revisa, Astra produz
         self.assertIn("`review_approved` significa somente", self.orq)
         self.assertIn("`NAO_MEDIDO`", self.orq)
 

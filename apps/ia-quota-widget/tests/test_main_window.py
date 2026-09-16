@@ -14,12 +14,12 @@ def window(qt_app, tmp_path, monkeypatch):
     win.deleteLater()
 
 
-def test_default_state_shows_codex_claude_and_zai(window):
+def test_default_state_shows_codex_gpt2_claude_and_zai(window):
     visible = [pid for pid in window.provider_ids if window.settings.is_visible(pid)]
-    assert visible == ["codex", "spark", "claude", "zai"]
+    assert visible == ["codex", "spark", "codex_gpt2", "claude", "zai"]
     # Cards no fluxo (spark aninhado não conta).
-    assert window._top_card_rows() == ["codex", "claude", "zai"]
-    assert window._body_layout.count() == 3
+    assert window._top_card_rows() == ["codex", "codex_gpt2", "claude", "zai"]
+    assert window._body_layout.count() == 4
 
 
 def test_spark_nests_inside_codex_card_but_is_removable(window):
@@ -30,7 +30,7 @@ def test_spark_nests_inside_codex_card_but_is_removable(window):
     window._toggle_provider_visibility("spark", False)
     assert window.settings.is_visible("spark") is False
     assert codex._nested is None
-    assert window._top_card_rows() == ["codex", "claude", "zai"]
+    assert window._top_card_rows() == ["codex", "codex_gpt2", "claude", "zai"]
 
 
 def test_bar_extras_hidden_by_default_even_after_rebuild(window):
@@ -57,7 +57,7 @@ def test_toggling_expanded_shows_bar_extras(window):
 def test_enabling_hidden_provider_adds_card_and_persists(window):
     window._toggle_provider_visibility("gemini_cli", True)
     assert window.settings.is_visible("gemini_cli") is True
-    assert window._top_card_rows() == ["codex", "claude", "zai", "gemini_cli"]
+    assert window._top_card_rows() == ["codex", "codex_gpt2", "claude", "zai", "gemini_cli"]
 
     reloaded = persistence.load_settings()
     assert reloaded.is_visible("gemini_cli") is True

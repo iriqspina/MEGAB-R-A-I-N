@@ -462,18 +462,76 @@ def resolve_route_v2(engine, job):
         providers = {role["provider"] for role in route["roles"].values()}
         snapshots = {provider: engine.quota.snapshot(quota_provider(engine.config, provider))
                      for provider in sorted(providers)}
-    measured = bool(snapshots) and all(item.get("status") != "NAO_MEDIDO" for item in snapshots.values())
+    def health(provider, item):
+        """Check the source timestamp and every window relevant to this model."""
+        if not isinstance(item, dict) or item.get("status") != "ok":
+            return False, False, f"consulta {(item or {}).get('status', 'ausente') if isinstance(item, dict) else 'inválida'}"
+        pacing = item.get("pacing") or {}
+        if not isinstance(pacing, dict):
+            return False, False, "ritmo ausente"
+        raw_windows = item.get("windows") or []
+        model = engine.config["providers"][provider]["model"].lower()
+        measured_provider = quota_provider(engine.config, provider)
+        windows = [window for window in raw_windows if isinstance(window, dict) and (
+            measured_provider in ("codex", "spark") or ":" not in str(window.get("id", ""))
+            or str(window["id"]).split(":", 1)[1].lower() in model)] if isinstance(raw_windows, list) else []
+        per_window = pacing.get("windows") or {}
+        per_window = per_window if isinstance(per_window, dict) else {}
+        states = [(per_window.get(str(window.get("id"))) or {}).get("status")
+                  if isinstance(per_window.get(str(window.get("id"))), dict) else None
+                  for window in windows]
+        degraded = any(status in ("desacelerar", "pause") for status in states)
+        # Preserve the conservative legacy reduction when only its aggregate
+        # signal exists, without calling that incomplete reading measured/fresh.
+        if not windows or not per_window:
+            degraded = pacing.get("status") in ("desacelerar", "pause")
+        # Model-specific windows for other Claude models are intentionally ignored.
+        if not windows:
+            return False, degraded, "janelas pertinentes ausentes"
+        if not isinstance(raw_windows, list) or any(not isinstance(w, dict) for w in raw_windows):
+            return False, degraded, "janela inválida"
+        current = datetime.now(timezone.utc)
+        try:
+            fetched = datetime.fromisoformat(item["fetched_at"])
+            # 300 s is the existing Quotas.snapshot cache horizon, not a new poll.
+            if fetched.tzinfo is None or not 0 <= (current - fetched).total_seconds() <= 300:
+                return False, degraded, "data da leitura ausente, futura ou vencida"
+        except (KeyError, TypeError, ValueError):
+            return False, degraded, "data da leitura inválida ou ausente"
+        for window, status in zip(windows, states):
+            used, duration = window.get("used_percent"), window.get("duration_minutes")
+            if (not window.get("id") or status not in ("ok", "desacelerar", "pause")
+                    or type(used) not in (int, float) or not 0 <= used <= 100
+                    or type(duration) not in (int, float) or not 0 < duration < float("inf")
+                    or (used >= 100 and status == "ok")):
+                return False, degraded, "janela sem dados/ritmo completos ou consistentes"
+            try:
+                reset = datetime.fromisoformat(window["resets_at"])
+                if reset.tzinfo is None or reset <= current:
+                    return False, degraded, "janela vencida ou sem data válida"
+            except (KeyError, TypeError, ValueError):
+                return False, degraded, "janela sem data válida"
+        return True, degraded, ""
+
+    checks = {provider: health(provider, item) for provider, item in snapshots.items()}
+    measured = bool(checks) and all(check[0] for check in checks.values())
+    degraded = any(check[1] for check in checks.values())
+    reads_ok = bool(snapshots) and all(isinstance(item, dict) and item.get("status") == "ok"
+                                       for item in snapshots.values())
     if snapshots:
         route["quota"] = snapshots
-    if route["requested_profile"] == "auto" and measured:
-        degraded = any((item.get("pacing") or {}).get("status") in ("desacelerar", "pause")
-                       for item in snapshots.values())
-        if degraded:
+    if route["requested_profile"] == "auto":
+        if reads_ok and degraded:
             route["effective_profile"] = "micro"
             route["roles"] = engine.config["workflow"]["profiles"]["micro"]
-            route["reason"] = "auto conservador: cota medida em desacelerar; reduziu para micro"
-        else:
+            route["reason"] = "auto conservador: sinal de desacelerar/pausa; reduziu para micro"
+        elif measured:
             route["reason"] = "auto: cotas medidas saudáveis; perfil normal"
+    elif degraded:
+        route["reason"] += "; alerta de desacelerar/pausa; manteve perfil explícito"
+    if not measured and (snapshots or route["requested_profile"] != "auto"):
+        issues = "; ".join(f"{provider}: {check[2]}" for provider, check in checks.items() if not check[0])
+        route["reason"] += f"; saúde de cota não confirmada ({issues or 'cota não medida'})"
     atomic(route_file, route)
     return route
 

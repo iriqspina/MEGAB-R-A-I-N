@@ -206,7 +206,7 @@ class TestCodex(unittest.TestCase):
                 json.dumps({"id": 2, "error": {"code": -32000, "message": "not logged in"}}),
             ]
         )
-        with _patched(providers, "run_codex_app_server", lambda binary, timeout=0: stdout), _patched(
+        with _patched(providers, "run_codex_app_server", lambda binary, timeout=0, env=None: stdout), _patched(
             providers, "find_codex_binary", lambda: "codex"
         ):
             resultado = providers.fetch_provider("codex")
@@ -215,7 +215,7 @@ class TestCodex(unittest.TestCase):
         self.assertEqual(resultado["windows"], [])
 
     def test_sem_resposta_vira_error(self):
-        with _patched(providers, "run_codex_app_server", lambda binary, timeout=0: ""), _patched(
+        with _patched(providers, "run_codex_app_server", lambda binary, timeout=0, env=None: ""), _patched(
             providers, "find_codex_binary", lambda: "codex"
         ):
             resultado = providers.fetch_provider("codex")
@@ -234,13 +234,51 @@ class TestCodex(unittest.TestCase):
                 json.dumps({"id": 2, "result": CODEX_PAYLOAD}),
             ]
         )
-        with _patched(providers, "run_codex_app_server", lambda binary, timeout=0: stdout), _patched(
+        with _patched(providers, "run_codex_app_server", lambda binary, timeout=0, env=None: stdout), _patched(
             providers, "find_codex_binary", lambda: "codex"
         ):
             resultado = providers.fetch_provider("codex")
         self.assertEqual(resultado["status"], "ok")
         self.assertIsNotNone(resultado["fetched_at"])
         self.assertEqual(len(resultado["windows"]), 3)
+
+    def test_gpt2_sem_perfil_vira_unavailable(self):
+        # Home gpt2 sem auth.json é "sem login nesta máquina", não auth_required:
+        # a conta principal pode estar logada, o perfil gpt2 é que não existe.
+        with tempfile.TemporaryDirectory() as tmp:
+            with _patched(providers, "CODEX_GPT2_HOME", Path(tmp)):
+                resultado = providers.fetch_provider("codex_gpt2")
+        self.assertEqual(resultado["status"], "unavailable")
+        self.assertIsNone(resultado["fetched_at"])
+
+    def test_gpt2_responde_como_conta_propria(self):
+        stdout = "\n".join(
+            [
+                json.dumps({"id": 0, "result": {}}),
+                json.dumps({"id": 1, "result": {"account": {"type": "chatgpt", "planType": "plus"}}}),
+                json.dumps({"id": 2, "result": CODEX_PAYLOAD}),
+            ]
+        )
+        vistos: dict = {}
+
+        def fake(binary, timeout=0, env=None):
+            vistos["env"] = env
+            return stdout
+
+        with tempfile.TemporaryDirectory() as tmp:
+            Path(tmp, "auth.json").write_text("{}", encoding="utf-8")
+            with (
+                _patched(providers, "CODEX_GPT2_HOME", Path(tmp)),
+                _patched(providers, "run_codex_app_server", fake),
+                _patched(providers, "find_codex_binary", lambda: "codex"),
+            ):
+                resultado = providers.fetch_provider("codex_gpt2")
+        self.assertEqual(resultado["status"], "ok")
+        self.assertEqual(resultado["provider"], "codex_gpt2")
+        self.assertIn("plus", resultado["message"])
+        # O app-server resolve o home pelo env do processo pai: a sobrescrita
+        # tem que chegar no Popen, senão o card gpt2 leria a conta principal.
+        self.assertEqual(vistos["env"]["CODEX_HOME"], str(Path(tmp)))
 
     def test_requisicoes_na_ordem_e_params_null(self):
         # O app-server recusa {} em account/rateLimits/read; tem que ser null.
@@ -620,7 +658,7 @@ class TestContrato(unittest.TestCase):
     def test_ids_declarados(self):
         self.assertEqual(
             providers.PROVIDER_IDS,
-            ("codex", "claude", "zai", "gemini_cli", "antigravity", "gemini_web"),
+            ("codex", "codex_gpt2", "claude", "zai", "gemini_cli", "antigravity", "gemini_web"),
         )
 
     def test_toda_resposta_tem_o_formato_do_contrato(self):

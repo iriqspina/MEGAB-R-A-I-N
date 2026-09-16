@@ -1,0 +1,146 @@
+mapa de referências · 12381 arquivos de texto lidos · raiz MEGA B R A I  N
+
+### mb-contexto.py — 274 citações em 143 arquivos (caminho: 68 · literal: 99 · prosa: 107)
+  !! memoria\estado\DECISOES.md  caminho:2 literal:5 prosa:0
+  !! evidence\260910_fechamento-pesquisa\backup\memoria\estado\DECISOES.md  caminho:2 literal:5 prosa:0
+  !! .claude\worktrees\silly-cartwright-33a986\memoria\estado\DECISOES.md  caminho:2 literal:5 prosa:0
+  !! .claude\worktrees\jolly-sinoussi-831ce5\memoria\estado\DECISOES.md  caminho:2 literal:5 prosa:0
+  !! .claude\worktrees\exciting-satoshi-93280f\memoria\estado\DECISOES.md  caminho:2 literal:5 prosa:0
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\memoria\estado\DECISOES.md  caminho:2 literal:5 prosa:0
+  !! bin\mb-contexto.py  caminho:3 literal:0 prosa:1
+  !! pets\MEGABRAIN\bin\mb-contexto.py  caminho:3 literal:0 prosa:1
+  !! memoria\pendencias\260821-pendencia-nome-metaprotocolo\260821_nota.md  caminho:1 literal:2 prosa:0
+  !! evidence\260916_plataforma\backup\bin\mb-contexto.py  caminho:3 literal:0 prosa:1
+  !! .claude\worktrees\silly-cartwright-33a986\bin\mb-contexto.py  caminho:3 literal:0 prosa:1
+  !! .claude\worktrees\silly-cartwright-33a986\memoria\pendencias\260821-pendencia-nome-metaprotocolo\260821_nota.md  caminho:1 literal:2 prosa:0
+  !! .claude\worktrees\jolly-sinoussi-831ce5\bin\mb-contexto.py  caminho:3 literal:0 prosa:1
+  !! .claude\worktrees\jolly-sinoussi-831ce5\memoria\pendencias\260821-pendencia-nome-metaprotocolo\260821_nota.md  caminho:1 literal:2 prosa:0
+  !! .claude\worktrees\exciting-satoshi-93280f\bin\mb-contexto.py  caminho:3 literal:0 prosa:1
+  !! .claude\worktrees\exciting-satoshi-93280f\memoria\pendencias\260821-pendencia-nome-metaprotocolo\260821_nota.md  caminho:1 literal:2 prosa:0
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\bin\mb-contexto.py  caminho:3 literal:0 prosa:1
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\memoria\pendencias\260821-pendencia-nome-metaprotocolo\260821_nota.md  caminho:1 literal:2 prosa:0
+  !! pets\MEGABRAIN\MEGABRAIN.md  caminho:1 literal:1 prosa:0
+  !! pets\MEGABRAIN\referencias\260824_skill-completa-v5.md  caminho:1 literal:1 prosa:1
+  !! motor\referencias\260824_skill-completa-v5.md  caminho:1 literal:1 prosa:1
+  !! memoria\nucleo\MEGABRAIN.md  caminho:1 literal:1 prosa:0
+  !! evidence\260916_plataforma\backup\memoria\nucleo\MEGABRAIN.md  caminho:1 literal:1 prosa:0
+  !! 00_PARA-VOCE\260910_permissoes-claude-codex\fontes\pesquisa-claude-code.md  caminho:2 literal:0 prosa:4
+  !! .claude\worktrees\silly-cartwright-33a986\motor\referencias\260824_skill-completa-v5.md  caminho:1 literal:1 prosa:1
+  !! .claude\worktrees\silly-cartwright-33a986\memoria\nucleo\MEGABRAIN.md  caminho:1 literal:1 prosa:0
+  !! .claude\worktrees\jolly-sinoussi-831ce5\motor\referencias\260824_skill-completa-v5.md  caminho:1 literal:1 prosa:1
+  !! .claude\worktrees\jolly-sinoussi-831ce5\memoria\nucleo\MEGABRAIN.md  caminho:1 literal:1 prosa:0
+  !! .claude\worktrees\exciting-satoshi-93280f\motor\referencias\260824_skill-completa-v5.md  caminho:1 literal:1 prosa:1
+  !! .claude\worktrees\exciting-satoshi-93280f\memoria\nucleo\MEGABRAIN.md  caminho:1 literal:1 prosa:0
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\motor\referencias\260824_skill-completa-v5.md  caminho:1 literal:1 prosa:1
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\memoria\nucleo\MEGABRAIN.md  caminho:1 literal:1 prosa:0
+  !! 03_docs\260827_instalar-no-macos.md  caminho:1 literal:0 prosa:0
+  !! bin\mb-preflight.py  caminho:0 literal:1 prosa:0
+  !! pets\MEGABRAIN\bin\mb-preflight.py  caminho:0 literal:1 prosa:0
+  !! pets\MEGABRAIN\skills\ingerir\SKILL.md  caminho:0 literal:1 prosa:0
+  !! motor\tests\test_mb_contexto.py  caminho:0 literal:1 prosa:0
+  !! motor\skills\ingerir\SKILL.md  caminho:0 literal:1 prosa:0
+  !! motor\plugin-megabrain-codex\skills\ingerir\SKILL.md  caminho:0 literal:1 prosa:0
+  !! motor\plugin-megabrain-claude\skills\ingerir\SKILL.md  caminho:0 literal:1 prosa:0
+  !! motor\plugin-megabrain\hooks\260810_licoes-kimi.mjs  caminho:0 literal:1 prosa:1
+  !! motor\plugin-megabrain\skills\ingerir\SKILL.md  caminho:0 literal:1 prosa:0
+  !! memoria\nucleo\README.md  caminho:0 literal:1 prosa:0
+  !! memoria\cerebro\raw\260915_pesquisa-treinamento-ia-agents.md  caminho:0 literal:1 prosa:0
+  !! memoria\cerebro\wiki\260822_segundo-cerebro-llm-wiki.md  caminho:0 literal:1 prosa:0
+  !! memoria\cerebro\wiki\260915_treinamento-ia-visual-e-agents-confiaveis.md  caminho:0 literal:1 prosa:0
+  !! evidence\260916_plataforma\baseline.json  caminho:1 literal:0 prosa:0
+  !! evidence\260916_plataforma\preparar.py  caminho:1 literal:0 prosa:0
+  !! evidence\260916_plataforma\worker-triagem-resultado.md  caminho:0 literal:1 prosa:0
+  !! 00_PARA-VOCE\260910_permissoes-claude-codex\claude-settings-A-auto.json  caminho:1 literal:0 prosa:1
+  !! 00_PARA-VOCE\260910_permissoes-claude-codex\claude-settings-B-sem-classificador.json  caminho:1 literal:0 prosa:1
+  !! 00_PARA-VOCE\orquestracao1-260916_175608_306d11cb\PLANO.md  caminho:1 literal:0 prosa:1
+  !! .claude\worktrees\silly-cartwright-33a986\03_docs\260827_instalar-no-macos.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\silly-cartwright-33a986\bin\mb-preflight.py  caminho:0 literal:1 prosa:0
+  !! .claude\worktrees\silly-cartwright-33a986\motor\tests\test_mb_contexto.py  caminho:0 literal:1 prosa:0
+  !! .claude\worktrees\silly-cartwright-33a986\motor\skills\ingerir\SKILL.md  caminho:0 literal:1 prosa:0
+  !! .claude\worktrees\silly-cartwright-33a986\motor\plugin-megabrain-claude\skills\ingerir\SKILL.md  caminho:0 literal:1 prosa:0
+  !! .claude\worktrees\silly-cartwright-33a986\motor\plugin-megabrain\hooks\260810_licoes-kimi.mjs  caminho:0 literal:1 prosa:1
+  !! .claude\worktrees\silly-cartwright-33a986\motor\plugin-megabrain\skills\ingerir\SKILL.md  caminho:0 literal:1 prosa:0
+  !! .claude\worktrees\silly-cartwright-33a986\memoria\nucleo\README.md  caminho:0 literal:1 prosa:0
+  !! .claude\worktrees\silly-cartwright-33a986\memoria\cerebro\wiki\260822_segundo-cerebro-llm-wiki.md  caminho:0 literal:1 prosa:0
+  !! .claude\worktrees\jolly-sinoussi-831ce5\03_docs\260827_instalar-no-macos.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\jolly-sinoussi-831ce5\bin\mb-preflight.py  caminho:0 literal:1 prosa:0
+  !! .claude\worktrees\jolly-sinoussi-831ce5\motor\tests\test_mb_contexto.py  caminho:0 literal:1 prosa:0
+  !! .claude\worktrees\jolly-sinoussi-831ce5\motor\skills\ingerir\SKILL.md  caminho:0 literal:1 prosa:0
+  !! .claude\worktrees\jolly-sinoussi-831ce5\motor\plugin-megabrain-claude\skills\ingerir\SKILL.md  caminho:0 literal:1 prosa:0
+  !! .claude\worktrees\jolly-sinoussi-831ce5\motor\plugin-megabrain\hooks\260810_licoes-kimi.mjs  caminho:0 literal:1 prosa:1
+  !! .claude\worktrees\jolly-sinoussi-831ce5\motor\plugin-megabrain\skills\ingerir\SKILL.md  caminho:0 literal:1 prosa:0
+  !! .claude\worktrees\jolly-sinoussi-831ce5\memoria\nucleo\README.md  caminho:0 literal:1 prosa:0
+  !! .claude\worktrees\jolly-sinoussi-831ce5\memoria\cerebro\wiki\260822_segundo-cerebro-llm-wiki.md  caminho:0 literal:1 prosa:0
+  !! .claude\worktrees\exciting-satoshi-93280f\03_docs\260827_instalar-no-macos.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\exciting-satoshi-93280f\bin\mb-preflight.py  caminho:0 literal:1 prosa:0
+  !! .claude\worktrees\exciting-satoshi-93280f\motor\tests\test_mb_contexto.py  caminho:0 literal:1 prosa:0
+  !! .claude\worktrees\exciting-satoshi-93280f\motor\skills\ingerir\SKILL.md  caminho:0 literal:1 prosa:0
+  !! .claude\worktrees\exciting-satoshi-93280f\motor\plugin-megabrain-claude\skills\ingerir\SKILL.md  caminho:0 literal:1 prosa:0
+  !! .claude\worktrees\exciting-satoshi-93280f\motor\plugin-megabrain\hooks\260810_licoes-kimi.mjs  caminho:0 literal:1 prosa:1
+  !! .claude\worktrees\exciting-satoshi-93280f\motor\plugin-megabrain\skills\ingerir\SKILL.md  caminho:0 literal:1 prosa:0
+  !! .claude\worktrees\exciting-satoshi-93280f\memoria\nucleo\README.md  caminho:0 literal:1 prosa:0
+  !! .claude\worktrees\exciting-satoshi-93280f\memoria\cerebro\wiki\260822_segundo-cerebro-llm-wiki.md  caminho:0 literal:1 prosa:0
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\03_docs\260827_instalar-no-macos.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\bin\mb-preflight.py  caminho:0 literal:1 prosa:0
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\motor\tests\test_mb_contexto.py  caminho:0 literal:1 prosa:0
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\motor\skills\ingerir\SKILL.md  caminho:0 literal:1 prosa:0
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\motor\plugin-megabrain-claude\skills\ingerir\SKILL.md  caminho:0 literal:1 prosa:0
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\motor\plugin-megabrain\hooks\260810_licoes-kimi.mjs  caminho:0 literal:1 prosa:1
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\motor\plugin-megabrain\skills\ingerir\SKILL.md  caminho:0 literal:1 prosa:0
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\memoria\nucleo\README.md  caminho:0 literal:1 prosa:0
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\memoria\cerebro\wiki\260822_segundo-cerebro-llm-wiki.md  caminho:0 literal:1 prosa:0
+  !! .automations\runs\260916_175608_306d11cb\plan.md  caminho:1 literal:0 prosa:1
+  !! .automations\runs\260916_175608_306d11cb\stages\candidate-1\request.json  caminho:1 literal:0 prosa:2
+  !! .automations\runs\260916_175608_306d11cb\stages\plan-1\last-message.json  caminho:1 literal:0 prosa:1
+  !! .automations\runs\260916_175608_306d11cb\stages\plan-1\response.json  caminho:1 literal:0 prosa:1
+  !! .automations\runs\260916_175608_306d11cb\stages\plan-review-1\request.json  caminho:1 literal:0 prosa:2
+     01_acoes\08_refresh-plugin-kimi.cmd  caminho:0 literal:0 prosa:1
+     03_docs\260824_megabrain-do-zero.html  caminho:0 literal:0 prosa:1
+     bin\mb-abertura-sessao.py  caminho:0 literal:0 prosa:1
+     bin\mb-indice-licoes.py  caminho:0 literal:0 prosa:1
+     pets\MEGABRAIN\licoes-megabrain.md  caminho:0 literal:0 prosa:2
+     pets\MEGABRAIN\VERSAO.txt  caminho:0 literal:0 prosa:3
+     pets\MEGABRAIN\bin\mb-abertura-sessao.py  caminho:0 literal:0 prosa:1
+     pets\MEGABRAIN\bin\mb-indice-licoes.py  caminho:0 literal:0 prosa:1
+     pets\MEGABRAIN\dna\indice-licoes.json  caminho:0 literal:0 prosa:1
+     motor\dna\indice-licoes.json  caminho:0 literal:0 prosa:1
+     memoria\estado\META.md  caminho:0 literal:0 prosa:1
+     memoria\nucleo\licoes-megabrain.md  caminho:0 literal:0 prosa:2
+     memoria\nucleo\VERSAO.txt  caminho:0 literal:0 prosa:3
+     evidence\260916_plataforma\brief.json  caminho:0 literal:0 prosa:1
+     evidence\260916_plataforma\worker-triagem.txt  caminho:0 literal:0 prosa:1
+     evidence\260916_plataforma\backup\memoria\nucleo\licoes-megabrain.md  caminho:0 literal:0 prosa:2
+     00_PARA-VOCE\orquestracao1-260916_175608_306d11cb\CANDIDATO.md  caminho:0 literal:0 prosa:2
+     .claude\worktrees\silly-cartwright-33a986\01_acoes\08_refresh-plugin-kimi.cmd  caminho:0 literal:0 prosa:1
+     .claude\worktrees\silly-cartwright-33a986\03_docs\260824_megabrain-do-zero.html  caminho:0 literal:0 prosa:1
+     .claude\worktrees\silly-cartwright-33a986\bin\mb-indice-licoes.py  caminho:0 literal:0 prosa:1
+     .claude\worktrees\silly-cartwright-33a986\memoria\estado\META.md  caminho:0 literal:0 prosa:1
+     .claude\worktrees\silly-cartwright-33a986\memoria\nucleo\licoes-megabrain.md  caminho:0 literal:0 prosa:2
+     .claude\worktrees\silly-cartwright-33a986\memoria\nucleo\VERSAO.txt  caminho:0 literal:0 prosa:3
+     .claude\worktrees\jolly-sinoussi-831ce5\01_acoes\08_refresh-plugin-kimi.cmd  caminho:0 literal:0 prosa:1
+     .claude\worktrees\jolly-sinoussi-831ce5\03_docs\260824_megabrain-do-zero.html  caminho:0 literal:0 prosa:1
+     .claude\worktrees\jolly-sinoussi-831ce5\bin\mb-indice-licoes.py  caminho:0 literal:0 prosa:1
+     .claude\worktrees\jolly-sinoussi-831ce5\memoria\estado\META.md  caminho:0 literal:0 prosa:1
+     .claude\worktrees\jolly-sinoussi-831ce5\memoria\nucleo\licoes-megabrain.md  caminho:0 literal:0 prosa:2
+     .claude\worktrees\jolly-sinoussi-831ce5\memoria\nucleo\VERSAO.txt  caminho:0 literal:0 prosa:3
+     .claude\worktrees\exciting-satoshi-93280f\01_acoes\08_refresh-plugin-kimi.cmd  caminho:0 literal:0 prosa:1
+     .claude\worktrees\exciting-satoshi-93280f\03_docs\260824_megabrain-do-zero.html  caminho:0 literal:0 prosa:1
+     .claude\worktrees\exciting-satoshi-93280f\bin\mb-indice-licoes.py  caminho:0 literal:0 prosa:1
+     .claude\worktrees\exciting-satoshi-93280f\memoria\estado\META.md  caminho:0 literal:0 prosa:1
+     .claude\worktrees\exciting-satoshi-93280f\memoria\nucleo\licoes-megabrain.md  caminho:0 literal:0 prosa:2
+     .claude\worktrees\exciting-satoshi-93280f\memoria\nucleo\VERSAO.txt  caminho:0 literal:0 prosa:3
+     .claude\worktrees\agent-a08b15b3b40ae20c9\01_acoes\08_refresh-plugin-kimi.cmd  caminho:0 literal:0 prosa:1
+     .claude\worktrees\agent-a08b15b3b40ae20c9\03_docs\260824_megabrain-do-zero.html  caminho:0 literal:0 prosa:1
+     .claude\worktrees\agent-a08b15b3b40ae20c9\bin\mb-indice-licoes.py  caminho:0 literal:0 prosa:1
+     .claude\worktrees\agent-a08b15b3b40ae20c9\memoria\estado\META.md  caminho:0 literal:0 prosa:1
+     .claude\worktrees\agent-a08b15b3b40ae20c9\memoria\nucleo\licoes-megabrain.md  caminho:0 literal:0 prosa:2
+     .claude\worktrees\agent-a08b15b3b40ae20c9\memoria\nucleo\VERSAO.txt  caminho:0 literal:0 prosa:3
+     .automations\briefs\260916_175552_7aed9ed6.json  caminho:0 literal:0 prosa:1
+     .automations\briefs\260916_175608_827aff93.json  caminho:0 literal:0 prosa:1
+     .automations\runs\260916_175608_306d11cb\candidate.md  caminho:0 literal:0 prosa:2
+     .automations\runs\260916_175608_306d11cb\manifest.json  caminho:0 literal:0 prosa:1
+     .automations\runs\260916_175608_306d11cb\result.json  caminho:0 literal:0 prosa:1
+     .automations\runs\260916_175608_306d11cb\stages\candidate-1\last-message.json  caminho:0 literal:0 prosa:2
+     .automations\runs\260916_175608_306d11cb\stages\candidate-1\response.json  caminho:0 literal:0 prosa:2
+     .automations\runs\260916_175608_306d11cb\stages\plan-1\request.json  caminho:0 literal:0 prosa:1
+     .automations\runs\260916_175608_306d11cb\stages\review-1\request.json  caminho:0 literal:0 prosa:3

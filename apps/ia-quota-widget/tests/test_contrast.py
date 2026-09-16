@@ -71,9 +71,10 @@ def test_light_presets_use_darker_status_palette_than_dark_presets():
 def test_status_identity_colors_are_shared_across_all_presets():
     # A cor de identidade do provider e' independente de preset de superficie.
     assert "codex" in theme.PROVIDER_DOT_COLORS
+    assert "codex_gpt2" in theme.PROVIDER_DOT_COLORS
     for preset_id in theme.SURFACE_PRESET_ORDER:
         theme.surface_preset(preset_id)  # nao levanta, preset existe
-    assert len(theme.PROVIDER_DOT_COLORS) == 7
+    assert len(theme.PROVIDER_DOT_COLORS) == 8
 
 
 def test_unknown_preset_id_falls_back_to_default():

@@ -1,0 +1,418 @@
+test_env_invalida_retorna_none_com_mensagem (test_mb_abertura_sessao.TestAcharCentral.test_env_invalida_retorna_none_com_mensagem) ... ok
+test_env_valida_aponta_pra_raiz (test_mb_abertura_sessao.TestAcharCentral.test_env_valida_aponta_pra_raiz) ... ok
+test_divergiu_e_aviso_e_nunca_chama_pull (test_mb_abertura_sessao.TestBuscarEAvancar.test_divergiu_e_aviso_e_nunca_chama_pull) ... ok
+test_fetch_falha_vira_aviso (test_mb_abertura_sessao.TestBuscarEAvancar.test_fetch_falha_vira_aviso) ... ok
+test_sem_upstream_e_ok_e_nao_chama_pull (test_mb_abertura_sessao.TestBuscarEAvancar.test_sem_upstream_e_ok_e_nao_chama_pull) ... ok
+test_so_a_frente_e_ok_sem_pull (test_mb_abertura_sessao.TestBuscarEAvancar.test_so_a_frente_e_ok_sem_pull) ... ok
+test_so_atras_chama_pull_ff_only (test_mb_abertura_sessao.TestBuscarEAvancar.test_so_atras_chama_pull_ff_only) ... ok
+test_cabecalho_cita_a_excecao_ao_registro (test_mb_abertura_sessao.TestCmdCRLF.test_cabecalho_cita_a_excecao_ao_registro) ... ok
+test_cmd_wrapper_existe (test_mb_abertura_sessao.TestCmdCRLF.test_cmd_wrapper_existe) ... ok
+test_todo_lf_precedido_de_cr (test_mb_abertura_sessao.TestCmdCRLF.test_todo_lf_precedido_de_cr) ... ok
+test_aceita_raiz (test_mb_abertura_sessao.TestECentralReal.test_aceita_raiz) ... ok
+test_recusa_copia_cheia_falsa_sem_motor (test_mb_abertura_sessao.TestECentralReal.test_recusa_copia_cheia_falsa_sem_motor) ... ok
+test_livre (test_mb_abertura_sessao.TestLerTrava.test_livre) ... ok
+test_sem_handoff (test_mb_abertura_sessao.TestLerTrava.test_sem_handoff) ... ok
+test_travado_com_ate (test_mb_abertura_sessao.TestLerTrava.test_travado_com_ate) ... ok
+test_apenas_uma_chamada_subprocess_com_git_literal (test_mb_abertura_sessao.TestNuncaCommitOuPush.test_apenas_uma_chamada_subprocess_com_git_literal)
+Só `_git()` pode falar com o executável git — uma segunda chamada ... ok
+test_fonte_sem_git_commit_ou_git_push_literal (test_mb_abertura_sessao.TestNuncaCommitOuPush.test_fonte_sem_git_commit_ou_git_push_literal) ... ok
+test_git_recusa_commit (test_mb_abertura_sessao.TestNuncaCommitOuPush.test_git_recusa_commit) ... ok
+test_git_recusa_pull_sem_ff_only (test_mb_abertura_sessao.TestNuncaCommitOuPush.test_git_recusa_pull_sem_ff_only) ... ok
+test_git_recusa_push (test_mb_abertura_sessao.TestNuncaCommitOuPush.test_git_recusa_push) ... ok
+test_git_verbos_e_subconjunto_do_permitido (test_mb_abertura_sessao.TestNuncaCommitOuPush.test_git_verbos_e_subconjunto_do_permitido) ... ok
+test_nenhuma_constante_e_verbo_proibido (test_mb_abertura_sessao.TestNuncaCommitOuPush.test_nenhuma_constante_e_verbo_proibido) ... ok
+test_sem_marcador_fica_onde_esta (test_mb_abertura_sessao.TestResolverProjeto.test_sem_marcador_fica_onde_esta) ... ok
+test_subpasta_sobe_ate_o_marcador (test_mb_abertura_sessao.TestResolverProjeto.test_subpasta_sobe_ate_o_marcador) ... ok
+test_central_invalida_via_env_retorna_1 (test_mb_abertura_sessao.TestSecoNaoGrava.test_central_invalida_via_env_retorna_1) ... ok
+test_projeto_inexistente_retorna_1 (test_mb_abertura_sessao.TestSecoNaoGrava.test_projeto_inexistente_retorna_1) ... ok
+test_script_existe (test_mb_abertura_sessao.TestSecoNaoGrava.test_script_existe) ... ok
+test_seco_offline_projeto_megabrain_nao_cria_mb_log (test_mb_abertura_sessao.TestSecoNaoGrava.test_seco_offline_projeto_megabrain_nao_cria_mb_log)
+tmpdir com `.mb-origem.json` vira projeto (e_projeto) — mesmo assim ... ok
+test_seco_offline_tmpdir_vazio_fica_vazio (test_mb_abertura_sessao.TestSecoNaoGrava.test_seco_offline_tmpdir_vazio_fica_vazio) ... ok
+test_oferta_compacta_aparece_uma_vez_e_nao_e_pergunta (test_mb_build_plugin_claude.TestBootstrapDeModos.test_oferta_compacta_aparece_uma_vez_e_nao_e_pergunta) ... ok
+test_quaseultracode_so_e_sugerido_para_projeto_grande (test_mb_build_plugin_claude.TestBootstrapDeModos.test_quaseultracode_so_e_sugerido_para_projeto_grande) ... ok
+test_casa_nao_e_cabana_e_ponte_tem_cadeia (test_mb_build_plugin_claude.TestContratosDeOrquestracao.test_casa_nao_e_cabana_e_ponte_tem_cadeia) ... ok
+test_distracao_fica_fora_e_melhoria_exige_prova (test_mb_build_plugin_claude.TestContratosDeOrquestracao.test_distracao_fica_fora_e_melhoria_exige_prova) ... ok
+test_headhunter_passa_pela_segunda_leitura (test_mb_build_plugin_claude.TestContratosDeOrquestracao.test_headhunter_passa_pela_segunda_leitura) ... ok
+test_v6_declara_rota_revisao_e_limites (test_mb_build_plugin_claude.TestContratosDeOrquestracao.test_v6_declara_rota_revisao_e_limites) ... FAIL
+test_description_cabe_no_instalador (test_mb_build_plugin_claude.TestDescriptionDoPlugin.test_description_cabe_no_instalador) ... ok
+test_description_nao_ficou_vazia_ao_encurtar (test_mb_build_plugin_claude.TestDescriptionDoPlugin.test_description_nao_ficou_vazia_ao_encurtar) ... ok
+test_hypadododiabo_vem_da_fonte_canonica (test_mb_build_plugin_claude.TestMapaFontes.test_hypadododiabo_vem_da_fonte_canonica) ... ok
+test_orquestracao1_vem_da_fonte_canonica (test_mb_build_plugin_claude.TestMapaFontes.test_orquestracao1_vem_da_fonte_canonica) ... ok
+test_orquestracao2_vem_da_fonte_canonica (test_mb_build_plugin_claude.TestMapaFontes.test_orquestracao2_vem_da_fonte_canonica) ... ok
+test_quaseultracode_vem_da_fonte_canonica (test_mb_build_plugin_claude.TestMapaFontes.test_quaseultracode_vem_da_fonte_canonica) ... ok
+test_aprova_no_limite (test_mb_build_plugin_claude.TestValidarReprova.test_aprova_no_limite) ... ok
+test_reprova_acima_do_limite (test_mb_build_plugin_claude.TestValidarReprova.test_reprova_acima_do_limite) ... ok
+test_destino_vazio_recebe_manifesto_e_nove_skills (test_mb_build_plugin_codex.TestBuildPluginCodex.test_destino_vazio_recebe_manifesto_e_nove_skills) ... ok
+test_drift_detecta_ausente_extra_e_divergente (test_mb_build_plugin_codex.TestBuildPluginCodex.test_drift_detecta_ausente_extra_e_divergente) ... ok
+test_duas_montagens_vazias_sao_identicas_byte_a_byte (test_mb_build_plugin_codex.TestBuildPluginCodex.test_duas_montagens_vazias_sao_identicas_byte_a_byte) ... ok
+test_fonte_codex_ausente_recusa_build (test_mb_build_plugin_codex.TestBuildPluginCodex.test_fonte_codex_ausente_recusa_build) ... ok
+test_manifesto_invalido_recusa_build (test_mb_build_plugin_codex.TestBuildPluginCodex.test_manifesto_invalido_recusa_build) ... ok
+test_absent_destination_not_hidden (test_mb_catalogo.CatalogoTest.test_absent_destination_not_hidden) ... ok
+test_compass_uses_explicit_context_and_preserves_legacy (test_mb_catalogo.CatalogoTest.test_compass_uses_explicit_context_and_preserves_legacy) ... ok
+test_corrupt_registry_does_not_replace_page (test_mb_catalogo.CatalogoTest.test_corrupt_registry_does_not_replace_page) ... ok
+test_current_proof_expires_on_edit (test_mb_catalogo.CatalogoTest.test_current_proof_expires_on_edit) ... ok
+test_edited_generated_page_is_preserved (test_mb_catalogo.CatalogoTest.test_edited_generated_page_is_preserved) ... ok
+test_escape_rejected (test_mb_catalogo.CatalogoTest.test_escape_rejected) ... ok
+test_executable_rejected (test_mb_catalogo.CatalogoTest.test_executable_rejected) ... ok
+test_human_entry_preserved (test_mb_catalogo.CatalogoTest.test_human_entry_preserved) ... ok
+test_legacy_never_approved (test_mb_catalogo.CatalogoTest.test_legacy_never_approved) ... ok
+test_pronto_requires_current_proof (test_mb_catalogo.CatalogoTest.test_pronto_requires_current_proof) ... ok
+test_readonly_collect (test_mb_catalogo.CatalogoTest.test_readonly_collect) ... ok
+test_unicode_html_escaped_link_encoded (test_mb_catalogo.CatalogoTest.test_unicode_html_escaped_link_encoded) ... ok
+test_nenhum_cmd_da_central_em_lf (test_mb_cmd_crlf.TestCentralReal.test_nenhum_cmd_da_central_em_lf)
+A guarda ao vivo: a central de verdade, agora. ... FAIL
+test_bat_tambem_conta (test_mb_cmd_crlf.TestDetector.test_bat_tambem_conta)
+`.bat` quebra igual — a extensão muda, o parser do cmd.exe não. ... ok
+test_crlf_passa (test_mb_cmd_crlf.TestDetector.test_crlf_passa) ... ok
+test_espelho_gerado_e_ignorado (test_mb_cmd_crlf.TestDetector.test_espelho_gerado_e_ignorado)
+Quem conserta espelho é o gerador, não a mão. ... ok
+test_lf_e_pego_com_a_contagem (test_mb_cmd_crlf.TestDetector.test_lf_e_pego_com_a_contagem) ... ok
+test_misto_conta_so_as_linhas_em_lf (test_mb_cmd_crlf.TestDetector.test_misto_conta_so_as_linhas_em_lf)
+O sincronizar-projetos real tinha 0 CR; o publicar tinha 2 CR e 56 LF. ... ok
+test_pular_crlf_nao_aceita_caminho_composto (test_mb_cmd_crlf.TestDetector.test_pular_crlf_nao_aceita_caminho_composto)
+Mesma armadilha da decisão 260825b, agora travada aqui. ... ok
+test_so_batch_e_verificado (test_mb_cmd_crlf.TestDetector.test_so_batch_e_verificado)
+`.md`, `.py` e `.json` em LF são normais e não podem virar ruído. ... ok
+test_bigrama_nao_e_coberto_por_palavras_soltas (test_mb_compreensor.TestCobertura.test_bigrama_nao_e_coberto_por_palavras_soltas)
+O bug que contradizia a pendência aberta: 'referencias' e 'visuais' ... ok
+test_script_em_bin_ja_e_cobertura (test_mb_compreensor.TestCobertura.test_script_em_bin_ja_e_cobertura) ... ok
+test_modelo_que_ja_existe_e_marcado (test_mb_compreensor.TestDeclarado.test_modelo_que_ja_existe_e_marcado) ... ok
+test_pendencia_templatizar_sempre_sai (test_mb_compreensor.TestDeclarado.test_pendencia_templatizar_sempre_sai) ... ok
+test_arquivo_lexico_empresta_so_o_nome (test_mb_compreensor.TestRegua.test_arquivo_lexico_empresta_so_o_nome)
+Lista de dependências tem 200 palavras soltas e fingia padrão. ... ok
+test_pendencia_mais_cerebro_passa (test_mb_compreensor.TestRegua.test_pendencia_mais_cerebro_passa)
+Isso sim é padrão: ele guardou o tema em dois lugares que ele faz. ... ok
+test_precisa_de_lugar_forte (test_mb_compreensor.TestRegua.test_precisa_de_lugar_forte)
+doc + fonte bruta = assunto que ele LEU. Não rende modelo. ... ok
+test_prosa_de_estado_nao_qualifica_sozinha (test_mb_compreensor.TestRegua.test_prosa_de_estado_nao_qualifica_sozinha)
+Palavra em doc + DECISOES não é padrão: é vocabulário. ... ok
+test_central_vazia_nao_quebra (test_mb_compreensor.TestSaida.test_central_vazia_nao_quebra) ... ok
+test_markdown_declara_o_que_nao_olhou (test_mb_compreensor.TestSaida.test_markdown_declara_o_que_nao_olhou) ... ok
+test_acento_e_normalizado (test_mb_compreensor.TestTokens.test_acento_e_normalizado) ... ok
+test_bigrama_adjacente_existe (test_mb_compreensor.TestTokens.test_bigrama_adjacente_existe) ... ok
+test_carimbo_de_data_nao_e_termo (test_mb_compreensor.TestTokens.test_carimbo_de_data_nao_e_termo) ... ok
+test_palavra_de_estrutura_cai (test_mb_compreensor.TestTokens.test_palavra_de_estrutura_cai) ... ok
+test_token_curto_cai (test_mb_compreensor.TestTokens.test_token_curto_cai) ... ok
+test_pasta_sem_marcador_nao_e_projeto (test_mb_contexto.TestAcharProjeto.test_pasta_sem_marcador_nao_e_projeto) ... ok
+test_projeto_sob_a_raiz_resolve_o_topo (test_mb_contexto.TestAcharProjeto.test_projeto_sob_a_raiz_resolve_o_topo) ... ok
+test_worktree_fora_da_raiz_acha_pelo_meta (test_mb_contexto.TestAcharProjeto.test_worktree_fora_da_raiz_acha_pelo_meta) ... ok
+test_projeto_sem_meta_continua_instruindo_a_criar (test_mb_contexto.TestMontar.test_projeto_sem_meta_continua_instruindo_a_criar) ... ok
+test_worktree_com_meta_injeta_meta_e_nao_manda_criar (test_mb_contexto.TestMontar.test_worktree_com_meta_injeta_meta_e_nao_manda_criar) ... ok
+test_avancar_salva_estado (test_mb_fila.TestCLI.test_avancar_salva_estado) ... ok
+test_avancar_task_inexistente_levanta (test_mb_fila.TestCLI.test_avancar_task_inexistente_levanta) ... ok
+test_cadeia_aumenta_onda (test_mb_fila.TestOndas.test_cadeia_aumenta_onda) ... ok
+test_ciclo_levanta_excecao (test_mb_fila.TestOndas.test_ciclo_levanta_excecao) ... ok
+test_dependencia_desconhecida_levanta_excecao (test_mb_fila.TestOndas.test_dependencia_desconhecida_levanta_excecao) ... ok
+test_dois_pais_na_mesma_onda (test_mb_fila.TestOndas.test_dois_pais_na_mesma_onda) ... ok
+test_sem_dependencias_todos_onda_zero (test_mb_fila.TestOndas.test_sem_dependencias_todos_onda_zero) ... ok
+test_bloqueadas_nao_aparecem_em_prontas (test_mb_fila.TestResumo.test_bloqueadas_nao_aparecem_em_prontas) ... ok
+test_prontas_respeitam_estado_feito (test_mb_fila.TestResumo.test_prontas_respeitam_estado_feito) ... ok
+test_resumo_detecta_ciclo (test_mb_fila.TestResumo.test_resumo_detecta_ciclo) ... ok
+test_json_nao_vazio_e_lido (test_mb_frescor.TestFingerprint.test_json_nao_vazio_e_lido) ... ok
+test_metadado_html_faz_roundtrip (test_mb_frescor.TestFingerprint.test_metadado_html_faz_roundtrip) ... ok
+test_normaliza_crlf_sem_ignorar_conteudo (test_mb_frescor.TestFingerprint.test_normaliza_crlf_sem_ignorar_conteudo) ... ok
+test_postcommit_le_head_sem_gerar_diff_rastreado (test_mb_frescor.TestVisoesGit.test_postcommit_le_head_sem_gerar_diff_rastreado) ... ok
+test_precommit_le_indice_e_ignora_mudanca_unstaged (test_mb_frescor.TestVisoesGit.test_precommit_le_indice_e_ignora_mudanca_unstaged) ... ok
+test_precommit_reprova_relatorio_nao_staged (test_mb_frescor.TestVisoesGit.test_precommit_reprova_relatorio_nao_staged) ... ok
+test_cmd_em_lf_vira_crlf_no_export (test_mb_generate_template.TestBatchSaiCrlf.test_cmd_em_lf_vira_crlf_no_export) ... ok
+test_cmd_ja_crlf_nao_dobra_cr (test_mb_generate_template.TestBatchSaiCrlf.test_cmd_ja_crlf_nao_dobra_cr)
+Normalizar na ordem errada (\n -> \r\n primeiro) dobraria o CR. ... ok
+test_cmd_misto_fica_todo_crlf (test_mb_generate_template.TestBatchSaiCrlf.test_cmd_misto_fica_todo_crlf)
+O pior caso real (260825): 2 linhas CRLF e o resto LF. ... ok
+test_sanitizacao_continua_valendo_no_cmd (test_mb_generate_template.TestBatchSaiCrlf.test_sanitizacao_continua_valendo_no_cmd)
+CRLF não pode virar rota de fuga da sanitização. ... ok
+test_drift_da_fonte_canonica_recusa_proveniencia (test_mb_generate_template.TestManifestoComProveniencia.test_drift_da_fonte_canonica_recusa_proveniencia) ... ok
+test_manifesto_prova_fonte_derivacao_e_sanitizacao (test_mb_generate_template.TestManifestoComProveniencia.test_manifesto_prova_fonte_derivacao_e_sanitizacao) ... ok
+test_saida_adulterada_nao_ganha_manifesto_novo (test_mb_generate_template.TestManifestoComProveniencia.test_saida_adulterada_nao_ganha_manifesto_novo) ... ok
+test_md_em_lf_continua_lf (test_mb_generate_template.TestNaoBatchNaoMuda.test_md_em_lf_continua_lf)
+Só batch é forçado — .md/.py/.json em LF são normais. ... ok
+test_gerador_exclui_dados_reais_de_cota_e_estado (test_mb_generate_template.TestTemporariosNaoSaem.test_gerador_exclui_dados_reais_de_cota_e_estado) ... ok
+test_gerador_exclui_pets_local_com_logs_e_licoes (test_mb_generate_template.TestTemporariosNaoSaem.test_gerador_exclui_pets_local_com_logs_e_licoes)
+Pets é local; build, logs e lições não pertencem ao template público. ... ok
+test_gerador_nao_copia_temporario_do_topo_ou_aninhado (test_mb_generate_template.TestTemporariosNaoSaem.test_gerador_nao_copia_temporario_do_topo_ou_aninhado) ... ok
+test_readme_publico_vira_a_entrada_raiz_do_github (test_mb_generate_template.TestTemporariosNaoSaem.test_readme_publico_vira_a_entrada_raiz_do_github) ... ok
+test_reconhece_nomes_temporarios_sem_bloquear_metadados_validos (test_mb_generate_template.TestTemporariosNaoSaem.test_reconhece_nomes_temporarios_sem_bloquear_metadados_validos) ... ok
+test_catalogo_tem_skills_do_fluxo_padrao (test_mb_inicio_sessao.InicioSessaoTests.test_catalogo_tem_skills_do_fluxo_padrao) ... ok
+test_instrucao_declara_excecoes_sem_desligar_v6 (test_mb_inicio_sessao.InicioSessaoTests.test_instrucao_declara_excecoes_sem_desligar_v6) ... ok
+test_arquivo_de_maquina_na_central_e_na_restauracao_cheia (test_mb_layout.TestAchar.test_arquivo_de_maquina_na_central_e_na_restauracao_cheia) ... ok
+test_barra_invertida_tambem_resolve (test_mb_layout.TestAchar.test_barra_invertida_tambem_resolve) ... ok
+test_canonicos_continuam_na_memoria (test_mb_layout.TestAchar.test_canonicos_continuam_na_memoria) ... ok
+test_nome_de_pasta_sozinho (test_mb_layout.TestAchar.test_nome_de_pasta_sozinho) ... ok
+test_orfao_na_raiz_nao_sombreia_canonico (test_mb_layout.TestAchar.test_orfao_na_raiz_nao_sombreia_canonico)
+260825: um licoes-megabrain.md solto na raiz sequestrou o índice — ... ok
+test_motor_ganha_quando_existe (test_mb_layout.TestPasta.test_motor_ganha_quando_existe) ... ok
+test_pasta_humana_nao_virou_motor (test_mb_layout.TestPasta.test_pasta_humana_nao_virou_motor) ... ok
+test_plano_vale_na_restauracao_cheia (test_mb_layout.TestPasta.test_plano_vale_na_restauracao_cheia) ... ok
+test_sem_nada_aponta_pro_layout_novo (test_mb_layout.TestPasta.test_sem_nada_aponta_pro_layout_novo) ... ok
+test_bin_nao_entra_no_motor (test_mb_layout.TestTabela.test_bin_nao_entra_no_motor)
+bin/ fica na raiz: o hook dos agentes aponta pra ele por caminho ... ok
+test_toda_pasta_de_maquina_esta_mapeada_pra_motor (test_mb_layout.TestTabela.test_toda_pasta_de_maquina_esta_mapeada_pra_motor) ... ok
+test_arquivo_de_um_projeto_so_nao_entra_no_compartilhado (test_mb_magra.TestClassificacao.test_arquivo_de_um_projeto_so_nao_entra_no_compartilhado) ... ok
+test_compartilhado_em_5_copias_nao_e_do_projeto (test_mb_magra.TestClassificacao.test_compartilhado_em_5_copias_nao_e_do_projeto)
+A regra que substituiu a lista fixa: arquivo byte-idêntico em 5+ ... ok
+test_derivado_sai_sempre (test_mb_magra.TestClassificacao.test_derivado_sai_sempre) ... ok
+test_desconhecido_fica_na_duvida (test_mb_magra.TestClassificacao.test_desconhecido_fica_na_duvida)
+Regra de segurança: o que não é reconhecido é PRESERVADO. ... ok
+test_dna_usuario_e_tratado_como_vazamento (test_mb_magra.TestClassificacao.test_dna_usuario_e_tratado_como_vazamento)
+dna/usuario/ numa cópia é identidade vazada (v7.2 fechou no gerador, ... ok
+test_ja_magra_e_detectada (test_mb_magra.TestClassificacao.test_ja_magra_e_detectada) ... ok
+test_ponteiro_corrompido_nao_e_magra (test_mb_magra.TestFormatoMagro.test_ponteiro_corrompido_nao_e_magra)
+JSON quebrado não pode virar 'magra' por acidente — seria o sync ... ok
+test_ponteiro_declara_formato (test_mb_magra.TestFormatoMagro.test_ponteiro_declara_formato) ... ok
+test_sem_ponteiro_nao_e_magra (test_mb_magra.TestFormatoMagro.test_sem_ponteiro_nao_e_magra) ... ok
+test_sync_nao_confunde_copia_cheia_com_magra (test_mb_magra.TestFormatoMagro.test_sync_nao_confunde_copia_cheia_com_magra)
+Se isto quebrar, o sync trata cópia CHEIA como magra e para de ... ok
+test_sync_reconhece_copia_magra (test_mb_magra.TestFormatoMagro.test_sync_reconhece_copia_magra) ... ok
+test_importa_e_nao_duplica (test_mb_observar.TestImportadorFeedback.test_importa_e_nao_duplica) ... ok
+test_cwd_fora_da_raiz_cai_no_balde_central (test_mb_observar.TestModoHook.test_cwd_fora_da_raiz_cai_no_balde_central) ... ok
+test_evento_arquivo_extrai_file_path (test_mb_observar.TestModoHook.test_evento_arquivo_extrai_file_path) ... ok
+test_payload_com_bom_e_aceito (test_mb_observar.TestModoHook.test_payload_com_bom_e_aceito)
+Regressao 260819: pipe do PowerShell 5.1 injeta BOM e o JSON era ... ok
+test_payload_lixo_sai_zero_e_silencioso (test_mb_observar.TestModoHook.test_payload_lixo_sai_zero_e_silencioso) ... ok
+test_prompt_gera_linha_no_projeto (test_mb_observar.TestModoHook.test_prompt_gera_linha_no_projeto) ... ok
+test_central_layout_resolves_all_declared_sources (test_mb_orquestracao5.Orquestracao5Tests.test_central_layout_resolves_all_declared_sources) ... ok
+test_excerpt_keeps_decision_tail_and_hashes_entire_source (test_mb_orquestracao5.Orquestracao5Tests.test_excerpt_keeps_decision_tail_and_hashes_entire_source) ... ok
+test_explicit_source_limit_is_bytes_and_rejects_above_20000 (test_mb_orquestracao5.Orquestracao5Tests.test_explicit_source_limit_is_bytes_and_rejects_above_20000) ... ok
+test_explicit_source_records_content_and_hash (test_mb_orquestracao5.Orquestracao5Tests.test_explicit_source_records_content_and_hash) ... ok
+test_external_source_absolute_and_parent_escape_rejected (test_mb_orquestracao5.Orquestracao5Tests.test_external_source_absolute_and_parent_escape_rejected) ... ok
+test_inbox_failure_without_candidate_still_creates_handoff (test_mb_orquestracao5.Orquestracao5Tests.test_inbox_failure_without_candidate_still_creates_handoff) ... ok
+test_inbox_repeated_same_result_is_a_noop_and_stays_editable_by_human (test_mb_orquestracao5.Orquestracao5Tests.test_inbox_repeated_same_result_is_a_noop_and_stays_editable_by_human) ... ok
+test_inbox_resume_after_failed_attempt_overwrites_stale_status (test_mb_orquestracao5.Orquestracao5Tests.test_inbox_resume_after_failed_attempt_overwrites_stale_status) ... ok
+test_inbox_uses_human_folder_without_overwriting_existing_delivery (test_mb_orquestracao5.Orquestracao5Tests.test_inbox_uses_human_folder_without_overwriting_existing_delivery) ... ok
+test_loading_engine_for_second_project_preserves_first_root (test_mb_orquestracao5.Orquestracao5Tests.test_loading_engine_for_second_project_preserves_first_root) ... ok
+test_new_public_identity_does_not_break_legacy_delivery_folder (test_mb_orquestracao5.Orquestracao5Tests.test_new_public_identity_does_not_break_legacy_delivery_folder) ... ok
+test_root_layout_captures_hashes_and_declares_absences (test_mb_orquestracao5.Orquestracao5Tests.test_root_layout_captures_hashes_and_declares_absences) ... ok
+test_status_reads_old_manifest_without_loading_current_config (test_mb_orquestracao5.Orquestracao5Tests.test_status_reads_old_manifest_without_loading_current_config) ... ok
+test_v5_explicit_flow_uses_new_public_name_without_renaming_existing_runs (test_mb_orquestracao5.Orquestracao5Tests.test_v5_explicit_flow_uses_new_public_name_without_renaming_existing_runs) ... ok
+test_v6_inbox_explains_plan_rejection_and_delivers_route (test_mb_orquestracao5.Orquestracao5Tests.test_v6_inbox_explains_plan_rejection_and_delivers_route) ... ok
+test_v6_prepare_prints_route_without_auth_or_dispatch (test_mb_orquestracao5.Orquestracao5Tests.test_v6_prepare_prints_route_without_auth_or_dispatch) ... ok
+a → feito
+ERRO: manifesto público recusado: plugin central DIVERGE das fontes canônicas: skills/megabrain/SKILL.md
+ERRO: manifesto público recusado: plugin público não deriva da fonte central: diverge:README.md
+template gerado em C:\Users\henri\AppData\Local\Temp\tmp6r19ay2c\central\_github\export
+template gerado em C:\Users\henri\AppData\Local\Temp\tmprmui2vka\central\_github\export
+template gerado em C:\Users\henri\AppData\Local\Temp\tmpk_r8ugqy\central\_github\export
+template gerado em C:\Users\henri\AppData\Local\Temp\tmpb9dw7wl0\central\_github\export
+test_explicit_current_empty_suppresses_old_action (test_mb_plataforma_compat.CompatTest.test_explicit_current_empty_suppresses_old_action) ... ok
+test_legacy_handoff_still_supported (test_mb_plataforma_compat.CompatTest.test_legacy_handoff_still_supported) ... ok
+test_nested_project_beats_central (test_mb_plataforma_compat.CompatTest.test_nested_project_beats_central) ... ok
+test_junction_data_does_not_write_outside (test_mb_plataforma_destinos.DestinosTest.test_junction_data_does_not_write_outside) ... ok
+test_junction_inbox_does_not_write_outside (test_mb_plataforma_destinos.DestinosTest.test_junction_inbox_does_not_write_outside) ... ok
+test_observation_has_no_prompt_or_reply (test_mb_plataforma_destinos.DestinosTest.test_observation_has_no_prompt_or_reply) ... ok
+test_central_arrumada_passa (test_mb_preflight.TestChequeCanonicos.test_central_arrumada_passa) ... ok
+test_despejo_bruto_no_cerebro_raw_nao_e_orfao (test_mb_preflight.TestChequeCanonicos.test_despejo_bruto_no_cerebro_raw_nao_e_orfao) ... ok
+test_nome_datado_de_pendencia_nao_e_orfao (test_mb_preflight.TestChequeCanonicos.test_nome_datado_de_pendencia_nao_e_orfao) ... ok
+test_sosia_na_pasta_logica_errada_reprova (test_mb_preflight.TestChequeCanonicos.test_sosia_na_pasta_logica_errada_reprova) ... ok
+test_sosia_na_raiz_continua_reprovando (test_mb_preflight.TestChequeCanonicos.test_sosia_na_raiz_continua_reprovando) ... ok
+test_estado_ausente_reprova (test_mb_preflight.TestChequeEstado.test_estado_ausente_reprova) ... ok
+test_estado_e_relatorio_atuais_passam (test_mb_preflight.TestChequeEstado.test_estado_e_relatorio_atuais_passam) ... ok
+test_fonte_alterada_reprova_sem_depender_de_mtime (test_mb_preflight.TestChequeEstado.test_fonte_alterada_reprova_sem_depender_de_mtime) ... ok
+test_relatorio_ausente_reprova (test_mb_preflight.TestChequeEstado.test_relatorio_ausente_reprova) ... ok
+test_relatorio_sem_metadado_reprova (test_mb_preflight.TestChequeEstado.test_relatorio_sem_metadado_reprova) ... ok
+test_central_sem_plugin_nao_acusa (test_mb_preflight.TestChequePlugin.test_central_sem_plugin_nao_acusa) ... ok
+test_copia_orfa_no_plugin_reprova (test_mb_preflight.TestChequePlugin.test_copia_orfa_no_plugin_reprova) ... ok
+test_fonte_editada_reprova (test_mb_preflight.TestChequePlugin.test_fonte_editada_reprova) ... ok
+test_manifesto_tautologico_sem_proveniencia_reprova (test_mb_preflight.TestChequePlugin.test_manifesto_tautologico_sem_proveniencia_reprova) ... ok
+test_plugin_em_dia_passa (test_mb_preflight.TestChequePlugin.test_plugin_em_dia_passa) ... ok
+test_plugin_publico_alterado_reprova (test_mb_preflight.TestChequePlugin.test_plugin_publico_alterado_reprova) ... ok
+test_plugin_publico_passa_por_manifesto_com_proveniencia (test_mb_preflight.TestChequePlugin.test_plugin_publico_passa_por_manifesto_com_proveniencia) ... ok
+test_cache_codex_antigo_nao_mascara_o_atual (test_mb_preflight.TestChequeRuntimes.test_cache_codex_antigo_nao_mascara_o_atual) ... ok
+test_codex_direto_e_cache_atual_passam (test_mb_preflight.TestChequeRuntimes.test_codex_direto_e_cache_atual_passam) ... ok
+test_runtime_configurado_sem_skill_reprova (test_mb_preflight.TestChequeRuntimes.test_runtime_configurado_sem_skill_reprova) ... ok
+test_preflight_sai_2_com_drift_fonte_plugin (test_mb_preflight.TestVereditoCompleto.test_preflight_sai_2_com_drift_fonte_plugin) ... ok
+test_faltando_arquivo_minimo_reprova (test_mb_recuperar.TestConferir.test_faltando_arquivo_minimo_reprova) ... ok
+test_pasta_inexistente_reprova (test_mb_recuperar.TestConferir.test_pasta_inexistente_reprova) ... ok
+test_restauracao_boa_passa (test_mb_recuperar.TestConferir.test_restauracao_boa_passa) ... ok
+test_restauracao_quase_vazia_reprova (test_mb_recuperar.TestConferir.test_restauracao_quase_vazia_reprova)
+3.371 arquivos era o defeito antigo; 2 arquivos é o defeito oposto. ... ok
+test_versao_vazia_reprova (test_mb_recuperar.TestConferir.test_versao_vazia_reprova) ... ok
+test_central_viva_e_a_primeira (test_mb_recuperar.TestFontes.test_central_viva_e_a_primeira) ... ok
+test_outro_projeto_nao_e_mais_fonte (test_mb_recuperar.TestFontes.test_outro_projeto_nao_e_mais_fonte)
+A regressão que trava a cópia magra: se 'outro projeto' voltar como ... ok
+test_ponteiro_ausente_devolve_none (test_mb_recuperar.TestFontes.test_ponteiro_ausente_devolve_none) ... ok
+test_ponteiro_de_origem_e_lido (test_mb_recuperar.TestFontes.test_ponteiro_de_origem_e_lido) ... ok
+test_sem_nada_nao_inventa_fonte (test_mb_recuperar.TestFontes.test_sem_nada_nao_inventa_fonte) ... ok
+test_py_compile_geradores_e_peles (test_mb_relatorio_pop_tema.TestCompilacao.test_py_compile_geradores_e_peles) ... ok
+test_acentos_vivos_sao_os_mesmos_do_escuro (test_mb_relatorio_pop_tema.TestContrasteAAPaletaClara.test_acentos_vivos_sao_os_mesmos_do_escuro)
+O jeitão vivo do escuro (#FF4B4B, #58CC02...) é mantido nos gráficos do claro. ... ok
+test_textos_e_acentos_tx_aa_sobre_fundos_claros (test_mb_relatorio_pop_tema.TestContrasteAAPaletaClara.test_textos_e_acentos_tx_aa_sobre_fundos_claros) ... ok
+test_claro_e_escuro (test_mb_relatorio_pop_tema.TestGeradorDNA.test_claro_e_escuro) ... ok
+test_claro_e_default (test_mb_relatorio_pop_tema.TestGeradorProjeto.test_claro_e_default) ... ok
+AVISO: --plano não encontrado ou vazio: S:\projetos multi i.a\MEGA B R A I  N\ESTADO.md
+AVISO: --plano não encontrado ou vazio: S:\projetos multi i.a\MEGA B R A I  N\ESTADO.md
+test_padrao_nasce_escuro (test_mb_relatorio_pop_tema.TestGeradorVivo.test_padrao_nasce_escuro) ... ok
+test_tema_claro_grava_atributo (test_mb_relatorio_pop_tema.TestGeradorVivo.test_tema_claro_grava_atributo) ... ok
+test_tema_escuro_nao_grava_atributo (test_mb_relatorio_pop_tema.TestGeradorVivo.test_tema_escuro_nao_grava_atributo) ... ok
+test_modulo_somente_temas_validos (test_mb_relatorio_pop_tema.TestModuloCompartilhado.test_modulo_somente_temas_validos) ... ok
+test_tokens_iguais_entre_modulo_e_template (test_mb_relatorio_pop_tema.TestModuloCompartilhado.test_tokens_iguais_entre_modulo_e_template) ... ok
+test_aplicar_tema_do_pele_pop (test_mb_relatorio_pop_tema.TestPeleLegado.test_aplicar_tema_do_pele_pop) ... ok
+test_aplicar_tema_do_reskin (test_mb_relatorio_pop_tema.TestPeleLegado.test_aplicar_tema_do_reskin) ... ok
+test_variante_clara_existe_e_e_opt_in (test_mb_relatorio_pop_tema.TestPeleLegado.test_variante_clara_existe_e_e_opt_in) ... ok
+test_botao_nasce_desabilitado_e_visivel (test_mb_relatorio_pop_tema.TestTemplateTemaClaro.test_botao_nasce_desabilitado_e_visivel) ... ok
+test_precedencia_documentada_no_head (test_mb_relatorio_pop_tema.TestTemplateTemaClaro.test_precedencia_documentada_no_head) ... ok
+test_restauracao_sincrona_antes_da_pintura (test_mb_relatorio_pop_tema.TestTemplateTemaClaro.test_restauracao_sincrona_antes_da_pintura) ... ok
+test_sem_recurso_remoto (test_mb_relatorio_pop_tema.TestTemplateTemaClaro.test_sem_recurso_remoto) ... ok
+test_tokens_do_tema_estao_no_template (test_mb_relatorio_pop_tema.TestTemplateTemaClaro.test_tokens_do_tema_estao_no_template) ... ok
+test_backup_sagrado_nunca_e_tocado (test_mb_relatorio_reskin.TestReskin.test_backup_sagrado_nunca_e_tocado) ... ok
+test_contraste_minimo (test_mb_relatorio_reskin.TestReskin.test_contraste_minimo) ... ok
+test_detecta_os_dois_esqueletos (test_mb_relatorio_reskin.TestReskin.test_detecta_os_dois_esqueletos) ... ok
+test_idempotente_substitui_sem_duplicar (test_mb_relatorio_reskin.TestReskin.test_idempotente_substitui_sem_duplicar) ... ok
+test_injeta_antes_do_head_e_preserva_conteudo (test_mb_relatorio_reskin.TestReskin.test_injeta_antes_do_head_e_preserva_conteudo) ... ok
+test_processar_grava_e_segunda_rodada_fica_igual (test_mb_relatorio_reskin.TestReskin.test_processar_grava_e_segunda_rodada_fica_igual) ... ok
+test_evidencia_por_nome_de_arquivo (test_mb_review_criteria.TestEvidencia.test_evidencia_por_nome_de_arquivo) ... ok
+test_evidencia_por_palavra_no_diff (test_mb_review_criteria.TestEvidencia.test_evidencia_por_palavra_no_diff) ... ok
+test_sem_evidencia (test_mb_review_criteria.TestEvidencia.test_sem_evidencia) ... ok
+test_extrai_criterio_de_pronto_do_meta (test_mb_review_criteria.TestExtracao.test_extrai_criterio_de_pronto_do_meta) ... ok
+test_extrai_criterios_de_spec (test_mb_review_criteria.TestExtracao.test_extrai_criterios_de_spec) ... ok
+test_ignora_comentarios_na_spec (test_mb_review_criteria.TestExtracao.test_ignora_comentarios_na_spec) ... ok
+test_ignora_placeholders (test_mb_review_criteria.TestExtracao.test_ignora_placeholders) ... ok
+test_aprovado_quando_todos_atendem (test_mb_review_criteria.TestRevisar.test_aprovado_quando_todos_atendem) ... ok
+test_reprovado_quando_falta_um (test_mb_review_criteria.TestRevisar.test_reprovado_quando_falta_um) ... ok
+test_assinar_cria_secao (test_mb_spec_signoff.TestAssinar.test_assinar_cria_secao) ... ok
+test_assinar_insere_linha_em_secao_existente (test_mb_spec_signoff.TestAssinar.test_assinar_insere_linha_em_secao_existente) ... ok
+test_modelo_de_spec_nao_entra_no_tracker (test_mb_spec_signoff.TestDescoberta.test_modelo_de_spec_nao_entra_no_tracker) ... ok
+test_arquivo_nao_rastreado_e_desconhecido (test_mb_spec_signoff.TestEstado.test_arquivo_nao_rastreado_e_desconhecido) ... ok
+test_commit_inexistente_e_invalido (test_mb_spec_signoff.TestEstado.test_commit_inexistente_e_invalido) ... ok
+test_sem_signoff_e_obsoleto (test_mb_spec_signoff.TestEstado.test_sem_signoff_e_obsoleto) ... ok
+test_signoff_cobre_versao_atual (test_mb_spec_signoff.TestEstado.test_signoff_cobre_versao_atual) ... ok
+test_signoff_fica_obsoleto_apos_modificacao (test_mb_spec_signoff.TestEstado.test_signoff_fica_obsoleto_apos_modificacao) ... ok
+test_extrai_todos_os_signoffs (test_mb_spec_signoff.TestExtracao.test_extrai_todos_os_signoffs) ... ok
+test_sem_signoff (test_mb_spec_signoff.TestExtracao.test_sem_signoff) ... ok
+test_ultimo_signoff (test_mb_spec_signoff.TestExtracao.test_ultimo_signoff) ... ok
+test_formatacao_marca_obsoleto (test_mb_spec_signoff.TestFormatar.test_formatacao_marca_obsoleto) ... ok
+test_dir_fora_do_cwd_funciona (test_mb_sync.TestMbSync.test_dir_fora_do_cwd_funciona)
+Regressao v4.9: --dir fora do diretorio atual era recusado. ... ok
+test_dir_inexistente_falha_claro (test_mb_sync.TestMbSync.test_dir_inexistente_falha_claro) ... ok
+test_force_libera_trava_alheia (test_mb_sync.TestMbSync.test_force_libera_trava_alheia) ... ok
+test_lock_grava_e_status_acusa_travado (test_mb_sync.TestMbSync.test_lock_grava_e_status_acusa_travado) ... ok
+test_projeto_sem_handoff_esta_livre (test_mb_sync.TestMbSync.test_projeto_sem_handoff_esta_livre) ... ok
+test_release_alheio_e_recusado (test_mb_sync.TestMbSync.test_release_alheio_e_recusado) ... ok
+test_release_proprio_libera (test_mb_sync.TestMbSync.test_release_proprio_libera) ... ok
+test_conta_por_chave_e_calcula_pesos (test_mb_telemetria.TestAgregacao.test_conta_por_chave_e_calcula_pesos) ... ok
+test_vazio_nao_quebra (test_mb_telemetria.TestAgregacao.test_vazio_nao_quebra) ... ok
+test_agora_e_sempre_sao_paulo (test_mb_telemetria.TestFuso.test_agora_e_sempre_sao_paulo) ... ok
+test_arquivo_do_dia_usa_o_relogio_da_central (test_mb_telemetria.TestFuso.test_arquivo_do_dia_usa_o_relogio_da_central) ... ok
+test_corrigir_fuso_devolve_a_linha_pro_dia_certo (test_mb_telemetria.TestFuso.test_corrigir_fuso_devolve_a_linha_pro_dia_certo) ... ok
+test_corrigir_fuso_nao_toca_em_log_de_hook (test_mb_telemetria.TestFuso.test_corrigir_fuso_nao_toca_em_log_de_hook) ... ok
+test_ts_em_utc_conta_no_dia_certo_na_leitura (test_mb_telemetria.TestFuso.test_ts_em_utc_conta_no_dia_certo_na_leitura) ... ok
+test_ts_gravado_ignora_o_fuso_da_maquina (test_mb_telemetria.TestFuso.test_ts_gravado_ignora_o_fuso_da_maquina) ... ok
+test_ts_sem_fuso_e_tratado_como_local (test_mb_telemetria.TestFuso.test_ts_sem_fuso_e_tratado_como_local) ... ok
+test_janela_de_dias_corta_o_velho (test_mb_telemetria.TestLeitura.test_janela_de_dias_corta_o_velho) ... ok
+test_junta_legado_e_ignora_linha_quebrada (test_mb_telemetria.TestLeitura.test_junta_legado_e_ignora_linha_quebrada) ... ok
+test_log_ausente_devolve_lista_vazia (test_mb_telemetria.TestLeitura.test_log_ausente_devolve_lista_vazia) ... ok
+test_raiz_e_deduzida_subindo (test_mb_telemetria.TestRaiz.test_raiz_e_deduzida_subindo) ... ok
+test_raiz_sem_ancora_nao_explode (test_mb_telemetria.TestRaiz.test_raiz_sem_ancora_nao_explode) ... ok
+test_campo_none_nao_entra (test_mb_telemetria.TestRegistro.test_campo_none_nao_entra) ... ok
+test_falha_e_silenciosa (test_mb_telemetria.TestRegistro.test_falha_e_silenciosa) ... ok
+test_registra_uma_linha_por_evento (test_mb_telemetria.TestRegistro.test_registra_uma_linha_por_evento) ... ok
+test_valor_nao_e_generalizado (test_mb_telemetria.TestRegistro.test_valor_nao_e_generalizado) ... ok
+test_bloco_captura_o_titulo_no_cmd (test_mb_titulo_versao.TestAcao10.test_bloco_captura_o_titulo_no_cmd) ... ok
+test_bloco_existe_e_nao_usa_delims_ponto (test_mb_titulo_versao.TestAcao10.test_bloco_existe_e_nao_usa_delims_ponto) ... ok
+test_le_a_primeira_linha_do_arquivo (test_mb_titulo_versao.TestCLI.test_le_a_primeira_linha_do_arquivo) ... ok
+test_cabe_no_limite_de_assunto (test_mb_titulo_versao.TestTitulo.test_cabe_no_limite_de_assunto) ... ok
+test_corta_no_primeiro_ponto_final (test_mb_titulo_versao.TestTitulo.test_corta_no_primeiro_ponto_final) ... ok
+test_corte_respeita_fronteira_de_palavra (test_mb_titulo_versao.TestTitulo.test_corte_respeita_fronteira_de_palavra) ... ok
+test_linha_vazia_cai_na_reserva (test_mb_titulo_versao.TestTitulo.test_linha_vazia_cai_na_reserva) ... ok
+test_nao_para_no_ponto_da_versao (test_mb_titulo_versao.TestTitulo.test_nao_para_no_ponto_da_versao) ... ok
+test_sanitiza_aspas_e_metacaractere_de_batch (test_mb_titulo_versao.TestTitulo.test_sanitiza_aspas_e_metacaractere_de_batch) ... ok
+test_titulo_curto_passa_inteiro (test_mb_titulo_versao.TestTitulo.test_titulo_curto_passa_inteiro) ... ok
+test_contexto_libera_depois_de_excecao (test_mb_trava.TestContrato.test_contexto_libera_depois_de_excecao) ... ok
+test_disputa_por_vencida_nao_apaga_trava_nova (test_mb_trava.TestContrato.test_disputa_por_vencida_nao_apaga_trava_nova) ... ok
+test_escrita_recusada_preserva_conteudo (test_mb_trava.TestContrato.test_escrita_recusada_preserva_conteudo) ... ok
+test_falha_de_gravacao_na_reentrada_sobe_erro (test_mb_trava.TestContrato.test_falha_de_gravacao_na_reentrada_sobe_erro) ... ok
+test_falha_de_gravacao_no_decremento_sobe_erro (test_mb_trava.TestContrato.test_falha_de_gravacao_no_decremento_sobe_erro) ... ok
+test_falha_no_unlink_final_sobe_erro (test_mb_trava.TestContrato.test_falha_no_unlink_final_sobe_erro) ... ok
+test_reentrada_so_libera_na_ultima_saida (test_mb_trava.TestContrato.test_reentrada_so_libera_na_ultima_saida) ... ok
+test_segundo_dono_e_recusado (test_mb_trava.TestContrato.test_segundo_dono_e_recusado) ... ok
+test_trava_vencida_e_livre (test_mb_trava.TestContrato.test_trava_vencida_e_livre) ... ok
+test_estado_usa_ultima_trava_do_handoff (test_mb_trava.TestEscritorIntegrado.test_estado_usa_ultima_trava_do_handoff) ... ok
+test_mb_fila_respeita_trava_antes_do_read_modify_write (test_mb_trava.TestEscritorIntegrado.test_mb_fila_respeita_trava_antes_do_read_modify_write) ... ok
+test_anexar_decisao_nova_grava_e_termina_com_lf (test_mb_trava.TestIds.test_anexar_decisao_nova_grava_e_termina_com_lf) ... ok
+test_anexar_decisao_recusa_endereco_existente (test_mb_trava.TestIds.test_anexar_decisao_recusa_endereco_existente) ... ok
+test_anexar_normaliza_legado_latin1_para_utf8 (test_mb_trava.TestIds.test_anexar_normaliza_legado_latin1_para_utf8) ... ok
+test_anexar_preserva_prefixo_e_crlf_existentes (test_mb_trava.TestIds.test_anexar_preserva_prefixo_e_crlf_existentes) ... ok
+test_cabecalho_legado_so_com_data_nao_e_id (test_mb_trava.TestIds.test_cabecalho_legado_so_com_data_nao_e_id) ... ok
+test_conferir_ids_encontra_duplicata (test_mb_trava.TestIds.test_conferir_ids_encontra_duplicata) ... ok
+test_proximo_id_avanca_de_z_para_aa (test_mb_trava.TestIds.test_proximo_id_avanca_de_z_para_aa) ... ok
+test_proximo_id_avanca_de_zz_para_aaa (test_mb_trava.TestIds.test_proximo_id_avanca_de_zz_para_aaa) ... ok
+test_proximo_id_nao_recicla_buraco (test_mb_trava.TestIds.test_proximo_id_nao_recicla_buraco) ... ok
+test_rotulo_de_lote_anterior_ao_contrato_e_preservado (test_mb_trava.TestIds.test_rotulo_de_lote_anterior_ao_contrato_e_preservado) ... ok
+test_anexar_stdin_utf8_nao_dobra_codificacao (test_mb_trava.TestProcessos.test_anexar_stdin_utf8_nao_dobra_codificacao) ... ok
+test_dois_processos_segundo_e_recusado (test_mb_trava.TestProcessos.test_dois_processos_segundo_e_recusado) ... ok
+test_contexto_recupera_curto (test_mb_triagem.TriagemTest.test_contexto_recupera_curto) ... ok
+test_conversa_nao_cria_burocracia (test_mb_triagem.TriagemTest.test_conversa_nao_cria_burocracia) ... ok
+test_entregas_curtas (test_mb_triagem.TriagemTest.test_entregas_curtas) ... ok
+test_erro_visivel (test_mb_triagem.TriagemTest.test_erro_visivel) ... ok
+test_gates_com_motivo (test_mb_triagem.TriagemTest.test_gates_com_motivo) ... ok
+test_nao_autoriza_acao_por_palavra_ou_sim (test_mb_triagem.TriagemTest.test_nao_autoriza_acao_por_palavra_ou_sim) ... ok
+test_no_false_substring (test_mb_triagem.TriagemTest.test_no_false_substring) ... ok
+test_pergunta_conceitual (test_mb_triagem.TriagemTest.test_pergunta_conceitual) ... ok
+test_piso_independente_sensibilidade (test_mb_triagem.TriagemTest.test_piso_independente_sensibilidade) ... ok
+test_sensibilidade_chega_na_instrucao_do_hook (test_mb_triagem.TriagemTest.test_sensibilidade_chega_na_instrucao_do_hook) ... ok
+test_aba_esquema_pode_ser_aberta_por_hash (test_mb_workspace.TestEsquemaVisual.test_aba_esquema_pode_ser_aberta_por_hash) ... ok
+test_compara_antes_e_agora_com_medidas_registradas (test_mb_workspace.TestEsquemaVisual.test_compara_antes_e_agora_com_medidas_registradas) ... ok
+test_css_tem_refluxo_para_tela_pequena (test_mb_workspace.TestEsquemaVisual.test_css_tem_refluxo_para_tela_pequena) ... ok
+test_fluxo_tem_cinco_passos_em_ordem (test_mb_workspace.TestEsquemaVisual.test_fluxo_tem_cinco_passos_em_ordem) ... ok
+test_ids_do_esquema_sao_unicos (test_mb_workspace.TestEsquemaVisual.test_ids_do_esquema_sao_unicos) ... ok
+test_mapa_separa_memoria_maquina_leitores_e_distribuicao (test_mb_workspace.TestEsquemaVisual.test_mapa_separa_memoria_maquina_leitores_e_distribuicao) ... ok
+test_sem_estado_degrada_sem_inventar_zero (test_mb_workspace.TestEsquemaVisual.test_sem_estado_degrada_sem_inventar_zero) ... ok
+test_central_externa_e_aceita (test_scripts_destrutivos.TestCheckVersion.test_central_externa_e_aceita)
+Regressao 260819: --central valido fora da central detectada era ... ok
+test_central_sem_versao_e_recusada (test_scripts_destrutivos.TestCheckVersion.test_central_sem_versao_e_recusada) ... ok
+test_copia_tocada_e_acusada (test_scripts_destrutivos.TestCheckVersion.test_copia_tocada_e_acusada)
+v6 fase 4 (requisito 1): mesma versao declarada + conteudo diferente ... ok
+test_dry_run_le_versao_da_copia_magra_sem_perguntar (test_scripts_destrutivos.TestCheckVersion.test_dry_run_le_versao_da_copia_magra_sem_perguntar) ... ok
+test_dry_run_magro_sem_versao_nao_abre_prompt (test_scripts_destrutivos.TestCheckVersion.test_dry_run_magro_sem_versao_nao_abre_prompt) ... ok
+test_dry_run_nao_escreve_nada (test_scripts_destrutivos.TestCheckVersion.test_dry_run_nao_escreve_nada) ... ok
+test_gate_drift_acusa_export_desatualizado (test_scripts_destrutivos.TestCheckVersion.test_gate_drift_acusa_export_desatualizado)
+v6 fase 4: export sem VERSAO (ou versao diferente) = drift, exit 1. ... ok
+test_projeto_igual_central_e_recusado (test_scripts_destrutivos.TestCheckVersion.test_projeto_igual_central_e_recusado) ... ok
+test_sync_de_central_v71_entrega_copia_plana (test_scripts_destrutivos.TestCheckVersion.test_sync_de_central_v71_entrega_copia_plana)
+Etapa 2 da reorg: central com a máquina em motor/ tem que sincronizar ... ok
+test_sync_real_cria_megabrain_no_projeto (test_scripts_destrutivos.TestCheckVersion.test_sync_real_cria_megabrain_no_projeto) ... ok
+test_central_invalida_e_recusada (test_scripts_destrutivos.TestSyncProjetoParaCentral.test_central_invalida_e_recusada) ... ok
+test_dry_run_nao_altera_central (test_scripts_destrutivos.TestSyncProjetoParaCentral.test_dry_run_nao_altera_central) ... ok
+test_merge_e_idempotente (test_scripts_destrutivos.TestSyncProjetoParaCentral.test_merge_e_idempotente) ... ok
+test_merge_licoes_apenda_sem_apagar (test_scripts_destrutivos.TestSyncProjetoParaCentral.test_merge_licoes_apenda_sem_apagar) ... ok
+test_merge_preserva_arquivo_so_da_central (test_scripts_destrutivos.TestSyncProjetoParaCentral.test_merge_preserva_arquivo_so_da_central) ... ok
+
+======================================================================
+FAIL: test_v6_declara_rota_revisao_e_limites (test_mb_build_plugin_claude.TestContratosDeOrquestracao.test_v6_declara_rota_revisao_e_limites)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "S:\projetos multi i.a\MEGA B R A I  N\motor\tests\test_mb_build_plugin_claude.py", line 134, in test_v6_declara_rota_revisao_e_limites
+    self.assertIn("Codex revisa o plano de forma independente", self.orq)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'Codex revisa o plano de forma independente' not found in '---\nname: orquestracao1\ndescription: Orquestração MEGABRAIN V6 primária: execução local limitada entre Claude e Codex, com plano revisado antes da produção, rota explícita, evidências e entrega humana. Use para trabalho multiagente novo; não agenda tarefas nem aplica mudanças por conta própria.\n---\n\n# Orquestração 1 · V6 primária\n\n## Quando usar\n\nUse para uma entrega nova que se beneficia de dois papéis independentes. A V6 substitui os modos antigos 1, 3 e 4 como entrada padrão: ela guarda o estado e as fontes do projeto, revisa o plano antes de produzir e revisa o resultado antes da entrega. O motor não escreve no projeto-alvo, não publica e não transforma revisão textual em validação de código.\n\nNão use para uma pergunta simples, para agendamento, nem para retomar uma execução histórica V5; neste último caso use `/orquestracao2`.\n\n## Entrada e preparação\n\n1. Leia `ESTADO.md`, `HANDOFF.md`, o fim de `DECISOES.md`, `LICOES.md` e a trava do projeto. Na central, eles vivem em `memoria/estado/` e `memoria/nucleo/`.\n2. Crie um brief JSON dentro do projeto com `objective`, `criteria` (lista verificável), `context` e, se preciso, `assertions` com textos esperados. Fonte adicional só entra por arquivo explícito dentro do projeto.\n3. Faça a prévia antes do despacho. Ela não gasta chamadas nem usa cota antiga:\n\n```text\npython <CENTRAL>/bin/mb-orquestracao.py prepare --projeto <PROJETO> --brief <BRIEF_ABSOLUTO> --flow-version 2\n```\n\nO perfil é `micro`, `normal`, `frontier` ou `auto`. `auto` é conservador: enquanto a cota não estiver medida, usa `normal` e declara isso na rota; não finge escolher o modelo mais barato.\n\n## Pipeline obrigatória de prompt (260910)\n\nTodo brief passa por esta sequência antes de `prepare`. É uma política operacional\npara testar qualidade com menos chamadas. A combinação ainda não foi medida contra\nultracode: o estudo da Anthropic sobre tokens é de pesquisa web e não demonstra\nequivalência entre um modelo `medium` e esse modo do Claude Code.\nEvidência e números: `memoria/cerebro/wiki/260910_niveis-de-esforco-o-que-muda-e-como-um-low-chega-perto.md`.\n\n1. **Contexto primeiro, pedido por último.** Documentos e fontes no topo do brief,\n   a instrução no fim; pedir citação dos trechos relevantes antes de responder.\n2. **Ideal antes do plano.** Escrever artefato ideal, leitor, decisão que ele\n   permite e critérios verificáveis (mesmo contrato do `/quaseultracode`).\n3. **Versão genérica nomeada e recusada.** Uma frase: "a versão que qualquer um\n   entregaria é X; não é o alvo".\n4. **Perguntas de esclarecimento, no máximo 3, só as que mudam o resultado.**\n   Oferecer opções quando ajudarem, sem responder pelo Henrique. Se `/grelhar` já\n   resolveu a dúvida, pular. Escolha visual, versão-base e mudança material de\n   escopo aguardam resposta; trabalho independente pode continuar.\n5. **Plano com 2 a 5 marcos e critério de saída por marco**, um marco "em\n   progresso" por vez; o revisor de plano critica contra uma taxonomia de erro\n   (escopo, premissa, risco, verificação), não em texto livre.\n6. **Esforço por papel, não por sessão.** No perfil `normal`: `plan` medium ·\n   `plan_review` medium · `candidate` high · `final_review` high. Os demais perfis\n   seguem a configuração exibida por `prepare`. `xhigh`/`max` só com flag explícita e\n   motivo escrito; `low` só para worker delimitado. Reexecutar em esforço maior\n   apenas o que falhou no teste (estratégia low→reexecução da Anthropic).\n7. **Lado da cota.** Antes de despachar, conferir idade e saldo de todas as janelas\n   aplicáveis em `dados/orcamento_ia.json`. Comparar ritmo apenas entre janelas\n   equivalentes, usando `used_percent ÷ (100 × elapsed_fraction)`; início de janela\n   sem denominador válido é `NAO_MEDIDO`. Essa comparação é proposta manual, ainda\n   não roteamento do motor. Se ambos estiverem `desacelerar`, não declarar um lado\n   saudável nem trocar modelo sozinho. Respeitar também o limite específico do Fable;\n   a relação de consumo de cota por tarefa entre Fable e Opus não foi medida.\n8. **Autocrítica em turno separado, com rubrica** (critérios do item 2), antes da\n   revisão cruzada. Para respostas verificáveis, múltiplas amostras são uma opção\n   com custo adicional, não obrigação. Confiança declarada não substitui prova.\n   Em ideação visual, gerar alternativas sem votação automática; Henrique seleciona.\n9. **Verificação é camada própria.** Plano gerado não prova plano seguido:\n   testar, abrir o artefato ou rodar o comando de prova antes de `review_approved`.\n\nCampos do brief que carregam a pipeline: `ideal`, `generic_rejected`, `questions`\n(lista; `answer_recommended` é opcional e não equivale à resposta do usuário),\n`milestones`, `effort_policy`, `quota_side`.\nO orquestrador confere `ideal` e `generic_rejected` antes de `run`. Hoje esse bloqueio\né regra da skill: o código de `prepare`/`run` ainda não valida esses campos.\n\n## Fluxo V6\n\n1. `prepare` mostra os quatro papéis do perfil. Em `normal`, Astra planeja e Opus revisa o plano. Em `micro`, Opus planeja e Sol revisa. Se o plano não passar, o motor repara/revisa dentro do limite ou entrega `plan_rejected` sem produzir um candidato enganoso.\n2. O produtor configurado produz/corrige a partir do plano aprovado; o outro fornecedor faz a revisão final. Em `normal`, Astra produz e Opus revisa.\n3. Cada execução congela brief, fontes, configuração, rota e respostas em `<PROJETO>/.automations/runs/ID/`. O documento humano vai para `<PROJETO>/00_PARA-VOCE/orquestracao1-ID/`.\n4. `review_approved` significa somente que a revisão textual passou. O orquestrador ainda testa, abre o artefato ou valida o runtime quando isso fizer parte do escopo autorizado.\n\n```text\npython <CENTRAL>/bin/mb-orquestracao.py run --projeto <PROJETO> --brief <BRIEF_ABSOLUTO> --mode loop --flow-version 2\npython <CENTRAL>/bin/mb-orquestracao.py status --projeto <PROJETO> --id <ID>\npython <CENTRAL>/bin/mb-orquestracao.py stop --projeto <PROJETO> --id <ID>\n```\n\n`status`, `stop` e `resume` leem a configuração congelada no manifesto da execução; uma atualização posterior da V6 não torna uma execução antiga ilegível. `stop` impede novos despachos e a chamada em curso termina por retorno ou prazo.\n\n## Limites e fechamento\n\n- Clientes usam assinaturas existentes. Não use API key, compra, crédito extra ou troca silenciosa de modelo como fallback.\n- **Workers no Codex:** para sondagem, checklist, varredura, extração e teste\n  delimitado, tente primeiro o **Codex Spark** (`provider: spark`) quando sua\n  própria leitura de cota estiver `ok`. Spark usa o bucket\n  `codex_bengalfox`, separado do Codex/Sol; registre e respeite cada um de\n  forma independente. Se Spark não estiver medido/saudável ou a tarefa exigir\n  implementação, decisão, revisão independente ou aceite, use o papel forte\n  configurado. Spark não é aprovador e a V6 não o aceita nos quatro estágios\n  principais.\n- **Telemetria de cota:** o motor mede Claude, Codex/Sol e Spark antes de abrir\n  a run, registra a amostra associada a cada despacho e mede novamente ao\n  fechar, inclusive quando a run falha. As evidências ficam em\n  `.automations/runs/ID/quota-lifecycle.jsonl`; a central recompõe\n  `dados/telemetria-orquestracao.json` com os últimos 240 eventos exatos e o\n  passado agregado por dia/modelo. A escolha continua usando a leitura atual:\n  histórico serve para enxergar padrão, não para fingir que uma cota antiga é\n  a de agora.\n- Cota sem medição é `NAO_MEDIDO`. Cota, contexto e tokens são coisas diferentes e só entram no relatório quando houver fonte registrada.\n- Workers propõem; o orquestrador decide, executa o que foi autorizado e presta contas ao Henrique.\n- Ao fim, valide o que foi realmente feito, atualize estado/handoff/decisões com trava e registre a lição. Commit ou push continuam dependendo de pedido explícito.\n\n## Verificação do motor\n\n```text\npython <CENTRAL>/bin/mb-orquestracao.py doctor --projeto <PROJETO>\npython <CENTRAL>/bin/mb-orquestracao.py probe --projeto <PROJETO> --flow-version 2\npython -B -X utf8 -m unittest discover -s <CENTRAL>/apps/automations/tests -v\n```\n\nFonte canônica: `motor/skills/orquestracao1/SKILL.md`. Os plugins Claude, Codex e Kimi são cópias derivadas; a fonte manda.\n'
+
+======================================================================
+FAIL: test_nenhum_cmd_da_central_em_lf (test_mb_cmd_crlf.TestCentralReal.test_nenhum_cmd_da_central_em_lf)
+A guarda ao vivo: a central de verdade, agora.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "S:\projetos multi i.a\MEGA B R A I  N\motor\tests\test_mb_cmd_crlf.py", line 145, in test_nenhum_cmd_da_central_em_lf
+    self.assertEqual(
+    ~~~~~~~~~~~~~~~~^
+        achados, [],
+        ^^^^^^^^^^^^
+        "\n".join([".cmd/.bat em LF na central (o cmd.exe vai comer letras):"]
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                  + [f"  {c} — {n} linha(s)" for c, n in achados]))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [('01_acoes/14_ABRIR-AREA-IA.cmd', 18), ('[45 chars] 37)] != []
+
+First list contains 2 additional elements.
+First extra element 0:
+('01_acoes/14_ABRIR-AREA-IA.cmd', 18)
+
++ []
+- [('01_acoes/14_ABRIR-AREA-IA.cmd', 18),
+-  ('apps/pendencias-widget/INSTALAR-E-ABRIR.cmd', 37)] : .cmd/.bat em LF na central (o cmd.exe vai comer letras):
+  01_acoes/14_ABRIR-AREA-IA.cmd — 18 linha(s)
+  apps/pendencias-widget/INSTALAR-E-ABRIR.cmd — 37 linha(s)
+
+----------------------------------------------------------------------
+Ran 335 tests in 44.563s
+
+FAILED (failures=2)

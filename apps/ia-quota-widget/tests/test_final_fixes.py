@@ -104,11 +104,12 @@ def test_backoff_covers_timer_manual_and_visibility_toggle(window, monkeypatch):
     monkeypatch.setattr(window.poller, 'poll', lambda ids: calls.extend(ids))
     window._on_snapshot('claude', {'status': 'rate_limited', 'windows': [], 'message': 'HTTP 429'})
     window.poll_now()
-    assert calls == ['codex', 'zai']
+    assert calls == ['codex', 'codex_gpt2', 'zai']
     window._on_snapshot('codex', demo_snapshot('codex'))
+    window._on_snapshot('codex_gpt2', demo_snapshot('codex_gpt2'))
     window._on_snapshot('zai', demo_snapshot('zai'))
     window.manual_refresh()
-    assert calls == ['codex', 'zai', 'codex', 'zai']
+    assert calls == ['codex', 'codex_gpt2', 'zai', 'codex', 'codex_gpt2', 'zai']
     window._toggle_provider_visibility('claude', False)
     window._toggle_provider_visibility('claude', True)
     assert 'claude' not in calls

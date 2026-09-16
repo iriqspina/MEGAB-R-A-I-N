@@ -1,0 +1,179 @@
+{
+  "schema_version": 1,
+  "measured_at": "2026-09-16T18:32:14.264098-03:00",
+  "project": "S:\\projetos multi i.a\\MEGA B R A I  N",
+  "conclusion": "A medição existe e tem eventos históricos; o zero da análise Claude veio de consulta com schema incorreto.",
+  "root_cause": {
+    "status": "comprovada",
+    "transcript": "<USER_HOME>/.claude/projects/S--projetos-multi-i-a-MEGA-B-R-A-I--N/8564372e-8f16-4e7c-8582-936ec9647784.jsonl",
+    "line": 108,
+    "tool_use_id": "toolu_01THQqrQu24K6x7nWcMPBz9s",
+    "wrong_expression": "ci = d.get('contexto_injetado')",
+    "actual_shape": {
+      "evento": "contexto_injetado",
+      "chars": "numeric field at top level",
+      "pecas": "numeric field at top level"
+    },
+    "correct_predicate": "d.get('evento') == 'contexto_injetado'"
+  },
+  "last_five": [
+    {
+      "path": "S:\\projetos multi i.a\\MEGA B R A I  N\\.mb-log\\telemetria-260910.jsonl",
+      "sha256": "c65207ec29afa19a94fd5c34c9aa55215e5fb4682c5acdea4638522db8fced17",
+      "contexto_injetado_events": 23,
+      "wrong_schema_query_count": 0,
+      "invalid_lines": 0,
+      "last_event_at": "2026-09-10T21:24:00-03:00",
+      "agents": {
+        "claude": 23
+      }
+    },
+    {
+      "path": "S:\\projetos multi i.a\\MEGA B R A I  N\\.mb-log\\telemetria-260911.jsonl",
+      "sha256": "ba1f35350a05ef80275bae0455d60e06dc525baef2c60f656821350f5cc7c26f",
+      "contexto_injetado_events": 41,
+      "wrong_schema_query_count": 0,
+      "invalid_lines": 0,
+      "last_event_at": "2026-09-11T21:51:57-03:00",
+      "agents": {
+        "claude": 41
+      }
+    },
+    {
+      "path": "S:\\projetos multi i.a\\MEGA B R A I  N\\.mb-log\\telemetria-260913.jsonl",
+      "sha256": "0c43c5849f5e1d9eea442b9e26cddd159d2e7ee1ab8c57d97ad20ce942c0c635",
+      "contexto_injetado_events": 47,
+      "wrong_schema_query_count": 0,
+      "invalid_lines": 0,
+      "last_event_at": "2026-09-13T23:39:06-03:00",
+      "agents": {
+        "claude": 47
+      }
+    },
+    {
+      "path": "S:\\projetos multi i.a\\MEGA B R A I  N\\.mb-log\\telemetria-260914.jsonl",
+      "sha256": "842134bc58f483f3cf9c26fbef05e080d68329951c68e05ea6ced2552911948f",
+      "contexto_injetado_events": 33,
+      "wrong_schema_query_count": 0,
+      "invalid_lines": 0,
+      "last_event_at": "2026-09-14T23:41:55-03:00",
+      "agents": {
+        "claude": 33
+      }
+    },
+    {
+      "path": "S:\\projetos multi i.a\\MEGA B R A I  N\\.mb-log\\telemetria-260915.jsonl",
+      "sha256": "3ba10eeebf8a09b2061a2622b3b838a2e73c3d26ace0d944b068fb07da41b3f4",
+      "contexto_injetado_events": 33,
+      "wrong_schema_query_count": 0,
+      "invalid_lines": 0,
+      "last_event_at": "2026-09-15T17:42:04-03:00",
+      "agents": {
+        "claude": 33
+      }
+    }
+  ],
+  "last_five_total": 177,
+  "all_log_files": 22,
+  "all_contexto_events": 965,
+  "controlled_main_fixture": [
+    {
+      "case": "nonempty",
+      "exit_code": 0,
+      "stdout_chars": 48,
+      "telemetry_calls": 1,
+      "telemetry_return_value": true,
+      "recorded_event": "contexto_injetado",
+      "recorded_fields": {
+        "agente": "fixture",
+        "chars": 48,
+        "pecas": 1,
+        "sessao": "fixture-contexto"
+      },
+      "passed": true
+    },
+    {
+      "case": "empty",
+      "exit_code": 0,
+      "stdout_chars": 0,
+      "telemetry_calls": 0,
+      "telemetry_return_value": true,
+      "passed": true
+    },
+    {
+      "case": "montar_exception",
+      "exit_code": 0,
+      "stdout_chars": 0,
+      "telemetry_calls": 0,
+      "telemetry_return_value": true,
+      "passed": true
+    },
+    {
+      "case": "telemetry_returns_false",
+      "exit_code": 0,
+      "stdout_chars": 48,
+      "telemetry_calls": 1,
+      "telemetry_return_value": false,
+      "recorded_event": "contexto_injetado",
+      "recorded_fields": {
+        "agente": "fixture",
+        "chars": 48,
+        "pecas": 1,
+        "sessao": "fixture-contexto"
+      },
+      "passed": true
+    }
+  ],
+  "fixture_limit": "montar and telemetry writer mocked; proves main counts emitted chars and requests logging, not client activation, retrieval or disk persistence.",
+  "source_sha256": {
+    "S:\\projetos multi i.a\\MEGA B R A I  N\\bin\\mb-contexto.py": "fe61cf2b1a59232f5be00be41736759beb896c1c62b38fd0b50d9c9608a57a96",
+    "S:\\projetos multi i.a\\MEGA B R A I  N\\bin\\mb_telemetria.py": "23922228b1f720c14d5177a8a4c642a3a03ff87c1bbde1f1234e2fc033639ebd",
+    "C:\\Users\\<USUARIO>\\.claude\\settings.json": "8fb8708884e4f85fced3d640e6e9cd6f38b8079e609591cccfb71815897b9b8b",
+    "C:\\Users\\<USUARIO>\\.claude\\agent-flow\\hook.js": "c42ba4cf348ec3a2149d0ab9d31362718ecfa995a5c908037b96a8063a89e826",
+    "C:\\Users\\<USUARIO>\\.codex\\config.toml": "c6648f5400accb6624bc0141567130a8cb5a84ad6a6d795d00aa55d86bf6e5e9",
+    "C:\\Users\\<USUARIO>\\.kimi-code\\config.toml": "174b2b3cab64ad5fdd9dca0a7dec146c3d55823f681358907b03852c150bcabd",
+    "C:\\Users\\<USUARIO>\\.kimi-code\\plugins\\managed\\megabrain\\kimi.plugin.json": "89e010693a4172197ae3c6267f1cf68569f3bc6fd2fdee651430c3ad0f69e59b",
+    "C:\\Users\\<USUARIO>\\.kimi-code\\plugins\\managed\\megabrain\\hooks\\260810_licoes-kimi.mjs": "74a8b3300b0dc83743abc092e12c7714d5c6e76ee3ae92d348ed3df2150a8c2e",
+    "S:\\projetos multi i.a\\MEGA B R A I  N\\motor\\plugin-megabrain\\hooks\\260810_licoes-kimi.mjs": "74a8b3300b0dc83743abc092e12c7714d5c6e76ee3ae92d348ed3df2150a8c2e",
+    "C:\\Users\\<USUARIO>\\.zcode\\cli\\config.json": "b48dbd56ec3f9638b391adaeb2e4dadd974e2f6b54e9c6289c35e2432b904a76",
+    "C:\\Users\\<USUARIO>\\.claude\\agent-flow\\zcode-wrapper.js": "b97e53bafcac20ac6c2d64a11948a638cf3beeefbe319c98c101a6ee420cc146"
+  },
+  "clients": {
+    "claude": {
+      "observed": "Current user settings hooks have no UserPromptSubmit. Installed synced MEGABRAIN plugin declares SessionStart only. Configured agent-flow hook.js does not reference mb-contexto or megabrain.",
+      "current_activation": "NAO_VERIFICADA",
+      "historical_log": "contexto_injetado events labeled claude exist; does not prove the currently running client calls the hook.",
+      "intentional_disable": "NAO_VERIFICADO"
+    },
+    "kimi": {
+      "observed": "Managed megabrain manifest declares UserPromptSubmit -> node ./hooks/260810_licoes-kimi.mjs. Installed script defaults MEGABRAIN_ROOT to this canonical root and spawns bin/mb-contexto.py --agente kimi. Installed and canonical mjs hashes match.",
+      "current_activation": "NAO_VERIFICADA",
+      "limit": "Installed declaration and matching source are proven; active process/plugin enablement and inherited MEGABRAIN_ROOT were not tested."
+    },
+    "codex": {
+      "observed": "User config inspected without finding a MEGABRAIN context hook; hooks table exposes state, not a mb-contexto command.",
+      "current_activation": "NAO_VERIFICADA",
+      "limit": "No universal activation claim; skills presence alone does not demonstrate per-prompt hook execution."
+    },
+    "zcode": {
+      "observed": "UserPromptSubmit calls agent-flow zcode-wrapper.js; the inspected wrapper delegates to hook.js without mb-contexto.",
+      "current_activation": "NAO_VERIFICADA",
+      "limit": "No isolated full client run was made."
+    }
+  },
+  "recommendation": [
+    "Correct the Claude analysis and downstream statements: use evento value, read chars and pecas at top level.",
+    "Retain the existing meter; do not recreate it based on the wrong zero.",
+    "Track current Claude activation as compatibility pending. Validate one fresh real client lifecycle before changing configuration; do not infer whether absence is intentional."
+  ],
+  "not_changed": [
+    "client configuration",
+    "shared source code",
+    "production telemetry logs",
+    "hook installation"
+  ],
+  "limitations": [
+    "The metric is characters and injected pieces from this hook, not total context tokens or context-window percent.",
+    "main swallows montar errors and ignores false from telemetry.registrar; absence of a later event needs lifecycle diagnosis, not an assertion that the meter does not exist."
+  ]
+}

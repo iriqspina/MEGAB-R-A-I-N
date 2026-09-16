@@ -5,12 +5,16 @@ from pathlib import Path
 import shutil
 
 
-def entregar(projeto, origem, nome=None):
+def entregar(projeto, origem, nome=None, grupo=None):
     projeto = Path(projeto).resolve(strict=True)
     origem = Path(origem).resolve(strict=True)
     if not origem.is_file() or not origem.is_relative_to(projeto):
         raise ValueError('A origem precisa ser um arquivo do projeto')
     pasta = (projeto / '00_PARA-VOCE').resolve()
+    if grupo:
+        if Path(grupo).name != grupo or '/' in grupo or '\\' in grupo or grupo in ('.','..'):
+            raise ValueError('Grupo precisa ser um nome simples de tarefa')
+        pasta = (pasta / grupo).resolve()
     if not pasta.is_relative_to(projeto):
         raise ValueError('A pasta de entrega sai do projeto')
     nome = nome or origem.name
@@ -19,7 +23,7 @@ def entregar(projeto, origem, nome=None):
     if not (len(nome) > 7 and nome[:6].isdigit() and nome[6] == '_'):
         nome = datetime.now().strftime('%y%m%d_') + nome
     destino = pasta / nome
-    pasta.mkdir(exist_ok=True)
+    pasta.mkdir(parents=True, exist_ok=True)
     if origem == destino:
         return destino
     with destino.open('xb') as out, origem.open('rb') as src:
@@ -32,5 +36,6 @@ if __name__ == '__main__':
     parser.add_argument('--projeto', required=True)
     parser.add_argument('--origem', required=True)
     parser.add_argument('--nome')
+    parser.add_argument('--grupo', help='Pasta YYMMDD_tarefa; uso anterior sem grupo continua compatível')
     args = parser.parse_args()
-    print(entregar(args.projeto, args.origem, args.nome))
+    print(entregar(args.projeto, args.origem, args.nome, args.grupo))

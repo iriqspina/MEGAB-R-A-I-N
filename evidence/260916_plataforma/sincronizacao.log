@@ -1,0 +1,80 @@
+[
+  {
+    "destino": "C:\\Users\\henri\\.claude\\CLAUDE.md",
+    "resultado": "claude (CLAUDE.md, conteudo): atualizado",
+    "regra_presente": true,
+    "sha256": "08375db966f8307d12e41905e2c31cc200e2cc02643662e1dc4c37a8e703afae"
+  },
+  {
+    "destino": "C:\\Users\\henri\\.gemini\\GEMINI.md",
+    "resultado": "gemini (GEMINI.md, conteudo): atualizado",
+    "regra_presente": true,
+    "sha256": "1ab12028a2265b503ecc0f6d6c3d1e650e1821c3747e8ae5ab0c8ac53ebc1083"
+  },
+  {
+    "destino": "C:\\Users\\henri\\.kimi\\AGENTS.md",
+    "resultado": "kimi (AGENTS.md, conteudo): atualizado",
+    "regra_presente": true,
+    "sha256": "f59916ecd7d74028463eda046c1edf3965f13f64bb29209b6da3eef9876e8400"
+  },
+  {
+    "destino": "C:\\Users\\henri\\.kimi-code\\AGENTS.md",
+    "resultado": "kimi (AGENTS.md, conteudo): atualizado",
+    "regra_presente": true,
+    "sha256": "694ec47f0870c400cc91c28324388eb54cf12a3643f9a65486273e47d85e6501"
+  },
+  {
+    "destino": "C:\\Users\\henri\\.codex\\AGENTS.md",
+    "resultado": "codex (AGENTS.md, conteudo): atualizado",
+    "regra_presente": true,
+    "sha256": "f67f58402cf1167762a9d6aea42040fe7876bc5ae7c41946727cbd7fa6e5fc74"
+  },
+  {
+    "destino": "C:\\Users\\henri\\.codex-gpt2\\AGENTS.md",
+    "resultado": "codex (AGENTS.md, conteudo): atualizado",
+    "regra_presente": true,
+    "sha256": "121a0ed5dcd55f4ff59407d96fde3c3a15f60e12b2c2087f9b1f60f4f684740a"
+  },
+  {
+    "destino": "C:\\Users\\henri\\.claude\\output-styles\\megabrain.md",
+    "resultado": "claude-style (megabrain.md): atualizado",
+    "regra_presente": true,
+    "sha256": "c15a6a24015e5c4c08bc5afcdcd2feb84257b4e211386b7ea5f0852c07b60878"
+  },
+  {
+    "destino": "C:\\Users\\henri\\.zcode\\AGENTS.md",
+    "resultado": "codex (AGENTS.md, conteudo): atualizado",
+    "regra_presente": true,
+    "sha256": "fde3097afe5f8bcc9d639dd96179ecdbed309e516feb37b3fe53e732865f9736"
+  },
+  {
+    "destino": "C:\\Users\\henri\\.codex\\skills\\megabrain\\SKILL.md",
+    "tipo": "skill derivada",
+    "sha256": "2fff19e017d2758db75483d65138c059c631de5cd75bfba084b42affeceaec06",
+    "igual_fonte": true
+  },
+  {
+    "destino": "C:\\Users\\henri\\.claude\\skills\\megabrain\\SKILL.md",
+    "tipo": "skill derivada",
+    "sha256": "2fff19e017d2758db75483d65138c059c631de5cd75bfba084b42affeceaec06",
+    "igual_fonte": true
+  },
+  {
+    "destino": "C:\\Users\\henri\\.kimi-code\\plugins\\managed\\megabrain\\skills\\megabrain\\SKILL.md",
+    "tipo": "skill derivada",
+    "sha256": "2fff19e017d2758db75483d65138c059c631de5cd75bfba084b42affeceaec06",
+    "igual_fonte": true
+  },
+  {
+    "destino": "C:\\Users\\henri\\AppData\\Roaming\\kimi-desktop\\daimon-share\\daimon\\skills\\megabrain\\SKILL.md",
+    "tipo": "skill derivada",
+    "sha256": "2fff19e017d2758db75483d65138c059c631de5cd75bfba084b42affeceaec06",
+    "igual_fonte": true
+  },
+  {
+    "destino": "C:\\Users\\henri\\.codex\\plugins\\cache\\personal\\megabrain\\1.6.3+codex.20260825202815\\skills\\megabrain\\SKILL.md",
+    "tipo": "skill derivada",
+    "sha256": "2fff19e017d2758db75483d65138c059c631de5cd75bfba084b42affeceaec06",
+    "igual_fonte": true
+  }
+]

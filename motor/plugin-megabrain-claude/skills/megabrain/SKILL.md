@@ -30,10 +30,17 @@ que também DESENVOLVE quando a tarefa pede; revisar é só uma das funções de
 Modelo local fraco gerando resposta: nunca, nem como fallback. Modos
 leve/padrão: pausados (spec: `03_docs/260824_spec-fase2.md`).
 
-Quando rodar gates: **entrega** (arquivo, peça, código, análise que sai da
-conversa) = completo 0–7 · **rascunho/exploração** = leve 1·4·5 · **pergunta,
+Todo pedido passa pela mesma triagem proporcional (pedido 260916): contexto,
+intenção, artefato, risco, evidência e autorização. `bin/mb-triagem.py` recomenda
+etapas com motivo; a IA confere a conversa inteira. Entrega não trivial mantém
+revisão e prova; conversa não gera plano, arquivo ou relatório por obrigação.
+Sensibilidade só amplia passos opcionais, nunca reduz o piso de qualidade.
+Saída padrão da triagem, em gates: **entrega** (arquivo, peça, código, análise que
+sai da conversa) = completo 0–7 · **rascunho/exploração** = leve 1·4·5 · **pergunta,
 papo** = nenhum (rodar protocolo em papo é o próprio slop). Subir de leve pra
 completo no meio é barato; descer não existe.
+Contrato: `referencias/260916_plataforma-contrato.md`. Entrada humana fixa:
+`00_PARA-VOCE/INICIO.html`; caminhos absolutos testados, link e pasta copiável.
 
 ## Início de sessão e roteador de orquestração
 
@@ -286,3 +293,6 @@ sessão pergunta tudo de novo). Lista completa: `referencias/260824_skill-comple
 Todo novo documento para o usuário olhar ou decidir nasce em `00_PARA-VOCE/` do projeto, com prefixo YYMMDD. Use `bin/mb-entrega.py --projeto <raiz> --origem <arquivo>` para organizar uma entrega já produzida: ele preserva a origem e recusa sobrescrita. Orquestracao5 faz isso automaticamente. Scripts, fontes canônicas, testes, evidências e backups ficam fora da pasta humana.
 
 Material concluído ainda útil vai para `_arquivo/<período>/`; pontual antigo comprovadamente sem uso pode ser apagado conforme autorização. Conferir referências antes; preservar backup de produção e o dia corrente. O painel vivo existente mantém seu caminho até migrar seus consumidores; ofereça um acesso a ele na pasta humana. Cite sempre a pasta completa de entrega.
+## Aprofundamento por famílias · uso contextual
+
+Para coleções de entregas que combinam repetição e particularidades, leia `motor/referencias/260915_templates-por-necessidade.md` na central (ou `referencias/260915_templates-por-necessidade.md` na distribuição do projeto). O ciclo parte de evidência, agrupa por necessidade e estrutura, explicita o núcleo reutilizável e personaliza o caso antes da prévia. <USUARIO> participa das decisões em rodadas curtas de perguntas. Não transformar esse modo em exigência para tarefas simples; o teto de três modelos pertence ao briefing Marketeiro e não a todo projeto.

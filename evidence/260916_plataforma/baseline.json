@@ -1,0 +1,168 @@
+{
+  "measured_at": "2026-09-16T17:55:52.558298-03:00",
+  "root": "S:\\projetos multi i.a\\MEGA B R A I  N",
+  "head": "011eb2e04088d10b5e29fcb5960b7325f15dda86",
+  "dirty_entries": 197,
+  "root_directories": [
+    ".automations",
+    ".claude",
+    ".git",
+    ".mb-aspirador",
+    ".mb-backup",
+    ".mb-lock",
+    ".mb-log",
+    ".megabrain",
+    ".scratch",
+    ".video_agent",
+    "00_painel",
+    "00_PARA-VOCE",
+    "01_acoes",
+    "02_entrada",
+    "03_docs",
+    "04_visuais",
+    "90_arquivo",
+    "99_to_delete",
+    "apps",
+    "bin",
+    "dados",
+    "docs",
+    "evidence",
+    "memoria",
+    "motor",
+    "neuroninhos",
+    "out",
+    "pets",
+    "_github"
+  ],
+  "inbox_directories": [
+    "260909_clickup",
+    "260909_duna",
+    "260909_orquestracoes",
+    "260909_pets",
+    "260909_pets-ux",
+    "260910_auditoria-github",
+    "260910_autonomia-claude-mcps",
+    "260910_orquestracao-v6",
+    "260910_permissoes-claude-codex",
+    "260910_pesquisa-esforco-e-modelos",
+    "260910_v7-megabrain",
+    "260912_zai-glm",
+    "260913_cotas-ia-z",
+    "260913_marcelinho-jarvis",
+    "260913_marcelinho-vivo",
+    "260914_revisual-relatorio",
+    "260915_padronizacao-relatorios",
+    "260915_pipeline-visual-3d",
+    "260915_pop-claro",
+    "260916_agentes-ia-conceito",
+    "260916_agentes-ia-universo",
+    "260916_board-sem-fundo",
+    "260916_codex-gpt2",
+    "260916_painel-sessoes",
+    "260916_widget-pendencias",
+    "orquestracao1-260910_162611_3df8598f",
+    "orquestracao1-260910_165515_821ba2ee",
+    "orquestracao1-260912_133054_30f8d88e",
+    "orquestracao1-260915_165420_548975f0",
+    "orquestracao1-260916_165351_4ce0dc04",
+    "orquestracao1-260916_165957_0ee67652",
+    "orquestracao1-260916_170321_ec312deb",
+    "orquestracao1-260916_171004_2a3bb370",
+    "orquestracao1-260916_173133_154ddcda"
+  ],
+  "inbox_loose_files": [
+    "260908_ORQUESTRACAO5.md",
+    "260909_PUBLICACAO.md",
+    "260914_orquestracao-megabrain-mapa.html",
+    "260914_widget-cotas-cards-expandido.png",
+    "260914_widget-cotas-cards-novo.png",
+    "260914_widget-cotas-layout-corrigido.png",
+    "260914_widget-print-revisado.png",
+    "260914_widget-print-revisao.png",
+    "260915_widget-refresh-estavel.png",
+    "BOARD-DE-AGENTES.lnk",
+    "_zoom-inf-dir.jpg",
+    "_zoom-inf-esq.jpg"
+  ],
+  "inbox_file_count": 219,
+  "inbox_extensions": {
+    ".md": 54,
+    ".html": 16,
+    ".png": 107,
+    ".lnk": 1,
+    ".jpg": 4,
+    ".json": 20,
+    ".wav": 2,
+    ".zip": 5,
+    ".exe": 5,
+    ".toml": 1,
+    ".gif": 2,
+    ".txt": 2
+  },
+  "applications": [
+    "agent-flow-board",
+    "agentes-ia",
+    "automations",
+    "ia-quota-widget",
+    "megabrain-dashboard",
+    "pendencias-widget"
+  ],
+  "sources": {
+    "memoria/estado/ESTADO.md": {
+      "sha256": "ac01fdd5543ce4c6e2bc4f239e8bb362b0016cd1045da1f44173c336f503b74b",
+      "bytes": 12174
+    },
+    "memoria/estado/HANDOFF.md": {
+      "sha256": "8a9d6d8a4b0e25ce055ba9839ef215a11f000c9c1089b16d9594c742d85fdcfe",
+      "bytes": 43657
+    },
+    "memoria/identidade/260810_memoria-pessoal.md": {
+      "sha256": "20578423d23ea1efd0629adfc57949ded61541facb252315d2a94afe05291527",
+      "bytes": 7538
+    },
+    "motor/skills/megabrain/SKILL.md": {
+      "sha256": "48068bfc28e4b0bb9afd6957939e6232e5cd867d0079188fa80c173e2f55962d",
+      "bytes": 20872
+    },
+    "motor/referencias/260818_padrao-resposta.md": {
+      "sha256": "40edbec1b92c74cfa7353ff9faa8f59b922dc05f85366995b7152b43a5e14b3f",
+      "bytes": 7286
+    },
+    "bin/mb-contexto.py": {
+      "sha256": "80934961f15b0775dd0dc37ba019696682cc23454cc9bf0074f1e279d2a5ff96",
+      "bytes": 11516
+    },
+    "bin/mb-inicio-sessao.py": {
+      "sha256": "cbb7199a5dd6a6e8f15589f62ebbc9737cdcd70c7512fba9478253297020002f",
+      "bytes": 3581
+    },
+    "bin/mb-entrega.py": {
+      "sha256": "9982a17ba1beb88c1e32d9eca9ac859973e8e494e11959cb73ad90c04ffd3748",
+      "bytes": 1433
+    },
+    "bin/mb-relatorio-vivo.py": {
+      "sha256": "4508b6d52eb8a7bf5fbd225457469a6eab2f7ad1eb91d258e0ad762134140bca",
+      "bytes": 104178
+    },
+    "00_painel/RELATORIO.html": {
+      "sha256": "9725b78f43dac469bee4d896445d3e606835150520d0be8c086722e1dd76f1dd",
+      "bytes": 458480
+    },
+    "memoria/nucleo/MEGABRAIN.md": {
+      "sha256": "a90d64f433004fe25158552e93cd1d1b1756cc8bab0bfd83e8a3c66fc8a13ea3",
+      "bytes": 30484
+    },
+    "memoria/nucleo/licoes-megabrain.md": {
+      "sha256": "9261e679c843c016fea0aaf7f6647f8df479a1d4620e0dceb1ebe2b2db282088",
+      "bytes": 265633
+    },
+    "licoes-megabrain.md": {
+      "sha256": "fd8a532e70f63482c95c9db698af8771f798dff8b319c0d5f999cb5a0c5601cb",
+      "bytes": 2186
+    },
+    "INDICE.md": {
+      "sha256": "d96ce5d6f67406f77ab2b4c6406185e3b7f53601a27a84d3cbf04e5ccd262be1",
+      "bytes": 141
+    }
+  }
+}

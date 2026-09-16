@@ -1,0 +1,132 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"C:\\Program Files\\nodejs\\node.exe\" \"C:\\Users\\henri\\.claude\\agent-flow\\hook.js\"",
+            "timeout": 2
+          }
+        ]
+      },
+      {
+        "hooks": []
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"C:\\Program Files\\nodejs\\node.exe\" \"C:\\Users\\henri\\.claude\\agent-flow\\hook.js\"",
+            "timeout": 2
+          }
+        ]
+      },
+      {
+        "hooks": []
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"C:\\Program Files\\nodejs\\node.exe\" \"C:\\Users\\henri\\.claude\\agent-flow\\hook.js\"",
+            "timeout": 2
+          }
+        ]
+      },
+      {
+        "hooks": []
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"C:\\Program Files\\nodejs\\node.exe\" \"C:\\Users\\henri\\.claude\\agent-flow\\hook.js\"",
+            "timeout": 2
+          }
+        ]
+      },
+      {
+        "hooks": []
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"C:\\Program Files\\nodejs\\node.exe\" \"C:\\Users\\henri\\.claude\\agent-flow\\hook.js\"",
+            "timeout": 2
+          }
+        ]
+      },
+      {
+        "hooks": []
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"C:\\Program Files\\nodejs\\node.exe\" \"C:\\Users\\henri\\.claude\\agent-flow\\hook.js\"",
+            "timeout": 2
+          }
+        ]
+      },
+      {
+        "hooks": []
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"C:\\Program Files\\nodejs\\node.exe\" \"C:\\Users\\henri\\.claude\\agent-flow\\hook.js\"",
+            "timeout": 2
+          }
+        ]
+      },
+      {
+        "hooks": []
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"C:\\Program Files\\nodejs\\node.exe\" \"C:\\Users\\henri\\.claude\\agent-flow\\hook.js\"",
+            "timeout": 2
+          }
+        ]
+      },
+      {
+        "hooks": []
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"C:\\Program Files\\nodejs\\node.exe\" \"C:\\Users\\henri\\.claude\\agent-flow\\hook.js\"",
+            "timeout": 2
+          }
+        ]
+      },
+      {
+        "hooks": []
+      }
+    ]
+  },
+  "agentPushNotifEnabled": true,
+  "inputNeededNotifEnabled": true
+}

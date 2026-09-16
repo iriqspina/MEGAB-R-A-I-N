@@ -1,0 +1,14 @@
+...................................................................................................................................................................a → feito
+ERRO: manifesto público recusado: plugin central DIVERGE das fontes canônicas: skills/megabrain/SKILL.md
+ERRO: manifesto público recusado: plugin público não deriva da fonte central: diverge:README.md
+template gerado em C:\Users\henri\AppData\Local\Temp\tmp7_a_08nv\central\_github\export
+template gerado em C:\Users\henri\AppData\Local\Temp\tmpw1yiy3l3\central\_github\export
+template gerado em C:\Users\henri\AppData\Local\Temp\tmpvsm79wh2\central\_github\export
+template gerado em C:\Users\henri\AppData\Local\Temp\tmp21tiyt81\central\_github\export
+..........................................AVISO: --plano não encontrado ou vazio: S:\projetos multi i.a\MEGA B R A I  N\ESTADO.md
+AVISO: --plano não encontrado ou vazio: S:\projetos multi i.a\MEGA B R A I  N\ESTADO.md
+...................................................................................................................................
+----------------------------------------------------------------------
+Ran 336 tests in 43.420s
+
+OK

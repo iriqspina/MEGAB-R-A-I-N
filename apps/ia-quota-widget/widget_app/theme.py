@@ -11,6 +11,7 @@ FONT_FAMILY = "Segoe UI"
 
 PROVIDER_DOT_COLORS = {
     "codex": "#d7dde5",
+    "codex_gpt2": "#8ab8e0",
     "spark": "#79c7e8",
     "claude": "#c39782",
     "zai": "#e28fb4",
@@ -20,6 +21,7 @@ PROVIDER_DOT_COLORS = {
 }
 PROVIDER_LABELS = {
     "codex": "Codex",
+    "codex_gpt2": "Codex GPT2",
     "spark": "Spark",
     "claude": "Claude",
     "zai": "Z.ai",
@@ -29,6 +31,7 @@ PROVIDER_LABELS = {
 }
 PROVIDER_SOURCE_HINT = {
     "codex": "Cota da assinatura",
+    "codex_gpt2": "Assinatura Plus · conta gpt2",
     "spark": "Cota própria do Codex Spark",
     "claude": "Sessão · semana · modelos",
     "zai": "GLM Coding Plan · 5 h · semana",

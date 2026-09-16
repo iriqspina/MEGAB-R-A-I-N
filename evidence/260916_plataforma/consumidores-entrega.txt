@@ -1,0 +1,68 @@
+mapa de referências · 12386 arquivos de texto lidos · raiz MEGA B R A I  N
+
+### mb-entrega.py — 79 citações em 65 arquivos (caminho: 52 · prosa: 27)
+  !! .scratch\260916_gpt-design-multi.txt  caminho:1 literal:0 prosa:0
+  !! 00_PARA-VOCE\260908_ORQUESTRACAO5.md  caminho:1 literal:0 prosa:0
+  !! pets\MEGABRAIN\VERSAO.txt  caminho:1 literal:0 prosa:0
+  !! pets\MEGABRAIN\skills\megabrain\SKILL.md  caminho:1 literal:0 prosa:0
+  !! motor\skills\megabrain\SKILL.md  caminho:1 literal:0 prosa:0
+  !! motor\plugin-megabrain-codex\skills\megabrain\SKILL.md  caminho:1 literal:0 prosa:0
+  !! motor\plugin-megabrain-claude\skills\megabrain\SKILL.md  caminho:1 literal:0 prosa:0
+  !! memoria\estado\DECISOES.md  caminho:1 literal:0 prosa:0
+  !! memoria\estado\HANDOFF.md  caminho:1 literal:0 prosa:0
+  !! memoria\nucleo\VERSAO.txt  caminho:1 literal:0 prosa:0
+  !! evidence\260916_plataforma\baseline.json  caminho:1 literal:0 prosa:0
+  !! evidence\260916_plataforma\preparar.py  caminho:1 literal:0 prosa:0
+  !! evidence\260916_plataforma\backup\motor\skills\megabrain\SKILL.md  caminho:1 literal:0 prosa:0
+  !! evidence\260916_plataforma\backup\memoria\estado\HANDOFF.md  caminho:1 literal:0 prosa:0
+  !! evidence\260910_fechamento-pesquisa\backup\memoria\estado\DECISOES.md  caminho:1 literal:0 prosa:0
+  !! evidence\260910_fechamento-pesquisa\backup\memoria\estado\HANDOFF.md  caminho:1 literal:0 prosa:0
+  !! 00_PARA-VOCE\260914_revisual-relatorio\260914_RELATORIO-vitral.html  caminho:1 literal:0 prosa:0
+  !! 00_PARA-VOCE\260914_revisual-relatorio\260914_RELATORIO-vitral2.html  caminho:1 literal:0 prosa:0
+  !! 00_PARA-VOCE\orquestracao1-260916_175608_306d11cb\PLANO.md  caminho:1 literal:0 prosa:1
+  !! .claude\worktrees\silly-cartwright-33a986\00_PARA-VOCE\260908_ORQUESTRACAO5.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\silly-cartwright-33a986\motor\skills\megabrain\SKILL.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\silly-cartwright-33a986\motor\plugin-megabrain-codex\skills\megabrain\SKILL.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\silly-cartwright-33a986\motor\plugin-megabrain-claude\skills\megabrain\SKILL.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\silly-cartwright-33a986\memoria\estado\DECISOES.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\silly-cartwright-33a986\memoria\estado\HANDOFF.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\silly-cartwright-33a986\memoria\nucleo\VERSAO.txt  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\jolly-sinoussi-831ce5\00_PARA-VOCE\260908_ORQUESTRACAO5.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\jolly-sinoussi-831ce5\motor\skills\megabrain\SKILL.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\jolly-sinoussi-831ce5\motor\plugin-megabrain-codex\skills\megabrain\SKILL.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\jolly-sinoussi-831ce5\motor\plugin-megabrain-claude\skills\megabrain\SKILL.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\jolly-sinoussi-831ce5\memoria\estado\DECISOES.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\jolly-sinoussi-831ce5\memoria\estado\HANDOFF.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\jolly-sinoussi-831ce5\memoria\nucleo\VERSAO.txt  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\exciting-satoshi-93280f\00_PARA-VOCE\260908_ORQUESTRACAO5.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\exciting-satoshi-93280f\motor\skills\megabrain\SKILL.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\exciting-satoshi-93280f\motor\plugin-megabrain-codex\skills\megabrain\SKILL.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\exciting-satoshi-93280f\motor\plugin-megabrain-claude\skills\megabrain\SKILL.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\exciting-satoshi-93280f\memoria\estado\DECISOES.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\exciting-satoshi-93280f\memoria\estado\HANDOFF.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\exciting-satoshi-93280f\memoria\nucleo\VERSAO.txt  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\00_PARA-VOCE\260908_ORQUESTRACAO5.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\motor\skills\megabrain\SKILL.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\motor\plugin-megabrain-codex\skills\megabrain\SKILL.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\motor\plugin-megabrain-claude\skills\megabrain\SKILL.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\memoria\estado\DECISOES.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\memoria\estado\HANDOFF.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\memoria\nucleo\VERSAO.txt  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_175608_306d11cb\plan.md  caminho:1 literal:0 prosa:1
+  !! .automations\runs\260916_175608_306d11cb\stages\candidate-1\request.json  caminho:1 literal:0 prosa:2
+  !! .automations\runs\260916_175608_306d11cb\stages\plan-1\last-message.json  caminho:1 literal:0 prosa:1
+  !! .automations\runs\260916_175608_306d11cb\stages\plan-1\response.json  caminho:1 literal:0 prosa:1
+  !! .automations\runs\260916_175608_306d11cb\stages\plan-review-1\request.json  caminho:1 literal:0 prosa:2
+     evidence\260916_plataforma\brief.json  caminho:0 literal:0 prosa:1
+     evidence\260916_plataforma\worker-entrada.txt  caminho:0 literal:0 prosa:1
+     00_PARA-VOCE\orquestracao1-260916_175608_306d11cb\CANDIDATO.md  caminho:0 literal:0 prosa:3
+     .automations\briefs\260916_175552_7aed9ed6.json  caminho:0 literal:0 prosa:1
+     .automations\briefs\260916_175608_827aff93.json  caminho:0 literal:0 prosa:1
+     .automations\runs\260916_175608_306d11cb\candidate.md  caminho:0 literal:0 prosa:3
+     .automations\runs\260916_175608_306d11cb\manifest.json  caminho:0 literal:0 prosa:1
+     .automations\runs\260916_175608_306d11cb\stages\candidate-1\last-message.json  caminho:0 literal:0 prosa:1
+     .automations\runs\260916_175608_306d11cb\stages\candidate-1\response.json  caminho:0 literal:0 prosa:1
+     .automations\runs\260916_175608_306d11cb\stages\plan-1\request.json  caminho:0 literal:0 prosa:1
+     .automations\runs\260916_175608_306d11cb\stages\plan-review-1\response.json  caminho:0 literal:0 prosa:1
+     .automations\runs\260916_175608_306d11cb\stages\review-1\request.json  caminho:0 literal:0 prosa:2
+     .automations\runs\260916_175608_306d11cb\stages\review-1\response.json  caminho:0 literal:0 prosa:2

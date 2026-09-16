@@ -1,0 +1,197 @@
+ M 00_painel/RELATORIO.html
+ M 01_acoes/06_sincronizar-identidade.cmd
+ D 90_arquivo/relatorios-antigos/260825_1552_RELATORIO_102528a.html
+ M 90_arquivo/relatorios-antigos/INDICE.md
+ M 90_arquivo/relatorios-antigos/versao-atual.json
+ M apps/ia-quota-widget/providers.py
+ M apps/ia-quota-widget/tests/test_contrast.py
+ M apps/ia-quota-widget/tests/test_final_fixes.py
+ M apps/ia-quota-widget/tests/test_main_window.py
+ M apps/ia-quota-widget/tests/test_providers.py
+ M apps/ia-quota-widget/tests/test_ux_controls.py
+ M apps/ia-quota-widget/widget_app/demo_data.py
+ M apps/ia-quota-widget/widget_app/theme.py
+ M bin/mb-board.ps1
+ M dados/orcamento_ia.json
+ M dados/saude_mcp.json
+ M dados/telemetria-orquestracao.json
+ M licoes-megabrain.md
+ M memoria/cerebro/.indice-cerebro.json
+ M memoria/cerebro/260824_mapa-do-cerebro.md
+ M memoria/cerebro/INDICE.md
+ M memoria/cerebro/wiki/260915_qualificar-clientes-modelos.md
+ M memoria/estado/DECISOES.md
+ M memoria/estado/ESTADO.md
+ M memoria/estado/HANDOFF.md
+ M memoria/identidade/260810_memoria-pessoal.md
+ M memoria/nucleo/licoes-megabrain.md
+ M motor/skills/megabrain/SKILL.md
+ M motor/skills/qualificar-clientes/SKILL.md
+ M pets/DECISOES.md
+ M pets/ESTADO.md
+ M pets/HANDOFF.md
+ M pets/LICOES.md
+ M pets/MEGABRAIN/.mb-origem.json
+ M pets/MEGABRAIN/MEGABRAIN.md
+ M pets/MEGABRAIN/VERSAO.txt
+ M pets/MEGABRAIN/dna/RELATORIO-DNA.html
+ M pets/MEGABRAIN/dna/dna.json
+ M pets/MEGABRAIN/dna/indice-licoes.json
+ M pets/MEGABRAIN/referencias/260818_padrao-resposta.md
+ M pets/MEGABRAIN/skills/megabrain/SKILL.md
+ M pets/Marcelinho/profile.json
+ M pets/VERSION.txt
+ M pets/backend/integrations.py
+ M pets/backend/pet_service.py
+ M pets/backend/security.py
+ M pets/backend/service.py
+ M pets/backend/storage.py
+ M pets/backend/voice.py
+ M pets/cerebro/INDICE.md
+ M pets/desktop/App.xaml.cs
+ M pets/desktop/Controls/PixelGhostControl.cs
+ M pets/desktop/MainWindow.xaml
+ M pets/desktop/MainWindow.xaml.cs
+ M pets/desktop/PetWindow.xaml
+ M pets/desktop/PetWindow.xaml.cs
+ M pets/desktop/Services/BackendClient.cs
+ M pets/desktop/Services/SingleInstanceCoordinator.cs
+ M pets/desktop/Services/WindowPlacementStore.cs
+ M pets/docs/PROTOCOL.md
+ M pets/tests/backend_test.py
+?? .automations/briefs/260916_165340_a61b59c5.json
+?? .automations/briefs/260916_165351_ad797b98.json
+?? .automations/briefs/260916_165957_933003cc.json
+?? .automations/briefs/260916_170155_0aa67f9f.json
+?? .automations/briefs/260916_170300_bf1a5dbc.json
+?? .automations/briefs/260916_170321_72f82556.json
+?? .automations/briefs/260916_170957_47514329.json
+?? .automations/briefs/260916_171004_f21087b5.json
+?? .automations/briefs/260916_173125_0eb93415.json
+?? .automations/briefs/260916_173133_363fa29d.json
+?? .automations/briefs/260916_painel-fatos-bateria.md
+?? .automations/briefs/260916_painel-recorte-texto.txt
+?? .automations/briefs/260916_painel-sessoes-fonte-dados-v2.md
+?? .automations/briefs/260916_painel-sessoes-fonte-dados.md
+?? .automations/briefs/260916_painel-sessoes-review.json
+?? .automations/briefs/260916_pendencias-review.json
+?? .automations/runs/260916_165351_4ce0dc04/
+?? .automations/runs/260916_165957_0ee67652/
+?? .automations/runs/260916_170321_ec312deb/
+?? .automations/runs/260916_171004_2a3bb370/
+?? .automations/runs/260916_173133_154ddcda/
+?? .scratch/
+?? .video_agent/
+?? 00_PARA-VOCE/260915_pipeline-visual-3d/
+?? 00_PARA-VOCE/260916_agentes-ia-conceito/
+?? 00_PARA-VOCE/260916_agentes-ia-universo/
+?? 00_PARA-VOCE/260916_board-sem-fundo/
+?? 00_PARA-VOCE/260916_codex-gpt2/
+?? 00_PARA-VOCE/260916_painel-sessoes/
+?? 00_PARA-VOCE/260916_widget-pendencias/
+?? 00_PARA-VOCE/BOARD-DE-AGENTES.lnk
+?? 00_PARA-VOCE/orquestracao1-260916_165351_4ce0dc04/
+?? 00_PARA-VOCE/orquestracao1-260916_165957_0ee67652/
+?? 00_PARA-VOCE/orquestracao1-260916_170321_ec312deb/
+?? 00_PARA-VOCE/orquestracao1-260916_171004_2a3bb370/
+?? 00_PARA-VOCE/orquestracao1-260916_173133_154ddcda/
+?? 01_acoes/13_ABRIR-BOARD-DE-AGENTES.cmd
+?? 01_acoes/14_ABRIR-AREA-IA.cmd
+?? 01_acoes/14_CODEX-GPT2.cmd
+?? 90_arquivo/relatorios-antigos/260915_1829_RELATORIO_873b9bd.html
+?? INDICE.md
+?? apps/agentes-ia/
+?? apps/pendencias-widget/
+?? bin/abrir-area-ia.ps1
+?? bin/mb-codex-quota.py
+?? bin/mb-leitura-uso.py
+?? bin/mb-pendencias.py
+?? dados/pendencias.json
+?? dados/pendencias.json.bak
+?? evidence/260916_plataforma/
+?? memoria/cerebro/raw/260915_pesquisa-fundamentos-motion.md
+?? memoria/cerebro/raw/260915_pesquisa-pipeline-visual-ferramentas.md
+?? memoria/cerebro/raw/260915_pesquisa-treinamento-ia-agents.md
+?? memoria/cerebro/raw/260916_pesquisa-cofre-local-ia.md
+?? memoria/cerebro/raw/260916_pesquisa-ux-widget-ambient.md
+?? memoria/cerebro/wiki/260915_ferramentas-visuais-ia-2026.md
+?? memoria/cerebro/wiki/260915_fundamentos-animacao-motion.md
+?? memoria/cerebro/wiki/260915_treinamento-ia-visual-e-agents-confiaveis.md
+?? memoria/cerebro/wiki/260916_amadurecer-uso-e-creditos.md
+?? memoria/cerebro/wiki/260916_como-<USUARIO>-se-enrola.md
+?? motor/referencias/260915_templates-por-necessidade.md
+?? motor/skills/amadurecer/
+?? motor/skills/pendencias/
+?? nul
+?? pets/00_PARA-VOCE/orquestracao1-260913_173014_c5d15279/
+?? pets/00_PARA-VOCE/orquestracao1-260913_174057_12c5f2b0/
+?? pets/MEGABRAIN/modelos/relatorios/260914_narrado/
+?? pets/MEGABRAIN/modelos/relatorios/260914_pop/
+?? pets/MEGABRAIN/modelos/relatorios/PADRAO.md
+?? pets/MEGABRAIN/modelos/visuais/mecanicas/medidor-anel.html
+?? pets/MEGABRAIN/modelos/visuais/mecanicas/spark-barras.html
+?? pets/MEGABRAIN/modelos/visuais/temas/03-vitral.css
+?? pets/MEGABRAIN/referencias/260915_templates-por-necessidade.md
+?? pets/META.md
+?? pets/backend/action_gate.py
+?? pets/backend/brain.py
+?? pets/backend/brain_learning.py
+?? pets/backend/dictation.py
+?? pets/backend/fastpath.py
+?? pets/backend/file_search.py
+?? pets/backend/listen_session.py
+?? pets/backend/pc_actions.py
+?? pets/backend/proactive.py
+?? pets/backend/prompt_builder.py
+?? pets/backend/routing.py
+?? pets/backend/sessions.py
+?? pets/backend/system_probe.py
+?? pets/backend/telemetry.py
+?? pets/backend/voice_style.py
+?? pets/cerebro/raw/
+?? pets/cerebro/wiki/260913_marcelinho-jarvis-pesquisa.md
+?? pets/desktop/Controls/ActionProposalWindow.cs
+?? pets/desktop/Controls/HelpBubbleWindow.cs
+?? pets/desktop/Controls/PixelGhostAutomationPeer.cs
+?? pets/desktop/Controls/ReminderToastWindow.cs
+?? pets/desktop/Controls/SpeechModeControl.xaml
+?? pets/desktop/Controls/SpeechModeControl.xaml.cs
+?? pets/desktop/Services/SpeechModeService.cs
+?? pets/desktop/Services/UiPreferencesService.cs
+?? pets/desktop/Themes/
+?? pets/desktop/Views/
+?? pets/docs/260913_DUPLO-DIAMANTE-JARVIS.md
+?? pets/docs/260913_PEDIDOS-INTEGRACAO.md
+?? pets/docs/260913_PLANO-MARCELINHO-VIVO.md
+?? pets/docs/260913_VISUAL-v2.md
+?? pets/docs/visual-historico/
+?? pets/scripts/bench-local-models.py
+?? pets/scripts/bench_cerebro_casos.json
+?? pets/scripts/bench_cerebro_local.py
+?? pets/scripts/build-desktop-locked.ps1
+?? pets/scripts/build-release-260913.ps1
+?? pets/scripts/deploy-local.ps1
+?? pets/scripts/ghost-usability/
+?? pets/scripts/smoke-frozen-260913.py
+?? pets/scripts/uia_inventory.py
+?? pets/scripts/uia_inventory_README.md
+?? pets/scripts/usability-scenarios.py
+?? pets/tests/test_action_gate.py
+?? pets/tests/test_brain.py
+?? pets/tests/test_brain_learning.py
+?? pets/tests/test_dictation.py
+?? pets/tests/test_fastpath.py
+?? pets/tests/test_file_search.py
+?? pets/tests/test_jarvis_service.py
+?? pets/tests/test_listen_hotfix.py
+?? pets/tests/test_listen_integration.py
+?? pets/tests/test_listen_session.py
+?? pets/tests/test_local_client.py
+?? pets/tests/test_model_policy.py
+?? pets/tests/test_pc_actions.py
+?? pets/tests/test_proactive.py
+?? pets/tests/test_prompt_builder.py
+?? pets/tests/test_routing.py
+?? pets/tests/test_sessions.py
+?? pets/tests/test_telemetry.py
+?? pets/tests/test_voice_style.py

@@ -64,6 +64,10 @@ def achar_projeto(cwd: str | None) -> Path | None:
             return None
         alvo = Path(cwd).resolve()
         raiz = projetos_root()
+        # O marcador mais próximo vence a central: pets é um projeto próprio.
+        for d in (alvo, *alvo.parents):
+            if (d / 'MEGABRAIN').is_dir() or (d / '.mb-origem.json').is_file() or (d / 'META.md').is_file() or (d / 'memoria/estado/META.md').is_file():
+                return d
         if alvo != raiz and raiz in alvo.parents:
             projeto = alvo
             while projeto.parent != raiz:
@@ -118,13 +122,13 @@ def instrucao_alinhamento(meta_existe: bool) -> str:
              " Este projeto ainda não tem META.md — crie a partir de "
              "modelos/META.md da central na abertura da primeira tarefa.")
     return (
-        "### Alinhamento pré-prompt (decisão do <USUARIO>, 260819 — vale pra TODO prompt)\n"
-        "Antes de executar qualquer prompt de tarefa: (1) devolva a versão "
-        "retrabalhada do prompt — objetivo, entregável, critérios verificáveis, "
-        "restrições — e confirme as intenções (máx. 1 pergunta se houver "
-        "ambiguidade); (2) grave o par PEDIDO ORIGINAL / PROMPT RETRABALHADO / "
-        "INTENÇÃO CONFIRMADA no Histórico de intenção do META.md do projeto; "
-        "(3) ao fim da tarefa, preencha RESULTADO ALINHOU." + criar + "\n"
+        "### Alinhamento proporcional (pedido do <USUARIO>, 260916)\n"
+        "Todo prompt passa pela mesma triagem; ative só etapas pertinentes. "
+        "Em entrega não trivial, defina objetivo, entregável, critérios e restrições; "
+        "confirme apenas ambiguidades que mudam o trabalho e ainda não foram respondidas. "
+        "Registre intenção e resultado no contexto da tarefa, sem repetir relatório por resposta. "
+        "Conversa e pergunta simples não exigem plano, confirmação nem arquivo. "
+        "Preserve revisão e verificação necessárias, independentemente da sensibilidade." + criar + "\n"
         "Respostas curtas de continuação (\"sim\", \"continua\", \"ok\") não "
         "passam pelo retrabalho. Pra desligar neste projeto: linha "
         "\"ALINHAMENTO: off\" no META.md."
@@ -152,6 +156,22 @@ def montar(payload: dict, agente: str) -> str:
     injetadas = set(estado.get("injetadas", []))
 
     partes: list[str] = []
+
+    # A triagem é conselho explicável, não uma autorização ou executor.
+    # Uma preferência de projeto pode sobrescrever a central; ausente, herda.
+    try:
+        from mb_triagem import classificar, ler_config, config_path, instrucao, registrar_observacao
+        base = projeto if projeto and config_path(projeto).is_file() else central()
+        conf = ler_config(base)
+        rota = classificar(prompt, conf['sensibilidade'], payload.get('megabrain_context'))
+        partes.append(instrucao(rota))
+        if conf.get('registrar_rotas', False):
+            try:
+                registrar_observacao(projeto or central(), rota, agente)
+            except Exception:
+                partes.append('Observação de rotas indisponível; a triagem acima permanece válida.')
+    except (ValueError, OSError, ImportError) as exc:
+        partes.append('### Triagem MEGABRAIN indisponível\nVerifique contexto, revisão e autorização manualmente; erro de configuração não dispensa etapas. ' + str(exc)[:180])
 
     # META.md + instrução: só na primeira mensagem da sessão.
     meta_existe = False

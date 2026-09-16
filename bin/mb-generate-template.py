@@ -57,6 +57,9 @@ EXCLUIR = {
     # código que os recria, nunca uma fotografia do uso de uma pessoa.
     "dados/",
     ".venv", ".pytest_cache",  # installed dependencies/caches are not source
+    # 260916: rascunhos de sessao (nao sao codigo nem prova) nunca vao pro pacote;
+    # 3 anotacoes com caminho local recusaram a validacao de privacidade nesta data.
+    ".scratch", ".video_agent",
     ".automations", "00_PARA-VOCE",  # personal deliveries and agent transcripts
     "cerebro", "memoria/cerebro",  # v6.2: conteúdo pessoal (wiki/pessoas/raw) nunca sai
     "_arquivo", "90_arquivo",  # v6.2: histórico congelado

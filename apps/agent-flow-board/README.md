@@ -13,14 +13,14 @@ na porta 3001. Nada sai da máquina.
   Primeira vez pode demorar ~45 s (baixa o pacote).
 - **Fecha = para.** Quando a janela do board é fechada, o server para sozinho
   (`bin\mb-board.ps1` monitora a janela).
-- **Parar a força:** `powershell -File "<MEGABRAIN_ROOT>\bin\mb-board.ps1" -Parar`
+- **Parar a força:** `powershell -File "C:/Projetos\MEGA B R A I  N\bin\mb-board.ps1" -Parar`
 
 ## O que entra no quadro
 
 - Sessões **claude** e **codex**: automáticas (hooks já instalados / leitura de rollouts).
 - Sessões **zcode (GLM)**: automáticas para sessões **novas** (hooks registrados no config
   do zcode em 260915; sessões abertas antes não aparecem).
-- Sessões só aparecem se rodarem **dentro de `S:\projetos multi i.a`** (o server é lançado
+- Sessões só aparecem se rodarem **dentro de `C:/Projetos`** (o server é lançado
   nessa raiz de propósito, para cobrir todos os projetos).
 
 ## Arquivos

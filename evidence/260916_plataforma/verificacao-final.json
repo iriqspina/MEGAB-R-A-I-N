@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "medido_em": "2026-09-16T18:35:12.312365-03:00",
+  "estado": "verificado_no_escopo",
+  "baseline": {
+    "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\evidence\\260916_plataforma\\testes-antes.log",
+    "testes": 307,
+    "segundos": 40.394,
+    "falhas": [
+      "test_v6_declara_rota_revisao_e_limites (test_mb_build_plugin_claude.TestContratosDeOrquestracao.test_v6_declara_rota_revisao_e_limites)",
+      "test_nenhum_cmd_da_central_em_lf (test_mb_cmd_crlf.TestCentralReal.test_nenhum_cmd_da_central_em_lf)"
+    ],
+    "sha256": "8d4bba3d7290bae1be81fb458f4dbf26f4370bdfc589a87c26ecac1f861e54c9"
+  },
+  "motor": {
+    "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\evidence\\260916_plataforma\\testes-finais.log",
+    "testes": 335,
+    "segundos": 44.563,
+    "falhas": [
+      "test_v6_declara_rota_revisao_e_limites (test_mb_build_plugin_claude.TestContratosDeOrquestracao.test_v6_declara_rota_revisao_e_limites)",
+      "test_nenhum_cmd_da_central_em_lf (test_mb_cmd_crlf.TestCentralReal.test_nenhum_cmd_da_central_em_lf)"
+    ],
+    "sha256": "0715d9570e8e9f0131a16cadf4d23942ad8a4665d226248d66495b0e4639a3bf"
+  },
+  "automacoes": {
+    "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\evidence\\260916_plataforma\\testes-automations-finais.log",
+    "testes": 80,
+    "segundos": 1.617,
+    "falhas": [],
+    "sha256": "2c1b2d842f5a07956225e6545d612fabd092beb496f1b93ba9070fe310394b6d"
+  },
+  "dashboard": {
+    "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\evidence\\260916_plataforma\\testes-dashboard-finais.log",
+    "testes": 11,
+    "segundos": 0.135,
+    "falhas": [],
+    "sha256": "4d323fee94524e311d935428094ff35be8cd979ac47db69bb39dbb4012e2cbd9"
+  },
+  "novas_falhas_motor": [],
+  "limites": [
+    "As duas falhas preexistentes continuam abertas.",
+    "Teste automatizado e inspeção visual não medem satisfação no uso prolongado.",
+    "Não certifica ativação em todas as sessões e clientes.",
+    "Arquivos antigos não foram movidos nem ocultados."
+  ],
+  "revisao_independente": "S:\\projetos multi i.a\\MEGA B R A I  N\\evidence\\260916_plataforma\\revisao-candidato.md",
+  "revisao_plano_v6": "260916_175608_306d11cb",
+  "navegador": {
+    "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\evidence\\260916_plataforma\\ui-browser.json",
+    "passou": true,
+    "verificacoes": 16,
+    "sha256": "bcb00ae08163ea237a278c77f1534ab9a8bb2942a6e9d16ce1f4181f0a3141d3"
+  },
+  "aplicativo": {
+    "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\evidence\\260916_plataforma\\ui-nativo.json",
+    "passou": true,
+    "verificacoes": 6,
+    "sha256": "5cd461d4ddb95710d559c466128faaed807b246fa1990b98daf43ec696224b4b"
+  },
+  "abertura": {
+    "acao": "launcher nativo --inicio executado; processo dashboard encontrado",
+    "medido_em": "2026-09-16T18:36:10.585460-03:00"
+  }
+}

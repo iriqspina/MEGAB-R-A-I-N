@@ -2,7 +2,7 @@
 # Uso: powershell -File mb-board.ps1            -> abre (server + janela proprio) e
 #                                                  para o server quando a janela fechar
 #       powershell -File mb-board.ps1 -Parar    -> apenas para o server
-param([switch]$Parar)
+param([switch]$Parar, [switch]$SomenteDedup)
 $ErrorActionPreference = 'SilentlyContinue'
 $root = 'S:\projetos multi i.a'
 $port = 3001
@@ -16,7 +16,12 @@ function Stop-Board {
   $conns = netstat -ano | Select-String ":$port\s+.*LISTENING"
   foreach ($c in $conns) {
     $procId = ($c -split '\s+')[-1]
-    if ($procId -match '^\d+$') { taskkill /PID $procId /F | Out-Null }
+    # só mata se o dono da porta for node (evita atingir outro serviço na 3001)
+    if ($procId -match '^\d+$') {
+      $nome = (Get-Process -Id $procId -ErrorAction SilentlyContinue).ProcessName
+      if ($nome -eq 'node') { taskkill /PID $procId /F | Out-Null }
+      else { Write-Host "porta $port ocupada por '$nome' (não-node): não matou" }
+    }
   }
 }
 # o app duplica os hooks a cada relancamento (bug do filtro barra normal x contrabarra)
@@ -76,6 +81,7 @@ function Prune-Discovery {
 }
 
 if ($Parar) { Stop-Board; exit }
+if ($SomenteDedup) { Repair-Hooks; Prune-Discovery; exit }
 
 if (-not (Test-Server)) {
   Prune-Discovery

@@ -1,0 +1,226 @@
+mapa de referências · 12385 arquivos de texto lidos · raiz MEGA B R A I  N
+
+### mb-relatorio-vivo.py — 394 citações em 223 arquivos (caminho: 258 · literal: 47 · prosa: 89)
+  !! bin\mb-relatorio-vivo.py  caminho:8 literal:0 prosa:1
+  !! pets\MEGABRAIN\bin\mb-relatorio-vivo.py  caminho:8 literal:0 prosa:1
+  !! evidence\260916_plataforma\backup\bin\mb-relatorio-vivo.py  caminho:8 literal:0 prosa:1
+  !! .claude\worktrees\silly-cartwright-33a986\bin\mb-relatorio-vivo.py  caminho:6 literal:0 prosa:1
+  !! .claude\worktrees\jolly-sinoussi-831ce5\bin\mb-relatorio-vivo.py  caminho:6 literal:0 prosa:1
+  !! .claude\worktrees\exciting-satoshi-93280f\bin\mb-relatorio-vivo.py  caminho:6 literal:0 prosa:1
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\bin\mb-relatorio-vivo.py  caminho:6 literal:0 prosa:1
+  !! memoria\estado\DECISOES.md  caminho:2 literal:3 prosa:0
+  !! evidence\260910_fechamento-pesquisa\backup\memoria\estado\DECISOES.md  caminho:2 literal:3 prosa:0
+  !! .claude\worktrees\silly-cartwright-33a986\memoria\estado\DECISOES.md  caminho:2 literal:3 prosa:0
+  !! .claude\worktrees\jolly-sinoussi-831ce5\memoria\estado\DECISOES.md  caminho:2 literal:3 prosa:0
+  !! .claude\worktrees\exciting-satoshi-93280f\memoria\estado\DECISOES.md  caminho:2 literal:3 prosa:0
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\memoria\estado\DECISOES.md  caminho:2 literal:3 prosa:0
+  !! bin\mb-relatorio-projeto.py  caminho:2 literal:1 prosa:1
+  !! pets\MEGABRAIN\MEGABRAIN.md  caminho:3 literal:0 prosa:0
+  !! pets\MEGABRAIN\bin\mb-relatorio-projeto.py  caminho:2 literal:1 prosa:1
+  !! memoria\nucleo\MEGABRAIN.md  caminho:3 literal:0 prosa:0
+  !! evidence\260916_plataforma\backup\memoria\nucleo\MEGABRAIN.md  caminho:3 literal:0 prosa:0
+  !! .scratch\260915_relatorio-projeto-pop\mb-relatorio-projeto.antes.py  caminho:2 literal:1 prosa:1
+  !! .claude\worktrees\silly-cartwright-33a986\bin\mb-relatorio-projeto.py  caminho:2 literal:1 prosa:1
+  !! .claude\worktrees\silly-cartwright-33a986\memoria\nucleo\MEGABRAIN.md  caminho:3 literal:0 prosa:0
+  !! .claude\worktrees\jolly-sinoussi-831ce5\bin\mb-relatorio-projeto.py  caminho:2 literal:1 prosa:1
+  !! .claude\worktrees\jolly-sinoussi-831ce5\memoria\nucleo\MEGABRAIN.md  caminho:3 literal:0 prosa:0
+  !! .claude\worktrees\exciting-satoshi-93280f\bin\mb-relatorio-projeto.py  caminho:2 literal:1 prosa:1
+  !! .claude\worktrees\exciting-satoshi-93280f\memoria\nucleo\MEGABRAIN.md  caminho:3 literal:0 prosa:0
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\bin\mb-relatorio-projeto.py  caminho:2 literal:1 prosa:1
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\memoria\nucleo\MEGABRAIN.md  caminho:3 literal:0 prosa:0
+  !! .automations\runs\260915_165420_548975f0\stages\candidate-2\request.json  caminho:3 literal:0 prosa:3
+  !! .megabrain\preflight.json  caminho:2 literal:0 prosa:0
+  !! pets\MEGABRAIN\referencias\260824_skill-completa-v5.md  caminho:2 literal:0 prosa:0
+  !! motor\referencias\260824_skill-completa-v5.md  caminho:2 literal:0 prosa:0
+  !! motor\tests\test_mb_relatorio_pop_tema.py  caminho:0 literal:2 prosa:0
+  !! memoria\nucleo\README.md  caminho:1 literal:1 prosa:0
+  !! 00_PARA-VOCE\260910_v7-megabrain\260910_REVISAO-ASTRA-MEDIUM.md  caminho:2 literal:0 prosa:0
+  !! .claude\worktrees\silly-cartwright-33a986\motor\referencias\260824_skill-completa-v5.md  caminho:2 literal:0 prosa:0
+  !! .claude\worktrees\silly-cartwright-33a986\memoria\nucleo\README.md  caminho:1 literal:1 prosa:0
+  !! .claude\worktrees\jolly-sinoussi-831ce5\motor\referencias\260824_skill-completa-v5.md  caminho:2 literal:0 prosa:0
+  !! .claude\worktrees\jolly-sinoussi-831ce5\memoria\nucleo\README.md  caminho:1 literal:1 prosa:0
+  !! .claude\worktrees\exciting-satoshi-93280f\motor\referencias\260824_skill-completa-v5.md  caminho:2 literal:0 prosa:0
+  !! .claude\worktrees\exciting-satoshi-93280f\memoria\nucleo\README.md  caminho:1 literal:1 prosa:0
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\motor\referencias\260824_skill-completa-v5.md  caminho:2 literal:0 prosa:0
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\memoria\nucleo\README.md  caminho:1 literal:1 prosa:0
+  !! .automations\runs\260915_165420_548975f0\stages\candidate-1\request.json  caminho:2 literal:0 prosa:1
+  !! .automations\runs\260915_165420_548975f0\stages\plan-review-1\request.json  caminho:2 literal:0 prosa:1
+  !! .automations\runs\260915_165420_548975f0\stages\review-1\request.json  caminho:2 literal:0 prosa:1
+  !! .automations\runs\260915_165420_548975f0\stages\review-2\request.json  caminho:2 literal:0 prosa:1
+  !! .scratch\260916_gpt-design-multi.txt  caminho:1 literal:0 prosa:0
+  !! 00_painel\RELATORIO.html  caminho:1 literal:0 prosa:1
+  !! 03_docs\260824_spec-fase2.md  caminho:1 literal:0 prosa:0
+  !! 03_docs\260827_instalar-no-macos.md  caminho:1 literal:0 prosa:0
+  !! bin\mb-preflight.py  caminho:1 literal:0 prosa:0
+  !! bin\mb_registro.py  caminho:1 literal:0 prosa:0
+  !! pets\MEGABRAIN\licoes-megabrain.md  caminho:0 literal:1 prosa:1
+  !! pets\MEGABRAIN\bin\mb-preflight.py  caminho:1 literal:0 prosa:0
+  !! pets\MEGABRAIN\bin\mb_registro.py  caminho:1 literal:0 prosa:0
+  !! pets\MEGABRAIN\dna\indice-licoes.json  caminho:0 literal:1 prosa:0
+  !! pets\MEGABRAIN\skills\megabrain\SKILL.md  caminho:1 literal:0 prosa:0
+  !! pets\MEGABRAIN\modelos\relatorios\PADRAO.md  caminho:1 literal:0 prosa:0
+  !! motor\dna\indice-licoes.json  caminho:0 literal:1 prosa:0
+  !! motor\skills\megabrain\SKILL.md  caminho:1 literal:0 prosa:0
+  !! motor\plugin-megabrain-codex\skills\megabrain\SKILL.md  caminho:1 literal:0 prosa:0
+  !! motor\plugin-megabrain-claude\skills\megabrain\SKILL.md  caminho:1 literal:0 prosa:0
+  !! motor\modelos\relatorios\PADRAO.md  caminho:1 literal:0 prosa:0
+  !! memoria\estado\HANDOFF.md  caminho:1 literal:0 prosa:0
+  !! memoria\nucleo\licoes-megabrain.md  caminho:0 literal:1 prosa:1
+  !! memoria\pendencias\260821-pendencia-nome-metaprotocolo\260821_nota.md  caminho:0 literal:1 prosa:0
+  !! evidence\260916_plataforma\baseline.json  caminho:1 literal:0 prosa:0
+  !! evidence\260916_plataforma\preparar.py  caminho:1 literal:0 prosa:0
+  !! evidence\260916_plataforma\backup\00_painel\RELATORIO.html  caminho:1 literal:0 prosa:1
+  !! evidence\260916_plataforma\backup\motor\skills\megabrain\SKILL.md  caminho:1 literal:0 prosa:0
+  !! evidence\260916_plataforma\backup\memoria\estado\HANDOFF.md  caminho:1 literal:0 prosa:0
+  !! evidence\260916_plataforma\backup\memoria\nucleo\licoes-megabrain.md  caminho:0 literal:1 prosa:1
+  !! 00_PARA-VOCE\260910_v7-megabrain\260910_BRIEF-ASTRA.md  caminho:1 literal:0 prosa:0
+  !! 00_PARA-VOCE\260912_zai-glm\260912_PLANO-ZAI-GLM-V6.md  caminho:0 literal:1 prosa:0
+  !! 00_PARA-VOCE\260915_pop-claro\RELATORIO-tema-claro.html  caminho:1 literal:0 prosa:1
+  !! 00_PARA-VOCE\orquestracao1-260915_165420_548975f0\CANDIDATO.md  caminho:1 literal:0 prosa:0
+  !! 00_PARA-VOCE\orquestracao1-260915_165420_548975f0\PLANO.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\silly-cartwright-33a986\03_docs\260824_spec-fase2.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\silly-cartwright-33a986\03_docs\260827_instalar-no-macos.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\silly-cartwright-33a986\bin\mb-preflight.py  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\silly-cartwright-33a986\bin\mb_registro.py  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\silly-cartwright-33a986\motor\skills\megabrain\SKILL.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\silly-cartwright-33a986\motor\plugin-megabrain-codex\skills\megabrain\SKILL.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\silly-cartwright-33a986\motor\plugin-megabrain-claude\skills\megabrain\SKILL.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\silly-cartwright-33a986\memoria\nucleo\licoes-megabrain.md  caminho:0 literal:1 prosa:1
+  !! .claude\worktrees\silly-cartwright-33a986\memoria\pendencias\260821-pendencia-nome-metaprotocolo\260821_nota.md  caminho:0 literal:1 prosa:0
+  !! .claude\worktrees\jolly-sinoussi-831ce5\03_docs\260824_spec-fase2.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\jolly-sinoussi-831ce5\03_docs\260827_instalar-no-macos.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\jolly-sinoussi-831ce5\bin\mb-preflight.py  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\jolly-sinoussi-831ce5\bin\mb_registro.py  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\jolly-sinoussi-831ce5\motor\skills\megabrain\SKILL.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\jolly-sinoussi-831ce5\motor\plugin-megabrain-codex\skills\megabrain\SKILL.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\jolly-sinoussi-831ce5\motor\plugin-megabrain-claude\skills\megabrain\SKILL.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\jolly-sinoussi-831ce5\memoria\nucleo\licoes-megabrain.md  caminho:0 literal:1 prosa:1
+  !! .claude\worktrees\jolly-sinoussi-831ce5\memoria\pendencias\260821-pendencia-nome-metaprotocolo\260821_nota.md  caminho:0 literal:1 prosa:0
+  !! .claude\worktrees\exciting-satoshi-93280f\03_docs\260824_spec-fase2.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\exciting-satoshi-93280f\03_docs\260827_instalar-no-macos.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\exciting-satoshi-93280f\bin\mb-preflight.py  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\exciting-satoshi-93280f\bin\mb_registro.py  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\exciting-satoshi-93280f\motor\skills\megabrain\SKILL.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\exciting-satoshi-93280f\motor\plugin-megabrain-codex\skills\megabrain\SKILL.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\exciting-satoshi-93280f\motor\plugin-megabrain-claude\skills\megabrain\SKILL.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\exciting-satoshi-93280f\memoria\nucleo\licoes-megabrain.md  caminho:0 literal:1 prosa:1
+  !! .claude\worktrees\exciting-satoshi-93280f\memoria\pendencias\260821-pendencia-nome-metaprotocolo\260821_nota.md  caminho:0 literal:1 prosa:0
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\03_docs\260824_spec-fase2.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\03_docs\260827_instalar-no-macos.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\bin\mb-preflight.py  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\bin\mb_registro.py  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\motor\skills\megabrain\SKILL.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\motor\plugin-megabrain-codex\skills\megabrain\SKILL.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\motor\plugin-megabrain-claude\skills\megabrain\SKILL.md  caminho:1 literal:0 prosa:0
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\memoria\nucleo\licoes-megabrain.md  caminho:0 literal:1 prosa:1
+  !! .claude\worktrees\agent-a08b15b3b40ae20c9\memoria\pendencias\260821-pendencia-nome-metaprotocolo\260821_nota.md  caminho:0 literal:1 prosa:0
+  !! .automations\briefs\260915_165409_16beb832.json  caminho:1 literal:0 prosa:2
+  !! .automations\briefs\260915_165420_82fa163c.json  caminho:1 literal:0 prosa:2
+  !! .automations\briefs\260916_165340_a61b59c5.json  caminho:1 literal:0 prosa:0
+  !! .automations\briefs\260916_165351_ad797b98.json  caminho:1 literal:0 prosa:0
+  !! .automations\briefs\260916_165957_933003cc.json  caminho:1 literal:0 prosa:0
+  !! .automations\briefs\260916_170155_0aa67f9f.json  caminho:1 literal:0 prosa:0
+  !! .automations\briefs\260916_170300_bf1a5dbc.json  caminho:1 literal:0 prosa:0
+  !! .automations\briefs\260916_170321_72f82556.json  caminho:1 literal:0 prosa:0
+  !! .automations\briefs\260916_170957_47514329.json  caminho:1 literal:0 prosa:0
+  !! .automations\briefs\260916_171004_f21087b5.json  caminho:1 literal:0 prosa:0
+  !! .automations\briefs\260916_173125_0eb93415.json  caminho:1 literal:0 prosa:0
+  !! .automations\briefs\260916_173133_363fa29d.json  caminho:1 literal:0 prosa:0
+  !! .automations\briefs\260916_175552_7aed9ed6.json  caminho:1 literal:0 prosa:0
+  !! .automations\briefs\260916_175608_827aff93.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260915_165420_548975f0\candidate.md  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260915_165420_548975f0\manifest.json  caminho:1 literal:0 prosa:2
+  !! .automations\runs\260915_165420_548975f0\plan.md  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260915_165420_548975f0\sources.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_165351_4ce0dc04\manifest.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_165351_4ce0dc04\sources.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_165957_0ee67652\manifest.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_165957_0ee67652\sources.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_170321_ec312deb\manifest.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_170321_ec312deb\sources.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_171004_2a3bb370\manifest.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_171004_2a3bb370\sources.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_173133_154ddcda\manifest.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_173133_154ddcda\sources.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_175608_306d11cb\manifest.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_175608_306d11cb\sources.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_175608_306d11cb\stages\candidate-1\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_175608_306d11cb\stages\plan-1\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_175608_306d11cb\stages\plan-review-1\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_175608_306d11cb\stages\review-1\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_173133_154ddcda\stages\candidate-1\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_173133_154ddcda\stages\candidate-2\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_173133_154ddcda\stages\plan-1\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_173133_154ddcda\stages\plan-2\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_173133_154ddcda\stages\plan-review-1\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_173133_154ddcda\stages\plan-review-2\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_173133_154ddcda\stages\review-1\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_173133_154ddcda\stages\review-2\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_171004_2a3bb370\stages\plan-1\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_171004_2a3bb370\stages\plan-2\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_171004_2a3bb370\stages\plan-3\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_171004_2a3bb370\stages\plan-review-1\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_171004_2a3bb370\stages\plan-review-2\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_171004_2a3bb370\stages\plan-review-3\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_170321_ec312deb\stages\plan-1\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_170321_ec312deb\stages\plan-2\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_170321_ec312deb\stages\plan-3\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_170321_ec312deb\stages\plan-review-1\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_170321_ec312deb\stages\plan-review-2\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_170321_ec312deb\stages\plan-review-3\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_165957_0ee67652\stages\candidate-1\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_165957_0ee67652\stages\candidate-2\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_165957_0ee67652\stages\plan-1\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_165957_0ee67652\stages\plan-2\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_165957_0ee67652\stages\plan-review-1\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_165957_0ee67652\stages\plan-review-2\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_165957_0ee67652\stages\review-1\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_165957_0ee67652\stages\review-2\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_165351_4ce0dc04\stages\candidate-1\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_165351_4ce0dc04\stages\candidate-2\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_165351_4ce0dc04\stages\plan-1\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_165351_4ce0dc04\stages\plan-2\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_165351_4ce0dc04\stages\plan-3\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_165351_4ce0dc04\stages\plan-review-1\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_165351_4ce0dc04\stages\plan-review-2\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_165351_4ce0dc04\stages\plan-review-3\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_165351_4ce0dc04\stages\review-1\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260916_165351_4ce0dc04\stages\review-2\request.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260915_165420_548975f0\stages\candidate-1\last-message.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260915_165420_548975f0\stages\candidate-1\response.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260915_165420_548975f0\stages\candidate-2\last-message.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260915_165420_548975f0\stages\candidate-2\response.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260915_165420_548975f0\stages\plan-1\last-message.json  caminho:1 literal:0 prosa:0
+  !! .automations\runs\260915_165420_548975f0\stages\plan-1\request.json  caminho:1 literal:0 prosa:1
+  !! .automations\runs\260915_165420_548975f0\stages\plan-1\response.json  caminho:1 literal:0 prosa:0
+     .mb-lock\S-projetos-multi-i.a-MEGA-B-R-A-I-N-bin-mb-relatorio-vivo.py.json  caminho:0 literal:0 prosa:1
+     .scratch\260916_gpt2-cotas-diag.txt  caminho:0 literal:0 prosa:9
+     01_acoes\01_ABRIR-RELATORIO.cmd  caminho:0 literal:0 prosa:2
+     01_acoes\11_enviar-pro-github.cmd  caminho:0 literal:0 prosa:1
+     03_docs\260824_megabrain-do-zero.html  caminho:0 literal:0 prosa:2
+     pets\MEGABRAIN\modelos\visuais\exemplos.json  caminho:0 literal:0 prosa:1
+     motor\modelos\visuais\exemplos.json  caminho:0 literal:0 prosa:1
+     .scratch\260915_relatorio-projeto-pop\teste-curriculo-megabrain.html  caminho:0 literal:0 prosa:1
+     .scratch\260915_relatorio-projeto-pop\teste-curriculo-padrao.html  caminho:0 literal:0 prosa:1
+     .claude\worktrees\silly-cartwright-33a986\01_acoes\01_ABRIR-RELATORIO.cmd  caminho:0 literal:0 prosa:2
+     .claude\worktrees\silly-cartwright-33a986\01_acoes\11_enviar-pro-github.cmd  caminho:0 literal:0 prosa:1
+     .claude\worktrees\silly-cartwright-33a986\03_docs\260824_megabrain-do-zero.html  caminho:0 literal:0 prosa:2
+     .claude\worktrees\silly-cartwright-33a986\motor\modelos\visuais\exemplos.json  caminho:0 literal:0 prosa:1
+     .claude\worktrees\jolly-sinoussi-831ce5\01_acoes\01_ABRIR-RELATORIO.cmd  caminho:0 literal:0 prosa:2
+     .claude\worktrees\jolly-sinoussi-831ce5\01_acoes\11_enviar-pro-github.cmd  caminho:0 literal:0 prosa:1
+     .claude\worktrees\jolly-sinoussi-831ce5\03_docs\260824_megabrain-do-zero.html  caminho:0 literal:0 prosa:2
+     .claude\worktrees\jolly-sinoussi-831ce5\motor\modelos\visuais\exemplos.json  caminho:0 literal:0 prosa:1
+     .claude\worktrees\exciting-satoshi-93280f\01_acoes\01_ABRIR-RELATORIO.cmd  caminho:0 literal:0 prosa:2
+     .claude\worktrees\exciting-satoshi-93280f\01_acoes\11_enviar-pro-github.cmd  caminho:0 literal:0 prosa:1
+     .claude\worktrees\exciting-satoshi-93280f\03_docs\260824_megabrain-do-zero.html  caminho:0 literal:0 prosa:2
+     .claude\worktrees\exciting-satoshi-93280f\motor\modelos\visuais\exemplos.json  caminho:0 literal:0 prosa:1
+     .claude\worktrees\agent-a08b15b3b40ae20c9\01_acoes\01_ABRIR-RELATORIO.cmd  caminho:0 literal:0 prosa:2
+     .claude\worktrees\agent-a08b15b3b40ae20c9\01_acoes\11_enviar-pro-github.cmd  caminho:0 literal:0 prosa:1
+     .claude\worktrees\agent-a08b15b3b40ae20c9\03_docs\260824_megabrain-do-zero.html  caminho:0 literal:0 prosa:2
+     .claude\worktrees\agent-a08b15b3b40ae20c9\motor\modelos\visuais\exemplos.json  caminho:0 literal:0 prosa:1
+     .automations\briefs\260915_041632_6ecc6fbd.json  caminho:0 literal:0 prosa:1
+     .automations\briefs\260915_padronizacao-relatorios.json  caminho:0 literal:0 prosa:1
+     .automations\briefs\260915_pop-tema-claro.json  caminho:0 literal:0 prosa:2
+     .automations\runs\260915_165420_548975f0\stages\plan-review-1\response.json  caminho:0 literal:0 prosa:1
+     .automations\runs\260915_165420_548975f0\stages\review-1\response.json  caminho:0 literal:0 prosa:2
+     .automations\runs\260915_165420_548975f0\stages\review-2\response.json  caminho:0 literal:0 prosa:1

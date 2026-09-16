@@ -1,0 +1,32 @@
+[83244:86108:0916/183327.464:ERROR:../../../qtwebengine/src/3rdparty/chromium/gpu/ipc/service/gpu_channel_manager.cc:920] Failed to create GLES3 context, fallback to GLES2.
+[83244:86108:0916/183327.464:ERROR:../../../qtwebengine/src/3rdparty/chromium/gpu/ipc/service/gpu_channel_manager.cc:931] ContextResult::kFatalFailure: Failed to create shared context for virtualization.
+[83244:86108:0916/183327.539:ERROR:../../../qtwebengine/src/3rdparty/chromium/gpu/ipc/service/gpu_channel_manager.cc:920] Failed to create GLES3 context, fallback to GLES2.
+[83244:86108:0916/183327.539:ERROR:../../../qtwebengine/src/3rdparty/chromium/gpu/ipc/service/gpu_channel_manager.cc:931] ContextResult::kFatalFailure: Failed to create shared context for virtualization.
+[83244:86108:0916/183327.539:ERROR:../../../qtwebengine/src/3rdparty/chromium/gpu/ipc/service/gpu_channel_manager.cc:920] Failed to create GLES3 context, fallback to GLES2.
+[83244:86108:0916/183327.539:ERROR:../../../qtwebengine/src/3rdparty/chromium/gpu/ipc/service/gpu_channel_manager.cc:931] ContextResult::kFatalFailure: Failed to create shared context for virtualization.
+[
+  {
+    "name": "entrada no app",
+    "pass": true
+  },
+  {
+    "name": "controle grava preferencia real",
+    "pass": true
+  },
+  {
+    "name": "pasta encaminhada ao aplicativo do sistema",
+    "pass": true
+  },
+  {
+    "name": "entrega abriu dentro do app",
+    "pass": true
+  },
+  {
+    "name": "timer preserva leitura",
+    "pass": true
+  },
+  {
+    "name": "botao retorna ao inicio",
+    "pass": true
+  }
+]

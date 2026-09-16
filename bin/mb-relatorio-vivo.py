@@ -291,6 +291,10 @@ def secao_para_voce(c: Path) -> list[str]:
     """Linhas da seção '## PARA VOCÊ' (ou 'PARA O <nome>') do HANDOFF.md —
     o que o humano precisa fazer agora, separado do que é pro próximo agente."""
     texto = u.safe_read_text(u.achar(c, "HANDOFF.md")) or ""
+    vigente = re.search(r'<!-- MB:PARA-VOCE:ATUAL:INICIO -->(.*?)<!-- MB:PARA-VOCE:ATUAL:FIM -->', texto, re.DOTALL)
+    if vigente:
+        # Bloco explícito inclusive vazio impede recuperar aprovação histórica.
+        texto = vigente.group(1)
     m = re.search(r"^##+\s*PARA (?:VOC[EÊ]|O USU[AÁ]RIO|O \w+)\b[^\n]*\n(.*?)(?=^##|\Z)",
                   texto, re.MULTILINE | re.DOTALL | re.IGNORECASE)
     if not m:

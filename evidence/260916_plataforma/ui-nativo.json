@@ -1,0 +1,29 @@
+{
+  "pass": true,
+  "tests": [
+    {
+      "name": "entrada no app",
+      "pass": true
+    },
+    {
+      "name": "controle grava preferencia real",
+      "pass": true
+    },
+    {
+      "name": "pasta encaminhada ao aplicativo do sistema",
+      "pass": true
+    },
+    {
+      "name": "entrega abriu dentro do app",
+      "pass": true
+    },
+    {
+      "name": "timer preserva leitura",
+      "pass": true
+    },
+    {
+      "name": "botao retorna ao inicio",
+      "pass": true
+    }
+  ]
+}

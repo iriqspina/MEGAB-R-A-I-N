@@ -39,7 +39,7 @@ O nível segue o pedido, não a vontade do agente. O usuário pode forçar com
 | **N2** | diagnóstico técnico (log, erro, problema de PC) | 📋 Informações (causa raiz, com evidência) / 🛠️ Ações (roteiro numerado, do mais simples ao mais avançado) — formato fixo já vigente |
 | **N3** | documento, peça, relatório, deck | o artefato vai para arquivo; no chat só TL;DR + caminho + o que precisa de decisão do usuário |
 
-N0 não roda gate de entrega. N1 pra cima roda os gates do megabrain
+Todo pedido passa pela triagem proporcional (`260916_plataforma-contrato.md`). N0 não cria ritual de entrega. N1 pra cima roda os gates do megabrain
 (ENQUADRAR → AUDITAR → VERIFICAR) porque há artefato em jogo.
 
 ## Estrutura dentro de qualquer nível
@@ -51,8 +51,8 @@ N0 não roda gate de entrega. N1 pra cima roda os gates do megabrain
   na mesma linha.
 - Tabela só quando compara duas dimensões ou mais; caso contrário, prosa
   curta ou bullets.
-- Código, comando e caminho em backtick; referência de lugar em
-  `path:linha`.
+- Código e comando em backtick. Destino em link com caminho absoluto testado;
+  pasta completa em bloco de código quando o usuário precisa copiar.
 - Proibido: parágrafo final que repete o TL;DR; "espero que ajude"; hedge
   empilhado; "não é apenas X, é Y"; regra de três decorativa; parágrafos
   todos do mesmo tamanho.

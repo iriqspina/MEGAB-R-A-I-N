@@ -22,6 +22,8 @@ def test_failed_attempt_never_claims_success_and_waits_for_all(window):
     failure = dict(provider='codex', status='error', windows=[], fetched_at=None, source=None, message='rede')
     window._on_snapshot('codex', failure)
     assert window._refresh_status.text() == 'Consultando…'
+    window._on_snapshot('codex_gpt2', {**failure, 'provider': 'codex_gpt2'})
+    assert window._refresh_status.text() == 'Consultando…'
     window._on_snapshot('claude', {**failure, 'provider': 'claude'})
     assert window._refresh_status.text() == 'Consultando…'
     window._on_snapshot('zai', {**failure, 'provider': 'zai'})
@@ -46,6 +48,8 @@ def test_hiding_inflight_provider_does_not_leave_busy_indicator(window):
     # Spark lê da mesma fonte: com ele visível, a consulta do Codex continua valendo.
     window._toggle_provider_visibility('codex', False)
     window._toggle_provider_visibility('spark', False)
+    # gpt2 é fonte própria: escondido em flight, sai da espera como o Codex.
+    window._toggle_provider_visibility('codex_gpt2', False)
     window._on_snapshot('claude', demo_snapshot('claude'))
     window._on_snapshot('zai', demo_snapshot('zai'))
     assert window._refresh_status.text() == 'Tentativa agora'

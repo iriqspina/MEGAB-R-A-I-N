@@ -1,0 +1,230 @@
+{
+  "schema_version": 1,
+  "medido_em": "2026-09-16T18:35:12.312365-03:00",
+  "arquivos": [
+    {
+      "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\00_painel\\RELATORIO.html",
+      "sha256_final": "dc4c2d15d8ed22b2543210888cbcb9eeb16df53ff978b43c5658c16af2136a40",
+      "sha256_inicial": "9725b78f43dac469bee4d896445d3e606835150520d0be8c086722e1dd76f1dd",
+      "backup": "S:\\projetos multi i.a\\MEGA B R A I  N\\evidence\\260916_plataforma\\backup\\00_painel\\RELATORIO.html",
+      "observacao": "Estado ao finalizar; conferir edição posterior antes de reverter."
+    },
+    {
+      "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\01_acoes\\00_ABRIR-MEGABRAIN.vbs",
+      "sha256_final": "55291b97884e816c903a93cb72183ca32e37c84972ed6f6317812fad1f2d2f62",
+      "sha256_inicial": null,
+      "backup": null,
+      "observacao": "Estado ao finalizar; conferir edição posterior antes de reverter."
+    },
+    {
+      "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\INDICE.md",
+      "sha256_final": "466c3d17d9d877671e1da5a99509d4281aebbd40a9a55664435a7a767b81a33e",
+      "sha256_inicial": "d96ce5d6f67406f77ab2b4c6406185e3b7f53601a27a84d3cbf04e5ccd262be1",
+      "backup": "S:\\projetos multi i.a\\MEGA B R A I  N\\evidence\\260916_plataforma\\backup\\INDICE.md",
+      "observacao": "Estado ao finalizar; conferir edição posterior antes de reverter."
+    },
+    {
+      "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\apps\\automations\\automations.py",
+      "sha256_final": "e4b47e81111728c6f14236b6419629157421ff6287f7a0477b1ab3d9fc35315b",
+      "sha256_inicial": "927e97f13a58c952ce222db72f670923db9b9dff33953eede6c056622896c185",
+      "backup": "S:\\projetos multi i.a\\MEGA B R A I  N\\evidence\\260916_plataforma\\backup\\apps\\automations\\automations.py",
+      "observacao": "Estado ao finalizar; conferir edição posterior antes de reverter."
+    },
+    {
+      "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\apps\\automations\\tests\\test_route_health_260916.py",
+      "sha256_final": "330cd4d895d74919cda02c743fc7d579058df03972e164be0ff9e6d2a370a5dc",
+      "sha256_inicial": null,
+      "backup": null,
+      "observacao": "Estado ao finalizar; conferir edição posterior antes de reverter."
+    },
+    {
+      "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\apps\\megabrain-dashboard\\dashboard.py",
+      "sha256_final": "719afac35acf23fbe986486f4a7a2d219a1a4b7dab660f87f082088698364071",
+      "sha256_inicial": "95a108787da56000b9077ffec519a040708e418a5901fe3e842bdad7db0317f5",
+      "backup": "S:\\projetos multi i.a\\MEGA B R A I  N\\evidence\\260916_plataforma\\backup\\apps\\megabrain-dashboard\\dashboard.py",
+      "observacao": "Estado ao finalizar; conferir edição posterior antes de reverter."
+    },
+    {
+      "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\bin\\mb-catalogo.py",
+      "sha256_final": "27db45f1a69354bbfa89ef5399f485c3f44ddda4d1e7fa9838c0db25f18835a0",
+      "sha256_inicial": null,
+      "backup": null,
+      "observacao": "Estado ao finalizar; conferir edição posterior antes de reverter."
+    },
+    {
+      "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\bin\\mb-contexto.py",
+      "sha256_final": "fe61cf2b1a59232f5be00be41736759beb896c1c62b38fd0b50d9c9608a57a96",
+      "sha256_inicial": "80934961f15b0775dd0dc37ba019696682cc23454cc9bf0074f1e279d2a5ff96",
+      "backup": "S:\\projetos multi i.a\\MEGA B R A I  N\\evidence\\260916_plataforma\\backup\\bin\\mb-contexto.py",
+      "observacao": "Estado ao finalizar; conferir edição posterior antes de reverter."
+    },
+    {
+      "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\bin\\mb-entrega.py",
+      "sha256_final": "e71ee5604be6015b7c3abc5725598b2ab644d2076c3ae329bad277e2e725d202",
+      "sha256_inicial": "9982a17ba1beb88c1e32d9eca9ac859973e8e494e11959cb73ad90c04ffd3748",
+      "backup": "S:\\projetos multi i.a\\MEGA B R A I  N\\evidence\\260916_plataforma\\backup\\bin\\mb-entrega.py",
+      "observacao": "Estado ao finalizar; conferir edição posterior antes de reverter."
+    },
+    {
+      "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\bin\\mb-entregas-registro.py",
+      "sha256_final": "35641f0b656bf2625d87724ab85dcfccd5510204efbf4871b5b49efe2d2a68b2",
+      "sha256_inicial": null,
+      "backup": null,
+      "observacao": "Estado ao finalizar; conferir edição posterior antes de reverter."
+    },
+    {
+      "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\bin\\mb-relatorio-vivo.py",
+      "sha256_final": "7d96fa94ed054bc301011ec86ca5c04a1a16ecc36aed2c575090be5d41eac353",
+      "sha256_inicial": "4508b6d52eb8a7bf5fbd225457469a6eab2f7ad1eb91d258e0ad762134140bca",
+      "backup": "S:\\projetos multi i.a\\MEGA B R A I  N\\evidence\\260916_plataforma\\backup\\bin\\mb-relatorio-vivo.py",
+      "observacao": "Estado ao finalizar; conferir edição posterior antes de reverter."
+    },
+    {
+      "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\bin\\mb-triagem.py",
+      "sha256_final": "e7690d02a7e5a37c3fb28b0b6d52d0f69f7dd37038de20f1d8dbc60f43c298e0",
+      "sha256_inicial": null,
+      "backup": null,
+      "observacao": "Estado ao finalizar; conferir edição posterior antes de reverter."
+    },
+    {
+      "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\bin\\mb_catalogo.py",
+      "sha256_final": "5c72117e8d23ed3446d9a45b9b184c7173c94b1db5e441ca551a4b2ec565c28d",
+      "sha256_inicial": null,
+      "backup": null,
+      "observacao": "Estado ao finalizar; conferir edição posterior antes de reverter."
+    },
+    {
+      "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\bin\\mb_entregas_registro.py",
+      "sha256_final": "73ce08bc26998420dc9df22caa4f1d3b3a61b9c67cb3b49f4d5685a2a37cb44f",
+      "sha256_inicial": null,
+      "backup": null,
+      "observacao": "Estado ao finalizar; conferir edição posterior antes de reverter."
+    },
+    {
+      "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\bin\\mb_triagem.py",
+      "sha256_final": "68c81f8e6c984f9b9b76304903798d5a48f821c7e6d7a48c31274dac97333dc2",
+      "sha256_inicial": null,
+      "backup": null,
+      "observacao": "Estado ao finalizar; conferir edição posterior antes de reverter."
+    },
+    {
+      "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\dados\\plataforma-backlog.json",
+      "sha256_final": "9ac68cb7c38da8f37fea33f25719463d661a29feaf2e61c957f05b75ea1d0feb",
+      "sha256_inicial": null,
+      "backup": null,
+      "observacao": "Estado ao finalizar; conferir edição posterior antes de reverter."
+    },
+    {
+      "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\dados\\preferencias-megabrain.json",
+      "sha256_final": "56f5c55d669be473e79060fae7b593bdca269d51516ebfca2a034dc3873fca29",
+      "sha256_inicial": null,
+      "backup": null,
+      "observacao": "Estado ao finalizar; conferir edição posterior antes de reverter."
+    },
+    {
+      "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\licoes-megabrain.md",
+      "sha256_final": "49d059001bff0e24364dc7c1971801bf8b50f523174dc5fea15311e869653bbd",
+      "sha256_inicial": "fd8a532e70f63482c95c9db698af8771f798dff8b319c0d5f999cb5a0c5601cb",
+      "backup": "S:\\projetos multi i.a\\MEGA B R A I  N\\evidence\\260916_plataforma\\backup\\licoes-megabrain.md",
+      "observacao": "Estado ao finalizar; conferir edição posterior antes de reverter."
+    },
+    {
+      "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\memoria\\estado\\ESTADO.md",
+      "sha256_final": "426c2c2ce56c827da6982de4e91ba1f420ce4c6a74b85cf9e785d4da3491b6d0",
+      "sha256_inicial": "ac01fdd5543ce4c6e2bc4f239e8bb362b0016cd1045da1f44173c336f503b74b",
+      "backup": "S:\\projetos multi i.a\\MEGA B R A I  N\\evidence\\260916_plataforma\\backup\\memoria\\estado\\ESTADO.md",
+      "observacao": "Estado ao finalizar; conferir edição posterior antes de reverter."
+    },
+    {
+      "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\memoria\\estado\\HANDOFF.md",
+      "sha256_final": "5bc3a382190dbc00ce76fb5592ef57974bf2cf8de794c86a0996a4164e900249",
+      "sha256_inicial": "8a9d6d8a4b0e25ce055ba9839ef215a11f000c9c1089b16d9594c742d85fdcfe",
+      "backup": "S:\\projetos multi i.a\\MEGA B R A I  N\\evidence\\260916_plataforma\\backup\\memoria\\estado\\HANDOFF.md",
+      "observacao": "Estado ao finalizar; conferir edição posterior antes de reverter."
+    },
+    {
+      "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\memoria\\identidade\\260810_memoria-pessoal.md",
+      "sha256_final": "10216c839eccbf3541f471892553905c04559a76bb536550c0f0edda78c6a0e8",
+      "sha256_inicial": "20578423d23ea1efd0629adfc57949ded61541facb252315d2a94afe05291527",
+      "backup": "S:\\projetos multi i.a\\MEGA B R A I  N\\evidence\\260916_plataforma\\backup\\memoria\\identidade\\260810_memoria-pessoal.md",
+      "observacao": "Estado ao finalizar; conferir edição posterior antes de reverter."
+    },
+    {
+      "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\memoria\\nucleo\\licoes-megabrain.md",
+      "sha256_final": "b55ed9f44f8fa55e8ec40decbc302e89632c8c04705f9cbf97f00e997ea753ad",
+      "sha256_inicial": "9261e679c843c016fea0aaf7f6647f8df479a1d4620e0dceb1ebe2b2db282088",
+      "backup": "S:\\projetos multi i.a\\MEGA B R A I  N\\evidence\\260916_plataforma\\backup\\memoria\\nucleo\\licoes-megabrain.md",
+      "observacao": "Estado ao finalizar; conferir edição posterior antes de reverter."
+    },
+    {
+      "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\motor\\modelos\\260916_ENTREGA.json",
+      "sha256_final": "c43ddf15698202876bf64c97f4b5b74fb7faad4202ac32f7fb718c96e88dce97",
+      "sha256_inicial": null,
+      "backup": null,
+      "observacao": "Estado ao finalizar; conferir edição posterior antes de reverter."
+    },
+    {
+      "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\motor\\modelos\\260916_ESTADO-ATUAL.md",
+      "sha256_final": "b9c22e3d1284f1ea1426169d9192661f93030369ae772498a4d85077bcd3310d",
+      "sha256_inicial": null,
+      "backup": null,
+      "observacao": "Estado ao finalizar; conferir edição posterior antes de reverter."
+    },
+    {
+      "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\motor\\referencias\\260818_padrao-resposta.md",
+      "sha256_final": "94b3ab82e7a8725287df364d35c028358a2e7fd0d49e2b90ea7be0c09247ba7e",
+      "sha256_inicial": "40edbec1b92c74cfa7353ff9faa8f59b922dc05f85366995b7152b43a5e14b3f",
+      "backup": "S:\\projetos multi i.a\\MEGA B R A I  N\\evidence\\260916_plataforma\\backup\\motor\\referencias\\260818_padrao-resposta.md",
+      "observacao": "Estado ao finalizar; conferir edição posterior antes de reverter."
+    },
+    {
+      "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\motor\\referencias\\260916_plataforma-contrato.md",
+      "sha256_final": "46f61687ce81bf3aa6a33d9839d72bf0c7dbd59278146a2b32e2e6279a2efc29",
+      "sha256_inicial": null,
+      "backup": null,
+      "observacao": "Estado ao finalizar; conferir edição posterior antes de reverter."
+    },
+    {
+      "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\motor\\skills\\megabrain\\SKILL.md",
+      "sha256_final": "2fff19e017d2758db75483d65138c059c631de5cd75bfba084b42affeceaec06",
+      "sha256_inicial": "48068bfc28e4b0bb9afd6957939e6232e5cd867d0079188fa80c173e2f55962d",
+      "backup": "S:\\projetos multi i.a\\MEGA B R A I  N\\evidence\\260916_plataforma\\backup\\motor\\skills\\megabrain\\SKILL.md",
+      "observacao": "Estado ao finalizar; conferir edição posterior antes de reverter."
+    },
+    {
+      "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\motor\\tests\\test_mb_catalogo.py",
+      "sha256_final": "987ba9f6cee1af8b131b0be197a069c09b44dd3dc5688a5c9202cb49149024e6",
+      "sha256_inicial": null,
+      "backup": null,
+      "observacao": "Estado ao finalizar; conferir edição posterior antes de reverter."
+    },
+    {
+      "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\motor\\tests\\test_mb_plataforma_compat.py",
+      "sha256_final": "f6bd38e69f0e9d089f7f896a74db9d9a29d3a180126ffff100fa03dfb2cc2376",
+      "sha256_inicial": null,
+      "backup": null,
+      "observacao": "Estado ao finalizar; conferir edição posterior antes de reverter."
+    },
+    {
+      "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\motor\\tests\\test_mb_plataforma_destinos.py",
+      "sha256_final": "b60296007dc2d5bfadc8a52026531ae19cb27e6379e3db0b6399c6b96c2f6932",
+      "sha256_inicial": null,
+      "backup": null,
+      "observacao": "Estado ao finalizar; conferir edição posterior antes de reverter."
+    },
+    {
+      "arquivo": "S:\\projetos multi i.a\\MEGA B R A I  N\\motor\\tests\\test_mb_triagem.py",
+      "sha256_final": "c1d3ff413bb37d4f7da88916afa98f434002adbc71cb3b365723d15cb5f5b6ff",
+      "sha256_inicial": null,
+      "backup": null,
+      "observacao": "Estado ao finalizar; conferir edição posterior antes de reverter."
+    }
+  ],
+  "sincronizacoes": "S:\\projetos multi i.a\\MEGA B R A I  N\\evidence\\260916_plataforma\\sincronizacao.json",
+  "gerados": [
+    "00_PARA-VOCE/INICIO.html",
+    "00_painel/RELATORIO.html",
+    "dados/estado.json"
+  ],
+  "restauracao": "REVERTER.md"
+}

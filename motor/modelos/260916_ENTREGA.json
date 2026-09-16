@@ -1,0 +1,13 @@
+{
+  "id": "substituir-id-unico",
+  "titulo": "Nome claro da entrega",
+  "tarefa": "Problema que esta entrega resolve",
+  "sessao": "Cliente e identificador da sessão",
+  "pedido_inicial": "Resumo do objetivo inicial; sem transcrever conversa privada",
+  "pedido_atual": "Resumo do pedido vigente",
+  "etapa": "Etapa comprovada; não inventar porcentagem ou total",
+  "pasta": "00_PARA-VOCE/YYMMDD_tarefa",
+  "arquivo": "00_PARA-VOCE/YYMMDD_tarefa/YYMMDD_ENTREGA.html",
+  "estado": "em_revisao",
+  "proxima_acao": "Ação concreta; não presumir necessidade de aprovação humana"
+}

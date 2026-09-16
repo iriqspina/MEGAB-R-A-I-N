@@ -6,6 +6,10 @@ _DEMO_WINDOWS = {
         {"id": "codex:primary", "label": "codex · 7 d", "used_percent": 42.0, "resets_at": "2026-10-05T00:00:00Z"},
         {"id": "codex_bengalfox:primary", "label": "GPT-5.3-Codex-Spark · 5 h", "used_percent": 8.0, "resets_at": "2026-09-14T21:00:00Z"},
     ],
+    "codex_gpt2": [
+        {"id": "codex:primary", "label": "5 h", "used_percent": 3.0, "resets_at": "2026-09-14T21:00:00Z"},
+        {"id": "codex:secondary", "label": "Semana", "used_percent": 1.0, "resets_at": "2026-09-20T00:00:00Z"},
+    ],
     "claude": [
         {"id": "session", "label": "Sessão 5h", "used_percent": 61.0, "resets_at": "2026-09-14T21:00:00Z"},
         {"id": "week", "label": "7 dias", "used_percent": 78.0, "resets_at": "2026-09-20T00:00:00Z"},

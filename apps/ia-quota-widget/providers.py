@@ -50,6 +50,7 @@ __all__ = ["PROVIDER_IDS", "PROVIDER_LABELS", "fetch_provider", "fetch_all"]
 
 PROVIDER_IDS: tuple[str, ...] = (
     "codex",
+    "codex_gpt2",
     "claude",
     "zai",
     "gemini_cli",
@@ -59,12 +60,17 @@ PROVIDER_IDS: tuple[str, ...] = (
 
 PROVIDER_LABELS: dict[str, str] = {
     "codex": "Codex",
+    "codex_gpt2": "Codex GPT2",
     "claude": "Claude",
     "zai": "Z.ai",
     "gemini_cli": "Gemini CLI",
     "antigravity": "Antigravity",
     "gemini_web": "Gemini (app)",
 }
+
+# Segunda conta OpenAI (Plus) em CODEX_HOME próprio — a conta principal continua
+# sendo o ~/.codex default. O app-server resolve o home pelo env do processo pai.
+CODEX_GPT2_HOME = Path.home() / ".codex-gpt2"
 
 DEFAULT_TIMEOUT = 12.0
 _SUBPROCESS_TIMEOUT = 25.0
@@ -329,8 +335,14 @@ CODEX_STEPS: tuple[tuple[int | None, dict[str, Any]], ...] = (
 )
 
 
-def run_codex_app_server(binary: str, timeout: float = _SUBPROCESS_TIMEOUT) -> str:
+def run_codex_app_server(
+    binary: str, timeout: float = _SUBPROCESS_TIMEOUT, env: dict[str, str] | None = None
+) -> str:
     """Sobe o app-server, conversa por stdio e devolve o stdout bruto.
+
+    ``env`` troca o ambiente do filho inteiro — usado só para apontar
+    ``CODEX_HOME`` para a conta gpt2; o app-server resolve o home pelo env
+    do processo pai, então a sobrescrita precisa acontecer aqui, no Popen.
 
     Tem que ser **pergunta e resposta, uma de cada vez**. Escrever as quatro
     linhas de uma vez e fechar o stdin faz o servidor sair logo depois de
@@ -347,6 +359,7 @@ def run_codex_app_server(binary: str, timeout: float = _SUBPROCESS_TIMEOUT) -> s
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.DEVNULL,
+        env=env,
         **_NO_WINDOW,
     )
     # Mata o filho se ele travar: readline() volta vazio e o laço termina.
@@ -463,11 +476,13 @@ def parse_codex_rate_limits(payload: dict[str, Any]) -> list[dict[str, Any]]:
     return windows
 
 
-def _fetch_codex(timeout: float) -> dict[str, Any]:
+def _fetch_codex_account(
+    timeout: float, provider_id: str, env: dict[str, str] | None = None
+) -> dict[str, Any]:
     binary = find_codex_binary()
     if not binary:
         return _result(
-            "codex",
+            provider_id,
             "unavailable",
             source=CODEX_SOURCE,
             message="CLI do Codex não encontrado no PATH.",
@@ -475,15 +490,17 @@ def _fetch_codex(timeout: float) -> dict[str, Any]:
     try:
         # O prazo é o que o chamador pediu. Subir um piso fixo aqui deixaria a
         # UI presa 25 s num app-server travado — medido, a leitura boa custa ~1 s.
-        stdout = run_codex_app_server(binary, timeout=timeout)
+        stdout = run_codex_app_server(binary, timeout=timeout, env=env)
     except OSError as exc:
-        return _result("codex", "error", source=CODEX_SOURCE, message=f"Falha ao executar o CLI ({type(exc).__name__}).")
+        return _result(
+            provider_id, "error", source=CODEX_SOURCE, message=f"Falha ao executar o CLI ({type(exc).__name__})."
+        )
 
     responses = _rpc_responses(stdout)
     rate = responses.get(2)
     if rate is None:
         return _result(
-            "codex",
+            provider_id,
             "error",
             source=CODEX_SOURCE,
             message="app-server não respondeu a account/rateLimits/read.",
@@ -491,7 +508,7 @@ def _fetch_codex(timeout: float) -> dict[str, Any]:
     if "error" in rate:
         # Sem login o app-server responde erro nesta chamada.
         return _result(
-            "codex",
+            provider_id,
             "auth_required",
             source=CODEX_SOURCE,
             message="Sessão do Codex indisponível. Rode `codex login`.",
@@ -505,19 +522,35 @@ def _fetch_codex(timeout: float) -> dict[str, Any]:
     windows = parse_codex_rate_limits(rate.get("result") or {})
     if not windows:
         return _result(
-            "codex",
+            provider_id,
             "unavailable",
             source=CODEX_SOURCE,
             message="Conta autenticada, mas sem janela de cota exposta.",
         )
     return _result(
-        "codex",
+        provider_id,
         "ok",
         source=CODEX_SOURCE,
         windows=windows,
         fetched_at=_now_iso(),
         message=f"Plano {plan}." if plan else "",
     )
+
+
+def _fetch_codex(timeout: float) -> dict[str, Any]:
+    return _fetch_codex_account(timeout, "codex")
+
+
+def _fetch_codex_gpt2(timeout: float) -> dict[str, Any]:
+    if not (CODEX_GPT2_HOME / "auth.json").is_file():
+        return _result(
+            "codex_gpt2",
+            "unavailable",
+            source=CODEX_SOURCE,
+            message="Perfil gpt2 (~/.codex-gpt2) sem login nesta máquina.",
+        )
+    env = {**os.environ, "CODEX_HOME": str(CODEX_GPT2_HOME)}
+    return _fetch_codex_account(timeout, "codex_gpt2", env)
 
 
 # --------------------------------------------------------------------------
@@ -1227,6 +1260,7 @@ def _fetch_gemini_web(_timeout: float) -> dict[str, Any]:
 
 _FETCHERS: dict[str, Callable[[float], dict[str, Any]]] = {
     "codex": _fetch_codex,
+    "codex_gpt2": _fetch_codex_gpt2,
     "claude": _fetch_claude,
     "zai": _fetch_zai,
     "gemini_cli": _fetch_gemini_cli,
@@ -1257,6 +1291,7 @@ def fetch_provider(provider_id: str, *, timeout: float = DEFAULT_TIMEOUT) -> dic
 
 _FETCHER_SOURCES = {
     "codex": CODEX_SOURCE,
+    "codex_gpt2": CODEX_SOURCE,
     "claude": CLAUDE_SOURCE,
     "zai": ZAI_SOURCE,
     "gemini_cli": GEMINI_SOURCE,
