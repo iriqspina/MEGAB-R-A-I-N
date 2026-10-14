@@ -1,0 +1,25 @@
+{
+  "$schema": "https://raw.githubusercontent.com/cloudflare/workers-sdk/main/packages/wrangler/config-schema.json",
+  "name": "megabrain-central",
+  "main": "gateway.mjs",
+  "compatibility_date": "2026-10-11",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "preview_urls": false,
+  "send_metrics": false,
+  // Privacy exception to the generic observability recommendation: no request URLs or bodies in cloud logs.
+  "observability": { "enabled": false },
+  // Free enforces native limits. API 100328 rejects even a limits object containing
+  // only subrequests on this account; the proxy performs exactly one fixed fetch.
+  "vars": {
+    "PUBLIC_ORIGIN": "https://unconfigured.invalid",
+    "MB_REMOTE_ENABLED": "false"
+  },
+  // Replace only after creating the dedicated service, configured as 127.0.0.1:8767.
+  // remote:false prevents local development from reaching a real private backend.
+  "vpc_services": [{
+    "binding": "MEGABRAIN_ORIGIN",
+    "service_id": "00000000-0000-0000-0000-000000000000",
+    "remote": false
+  }]
+}

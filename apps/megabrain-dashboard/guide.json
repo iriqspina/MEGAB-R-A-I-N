@@ -1,0 +1,272 @@
+{
+  "updated_at": "2026-10-14",
+  "version": "tutorial-portable-v1",
+  "sections": [
+    {
+      "id": "tutorial-inicio",
+      "title": "Comece por aqui",
+      "summary": "Instale no Windows, abra o aplicativo e acompanhe um pedido completo antes de ajustar as esteiras.",
+      "items": [
+        "📥 Na pasta baixada do MegaBrain, execute no PowerShell: powershell -ExecutionPolicy Bypass -File .\\scripts\\install-central.ps1. O instalador informa os requisitos e cria o acesso ao aplicativo.",
+        "📖 Abra Guia do MegaBrain na barra de projetos; o rodapé também abre este tutorial. Os nomes podem variar na versão instalada.",
+        "🔑 Use suas próprias contas de IA. Baixar o MegaBrain não fornece assinaturas, senhas nem acesso às contas de outra pessoa.",
+        "🧪 Primeiro exercício: abra um projeto, clique Novo pedido e descreva uma pergunta simples. Confira o plano e depois o resultado em Atividade."
+      ],
+      "image_file": "apps/megabrain-dashboard/web/public/tutorial/261014_inicio.svg"
+    },
+    {
+      "id": "tutorial-mesa",
+      "title": "Minha mesa: a visão geral",
+      "summary": "O logo e Meu espaço levam à página principal, com projetos e retornos recentes.",
+      "items": [
+        "🏠 Clique em um projeto da barra ou arraste-o para abrir embaixo. A página principal permite manter projetos e pedidos juntos.",
+        "↔️ Use Lado a lado para comparar os painéis abertos. A mesa guarda tamanho e posição.",
+        "🔎 Buscar na mesa, ou Ctrl K, encontra projetos e entregas. Abra o item encontrado para trazer seu contexto.",
+        "🕓 Confira a data e a origem de cada resultado; uma atualização do catálogo não muda a data do documento."
+      ],
+      "image_file": "apps/megabrain-dashboard/web/public/tutorial/261014_mesa.svg"
+    },
+    {
+      "id": "tutorial-projetos",
+      "title": "Projetos: fontes e módulos",
+      "summary": "Cada projeto reúne Agora, Resultados, Referências, Atividade e Processo.",
+      "items": [
+        "📁 Coloque seus projetos ao lado da pasta MegaBrain, com ESTADO.md, MEGABRAIN ou 00_PARA-VOCE. A descoberta atual não cadastra automaticamente pastas fora desse conjunto.",
+        "🧭 Agora resume o contexto; Resultados abre as entregas; Atividade mostra pedidos, etapas e registros.",
+        "🗂️ Arquivos ficam no projeto de origem. A biblioteca permite colocá-los na mesa sem criar uma cópia do acervo.",
+        "🔄 Use Módulos do projeto → Atualizar dados para reler a fonte. Sem estado registrado, o app informa a lacuna."
+      ],
+      "image_file": "apps/megabrain-dashboard/web/public/tutorial/261014_projetos.svg"
+    },
+    {
+      "id": "tutorial-pedido",
+      "title": "Novo pedido: veja o plano primeiro",
+      "summary": "Descreva o resultado, escolha o projeto e confira as ferramentas antes de executar.",
+      "items": [
+        "✍️ Novo pedido → projeto → O que vamos fazer? Informe o resultado esperado e as restrições que importam.",
+        "🏷️ Tipo do pedido sugere uma categoria. Você pode escolher outra e Combinar com outra esteira; a combinação pode consumir mais chamadas de IA.",
+        "📋 Clique Ver plano e ferramentas. Veja etapas, ferramentas, arquivos previstos e verificações; alterar a descrição exige conferir o plano de novo.",
+        "▶️ Clique Executar pedido. Em código, Usar arquivos existentes copia somente os arquivos escolhidos para a área do pedido."
+      ],
+      "image_file": "apps/megabrain-dashboard/web/public/tutorial/261014_pedido.svg"
+    },
+    {
+      "id": "tutorial-processos",
+      "title": "Processo: editar as esteiras",
+      "summary": "Uma esteira é a ordem de etapas que o pedido percorre, com responsável e condição para seguir.",
+      "items": [
+        "⚙️ Abra Processo → Tipo de pedido → Editar esta esteira. Ajuste nome, orientação, função, responsável e profundidade.",
+        "➕ Nova categoria a partir desta cria uma variação; Adicionar etapa inclui trabalho. Etapas obrigatórias permanecem protegidas.",
+        "💾 Clique Salvar esteiras. Testar com um exemplo → Ver caminho do pedido mostra a rota efetiva sem executar o pedido.",
+        "📌 Pedidos novos usam a versão salva. Cada execução registra sua rota; editar depois não reescreve a execução anterior."
+      ],
+      "image_file": "apps/megabrain-dashboard/web/public/tutorial/261014_processos.svg"
+    },
+    {
+      "id": "tutorial-agentes",
+      "title": "Agentes e ferramentas: quem faz o quê",
+      "summary": "O papel escolhido no plano precisa corresponder a um cliente configurado e a uma execução registrada.",
+      "items": [
+        "🔎 Pesquisa na web usa Claude; Código e testes usa Codex; a revisão obrigatória usa GLM principal. Análise textual pode ter outro responsável permitido.",
+        "🔑 Configure e autentique seus próprios clientes antes de pedir execução. Contas ou ferramentas ausentes podem deixar o pedido indisponível.",
+        "🧾 Atividade informa modelo registrado, fontes consultadas, arquivos e testes. Um nome no plano não comprova que houve chamada.",
+        "🧰 Código exige Node no caminho padrão e Windows PowerShell; a presença de PowerShell 7 no caminho padrão bloqueia até nova verificação. GLM exige ZCode autenticado e uma versão cujo arquivo tenha a assinatura digital de conteúdo (hash) validada."
+      ],
+      "image_file": "apps/megabrain-dashboard/web/public/tutorial/261014_agentes.svg"
+    },
+    {
+      "id": "tutorial-cotas",
+      "title": "Cotas de IA: leia cada janela",
+      "summary": "Cotas de IA mostra uso disponível, origem e idade da leitura por conta.",
+      "items": [
+        "📊 Abra Cotas de IA no alto ou em Acesso rápido. Leia janela, renovação, conta e data da consulta.",
+        "🕓 Compare janelas equivalentes e atuais. Não medido indica ausência de informação, nunca saldo zero.",
+        "🧩 Percentual de assinatura não mede dinheiro, tokens nem produtividade. Outras conversas podem consumir a mesma cota.",
+        "🖥️ Os controles do widget local ficam no computador; a consulta remota pode não oferecer os mesmos ajustes."
+      ],
+      "image_file": "apps/megabrain-dashboard/web/public/tutorial/261014_cotas.svg"
+    },
+    {
+      "id": "tutorial-atividade",
+      "title": "Atividade: execução e provas",
+      "summary": "Abra o pedido para ver o que aconteceu e quais verificações sustentam o resultado.",
+      "items": [
+        "🪜 Cada etapa mostra aguardando, executando, concluída ou falha; leia também a explicação de qualquer erro.",
+        "📄 Resultados produzidos abre a prévia. Arquivos do pedido reúne código e registros; Fontes da pesquisa distingue busca de página aberta.",
+        "✅ Concluído e verificado exige provas da execução e da conferência. Saída textual ou arquivo existente pode continuar com conferência pendente.",
+        "⏹️ Interromper pedido solicita parada dessa execução. Um resultado parcial pode conter arquivos úteis; confira a área do pedido antes de recomeçar."
+      ],
+      "image_file": "apps/megabrain-dashboard/web/public/tutorial/261014_atividade.svg"
+    },
+    {
+      "id": "tutorial-relatorios",
+      "title": "Relatórios: abrir e comparar",
+      "summary": "HTML, imagens e outros arquivos compatíveis abrem na mesa com origem e contexto.",
+      "items": [
+        "📚 Resultados ou Todos os retornos → relatório. Na biblioteca, use + ou arraste o arquivo para a mesa.",
+        "↔️ Adicionar resposta e referências permite comparar documentos. Organizar janelas ajusta ordem, largura e altura; recolher não apaga o original.",
+        "📝 HTML compatível conserva sua aparência e recursos locais. Uma versão nova oferece Abrir versão nova para proteger o rascunho anterior.",
+        "📦 HTML interativo: até 64 MB; recursos locais até 8 MB por arquivo e 40 MB no conjunto. Recursos de rede indisponíveis na prévia precisam ser incluídos localmente."
+      ],
+      "image_file": "apps/megabrain-dashboard/web/public/tutorial/261014_relatorios.svg"
+    },
+    {
+      "id": "tutorial-referencias",
+      "title": "Referências: manter o repertório perto",
+      "summary": "Adicione fontes e coloque uma referência junto do resultado que você está avaliando.",
+      "items": [
+        "🔗 Referências → Adicionar link. Informe um endereço completo com https:// e um título claro.",
+        "🖼️ Biblioteca → Referências mostra as fontes indexadas; o botão + coloca o item na mesa.",
+        "↔️ Abra referência e resultado juntos para avaliar recorte, composição e conteúdo sem trocar de contexto.",
+        "🧾 Confira origem e autoria. Imagem de exemplo ou anúncio encontrado não comprova venda, demanda ou aprovação."
+      ],
+      "image_file": "apps/megabrain-dashboard/web/public/tutorial/261014_referencias.svg"
+    },
+    {
+      "id": "tutorial-retornos",
+      "title": "Retornos e notificações: o novo primeiro",
+      "summary": "A página principal reúne respostas dos projetos conectados; o sino mostra os avisos.",
+      "items": [
+        "📬 Todos os retornos permite buscar e filtrar por projeto. Versões anteriores continuam na consulta.",
+        "🔔 Abrir Notificações não marca leitura. Marcar avisos como lidos confirma somente a leitura desses avisos.",
+        "🕓 Novas versões podem reabrir um relatório fechado; se já estiver aberto, o app oferece a troca para preservar rascunhos.",
+        "🔎 Raízes não conectadas ficam fora desse alcance. Leia origem e data; o catálogo não comprova atividade contínua de uma IA."
+      ],
+      "image_file": "apps/megabrain-dashboard/web/public/tutorial/261014_retornos.svg"
+    },
+    {
+      "id": "tutorial-sessoes",
+      "title": "Sessões → aplicativo: verificar a conexão",
+      "summary": "O painel separa sessão registrada, abertura solicitada e apresentação confirmada no app.",
+      "items": [
+        "🧭 Ao iniciar a sessão MegaBrain, o agente executa python bin/mb-inicio-sessao.py --project <raiz-do-projeto> a partir da instalação central.",
+        "🧾 Abra Sessões → aplicativo. Confira projeto, cliente real, horário e se a abertura foi confirmada.",
+        "🔄 Atualizar relê a conexão. Uma falha preserva a última leitura e deixa a indisponibilidade explícita.",
+        "📌 Confirmação de apresentação não comprova que a sessão continua ativa. Clientes sem startup ou sem acesso ao computador não entram automaticamente."
+      ],
+      "image_file": "apps/megabrain-dashboard/web/public/tutorial/261014_sessoes.svg"
+    },
+    {
+      "id": "tutorial-comentar",
+      "title": "Comentar: nota no lugar certo",
+      "summary": "Use o menu do módulo ou as ferramentas do cursor para ligar o comentário ao assunto.",
+      "items": [
+        "💬 No menu de um módulo, clique Comentar aqui. Escreva a observação e Salvar comentário.",
+        "🖱️ No cursor, segure parado por 0,4 segundo; após o menu abrir, arraste até Comentar e solte. Mover antes cancela.",
+        "📍 Clique no ponto e salve a nota. Comentário em módulo de projeto tenta enviar ao projeto; a cópia local continua no aparelho.",
+        "🧾 Uma nota recebida registra o pedido de ajuste; a correção só está concluída depois de execução e verificação."
+      ],
+      "image_file": "apps/megabrain-dashboard/web/public/tutorial/261014_comentar.svg"
+    },
+    {
+      "id": "tutorial-desenhar",
+      "title": "Desenhar e marcar aprovação",
+      "summary": "A camada do cursor permite indicar visualmente onde mexer sem alterar o documento original.",
+      "items": [
+        "✏️ Abra o menu do cursor e escolha Desenhar. Use pincel, marcador, cor e espessura para apontar o ajuste.",
+        "↩️ Desfazer retira o último traço; a borracha remove traços inteiros. Limpar remove a camada de desenho.",
+        "💾 Desenhos ficam neste aparelho, separados por projeto. Não conte com sincronização automática para o celular ou outro computador.",
+        "👍 Aprovar marca uma âncora local. Essa marca não substitui uma decisão formal da execução nem autoriza publicação."
+      ],
+      "image_file": "apps/megabrain-dashboard/web/public/tutorial/261014_desenhar.svg"
+    },
+    {
+      "id": "tutorial-decisoes",
+      "title": "Decisões: responder e enviar ao projeto",
+      "summary": "Quando o relatório contém perguntas, finalize o conjunto e confirme o recebimento.",
+      "items": [
+        "☑️ Leia o contexto visual e responda cada pergunta. O relatório pode oferecer alternativas e texto livre.",
+        "📋 Finalizar prepara as respostas; fora de integrações específicas, Copiar e Baixar respostas permite levar o arquivo JSON a outro agente.",
+        "💾 Dentro da central, use Salvar no projeto abaixo do relatório. Recebido no projeto, aguardando correção pela IA confirma a chegada.",
+        "🧾 Respostas ficam ligadas à versão do relatório. Recebimento não significa mudança aplicada, aprovação geral nem publicação."
+      ],
+      "image_file": "apps/megabrain-dashboard/web/public/tutorial/261014_decisoes.svg"
+    },
+    {
+      "id": "tutorial-voz",
+      "title": "Voz: ditar uma nota",
+      "summary": "O microfone ajuda a escrever; revise o texto antes de salvar.",
+      "items": [
+        "🎙️ Abra uma nota do cursor e clique no microfone. Ctrl Espaço também aciona o ditado com a nota aberta.",
+        "🖥️ No aplicativo Windows, o botão solicita o ditado do próprio Windows; a barra do Windows controla ouvir e parar.",
+        "🔑 O ditado depende de microfone, permissões e serviço online do Windows. No navegador, depende do suporte a reconhecimento de fala.",
+        "📝 Se estiver indisponível, digite ou use Win H no Windows. Salvar envia o texto revisado; este recurso não é conversa de voz contínua com a IA."
+      ],
+      "image_file": "apps/megabrain-dashboard/web/public/tutorial/261014_voz.svg"
+    },
+    {
+      "id": "tutorial-organizar",
+      "title": "Organizar: espaço e posição",
+      "summary": "Mova o que você usa para perto; mantenha referências e resultados visíveis juntos.",
+      "items": [
+        "🧩 No projeto, Organizar libera ajustes pelo título e controles de tamanho. Concluir organização volta à leitura.",
+        "📚 Módulos do projeto mostra ou oculta cada área. Restaurar organização recupera a disposição inicial.",
+        "↔️ Em respostas, Organizar janelas permite mover pelo título e redimensionar pela borda; botões oferecem a mesma alternativa.",
+        "💾 A mesa salva automaticamente. Se houver conflito com outro dispositivo, preserve o rascunho e escolha qual versão recarregar."
+      ],
+      "image_file": "apps/megabrain-dashboard/web/public/tutorial/261014_organizar.svg"
+    },
+    {
+      "id": "tutorial-tema",
+      "title": "Aparência e acesso rápido",
+      "summary": "Minha mesa ajusta o tema, a barra de projetos e o espaço entre os elementos.",
+      "items": [
+        "🎨 Minha mesa → Tema escolhe Claro ou Escuro. A aparência do HTML original permanece no próprio documento.",
+        "📐 Barra de projetos pode ficar nos lados, em cima ou embaixo; escolha Expandida, Só ícones ou Oculta.",
+        "🧭 Mostrar projetos traz a barra de volta. Espaços entre elementos muda o intervalo, mantendo texto e botões.",
+        "⚙️ Acesso rápido reúne Cotas de IA, Processo do projeto, Levar no celular e Configurações. Restaurar aparência recupera a configuração inicial."
+      ],
+      "image_file": "apps/megabrain-dashboard/web/public/tutorial/261014_tema.svg"
+    },
+    {
+      "id": "tutorial-compartilhar",
+      "title": "Mandar um relatório para outro MegaBrain",
+      "summary": "Transfira o documento com seus recursos; cada pessoa abre a cópia na própria instalação.",
+      "items": [
+        "📦 Prepare uma pasta com INICIO.html e imagens, fontes e scripts locais necessários. Use caminhos relativos e confira que nenhum arquivo privado entrou.",
+        "📥 O destinatário coloca essa pasta em <seu-projeto>/00_PARA-VOCE/<tarefa>/; preserva a mesma entrada ao receber revisões.",
+        "🖥️ Na instalação dele, peça ao agente: python bin/mb-abrir-entrega.py \"<caminho-absoluto-do-INICIO.html>\". O catálogo também encontra relatórios das raízes conectadas.",
+        "🔐 Mandar um relatório não transfere contas, sessões, cotas, decisões nem arquivos originais de outros projetos. Teste na instalação do destinatário."
+      ],
+      "image_file": "apps/megabrain-dashboard/web/public/tutorial/261014_compartilhar.svg"
+    },
+    {
+      "id": "tutorial-celular",
+      "title": "Levar no celular: depende do computador",
+      "summary": "Acesso remoto só funciona quando uma conexão externa autenticada está configurada.",
+      "items": [
+        "📱 Abra Levar no celular no computador. Se houver endereço externo configurado, use o pareamento temporário ou QR.",
+        "🔒 Sem endereço externo, a instalação continua local. O app não cria uma conexão de internet somente porque você abriu este painel.",
+        "🖥️ O computador precisa estar ligado e conectado. No navegador móvel, use Instalar app ou Adicionar à tela inicial quando disponível.",
+        "🧪 A tela adapta os módulos para uma coluna; uso no aparelho físico, ditado móvel e conexão fora de casa dependem da sua configuração e de teste próprio."
+      ],
+      "image_file": "apps/megabrain-dashboard/web/public/tutorial/261014_celular.svg"
+    },
+    {
+      "id": "tutorial-backup",
+      "title": "Backup: preserve fontes e dados da mesa",
+      "summary": "Salvar a mesa e preservar os arquivos do projeto são tarefas diferentes.",
+      "items": [
+        "💾 O banco apps/megabrain-dashboard/data/central.sqlite3 guarda dados da central. A pasta data também pode conter configuração privada; mantenha a cópia protegida.",
+        "📁 Faça backup dos projetos, relatórios e recursos originais. O catálogo aponta para arquivos; não guarda uma cópia integral deles.",
+        "🛠️ Peça ao agente uma cópia consistente via backup SQLite, ou pare o serviço da central antes de copiar a base; fechar a janela pode deixar o serviço ativo.",
+        "🔄 Antes de atualizar, preserve dados e fontes. Para restaurar, pare o serviço, recupere a cópia e confira caminhos e abertura real; não há botão universal de backup nesta interface."
+      ],
+      "image_file": "apps/megabrain-dashboard/web/public/tutorial/261014_backup.svg"
+    },
+    {
+      "id": "tutorial-historico",
+      "title": "Sobre este guia e o histórico",
+      "summary": "Este tutorial descreve o app atual; experiências e versões anteriores conservam suas próprias evidências.",
+      "items": [
+        "📖 Tutorial público criado em 14/10/2026 a partir dos componentes e rotas locais do aplicativo.",
+        "🧾 Cada imagem deste guia é uma ilustração vetorial original; não é captura nem prova de uma execução.",
+        "🗃️ Estudos antigos, fontes privadas e medições específicas pertencem ao histórico técnico da instalação que os produziu.",
+        "🔎 Disponibilidade de clientes, acesso remoto, contas e resultado observado precisam de conferência na instalação de cada pessoa."
+      ],
+      "image_file": "apps/megabrain-dashboard/web/public/tutorial/261014_historico.svg"
+    }
+  ],
+  "sources": [],
+  "notice": "Imagens: ilustrações vetoriais originais. Recursos descritos a partir do código local; autenticação, contas e acesso remoto dependem da instalação."
+}

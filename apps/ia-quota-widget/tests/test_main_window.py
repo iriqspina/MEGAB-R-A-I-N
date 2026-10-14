@@ -33,14 +33,19 @@ def test_spark_nests_inside_codex_card_but_is_removable(window):
     assert window._top_card_rows() == ["codex", "codex_gpt2", "claude", "zai"]
 
 
-def test_bar_extras_hidden_by_default_even_after_rebuild(window):
-    # Regressao historica do detail: rebuild nao pode re-mostrar o que
-    # set_expanded() acabou de decidir. Agora vale pros extras das barras.
+def test_collapsed_keeps_renewal_but_hides_pacing_even_after_rebuild(window):
+    # Superseded 2026-10-11 ("expanded=False também conserva informações"):
+    # recolhido mostra a renovação de cada janela; só o ritmo fica para o
+    # expandido. Rebuild não pode mudar o que set_expanded() decidiu.
     assert window.settings.expanded is False
+    window._on_snapshot("claude", demo_snapshot("claude"))
+    window._rebuild_segments()
     for provider_id in ("codex", "claude"):
         segment = window._segments[provider_id]
         for bar in segment._bars:
-            assert bar._extra.isHidden() is True
+            assert bar._extra.isHidden() is False
+            assert "renova" in bar._extra_full
+            assert "dá ~" not in bar._extra_full and "ritmo" not in bar._extra_full
 
 
 def test_toggling_expanded_shows_bar_extras(window):
@@ -70,13 +75,15 @@ def test_hidden_providers_become_dock_balls(window):
     assert "claude" not in window.dock._hidden
 
 
-def test_disabling_all_providers_leaves_header_usable(window):
+def test_disabling_all_providers_leaves_header_usable(window, qt_app):
+    window.show()
+    qt_app.processEvents()
     for pid in list(window.provider_ids):
         window._toggle_provider_visibility(pid, False)
     assert window._body_layout.count() == 0
     assert window.dock._hidden == list(window.provider_ids)
-    assert not window.header.isHidden()
-    assert not window._options_btn.isHidden()
+    assert not window.strip.isHidden()  # Compact legacy keeps its toolbar/menu accessible.
+    assert window.strip.menu.isVisible()
 
 
 def test_surface_preset_persists_and_restyles_panel(window):

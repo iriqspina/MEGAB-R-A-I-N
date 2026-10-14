@@ -1,0 +1,194 @@
+{
+  "schema_version": 1,
+  "providers": {
+    "codex": {
+      "details": {
+        "financial": [
+          {
+            "amount": 0.0,
+            "currency": "créditos",
+            "note": "Unidade retornada pelo Codex; não converter em dólares nem somar à assinatura.",
+            "status": "measured",
+            "title": "Saldo extra Codex"
+          }
+        ],
+        "notes": [
+          "Redefinições gratuitas disponíveis: 0."
+        ],
+        "product_shares": [],
+        "resets": [
+          {
+            "count": 0,
+            "kind": "account",
+            "title": "Resets gratuitos Codex",
+            "usable": false
+          }
+        ]
+      },
+      "fetched_at": "2026-10-12T02:59:16+00:00",
+      "label": "Codex",
+      "provider": "codex",
+      "source": "codex app-server · account/rateLimits/read",
+      "status": "ok",
+      "windows": [
+        {
+          "duration_minutes": 10080,
+          "id": "codex:primary",
+          "label": "codex · 7 d",
+          "resets_at": "2026-10-18T20:42:55+00:00",
+          "used_percent": 62.0
+        }
+      ]
+    },
+    "codex_gpt2": {
+      "details": {
+        "financial": [
+          {
+            "amount": 0.0,
+            "currency": "créditos",
+            "note": "Unidade retornada pelo Codex; não converter em dólares nem somar à assinatura.",
+            "status": "measured",
+            "title": "Saldo extra Codex"
+          }
+        ],
+        "notes": [
+          "Redefinições gratuitas disponíveis: 1."
+        ],
+        "product_shares": [],
+        "resets": [
+          {
+            "count": 1,
+            "kind": "account",
+            "title": "Resets gratuitos Codex",
+            "usable": true
+          }
+        ]
+      },
+      "fetched_at": "2026-10-12T02:59:16+00:00",
+      "label": "Codex GPT2",
+      "provider": "codex_gpt2",
+      "source": "codex app-server · account/rateLimits/read",
+      "status": "ok",
+      "windows": [
+        {
+          "duration_minutes": 300,
+          "id": "codex:primary",
+          "label": "codex · 5 h",
+          "resets_at": "2026-10-12T05:11:04+00:00",
+          "used_percent": 71.0
+        },
+        {
+          "duration_minutes": 10080,
+          "id": "codex:secondary",
+          "label": "codex · 7 d",
+          "resets_at": "2026-10-18T18:26:08+00:00",
+          "used_percent": 26.0
+        }
+      ]
+    },
+    "claude": {
+      "details": {
+        "financial": [
+          {
+            "amount": 250.0,
+            "currency": "USD",
+            "expires_at": "2026-11-05T07:59:00+00:00",
+            "note": "Crédito para sessões na nuvem, separado da assinatura.",
+            "status": "measured",
+            "title": "Sessões na nuvem",
+            "total": 250.0
+          },
+          {
+            "amount": null,
+            "currency": "",
+            "note": "Uso extra desligado. Saldo não exposto por esta consulta.",
+            "status": "unavailable",
+            "title": "Créditos de uso"
+          },
+          {
+            "amount": 0.0,
+            "currency": "USD",
+            "note": "Gasto informado pela consulta de uso.",
+            "status": "measured",
+            "title": "Gasto neste período"
+          }
+        ],
+        "notes": [
+          "Participação por produto divide o consumo semanal; não é saldo individual de cada produto."
+        ],
+        "product_shares": [
+          {
+            "name": "Claude Code",
+            "percent": 17.0
+          },
+          {
+            "name": "Chats",
+            "percent": 0.0
+          },
+          {
+            "name": "Cowork",
+            "percent": 83.0
+          },
+          {
+            "name": "Other",
+            "percent": 0.0
+          }
+        ],
+        "product_shares_as_of": "2026-10-12T02:49:16.049489+00:00",
+        "resets": []
+      },
+      "fetched_at": "2026-10-12T02:49:16+00:00",
+      "label": "Claude",
+      "provider": "claude",
+      "source": "api.anthropic.com/api/oauth/usage",
+      "status": "ok",
+      "windows": [
+        {
+          "duration_minutes": 300,
+          "id": "session",
+          "label": "Sessão",
+          "resets_at": null,
+          "used_percent": 0.0
+        },
+        {
+          "duration_minutes": 10080,
+          "id": "weekly_all",
+          "label": "Semana",
+          "resets_at": "2026-10-18T02:59:59+00:00",
+          "used_percent": 12.0
+        },
+        {
+          "duration_minutes": 10080,
+          "id": "weekly_scoped:Fable",
+          "label": "Semana · Fable",
+          "resets_at": "2026-10-18T03:00:00+00:00",
+          "used_percent": 0.0
+        }
+      ]
+    },
+    "zai": {
+      "details": {},
+      "fetched_at": "2026-10-12T02:59:16+00:00",
+      "label": "Z.ai",
+      "provider": "zai",
+      "source": "api.z.ai/api/monitor/usage/quota/limit",
+      "status": "ok",
+      "windows": [
+        {
+          "duration_minutes": 300,
+          "id": "CREDIT_LIMIT:3x5",
+          "label": "Sessão",
+          "resets_at": "2026-10-12T04:29:33+00:00",
+          "used_percent": 15.65
+        },
+        {
+          "duration_minutes": 10080,
+          "id": "CREDIT_LIMIT:6x1",
+          "label": "Semana",
+          "resets_at": "2026-10-17T02:45:59+00:00",
+          "used_percent": 14.793333333333333
+        }
+      ]
+    }
+  }
+}

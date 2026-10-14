@@ -37,10 +37,14 @@ O nível segue o pedido, não a vontade do agente. O usuário pode forçar com
 | **N0** | conversa, pergunta rápida, confirmação | resposta direta em 1–5 linhas; sem cabeçalho, sem ritual; se couber numa frase, é uma frase |
 | **N1** | tarefa com entrega (código, fix, config) | TL;DR de 1–2 linhas → corpo em tópicos numerados ou seções curtas → onde está (`path:linha`) → próximo passo concreto |
 | **N2** | diagnóstico técnico (log, erro, problema de PC) | 📋 Informações (causa raiz, com evidência) / 🛠️ Ações (roteiro numerado, do mais simples ao mais avançado) — formato fixo já vigente |
-| **N3** | documento, peça, relatório, deck | o artefato vai para arquivo; no chat só TL;DR + caminho + o que precisa de decisão do usuário |
+| **N3** | documento, peça, relatório, deck | leitura em HTML padronizado, visual e conciso; formato nativo quando o artefato exigir. No chat só TL;DR + acesso + decisão; não entregar `.md` |
 
 Todo pedido passa pela triagem proporcional (`260916_plataforma-contrato.md`). N0 não cria ritual de entrega. N1 pra cima roda os gates do megabrain
 (ENQUADRAR → AUDITAR → VERIFICAR) porque há artefato em jogo.
+
+## Leitura humana em HTML · 261002
+
+Pedido direto: <USUARIO> não lê Markdown e quer ao menos um HTML padronizado. Todo conteúdo para ele ler/decidir usa HTML visual e conciso: resultado/sumário e ações claros, detalhes recolhidos, padrão do projeto e links testados. Não criar paredão de texto, nova pasta ou painel por rodada; atualizar a entrada vigente. Markdown fica apenas em fonte/estado/prova técnica entre agentes, fora da pasta humana, sem pedir que <USUARIO> o abra. Formato diferente só por pedido explícito ou necessidade específica, como editável nativo. Não substituir imagens, vídeos ou outras peças pedidas por HTML. Conversa curta continua no chat.
 
 ## Estrutura dentro de qualquer nível
 

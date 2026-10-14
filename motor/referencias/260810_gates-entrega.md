@@ -115,7 +115,20 @@ enquadramento (Gate 1), não a redação.
 ## 5. Gate VERIFICAR
 
 - Arquivo abre no app de destino? Formato correto? Convenção de nome?
-- Links/caminhos existem?
+- Leitura/decisão humana está em HTML padronizado, visual e conciso, com
+  resultado/sumário e ações claros, detalhes recolhidos e links funcionais?
+  Não entregar `.md` nem paredão HTML. Markdown técnico fica fora da pasta humana;
+  outro formato exige pedido explícito ou necessidade específica do artefato.
+  Imagens, vídeos e editáveis pedidos mantêm seu formato, sem substituição por HTML.
+- Links/caminhos existem? A resposta usa a mesma entrada absoluta da tarefa?
+- Pasta e entrada estáveis foram reutilizadas, respeitando os assuntos do projeto?
+  Conferir conteúdo físico; resultado/candidatos/histórico separados quando úteis;
+  scripts, provas, logs, revisões técnicas e backups fora de `00_PARA-VOCE`.
+- Correções humanas e exclusões estão na fonte/manifesto e são respeitadas ao
+  regenerar? Nome, pasta, fonte ou metadado de autoria não confirma a pessoa
+  fotografada; candidato e confirmado precisam de estados distintos.
+- Consolidação preservou links, recursos e edições humanas com reversão? Não
+  criar nova pasta/painel por rodada nem migrar outros projetos por implicação.
 - Números conferem (recalcule, não copie)? Datas contra hoje?
 - Contradiz algo dito antes na sessão?
 

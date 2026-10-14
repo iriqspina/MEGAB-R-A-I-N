@@ -46,3 +46,17 @@ adaptação de formato, leitura de referência ou geração de imagem. Detalhe e
 ## 4 · O que ainda não existe (próximo caso real cria)
 - Detector de rosto local; endpoint próprio pra hospedar imagens; pastas de UI no acervo
   (`visual/ui-*`), estilos visuais medidos por `getComputedStyle`.
+
+
+## Aprendizado contextual e regressão visual (260921)
+
+Antes de adaptar fotografia/composição, carregar `bin/mb-inicio-sessao.py --visual`
+e ler `referencias/260921_aprendizado-visual.md`. O comando carrega o protocolo e
+catálogo de casos; `--caso-visual ID` carrega só o exemplo pertinente, com fonte
+humana, render inspecionado, resultado e limite por critério.
+Mapear papéis narrativos/contexto, recorte consciente, escala/âncora e área útil;
+validar por formato. Geometria não substitui leitura de grupo ou relação entre
+pessoas/objetos. Decisão humana, fato observado e inferência permanecem separados.
+No caso de residência, YouTube com duas faces íntegras perdeu contexto ao excluir
+o terceiro participante: usar esse negativo para testar a rubrica, não copiar
+coordenadas. Aprovação técnica não é aceite humano; Spotify aprovado fica travado.

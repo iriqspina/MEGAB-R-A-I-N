@@ -41,6 +41,16 @@ DESTINO_DEFAULT = os.path.join(CENTRAL_DEFAULT, "_github/export")
 
 # Não copiar: exclusivamente pessoais ou gerados (match por substring no caminho relativo)
 EXCLUIR = {
+    "_github/", "memoria/estado/", "memoria/identidade/", "dna/", "neuroninhos/",
+    "apps/agentes-ia", "04_visuais", ".mb-atualizacoes-feitas.txt", ".megabrain/",
+    "tests/test_central_feedback.py", "tests/test_central_operations.py",
+    "apps/pendencias-widget/app/data",
+    "out/", "apps/automations/config/automations.json",
+    # Central nativa: exportar fontes, nunca dados de usuário/dependências.
+    "apps/megabrain-dashboard/data",
+    "apps/megabrain-dashboard/remote/runtime",
+    "runtime-packages", "node_modules", ".wrangler", ".private",
+    "evidence/",  # provas locais podem conter capturas, contas e transcrições
     "02_entrada",  # private input
     # 260914: o widget de cotas agora FAZ parte do pacote público (decisão do
     # <USUARIO>: usuários instalam com 1 clique). O que não sai é o ESTADO
@@ -157,6 +167,7 @@ EXCLUIR_TOPO = {
 
 # Duplicatas legadas sem prefixo de data: match EXATO de nome de arquivo
 EXCLUIR_NOME_EXATO = {
+    "wrangler.private.jsonc", "launcher-probe.json", "launcher-probe.py",
     # 260824 (v7.1): .env do GerenteNeuron tem CHAVE DE API de verdade e
     # estava sendo copiado pro export (e daí pro repo-local pelo robocopy).
     # O .gitignore segurou o commit, mas o arquivo não podia nem chegar lá.
@@ -188,6 +199,8 @@ _SUBSTITUICOES_BRUTAS = [
     ("<MEGABRAIN_ROOT>".replace("/", "\\"), "<MEGABRAIN_ROOT>"),
     ("<PROJETOS_ROOT>/", "<PROJETOS_ROOT>/"),
     ("<PROJETOS_ROOT>/".replace("/", "\\"), "<PROJETOS_ROOT>\\"),
+    ("<PROJETOS_ROOT>", "<PROJETOS_ROOT>"),
+    ("<PROJETOS_ROOT>".replace("/", "\\"), "<PROJETOS_ROOT>"),
     ("<USER_HOME>", "<USER_HOME>"),
     ("C:\\Users\\<USUARIO>", "<USER_HOME>"),
     ("<AUTOR>", "<AUTOR>"),
@@ -211,6 +224,9 @@ SUBSTITUICOES = sorted(
 )
 
 EXTENSOES_TEXTO = {
+    ".svg", ".ini", ".example", ".webmanifest",
+    ".ts", ".tsx", ".jsx", ".mjs", ".cjs", ".jsonc", ".toml",
+    ".cs", ".ps1", ".vbs", ".sh", ".bat", ".jsonl",
     ".md",
     ".txt",
     ".py",
@@ -222,6 +238,18 @@ EXTENSOES_TEXTO = {
     ".css",
     ".js",
 }
+
+
+def arquivo_local(nome):
+    """Configurações reais/derivados não pertencem ao template distribuível."""
+    baixo = str(nome).lower()
+    if baixo == '.e.png' or baixo.endswith(('licoes.md', 'lições.md', 'lessons.md')):
+        return True
+    if baixo == '.env' or baixo.startswith('.env.'):
+        return not baixo.endswith(('.example', '.sample', '.template'))
+    return baixo.endswith(('.key', '.pem', '.pfx', '.p12', '.sqlite',
+                           '.sqlite3', '.db', '.log', '.exe', '.tsbuildinfo',
+                           '.dll', '.zip', '.7z', '.lnk', '.pyc'))
 
 # Batch é lido por deslocamento de byte assumindo CRLF; com LF o cmd.exe
 # desalinha e executa outra coisa sem erro (lição 260819). A leitura texto
@@ -293,7 +321,21 @@ def conteudo_publicado(src: Path) -> bytes:
     if src.suffix.lower() not in EXTENSOES_TEXTO:
         return src.read_bytes()
     conteudo = src.read_text(encoding="utf-8")
+    # Adaptadores da instalação privada não são configuração do receptor.
+    if src.name == "central_feedback.py":
+        conteudo = re.sub(r"KEY = .*?\n_SCAN_LOCK =", "KEY = 'local-export'\nSTATUS_LABEL = 'Recebido, aguardando correção'\nMAX_BYTES = 350_000\nMAX_DOCUMENT = 280_000\n# Importador legado desativado; decisões nativas dos relatórios continuam disponíveis.\nALLOWLIST = {}\n_SCAN_LOCK =", conteudo, flags=re.DOTALL)
+    if src.name == "central_operations.py":
+        conteudo = conteudo.replace("evidence/261011_alinhamento-v2/coordenacao/execucao", "evidence/operations")
+        conteudo = conteudo.replace("ROOT.parent/'Portfolio'", "ROOT")
+        conteudo = conteudo.replace("    if root.name!='Portfolio': return False\n", "")
+        conteudo = conteudo.replace("Alinhamento do Figma · execução coordenada", "Execução coordenada")
     conteudo = sanitizar(conteudo)
+    # Placeholders entre <> viram tags inválidas em JSX. O app público mostra
+    # um rótulo genérico, mantendo o código editável e recompilável.
+    if src.suffix.lower() in {'.tsx', '.jsx', '.js'}:
+        conteudo = conteudo.replace('<USUARIO>', 'Usuário').replace('<AUTOR>', 'Autor')
+    if src.name.endswith('.d.ts'):
+        conteudo = '\n'.join(line.rstrip() for line in conteudo.splitlines()).rstrip() + '\n'
     if src.name in {"MEGABRAIN.md", "260810_MEGABRAIN.md"}:
         conteudo = remover_secoes_pessoais(conteudo)
     if src.suffix.lower() in EXTENSOES_BATCH:
@@ -397,6 +439,8 @@ def gerar_template(central, destino):
         if not d.is_dir():
             continue
         for nome in os.listdir(d):
+            if arquivo_local(nome):
+                continue
             if nome in EXCLUIR or nome in EXCLUIR_TOPO or nome in EXCLUIR_NOME_EXATO:
                 continue
             if nome.lower().endswith(EXCLUIR_SUFIXO) or nome.startswith("."):
@@ -410,7 +454,7 @@ def gerar_template(central, destino):
     for nome in os.listdir(central_path):
         if nome in ACHATAR:
             continue
-        if nome_temporario(nome):
+        if nome_temporario(nome) or arquivo_local(nome):
             continue
         if nome in EXCLUIR or nome in EXCLUIR_TOPO or (nome + "/") in EXCLUIR:
             continue
@@ -426,14 +470,15 @@ def gerar_template(central, destino):
         elif os.path.isdir(src):
             # recursivo para referencias/, bin/, skills/
             for raiz, dirs, files in os.walk(src):
-                dirs[:] = [d for d in dirs if not nome_temporario(d)]
+                dirs[:] = [d for d in dirs if not nome_temporario(d)
+                           and not any(x in (os.path.relpath(os.path.join(raiz,d),central_path).replace('\\','/')+'/') for x in EXCLUIR)]
                 rel = os.path.relpath(raiz, central_path)
                 for f in files:
                     rel_f = os.path.join(rel, f).replace("\\", "/")
                     # pula .git e excluídos
                     if any(x in rel_f for x in EXCLUIR):
                         continue
-                    if (f in EXCLUIR_TOPO or f in EXCLUIR_NOME_EXATO or
+                    if (arquivo_local(f) or f in EXCLUIR_TOPO or f in EXCLUIR_NOME_EXATO or
                             f.lower().endswith(EXCLUIR_SUFIXO)):
                         continue
                     src_f = os.path.join(raiz, f)
@@ -447,10 +492,49 @@ def gerar_template(central, destino):
                         erros = True
 
     # .gitignore padrão do pacote público
-    gitignore_src = central_path / ".gitignore"
-    if gitignore_src.is_file():
-        if not copiar_sanitizando(str(gitignore_src), str(destino_path / ".gitignore")):
-            erros = True
+    # O ignore privado da central versiona contexto pessoal e não pode ser usado
+    # como contrato do pacote público. Barreiras também valem após o clone.
+    public_ignore = '''# Estado privado e dependências são locais.
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+*.key
+*.pem
+*.pfx
+*.p12
+*.sqlite*
+*.db
+*.log
+*.exe
+*.tsbuildinfo
+__pycache__/
+*.py[cod]
+.venv/
+node_modules/
+runtime-packages/
+.wrangler/
+.private/
+.automations/
+.megabrain/
+.mb-log/
+.mb-lock/
+00_PARA-VOCE/
+!00_PARA-VOCE/
+00_PARA-VOCE/*
+!00_PARA-VOCE/261014_compartilhar-megabrain/
+dados/
+evidence/
+cerebro/
+dna/usuario/
+apps/megabrain-dashboard/data/
+apps/pendencias-widget/app/data/
+apps/megabrain-dashboard/remote/runtime/
+wrangler.private.jsonc
+'''
+    if not u.atomic_write_text(destino_path / '.gitignore', public_ignore):
+        erros = True
 
     # SKILL.md canônico também na raiz do destino (o repo público o espera lá)
     skill_src = u.achar(central_path, "skills/megabrain/SKILL.md")
@@ -466,6 +550,28 @@ def gerar_template(central, destino):
         if not copiar_sanitizando(str(readme_publico), str(destino_path / "README.md")):
             erros = True
 
+    # Apenas o kit público explicitamente preparado, nunca entregas pessoais.
+    publico = central_path / "docs/public-release"
+    if publico.is_dir():
+        for arquivo in publico.rglob("*"):
+            if arquivo.is_file() and not arquivo_local(arquivo.name):
+                if not copiar_sanitizando(arquivo, destino_path / arquivo.relative_to(publico)):
+                    erros = True
+    # Bundle necessário para usar o aplicativo sem Node/build no computador receptor.
+    web_dist = central_path / "apps/megabrain-dashboard/web/dist"
+    if web_dist.is_dir():
+        for arquivo in web_dist.rglob("*"):
+            if arquivo.is_file():
+                alvo = destino_path / "apps/megabrain-dashboard/web/dist" / arquivo.relative_to(web_dist)
+                if not copiar_sanitizando(arquivo, alvo):
+                    erros = True
+    # O nome do ícone contém a palavra cerebro; não é memória pessoal.
+    for nome in ("megabrain-cerebro-rosa.ico", "megabrain-cerebro-rosa.png", "dashboard.css"):
+        asset = central_path / "apps/megabrain-dashboard/assets" / nome
+        if asset.is_file():
+            if not copiar_sanitizando(asset, destino_path / "apps/megabrain-dashboard/assets" / nome):
+                erros = True
+
     # VERSAO.txt público: só a versão atual, sem histórico com nomes de projeto
     versao_src = u.achar(central_path, "VERSAO.txt")
     if versao_src.is_file():
@@ -476,6 +582,8 @@ def gerar_template(central, destino):
             versao_dst,
             primeira + "\n\nHistórico completo: ver repositório privado da pasta central.\n",
         ):
+            erros = True
+        if not u.atomic_write_text(destino_path / 'VERSAO.txt', primeira + '\n'):
             erros = True
 
     if erros:

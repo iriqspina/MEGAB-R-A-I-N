@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QMenu,
+    QLayout,
     QPushButton,
     QSystemTrayIcon,
     QVBoxLayout,
@@ -24,7 +25,10 @@ from .poll_backoff import PollBackoff
 from .snapshot_store import SnapshotStore
 from .ui_dock import DOCK_WIDTH, DockRail, DragBall
 from .ui_flow import FlowLayout
+from .ui_inline_quota import BoardScroll
 from .ui_provider_segment import ProviderSegment, options_from, typography_from
+from .ui_quota_strip import QuotaStrip
+from .ui_quota_details import QuotaDetails
 
 POLL_INTERVAL_MS = 120_000
 MANUAL_REFRESH_COOLDOWN_MS = 5_000
@@ -113,12 +117,13 @@ class MainWindow(QWidget):
         self._minimized = False
         self._alerted: set = set()
         self._settings_dialog = None
+        self._quota_details = None
         self._tray = None
         self._backoff = PollBackoff()
         self._retry_timers = {}
         self.settings = persistence.load_settings()
         self._sanitize_settings()
-        self.store = SnapshotStore()
+        self.store = SnapshotStore(paths.CACHE_PATH if not demo and not session_only else None)
         # provider_ids = linhas de tela (inclui "spark"), já na ordem escolhida;
         # a consulta usa a fonte de cada linha (theme.row_source).
         self._source_ids = providers_bridge.provider_ids()
@@ -222,6 +227,13 @@ class MainWindow(QWidget):
             s.provider_order = []
         if s.surface_preset not in theme.SURFACE_PRESETS:
             s.surface_preset = theme.DEFAULT_SURFACE_PRESET
+        if s.visual_mode not in ("legacy", "trilho"):
+            s.visual_mode = "legacy"
+        s.strip_height = clamp_int(s.strip_height, 40, 10000, 72)
+        s.strip_width = clamp_int(s.strip_width, 360, 10000, 800)
+        if s.visual_mode == "trilho" and s.click_through and not QSystemTrayIcon.isSystemTrayAvailable():
+            # Input transparency requires a working recovery surface.
+            s.click_through = False
 
     def _ordered_rows(self) -> list[str]:
         rows = theme.expand_rows(self._source_ids)
@@ -261,12 +273,26 @@ class MainWindow(QWidget):
 
         if self._settings_dialog is None:
             self._settings_dialog = SettingsDialog(self)
-        self._settings_dialog.begin_session()
+        if not self._settings_dialog.isVisible():
+            self._settings_dialog.begin_session()
         if show:
             self._settings_dialog.show()
             self._settings_dialog.raise_()
             self._settings_dialog.activateWindow()
         return self._settings_dialog
+
+    def open_quota_details(self, row_id, anchor=None):
+        anchor = anchor or self.strip.cells.get(row_id) or self.strip.menu
+        if self._quota_details is not None:
+            self._quota_details.close()
+            self._quota_details.deleteLater()
+        if row_id == 'all':
+            from .ui_quota_overview import QuotaOverview
+            self._quota_details = QuotaOverview(self, anchor)
+        else:
+            self._quota_details = QuotaDetails(self, row_id, anchor)
+        self._quota_details.open_at_anchor()
+        return self._quota_details
 
     # ------------------------------------------------------------------
     # tema / paleta
@@ -286,7 +312,9 @@ class MainWindow(QWidget):
         for segment in self._segments.values():
             segment.configure(typography, options)
             segment.apply_theme(palette)
+        self.strip.configure()
         self.dock.apply_theme(palette)
+        self._board.apply_scroll_style(palette)
         if self._tray_exists():
             self._tray.setIcon(_make_tray_icon(self._preset()["bg"]))
 
@@ -365,7 +393,7 @@ class MainWindow(QWidget):
         header_layout = QHBoxLayout(self.header)
         header_layout.setContentsMargins(0, 0, 0, 0)
         self._drag_glyph = QLabel("⠿")
-        self._title = QLabel("COTAS IA")
+        self._title = QLabel("COTAS IA · DEMO" if self.demo else "COTAS IA")
         header_layout.addWidget(self._drag_glyph)
         header_layout.addWidget(self._title)
         header_layout.addStretch(1)
@@ -376,9 +404,11 @@ class MainWindow(QWidget):
         self._sync_top_button()
         self._details_btn = self._make_header_button("▴" if self.settings.expanded else "▾", "Expandir ou recolher detalhes (Ctrl+D)")
         self._details_btn.clicked.connect(self._toggle_expanded)
-        self._options_btn = self._make_header_button("Opções", "Configurações, provedores e tema (Ctrl+,)")
-        self._options_btn.setFixedWidth(52)
-        self._options_btn.clicked.connect(self._show_menu)
+        self._options_btn = self._make_header_button("Ajustes", "Abrir configurações diretamente (Ctrl+,); botão direito abre atalhos")
+        self._options_btn.setFixedWidth(58)
+        self._options_btn.clicked.connect(lambda _checked=False: self.open_settings())
+        self._options_btn.setContextMenuPolicy(Qt.CustomContextMenu)
+        self._options_btn.customContextMenuRequested.connect(lambda _pos: self._show_menu())
         self._close_btn = self._make_header_button("×", "Fechar")
         self._close_btn.clicked.connect(self._quit)
         header_layout.addWidget(self._top_btn)
@@ -389,12 +419,14 @@ class MainWindow(QWidget):
         panel_layout.addWidget(self.header)
 
         self._content = QWidget()
+        self._content.setObjectName("legacyContent")
         content_layout = QVBoxLayout(self._content)
         content_layout.setContentsMargins(0, 0, 0, 0)
         content_layout.setSpacing(10)
 
         # Cards em FLUXO: janela larga -> colunas; estreita -> uma coluna.
-        # Sem barra de rolagem: o mínimo da janela é o conteúdo inteiro.
+        # 261011: a altura da faixa é EXATA nos dois modos; o que não cabe
+        # rola dentro do quadro (mínimo de altura zero, largura do card).
         self.body = QWidget(self._content)
         self._body_layout = FlowLayout(self.body, margin=0, spacing=8)
         content_layout.addWidget(self.body)
@@ -412,11 +444,12 @@ class MainWindow(QWidget):
         self._content.setAutoFillBackground(False)
 
         self.dock = DockRail(self.panel, self._card_drag)
+        self._board = BoardScroll(self._content, self.panel, keep_width=True)
         body_row = QHBoxLayout()
         body_row.setContentsMargins(0, 0, 0, 0)
         body_row.setSpacing(4)
         body_row.addWidget(self.dock)
-        body_row.addWidget(self._content, 1)
+        body_row.addWidget(self._board, 1)
         panel_layout.addLayout(body_row, 1)
 
         self._footer = QWidget(self.panel)
@@ -440,6 +473,47 @@ class MainWindow(QWidget):
             self._demo_banner.setStyleSheet("color:#e0b46a; font-size:10px;")
             panel_layout.addWidget(self._demo_banner)
 
+        handle = DragHeader(self._save_settings, self._fit_to_content,
+                            lambda: not self.settings.lock_position, self._snap_drag)
+        handle.setToolTip("Arraste para mover · duplo clique restaura a largura")
+        handle.setAccessibleName("Mover Cotas IA")
+        self.strip = QuotaStrip(self, handle)
+        panel_layout.addWidget(self.strip, 1)
+        self._apply_visual_mode()
+
+    def _legacy_tight(self) -> bool:
+        """Legacy under 150 px: thin chrome so the board keeps the room."""
+        return self.settings.visual_mode != "trilho" and self.settings.strip_height < 300
+
+    def _apply_visual_mode(self):
+        # Below 300 px the card title/chrome hides the first quota rows in its scroll
+        # viewport. Use the same columns as the Trilho without changing the
+        # saved mode, so fixed compact formats show quota rows at first glance.
+        compact = self.settings.visual_mode == "trilho" or self.settings.strip_height < 300
+        tight = self._legacy_tight()
+        for segment in self._segments.values():segment.overview_mode=not compact
+        self.layout().setContentsMargins(*((2,) * 4 if compact or tight else (RESIZE_GRIP,) * 4))
+        # Both modes: the strip height is set by _resize_to_content, never by
+        # the content's minimum (fixed height, scroll inside).
+        self.layout().setSizeConstraint(QLayout.SetNoConstraint)
+        self.panel.layout().setContentsMargins(*((0,) * 4 if compact else (8, 3, 8, 3) if tight else (16, 12, 16, 12)))
+        self.panel.layout().setSpacing(0 if compact else 3 if tight else 10)
+        # The legacy body is a layout, not a widget: hidden children alone do
+        # not remove its stretch. Otherwise it silently takes half the strip.
+        self.panel.layout().setStretch(1, 0 if compact else 1)
+        for child in (self.header, self._board, self.dock):
+            child.setVisible(not compact)
+        # Footer/banner only where there is room; F5 and the menu still refresh,
+        # and the title carries the DEMO label.
+        self._footer.setVisible(not compact and not tight and self.settings.show_footer)
+        if self._demo_banner is not None:
+            self._demo_banner.setVisible(not compact and not tight)
+        self.strip.setVisible(compact)
+        if not compact:
+            self.setMaximumHeight(16777215)
+        if self._quota_details is not None and not compact:
+            self._quota_details.close()
+
     def _make_header_button(self, glyph: str, tooltip: str) -> QPushButton:
         btn = QPushButton(glyph)
         btn.setToolTip(tooltip)
@@ -449,6 +523,10 @@ class MainWindow(QWidget):
         return btn
 
     def _update_mcp_status(self):
+        if not self.settings.is_visible("claude"):
+            self._mcp_status.setText("Claude pausado")
+            self._mcp_status.setToolTip("Cota e consulta de conexões do Claude pausadas enquanto ele estiver oculto.")
+            return
         try:
             payload = json.loads(paths.MCP_HEALTH_PATH.read_text(encoding="utf-8"))
             summary = payload.get("summary") or {}
@@ -464,6 +542,8 @@ class MainWindow(QWidget):
             self._mcp_status.setText("MCP: sem medição")
 
     def _rebuild_segments(self, animate_rows: set[str] | None = None):
+        self._apply_visual_mode()
+        self.strip.configure()
         while self._body_layout.count():
             self._body_layout.takeAt(0)
 
@@ -472,6 +552,9 @@ class MainWindow(QWidget):
             if provider_id not in self._segments:
                 label = self._canonical_labels.get(provider_id, provider_id)
                 segment = ProviderSegment(provider_id, label, self.body, drag_hook=self._card_drag)
+                # DEMO never mixes in real browser-verified balances.
+                segment.browser_evidence = not self.demo
+                segment.overview_mode = not (self.settings.visual_mode == "trilho" or self.settings.strip_height < 300)
                 self._segments[provider_id] = segment
 
         for segment in self._segments.values():
@@ -665,6 +748,12 @@ class MainWindow(QWidget):
                     segment.show_querying()
                 else:
                     segment.update_from_store(self.store, self.settings.expanded, self._pacing_by_provider.get(source))
+        self._refresh_strip()
+
+    def _refresh_strip(self):
+        self.strip.refresh()
+        if self._quota_details is not None and self._quota_details.isVisible():
+            self._quota_details.refresh()
 
     def _visible_sources(self) -> list[str]:
         sources: list[str] = []
@@ -716,6 +805,27 @@ class MainWindow(QWidget):
         return screen.availableGeometry() if screen is not None else None
 
     def _resize_to_content(self):
+        if self.settings.visual_mode == "trilho" or self.settings.strip_height < 300:
+            self._programmatic_resize = True
+            try:
+                available = self._available_rect()
+                requested_width = self.settings.window_width if self.settings.visual_mode == "legacy" and self.settings.window_width else self.settings.strip_width
+                policy = self.strip.geometry_policy(requested_width)
+                width = max(policy.minimum_width, requested_width)
+                if available is not None:
+                    width = min(width, available.width())
+                self.setMinimumWidth(min(policy.minimum_width, width))
+                minimum_height = self.strip.geometry_policy(width, requested_height=40).height
+                self.setMinimumHeight(minimum_height)
+                self.setMaximumHeight(available.height() if available is not None else 10000)
+                self.resize(width, policy.height)
+                self.layout().activate()
+            finally:
+                self._programmatic_resize = False
+            point = screen_geometry.clamp_top_left(self.x(), self.y(), self.size())
+            if point != self.pos():
+                self.move(point)
+            return
         self._programmatic_resize = True
         try:
             available = self._available_rect()
@@ -732,24 +842,18 @@ class MainWindow(QWidget):
             target_w = max(target_w, base.width(), MIN_WINDOW_SIZE.width())
             if available is not None:
                 target_w = min(target_w, available.width())
-            # Altura que o conteúdo precisa NESSA largura: janela estreita
-            # empilha os cards, larga faz fileiras. Pela largura ALVO e não
-            # pela geometria atual — antes do show() os filhos ainda não têm
-            # geometria (print 260914: janela ficava com a altura da pilha
-            # inteira mesmo larga, 65% de espaço morto embaixo).
-            needed_h = base.height()
-            if flow is not None and flow.count():
-                flow_min = flow.minimumSize()
-                needed_h = base.height() - flow_min.height() + flow.heightForWidth(max(1, target_w - FLOW_CHROME_W))
-            minimum = QSize(base.width(), needed_h).expandedTo(MIN_WINDOW_SIZE)
+            # 261011 (pedido explícito): ALTURA FIXA DA FAIXA INTEIRA, a mesma
+            # "Altura da faixa" do Trilho. O conteúdo não empurra a janela; o
+            # que não cabe rola dentro do quadro de cards (_board).
+            height = int(self.settings.strip_height)
             if available is not None:
-                minimum = minimum.boundedTo(available.size())
+                height = min(height, available.height())
+            minimum = QSize(min(max(base.width(), MIN_WINDOW_SIZE.width()), target_w), 40)
             self.setMinimumSize(minimum)
-            # Largura manual é respeitada; altura cola no conteúdo. A altura
-            # também é escrita no settings pra persistir o tamanho real.
-            target = QSize(target_w, minimum.height())
-            if available is not None:
-                target = target.boundedTo(available.size())
+            self.setMaximumHeight(available.height() if available is not None else 16777215)
+            # Largura manual é respeitada; a altura escrita no settings é a
+            # real, pra persistir o tamanho visto.
+            target = QSize(target_w, max(40, height))
             if self._has_manual_size() and self.settings.window_height != target.height():
                 self.settings.window_height = target.height()
             self.resize(target)
@@ -760,6 +864,11 @@ class MainWindow(QWidget):
             self.move(point)
 
     def _fit_to_content(self):
+        if self.settings.visual_mode == "trilho":
+            self.settings.strip_width = 800
+            self._resize_to_content()
+            self._save_settings()
+            return
         self.settings.window_width = None
         self.settings.window_height = None
         self._resize_to_content()
@@ -786,11 +895,12 @@ class MainWindow(QWidget):
     def _edges_at(self, pos: QPoint):
         if self.settings.lock_position:
             return screen_geometry.NO_EDGE
-        return screen_geometry.resize_edges_at(pos.x(), pos.y(), self.width(), self.height(), RESIZE_GRIP, RESIZE_CORNER)
+        edges = screen_geometry.resize_edges_at(pos.x(), pos.y(), self.width(), self.height(), RESIZE_GRIP, RESIZE_CORNER)
+        return edges
 
     def _begin_user_resize(self, edges, global_pos: QPoint):
         self._user_resize_active = True
-        self.settings.window_width, self.settings.window_height = self.width(), self.height()
+        self._remember_size()
         # O mínimo de conteúdo continua valendo: o Windows/clamp não deixa
         # encolher além do que cabe (pedido 260914, sem barra de rolagem).
         handle = self.windowHandle()
@@ -813,10 +923,8 @@ class MainWindow(QWidget):
         self._size_save_timer.stop()
         self._user_resize_active = False
         self._resize_edges = None
-        self.settings.window_width, self.settings.window_height = self.width(), self.height()
-        # Reajusta na hora: a altura arrastada que não tem conteúdo embaixo
-        # encolhe de volta imediatamente — o mouse escolhe a largura, o
-        # conteúdo decide a altura.
+        self._remember_size()
+        # Trilho preserves both dragged axes; legacy still fits its cards.
         self._resize_to_content()
         self._save_settings()
 
@@ -852,8 +960,17 @@ class MainWindow(QWidget):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         if self._user_resize_active and not self._programmatic_resize:
-            self.settings.window_width, self.settings.window_height = self.width(), self.height()
+            self._remember_size()
             self._size_save_timer.start()
+
+    def _remember_size(self):
+        if self.settings.visual_mode == "trilho":
+            self.settings.strip_width = self.width()
+            self.settings.strip_height = self.height()
+        else:
+            self.settings.window_width, self.settings.window_height = self.width(), self.height()
+            # One "Altura da faixa" for both modes: dragging in Legacy sets it.
+            self.settings.strip_height = max(40, self.height())
 
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -904,6 +1021,9 @@ class MainWindow(QWidget):
         self._update_refresh_feedback()
 
     def _request_mcp_health(self):
+        # O coletor usa o CLI Claude. Conta pausada não deve executá-lo.
+        if not self.settings.is_visible("claude"):
+            return
         script = paths.CENTRAL_DIR / "bin" / "mb-saude-mcp.py"
         if script.exists():
             QProcess.startDetached(sys.executable, [str(script)])
@@ -972,6 +1092,7 @@ class MainWindow(QWidget):
                 segment.update_from_store(self.store, self.settings.expanded, self._pacing_by_provider.get(provider_id))
         if snapshot.get("status") == "ok":
             self._check_alerts(provider_id)
+        self._refresh_strip()
         self._schedule_fit()
 
     def _schedule_fit(self):
@@ -1064,6 +1185,7 @@ class MainWindow(QWidget):
                 self._last_attempt = datetime.now().astimezone()
                 self._querying.add(source)
                 self.poller.poll([source])
+        self._refresh_strip()
         self._update_refresh_feedback()
         self._resize_to_content()
         self._save_settings()
@@ -1098,6 +1220,10 @@ class MainWindow(QWidget):
         self._tray.setVisible(needed)
 
     def _toggle_expanded(self):
+        if self.settings.visual_mode == "trilho":
+            if self.strip.order:
+                self.open_quota_details('all', self.strip.menu)
+            return
         self.settings.expanded = not self.settings.expanded
         self._details_btn.setText("▴" if self.settings.expanded else "▾")
         self._details_btn.setAccessibleName("Recolher detalhes (Ctrl+D)" if self.settings.expanded else "Expandir detalhes (Ctrl+D)")
@@ -1115,11 +1241,14 @@ class MainWindow(QWidget):
         self.settings.scale = value
         for segment in self._segments.values():
             segment.apply_scale(value)
+        self.strip.configure()
         self._resize_to_content()
         self._save_settings()
 
     def _show_menu(self):
         menu = QMenu(self)
+        comparison_shortcut = "\tCtrl+D" if self.settings.visual_mode == "trilho" else ""
+        menu.addAction("Comparar todas as barras" + comparison_shortcut, lambda: self.open_quota_details('all', self.strip.menu))
         menu.addAction("Configurações…\tCtrl+,", self.open_settings)
         menu.addSeparator()
 
@@ -1148,8 +1277,9 @@ class MainWindow(QWidget):
         providers_menu = menu.addMenu("Provedores")
         self._populate_providers_menu(providers_menu)
 
-        expand_label = "Recolher detalhes" if self.settings.expanded else "Expandir detalhes"
-        menu.addAction(expand_label + "\tCtrl+D", self._toggle_expanded)
+        if self.settings.visual_mode != "trilho":
+            expand_label = "Recolher detalhes" if self.settings.expanded else "Expandir detalhes"
+            menu.addAction(expand_label + "\tCtrl+D", self._toggle_expanded)
         fit_action = menu.addAction("Ajustar tamanho ao conteúdo\tCtrl+0", self._fit_to_content)
         fit_action.setEnabled(self._has_manual_size())
         pin_action = menu.addAction("Sempre acima\tCtrl+T", self._toggle_always_on_top)
@@ -1166,7 +1296,8 @@ class MainWindow(QWidget):
             menu.addAction("Minimizar para bandeja", self._minimize_to_tray)
         menu.addSeparator()
         menu.addAction("Sair", self._quit)
-        menu.exec(self._options_btn.mapToGlobal(self._options_btn.rect().bottomLeft()))
+        anchor = self.strip.menu if self.settings.visual_mode == "trilho" else self._options_btn
+        menu.exec(anchor.mapToGlobal(anchor.rect().bottomLeft()))
 
     def _show_providers_menu(self):
         menu = QMenu(self)
@@ -1216,10 +1347,14 @@ class MainWindow(QWidget):
         self._save_settings()
         if self._settings_dialog is not None:
             self._settings_dialog.close()
+        if self._quota_details is not None:
+            self._quota_details.close()
         QApplication.instance().quit()
 
     def closeEvent(self, event):
         self._save_settings()
         if self._settings_dialog is not None:
             self._settings_dialog.close()
+        if self._quota_details is not None:
+            self._quota_details.close()
         super().closeEvent(event)

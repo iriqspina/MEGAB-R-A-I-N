@@ -125,3 +125,60 @@ HTML_TEMA_CONTROLE = """\
         });
       })();
       </script>"""
+
+
+# ═══ INTERAÇÕES OBRIGATÓRIAS (261010) ═══
+# Pedido do <USUARIO> (Portfólio, 10/10/2026): "lembre-se disso como elemento necessário
+# principal e recrie para os relatórios megabrain dos projetos". Todo relatório POP sai com
+# as Ferramentas do cursor (segurar 2 s → menu em leque → Comentar). Relatório que pede
+# decisão usa também motor/modelos/interacoes/261010_decisoes-respondiveis/.
+# Fonte única do componente: motor/modelos/interacoes/261010_cursor-ferramentas/ na central,
+# MEGABRAIN/modelos/interacoes/... na cópia do projeto. Sem o arquivo, nada é inserido.
+MARCA_INTERACOES_INICIO = "<!-- mb-interacoes:inicio -->"
+MARCA_INTERACOES_FIM = "<!-- mb-interacoes:fim -->"
+
+
+def _js_componente(nome_pasta: str, arquivo: str) -> str:
+    from pathlib import Path as _P
+    aqui = _P(__file__).resolve().parent
+    for base in (aqui.parent / "motor" / "modelos", aqui.parent / "modelos"):
+        alvo = base / "interacoes" / nome_pasta / arquivo
+        if alvo.is_file():
+            codigo = alvo.read_text(encoding="utf-8")
+            if "</script" in codigo.lower():
+                return ""
+            return codigo
+    return ""
+
+
+def html_interacoes() -> str:
+    """Bloco pronto (com marcas) das Ferramentas do cursor para colar antes de </body>."""
+    codigo = _js_componente("261010_cursor-ferramentas", "cursor-ferramentas.js")
+    if not codigo:
+        return ""
+    visual_css = _js_componente("261011_agrupamento-visual", "agrupamento.css")
+    visual_js = _js_componente("261011_agrupamento-visual", "agrupamento.js")
+    visual = ('<style id="mb-agrupamento-estilo">' + visual_css + '</style>\n'
+              '<script id="mb-agrupamento-script">' + visual_js + '</script>\n') if visual_css and visual_js else ''
+    return (MARCA_INTERACOES_INICIO + '\n' + visual + '<script id="cf-script">' + codigo + "</script>\n"
+            "<script>try{if(window.CursorFerramentas&&!window.__mbCF){window.__mbCF="
+            "CursorFerramentas.iniciar({modo:'auto'});}}catch(e){}</script>\n" + MARCA_INTERACOES_FIM)
+
+
+def aplicar_interacoes(html_texto: str) -> tuple[str, str]:
+    """Insere ou atualiza o bloco. Devolve (html, 'inserido'|'atualizado'|'igual'|'sem-componente')."""
+    bloco = html_interacoes()
+    if not bloco:
+        return html_texto, "sem-componente"
+    i = html_texto.find(MARCA_INTERACOES_INICIO)
+    if i >= 0:
+        j = html_texto.find(MARCA_INTERACOES_FIM, i)
+        if j >= 0:
+            j += len(MARCA_INTERACOES_FIM)
+            if html_texto[i:j] == bloco:
+                return html_texto, "igual"
+            return html_texto[:i] + bloco + html_texto[j:], "atualizado"
+    k = html_texto.lower().rfind("</body>")
+    if k < 0:
+        return html_texto + "\n" + bloco + "\n", "inserido"
+    return html_texto[:k] + bloco + "\n" + html_texto[k:], "inserido"

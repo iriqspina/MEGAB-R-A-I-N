@@ -1,4 +1,8 @@
 @echo off
 setlocal
 set "ROOT=%~dp0"
-"%ROOT%..\ia-quota-widget\.venv\Scripts\pythonw.exe" "%ROOT%dashboard.py" %*
+if not exist "%ROOT%bootstrap\MegaBrain.exe" (
+    echo Lancador ausente. Execute scripts\launcher-build.ps1 nesta pasta.
+    exit /b 1
+)
+start "" "%ROOT%bootstrap\MegaBrain.exe" %*

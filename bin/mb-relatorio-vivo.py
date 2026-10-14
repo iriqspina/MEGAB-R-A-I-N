@@ -1791,6 +1791,7 @@ def gerar_html(c: Path, forcar_snapshot: bool = False, saida: Path | None = None
 <div id="toasts" role="status" aria-live="polite"></div>
 <script id="mb-pop-dados" type="application/json">{dados_js}</script>
 <script>{JS_POP}</script>
+{mb_pop_tema.html_interacoes()}
 </body>
 </html>
 """

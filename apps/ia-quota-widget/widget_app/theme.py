@@ -200,7 +200,6 @@ WINDOW_ID_CATEGORIES = {
     "weekly_all": "weekly",
     "daily": "daily",
     "monthly": "monthly",
-    "codex:primary": "weekly",
     "codex_bengalfox:primary": "session",
     "codex_bengalfox:secondary": "weekly",
 }
@@ -212,6 +211,31 @@ WINDOW_CATEGORY_COLORS = {
     "weekly": "#9eb4da",
     "monthly": "#b98fe0",
 }
+# Pílulas sob o nome (261012, pedido do <USUARIO>: "cada informação numa cor
+# diferente"). Cor = TIPO da informação, igual em todos os provedores; nenhuma
+# repete cor de estado (verde/âmbar/vermelho do ritmo) nem de categoria de barra.
+CHIP_COLORS_DARK = {"reset": "#5fd4a0", "cloud": "#6aa8ff", "extra": "#e8d45c", "api": "#c49bff", "other": "#a2a8b1"}
+CHIP_COLORS_LIGHT = {"reset": "#17603f", "cloud": "#1f4f99", "extra": "#6b5a00", "api": "#5b3a99", "other": "#4d535b"}
+CHIP_ICONS = {"reset": "♻", "cloud": "☁", "extra": "$", "api": "◆", "other": "·"}
+
+
+def chip_kind(item_id: str, label: str) -> str:
+    low = (label or "").lower()
+    if item_id.startswith("reset"):
+        return "reset"
+    if "nuvem" in low:
+        return "cloud"
+    if low.startswith("api") or low.startswith("caixa"):
+        return "api"
+    if "extra" in low or "créditos" in low:
+        return "extra"
+    return "other"
+
+
+def chip_colors_for(light: bool) -> dict:
+    return CHIP_COLORS_LIGHT if light else CHIP_COLORS_DARK
+
+
 WINDOW_CATEGORY_LABELS = {
     "session": "5 h",
     "daily": "dia",
@@ -221,6 +245,11 @@ WINDOW_CATEGORY_LABELS = {
 
 
 def window_category(window: dict) -> str | None:
+    # Slots primary/secondary variam por conta/plano. A duração da fonte
+    # prevalece sobre nomes e ids, inclusive quando a mesma barra é reutilizada.
+    duration = window.get("duration_minutes")
+    if duration in (300, 1440, 10080, 43200):
+        return {300: "session", 1440: "daily", 10080: "weekly", 43200: "monthly"}[duration]
     exact = WINDOW_ID_CATEGORIES.get(str(window.get("id", "")))
     if exact is not None:
         return exact
@@ -229,6 +258,14 @@ def window_category(window: dict) -> str | None:
         if any(needle in label for needle in needles):
             return category
     return None
+
+
+def window_display_label(window: dict) -> str:
+    category = window_category(window)
+    label = WINDOW_CATEGORY_LABELS.get(category)
+    if str(window.get("id", "")).startswith("base_model_inference:"):
+        return f"gpt-reserve · {label}" if label else str(window.get("label", "gpt-reserve"))
+    return label or ""
 
 
 def window_category_color(category: str | None) -> str:

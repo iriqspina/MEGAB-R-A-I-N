@@ -1,66 +1,38 @@
-# .gitignore da CENTRAL (repositório local, privado, nunca publicado).
-#
-# 260825 — decisão 260825j: este repo existe pra você NÃO PERDER TRABALHO com
-# 5 agentes escrevendo no mesmo disco. Por isso ele VERSIONA dado pessoal:
-# licoes-megabrain.md e 260810_memoria-pessoal.md são exatamente o que você
-# precisa poder recuperar. O .gitignore que esconde dado pessoal é o do PACOTE
-# PÚBLICO e mora em _github/repo-local/.gitignore — não misture os dois.
-#
-# Regra: sem remote, sem push. Se um dia ganhar remote, esta decisão volta pra
-# mesa antes do primeiro push.
-
-# --- credenciais: nunca, em repo nenhum ---
-**/gerenteneuron/.env
-**/gerenteneuron/.venv/
-**/gerenteneuron/vault/
-gerenteneuron/.env
-gerenteneuron/.venv/
-gerenteneuron/vault/
+# Estado privado e dependências são locais.
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
 *.key
 *.pem
-
-# --- repositório git aninhado: viraria gitlink quebrado ---
-# _github/repo-local é um clone com .git próprio; _github/export é derivado
-# (regenerável por bin/mb-generate-template.py).
-_github/
-
-# --- backups e derivados: regeneráveis, e pesam 28 MB ---
-.mb-backup/
-.mb-aspirador/
-.megabrain/
-.dna-backup/
-*.plugin
-
-# --- caches ---
+*.pfx
+*.p12
+*.sqlite*
+*.db
+*.log
+*.exe
+*.tsbuildinfo
 __pycache__/
-*.pyc
-*.pyo
-
-# --- log de eventos: o hook escreve a cada prompt de cada agente. Fica fora
-# porque churn de máquina não é trabalho a recuperar, e porque um arquivo em
-# escrita durante `git rm --cached` aborta a operação inteira (260825).
+*.py[cod]
+.venv/
+node_modules/
+runtime-packages/
+.wrangler/
+.private/
+.automations/
+.megabrain/
 .mb-log/
-
-# --- travas por arquivo: estado efêmero de coordenação entre processos ---
 .mb-lock/
-
-# --- config local de ferramenta ---
-.obsidian/
-
-# --- índice com embeddings: regenerável por bin/mb-indice-licoes.py --indexar
-# e engorda o diff a cada lição nova.
-motor/dna/indice-licoes.json
-motor/dna/indice-cerebro.json
-
-# --- dados/: derivado, regenerado a cada clique no botão 1. Versionar cria
-# churn de 18 KB por execução sem contar história nenhuma — a história de
-# verdade está nos .md que ele lê pra montar.
-dados/estado.json
-
-# --- logs de execucao das automacoes: regeneraveis ---
-.automations/**/*.log
-
-# --- binarios de entrega do pets: ficam no disco, nao no historico (624 MB) ---
-00_PARA-VOCE/**/*.exe
-00_PARA-VOCE/**/*.zip
-00_PARA-VOCE/**/*.wav
+00_PARA-VOCE/
+!00_PARA-VOCE/
+00_PARA-VOCE/*
+!00_PARA-VOCE/261014_compartilhar-megabrain/
+dados/
+evidence/
+cerebro/
+dna/usuario/
+apps/megabrain-dashboard/data/
+apps/pendencias-widget/app/data/
+apps/megabrain-dashboard/remote/runtime/
+wrangler.private.jsonc

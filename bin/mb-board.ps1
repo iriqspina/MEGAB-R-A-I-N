@@ -4,7 +4,7 @@
 #       powershell -File mb-board.ps1 -Parar    -> apenas para o server
 param([switch]$Parar, [switch]$SomenteDedup)
 $ErrorActionPreference = 'SilentlyContinue'
-$root = 'S:\projetos multi i.a'
+$root = '<PROJETOS_ROOT>'
 $port = 3001
 $dist = "$env:LOCALAPPDATA\npm-cache\_npx\23b47ad77b53d45f\node_modules\agent-flow-app\dist\app.js"
 

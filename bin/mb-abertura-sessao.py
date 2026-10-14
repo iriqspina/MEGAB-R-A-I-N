@@ -105,7 +105,7 @@ def resolver_projeto(pedido: Path) -> Path:
     criaria uma cópia MEGABRAIN/ dentro da pasta de botões da central.
     """
     for d in (pedido, *pedido.parents):
-        if e_projeto(d):
+        if e_projeto(d) or e_central_real(d):
             return d
     return pedido
 
@@ -377,6 +377,32 @@ def ler_trava(projeto: Path) -> str:
     return f"TRAVADO_POR: {quem}" + (f" até {ate}" if ate and ate not in LIVRE else "")
 
 
+def atualizacoes_pendentes(central: Path, projeto: Path) -> list[dict]:
+    """Atualizações que a central pede aos projetos (motor/referencias/atualizacoes-projetos.json).
+
+    O projeto marca uma como feita escrevendo o id em .mb-atualizacoes-feitas.txt
+    (uma por linha; linha com # é comentário). Arquivo ausente ou ilegível = nada pendente.
+    """
+    arq = None
+    for base in (central / "motor" / "referencias", central / "referencias"):
+        if (base / "atualizacoes-projetos.json").is_file():
+            arq = base / "atualizacoes-projetos.json"
+            break
+    if arq is None:
+        return []
+    try:
+        lista = json.loads(arq.read_text(encoding="utf-8")).get("atualizacoes", [])
+    except (OSError, ValueError, AttributeError):
+        return []
+    feitas: set[str] = set()
+    try:
+        texto = (projeto / ".mb-atualizacoes-feitas.txt").read_text(encoding="utf-8")
+        feitas = {x.strip() for x in texto.splitlines() if x.strip() and not x.lstrip().startswith("#")}
+    except OSError:
+        pass
+    return [a for a in lista if isinstance(a, dict) and a.get("id") and a["id"] not in feitas]
+
+
 def _agora() -> dt.datetime:
     try:
         import mb_telemetria
@@ -404,12 +430,25 @@ def registrar(projeto: Path, linha: dict) -> Path | None:
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(
         description="abertura de sessão: central → projeto + git conservador (nunca commit/push)")
-    ap.add_argument("--projeto", default=None, help="pasta do projeto (padrão: pasta atual)")
+    ap.add_argument("--projeto", "--project", default=None, help="pasta do projeto (padrão: pasta atual)")
+    ap.add_argument("--application", help="nome do cliente desta sessão")
+    ap.add_argument("--session-id", help="identidade estável da sessão")
+    ap.add_argument("--no-app", action="store_true", help="registra sessão sem solicitar janela")
+    ap.add_argument("--hook", action="store_true", help="lê session_id/cwd opcionais do JSON de stdin")
     ap.add_argument("--offline", action="store_true", help="não busca o servidor git (sem fetch/pull)")
     ap.add_argument("--seco", action="store_true", help="dry-run: não grava nada, só diz o que faria")
     args = ap.parse_args(argv)
 
-    pedido = Path(args.projeto or os.getcwd()).expanduser()
+    hook = {}
+    if args.hook and not sys.stdin.isatty():
+        try:
+            value = json.load(sys.stdin)
+            if isinstance(value, dict):
+                hook = {key: value[key] for key in ("session_id", "cwd", "application", "aplicacao")
+                        if isinstance(value.get(key), str)}
+        except (ValueError, OSError):
+            pass
+    pedido = Path(args.projeto or hook.get("cwd") or os.getcwd()).expanduser()
     try:
         pedido = pedido.resolve()
     except OSError:
@@ -432,6 +471,18 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     e_a_central = _mesmo(projeto, central)
+    conexao_app = None
+    if not args.seco and (e_a_central or e_projeto(projeto)):
+        try:
+            bridge_spec = importlib.util.spec_from_file_location("mb_abertura_bridge", central / "bin/mb-session-bridge.py")
+            bridge = importlib.util.module_from_spec(bridge_spec)
+            bridge_spec.loader.exec_module(bridge)
+            conexao_app = bridge.connect(projeto, central=central, application=args.application or hook.get("application", hook.get("aplicacao")),
+                                         session_id=args.session_id, no_open=args.no_app,
+                                         hook=hook,
+                                         source="mb-abertura-sessao")
+        except (OSError, ValueError, AttributeError, ImportError):
+            conexao_app = {"presentation_state": "unavailable", "error": "session_registration_unavailable"}
     sync = sincronizar(central, projeto, cv, args.seco)
     gc = estado_git(central, args.offline, args.seco)
     gp = ({"estado": "central", "resumo": "é a própria central (ver acima)", "topo": gc.get("topo")}
@@ -445,6 +496,7 @@ def main(argv: list[str] | None = None) -> int:
     else:
         v_projeto = "sem MEGABRAIN/"
     trava = ler_trava(projeto)
+    pendentes = [] if e_a_central or not e_projeto(projeto) else atualizacoes_pendentes(central, projeto)
 
     avisos = []
     if sync["estado"] in ("aviso", "erro"):
@@ -454,6 +506,8 @@ def main(argv: list[str] | None = None) -> int:
             avisos.append(f"{rotulo}: {g['resumo']}")
     if trava.startswith("TRAVADO_POR"):
         avisos.append(f"trava {trava}")
+    for at in pendentes:
+        avisos.append(f"atualização pendente {at['id']}")
 
     nome = projeto.name or str(projeto)
     if not _mesmo(projeto, pedido):
@@ -473,6 +527,12 @@ def main(argv: list[str] | None = None) -> int:
     print(f"3. git central: {gc['resumo']}")
     print(f"4. git projeto: {gp['resumo']}")
     print(f"5. trava (HANDOFF.md): {trava}")
+    if conexao_app is not None:
+        print(f"   aplicativo: sessão {conexao_app['presentation_state']}; abertura requer recibo nativo")
+    for i, at in enumerate(pendentes, 1):
+        print(f"{5 + i}. atualização pendente ({at.get('data', '?')}): {at.get('titulo', at['id'])} — "
+              f"{at.get('instrucao', 'ver motor/referencias/atualizacoes-projetos.json')}. "
+              f"Ao concluir e verificar, acrescente a linha {at['id']} em .mb-atualizacoes-feitas.txt")
 
     if args.seco:
         if e_projeto(projeto):
@@ -489,7 +549,9 @@ def main(argv: list[str] | None = None) -> int:
         "git_projeto": gp["estado"],
         "versao": {"central": v_central, "projeto": v_projeto},
         "avisos": avisos,
+        "atualizacoes_pendentes": [a["id"] for a in pendentes],
         "so": platform.system() or "?",
+        "conexao_app": conexao_app,
     }
     if registrar(projeto, linha) is None:
         print("   log: não gravei .mb-log/sessao.jsonl (sem permissão ou disco cheio)")

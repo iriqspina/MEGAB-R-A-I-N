@@ -1,1 +1,0 @@
-validação: plugin.json, hooks.json, frontmatter, node --check, smoke test do hook — ok

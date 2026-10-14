@@ -73,7 +73,11 @@ def inbox(project, run, result, engine):
     manifest = json.loads(manifest_file.read_text(encoding="utf-8-sig")) if manifest_file.is_file() else {}
     version = manifest.get("config", {}).get("version", 1)
     public = manifest.get("public_orchestration") or ("orquestracao" + str(version + 4))
-    destination = confined(project, root / (public + "-" + run.name))
+    stable_policy = manifest.get("job", {}).get("delivery_policy") == "task_stable_v1"
+    # Novas execuções guardam rascunhos na área técnica. O coordenador consolida
+    # o artefato humano na pasta estável da tarefa; manifests antigos preservam rota.
+    destination = confined(project, run / "entrega-rascunho" if stable_policy
+                           else root / (public + "-" + run.name))
     destination.mkdir(parents=True, exist_ok=True)
     content = (
         "# Resultado da " + public.replace("orquestracao", "orquestração ") + "\n\n"
@@ -100,7 +104,11 @@ def inbox(project, run, result, engine):
         if item.exists():
             deliver(name, item.read_text(encoding="utf-8"))
     engine.atomic(marker_path, json.dumps(marker, ensure_ascii=False))
-    engine.atomic(run / "HANDOFF.md", content + "\nEntrega humana: " + str(destination) + "\n")
+    label = "Rascunho técnico: " if stable_policy else "Entrega humana: "
+    handoff = content + "\n" + label + str(destination) + "\n"
+    if stable_policy:
+        handoff += "\nPróximo passo: consolidar na pasta e entrada humanas existentes, registradas no brief.\n"
+    engine.atomic(run / "HANDOFF.md", handoff)
     return destination
 
 
@@ -148,6 +156,7 @@ def main():
                 parser.error("--brief obrigatório")
             job = engine.read_json(confined(project, args.brief.resolve()))
             engine.validate_job(job)
+            job["delivery_policy"] = "task_stable_v1"
             context = capture(project, args.source)
             job["context"] = json.dumps({
                 "brief_context": job.get("context", ""), "sources": context,

@@ -1,0 +1,208 @@
+<title>Ferramentas do cursor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* layout: coluna de 1040px; tira de 3 quadros explicando o gesto, área de teste com registro ao lado, depois o guia de reuso */
+:root{--bg:#0B0B16;--bg2:#12121F;--card:#191927;--card2:#23233A;--ink:#FFFFFF;--body:#C9C7E0;--muted:#8F8DAA;--line:rgba(255,255,255,.11);--accent:#EC0F7C;--ok:#58CC02;--info:#1CB0F6;--warn:#FFC800;--purple:#CE82FF;
+--display:"Archivo Black","Arial Black",system-ui,sans-serif;--sans:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"JetBrains Mono",ui-monospace,Consolas,monospace;color-scheme:dark}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){--bg:#F5F3EE;--bg2:#EAE7E0;--card:#FFFFFF;--card2:#F2EFE9;--ink:#191923;--body:#3F3F4C;--muted:#5E5E6E;--line:rgba(25,25,35,.14);--accent:#C70B68;--ok:#3B8500;--info:#0A78B0;--warn:#9A6E00;--purple:#7B36C2;color-scheme:light;--cf-fundo:#FFFFFF;--cf-tinta:#191923;--cf-borda:rgba(25,25,35,.16);--cf-acento:#C70B68}}
+:root[data-theme="light"]{--bg:#F5F3EE;--bg2:#EAE7E0;--card:#FFFFFF;--card2:#F2EFE9;--ink:#191923;--body:#3F3F4C;--muted:#5E5E6E;--line:rgba(25,25,35,.14);--accent:#C70B68;--ok:#3B8500;--info:#0A78B0;--warn:#9A6E00;--purple:#7B36C2;color-scheme:light;--cf-fundo:#FFFFFF;--cf-tinta:#191923;--cf-borda:rgba(25,25,35,.16);--cf-acento:#C70B68}
+:root[data-theme="dark"]{--bg:#0B0B16;--bg2:#12121F;--card:#191927;--card2:#23233A;--ink:#FFFFFF;--body:#C9C7E0;--muted:#8F8DAA;--line:rgba(255,255,255,.11);--accent:#EC0F7C;--ok:#58CC02;--info:#1CB0F6;--warn:#FFC800;--purple:#CE82FF;color-scheme:dark}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--body);font:16px/1.55 var(--sans)}
+#pagina{max-width:1040px;margin:0 auto;padding-inline:16px;padding-block:28px 90px}
+h1,h2,h3{color:var(--ink);margin:0;text-wrap:balance}
+h1{font:400 clamp(36px,6vw,60px)/1 var(--display)}
+h2{font:400 clamp(22px,3vw,30px)/1.1 var(--display)}
+h3{font:600 16px var(--sans)}
+p{margin:0}
+.mono{font:500 12px/1.4 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.lead{max-width:64ch;margin-top:14px;font-size:18px}
+.lead b{color:var(--ink)}
+.ic{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-3px}
+.tag{font:500 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:5px 7px;border-radius:6px;color:var(--purple);background:color-mix(in srgb,var(--purple) 16%,transparent)}
+.tira{margin-top:22px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}
+.tira svg{display:block;width:100%;height:auto}
+.tira figcaption{display:flex;gap:8px;align-items:center;margin-top:8px;font-size:13px;color:var(--muted)}
+.s-t{fill:var(--ink);font:700 15px var(--sans)}.s-s{fill:var(--muted);font:500 13px var(--sans)}
+.s-card{fill:var(--card2);stroke:var(--line)}.s-acc{fill:var(--accent)}.s-accs{stroke:var(--accent)}.s-ink{fill:var(--ink)}.s-bg{fill:var(--card)}
+.secao{margin-top:34px}
+.secao>.mono{margin-bottom:6px}
+.teste{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-top:16px;align-items:start}
+.teste>*{min-width:0}
+.mock{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mock .bloco{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:8px;align-content:start}
+.mock .bloco h3{display:flex;gap:8px;align-items:center}
+.btn{font:700 15px var(--sans);border-radius:999px;padding:11px 16px;border:1.5px solid var(--line);background:var(--card2);color:var(--ink);cursor:pointer;display:inline-flex;gap:8px;align-items:center;justify-content:center}
+.btn:hover{border-color:var(--accent)}
+.btn.prim{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn:focus-visible{outline:2px solid var(--info);outline-offset:2px}
+.big{font:400 34px/1 var(--display);color:var(--ink)}
+.opc{display:flex;gap:8px;align-items:center;font-size:15px}
+.painel{display:grid;gap:12px}
+.caixa{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:10px}
+.caixa h3{display:flex;gap:8px;align-items:center}
+#log{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:14px;min-height:60px}
+#log li{display:flex;gap:8px;padding:7px 9px;border-radius:8px;background:var(--card2)}
+#log li:first-child{outline:1.5px solid color-mix(in srgb,var(--accent) 55%,transparent)}
+#log .vazio{color:var(--muted);background:none}
+label.linha{display:flex;gap:10px;align-items:center;font-size:14px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+#notas{margin:0;padding-left:20px;display:grid;gap:6px;font-size:14px}
+#notas .onde{color:var(--muted);font-size:12px;display:block}
+.passos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:16px}
+.passo{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:8px;align-content:start}
+.passo .n{font:400 22px/1 var(--display);color:var(--accent)}
+pre{margin:12px 0 0;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:14px;overflow-x:auto;font:13px/1.55 var(--mono);color:var(--ink)}
+.tabela{overflow-x:auto;margin-top:12px;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font:500 12px var(--mono);text-transform:uppercase;letter-spacing:.05em;background:var(--card)}
+td code{font:13px var(--mono);color:var(--ink)}
+tr:last-child td{border-bottom:0}
+.uso{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.uso a{color:var(--info);font-weight:600}
+.caminho{font:12px var(--mono);color:var(--body);word-break:break-all}
+#aviso{position:fixed;right:16px;bottom:16px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:9px 14px;font-size:14px;z-index:50}
+@media (max-width:760px){.teste,.passos{grid-template-columns:1fr}.mock{grid-template-columns:1fr}}
+</style>
+
+<div id="pagina">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+ <symbol id="i-hand" viewBox="0 0 24 24"><path d="M5 3l13 7.5-6 1.6L9.4 18z"/></symbol>
+ <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4V5z"/></symbol>
+ <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></symbol>
+ <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+ <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></symbol>
+ <symbol id="i-img" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-8 8"/></symbol>
+ <symbol id="i-text" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></symbol>
+ <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></symbol>
+ <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
+</svg>
+
+<header>
+ <p class="mono">MEGABRAIN · interação reutilizável · v1.1 · 11/10/2026</p>
+ <h1>Ferramentas do cursor</h1>
+ <p class="lead"><b>Segure o clique por 0,7 segundo</b> em qualquer ponto. Pode mexer o mouse enquanto segura: o menu abre em leque onde o ponteiro estiver. Escolha <b>Comentar</b> e clique onde quiser deixar uma nota; dá para ditar a nota no <b>microfone</b> (<b>Ctrl+Espaço</b>). <b>Esc</b> volta ao clique normal.</p>
+ <figure class="tira">
+  <svg viewBox="0 0 960 230" role="img" aria-label="Três passos: segurar 0,7 segundo com um anel enchendo, escolher no menu em leque, clicar para comentar com um marcador numerado">
+   <rect class="s-card" x="10" y="10" width="300" height="210" rx="14"/>
+   <text class="s-t" x="30" y="42">1 · Segure 0,7 s</text><text class="s-s" x="30" y="62">pode mover o mouse</text>
+   <circle cx="160" cy="140" r="34" fill="none" stroke="rgba(128,128,128,.35)" stroke-width="6"/>
+   <circle cx="160" cy="140" r="34" fill="none" class="s-accs" stroke-width="6" stroke-linecap="round" stroke-dasharray="213.6" stroke-dashoffset="70" transform="rotate(-90 160 140)"/>
+   <path class="s-ink" d="M156 126l26 15-11 3-5 12z" stroke="#000" stroke-opacity=".25"/>
+   <rect class="s-card" x="330" y="10" width="300" height="210" rx="14"/>
+   <text class="s-t" x="350" y="42">2 · Escolha a ferramenta</text><text class="s-s" x="350" y="62">o menu abre em leque</text>
+   <circle cx="440" cy="120" r="24" class="s-bg" stroke="rgba(128,128,128,.4)"/><path d="M432 110l15 9-6 2-3 7z" class="s-ink"/>
+   <circle cx="520" cy="120" r="24" class="s-acc"/><path d="M509 111h22v13h-14l-8 6z" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/>
+   <circle cx="480" cy="172" r="16" class="s-bg" stroke="rgba(128,128,128,.4)"/><path d="M474 166l12 12M486 166l-12 12" style="stroke:var(--muted)" stroke-width="2" stroke-linecap="round"/>
+   <text class="s-s" x="415" y="85">Interagir</text><text class="s-s" x="490" y="85">Comentar</text>
+   <rect class="s-card" x="650" y="10" width="300" height="210" rx="14"/>
+   <text class="s-t" x="670" y="42">3 · Clique para comentar</text><text class="s-s" x="670" y="62">a nota fica presa no ponto</text>
+   <rect x="680" y="84" width="240" height="118" rx="10" class="s-bg" stroke="rgba(128,128,128,.3)"/>
+   <rect x="696" y="100" width="150" height="10" rx="5" fill="rgba(128,128,128,.35)"/><rect x="696" y="120" width="190" height="10" rx="5" fill="rgba(128,128,128,.25)"/><rect x="696" y="140" width="120" height="10" rx="5" fill="rgba(128,128,128,.25)"/>
+   <rect x="818" y="112" width="30" height="28" rx="14" class="s-acc" stroke="#fff" stroke-width="2"/><text x="833" y="131" text-anchor="middle" fill="#fff" style="font:700 14px var(--sans)">1</text>
+   <rect x="770" y="152" width="140" height="38" rx="8" class="s-card"/><text class="s-s" x="782" y="176">trocar esta foto</text>
+  </svg>
+  <figcaption><span class="tag">ilustração</span>O gesto em três passos</figcaption>
+ </figure>
+</header>
+
+<section class="secao" id="teste">
+ <p class="mono">Área de teste</p>
+ <h2>Experimente aqui</h2>
+ <div class="teste">
+  <div class="mock" aria-label="Página de exemplo para testar">
+   <div class="bloco"><h3><svg class="ic"><use href="#i-hand"/></svg>Botão de teste</h3><p>No modo Interagir, o clique conta. No modo Comentar, ele vira nota.</p><button class="btn prim" id="contar" type="button">Clique aqui</button><p>Cliques normais: <span class="big" id="contagem">0</span></p></div>
+   <div class="bloco"><h3><svg class="ic"><use href="#i-text"/></svg>Texto</h3><p>Segure em cima deste parágrafo e mova o mouse. O anel segue o ponteiro e mostra quanto falta; o menu abre onde o ponteiro estiver, sem deixar texto selecionado.</p></div>
+   <div class="bloco"><h3><svg class="ic"><use href="#i-check"/></svg>Opções</h3><label class="opc"><input type="radio" name="op" id="op-a" checked> Opção A</label><label class="opc"><input type="radio" name="op" id="op-b"> Opção B</label><p class="mono" style="text-transform:none">Segurar em cima de uma opção não muda a escolha.</p></div>
+   <div class="bloco"><h3><svg class="ic"><use href="#i-img"/></svg>Imagem</h3><svg viewBox="0 0 200 110" role="img" aria-label="Imagem de exemplo" style="width:100%;border-radius:8px;display:block"><rect width="200" height="110" fill="var(--card2)"/><circle cx="55" cy="40" r="16" fill="var(--warn)"/><path d="M0 110 70 55l40 30 30-20 60 45z" fill="var(--accent)" opacity=".75"/></svg></div>
+  </div>
+  <div class="painel">
+   <div class="caixa"><h3><svg class="ic"><use href="#i-list"/></svg>O que aconteceu</h3><ul id="log"><li class="vazio">Segure o clique em qualquer ponto da página.</li></ul></div>
+   <div class="caixa"><h3><svg class="ic"><use href="#i-clock"/></svg>Ajustes</h3>
+    <label class="linha" for="tempo">Tempo para segurar: <b id="tempo-txt" style="color:var(--ink)">0,7 s</b></label>
+    <input type="range" id="tempo" min="300" max="3000" step="100" value="700">
+    <label class="linha"><input type="checkbox" id="cancelar-mover"> Cancelar se o mouse mexer (jeito da v1.0)</label>
+    <label class="linha"><input type="checkbox" id="usar-claude" disabled> <span id="usar-claude-txt">Comentários do claude.ai (só dentro do claude.ai)</span></label>
+   </div>
+   <div class="caixa"><h3><svg class="ic"><use href="#i-chat"/></svg>Notas desta página</h3><ol id="notas"></ol><p id="sem-notas" class="mono" style="text-transform:none">Nenhuma nota ainda.</p><button class="btn" id="limpar" type="button">Limpar notas</button></div>
+  </div>
+ </div>
+</section>
+
+<section class="secao" id="reuso">
+ <p class="mono">Reuso</p>
+ <h2>Usar em outro projeto</h2>
+ <div class="passos">
+  <div class="passo"><span class="n">1</span><h3>Copie o código</h3><p>Um arquivo só, sem dependências. Ele traz o próprio estilo.</p><button class="btn" id="copiar-codigo" type="button"><svg class="ic"><use href="#i-copy"/></svg>Copiar código</button></div>
+  <div class="passo"><span class="n">2</span><h3>Cole na página</h3><p>Dentro de uma tag script, antes de fechar o body. Em artefato do claude.ai, cole inline.</p></div>
+  <div class="passo"><span class="n">3</span><h3>Ligue com uma linha</h3><p>Chame o iniciar. As opções abaixo ajustam tempo, ferramentas e onde a nota fica.</p><button class="btn" id="copiar-exemplo" type="button"><svg class="ic"><use href="#i-copy"/></svg>Copiar exemplo</button></div>
+ </div>
+<pre id="exemplo">var cf = CursorFerramentas.iniciar({
+  segurarMs: 700,           // tempo segurando (o mouse pode mexer)
+  microfone: true,          // ditar a nota por voz (Ctrl+Espaço)
+  modo: 'auto',             // claude.ai quando houver; senão nota local
+  chave: 'notas-meu-relatorio',
+  aoMudarNotas: function (notas) { console.log(notas); }
+});
+cf.notas();                 // [{ n, texto, onde, criado_em }]</pre>
+ <div class="tabela"><table>
+  <thead><tr><th>Opção</th><th>Padrão</th><th>Para que serve</th></tr></thead>
+  <tbody>
+   <tr><td><code>segurarMs</code></td><td>700</td><td>Quanto tempo segurar para abrir o menu. O mouse pode mexer enquanto segura; o menu abre onde o ponteiro estiver.</td></tr>
+   <tr><td><code>cancelarAoMover</code></td><td>false</td><td><b>true</b> volta ao jeito da v1.0: mexer mais que a tolerância cancela.</td></tr>
+   <tr><td><code>tolerancia</code></td><td>10 px</td><td>Só com cancelarAoMover: quanto o mouse pode mexer sem cancelar.</td></tr>
+   <tr><td><code>modo</code></td><td>auto</td><td><b>auto</b>: no claude.ai abre o comentário nativo; fora dele, nota local. <b>local</b>: sempre nota na página.</td></tr>
+   <tr><td><code>chip</code></td><td>true</td><td>Botão fixo no canto com a ferramenta atual. Aceita um elemento para morar dentro dele, ou false.</td></tr>
+   <tr><td><code>ferramentas</code></td><td>Interagir, Comentar</td><td>Lista de ferramentas: id, nome, ícone, classe de cursor e o que fazer no clique.</td></tr>
+   <tr><td><code>chave</code></td><td>endereço da página</td><td>Onde as notas locais ficam salvas no navegador.</td></tr>
+   <tr><td><code>microfone</code></td><td>true</td><td>Botão de microfone na nota local para ditar o texto. Ctrl+Espaço liga e desliga. Funciona no Chrome e no Edge; sem suporte, sugere Win + H.</td></tr>
+   <tr><td><code>idiomaVoz</code></td><td>pt-BR</td><td>Idioma do ditado.</td></tr>
+   <tr><td><code>ignorar</code></td><td>campos de texto</td><td>Onde segurar não abre o menu (para não atrapalhar quem seleciona texto).</td></tr>
+   <tr><td><code>aoMudar</code>, <code>aoMudarNotas</code>, <code>aoEvento</code></td><td>nenhum</td><td>Avisos para a página reagir: troca de ferramenta, notas, menu aberto, microfone.</td></tr>
+  </tbody>
+ </table></div>
+ <div class="uso"><svg class="ic"><use href="#i-link"/></svg><span>Já em uso: <a href="https://claude.ai/artifact/P37Pxq3utnX1GRnQUZcHnj">Decisões do Portfólio</a></span></div>
+ <div class="uso"><span class="mono">Fonte única</span><span class="caminho" id="caminho"><MEGABRAIN_ROOT>\motor\modelos\interacoes\261010_cursor-ferramentas\cursor-ferramentas.js</span><button class="btn" id="copiar-caminho" type="button"><svg class="ic"><use href="#i-copy"/></svg>Copiar caminho</button></div>
+</section>
+<div id="aviso" role="status" hidden></div>
+</div>
+
+<script id="cf-script">/*{{CF_JS}}*/</script>
+<script>
+(function(){
+ var log=document.getElementById('log'),aviso=document.getElementById('aviso'),avT=0;
+ function registrar(t){var v=log.querySelector('.vazio');if(v)v.remove();var li=document.createElement('li');li.textContent=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+' · '+t;log.insertBefore(li,log.firstChild);while(log.children.length>7)log.removeChild(log.lastChild);}
+ function avisar(t){aviso.textContent=t;aviso.hidden=false;clearTimeout(avT);avT=setTimeout(function(){aviso.hidden=true;},2600);}
+ var nomes={interagir:'Interagir',comentar:'Comentar'};
+ var cf=CursorFerramentas.iniciar({modo:'local',chave:'cf-demo-notas',aoEvento:function(tipo,d){
+  if(tipo==='segurou')registrar('Segurou: menu aberto');
+  else if(tipo==='ferramenta')registrar('Ferramenta: '+(nomes[d.id]||d.id));
+  else if(tipo==='notas'){registrar('Notas na página: '+d.total);listar();}
+  else if(tipo==='comentario')registrar('Comentário aberto no claude.ai: '+d.rotulo);
+  else if(tipo==='microfone')registrar('Microfone: '+d.estado+(d.erro?' ('+d.erro+')':''));
+ }});
+ function listar(){
+  var ns=cf.notas(),ol=document.getElementById('notas');ol.innerHTML='';
+  ns.forEach(function(n){var li=document.createElement('li');li.textContent=n.texto;var s=document.createElement('span');s.className='onde';s.textContent='perto de: '+n.onde;li.appendChild(s);ol.appendChild(li);});
+  document.getElementById('sem-notas').hidden=ns.length>0;
+ }
+ listar();
+ var c=0;document.getElementById('contar').addEventListener('click',function(){c++;document.getElementById('contagem').textContent=c;registrar('Clique normal no botão ('+c+')');});
+ document.getElementById('tempo').addEventListener('input',function(){var v=+this.value;cf.configurar({segurarMs:v});document.getElementById('tempo-txt').textContent=(v/1000).toLocaleString('pt-BR',{minimumFractionDigits:1})+' s';});
+ document.getElementById('cancelar-mover').addEventListener('change',function(){cf.configurar({cancelarAoMover:this.checked});registrar(this.checked?'Mexer o mouse cancela o segurar':'Pode mexer o mouse enquanto segura');});
+ var chk=document.getElementById('usar-claude');
+ if(window.claude&&typeof window.claude.use==='function'){chk.disabled=false;document.getElementById('usar-claude-txt').textContent='Usar os comentários do claude.ai no lugar da nota local';}
+ chk.addEventListener('change',function(){cf.configurar({modo:chk.checked?'auto':'local'});registrar(chk.checked?'Comentar abre o comentário do claude.ai':'Comentar cria nota local');});
+ document.getElementById('limpar').addEventListener('click',function(){cf.limparNotas();listar();avisar('Notas apagadas desta página.');});
+ function copiar(txt,ok){
+  function alt(){var t=document.createElement('textarea');t.value=txt;t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.select();var r=false;try{r=document.execCommand('copy');}catch(e){}t.remove();avisar(r?ok:'Não consegui copiar: selecione o texto e use Ctrl+C.');}
+  try{navigator.clipboard.writeText(txt).then(function(){avisar(ok);},alt);}catch(e){alt();}
+ }
+ document.getElementById('copiar-codigo').addEventListener('click',function(){copiar(document.getElementById('cf-script').textContent.trim(),'Código copiado.');});
+ document.getElementById('copiar-exemplo').addEventListener('click',function(){copiar(document.getElementById('exemplo').textContent,'Exemplo copiado.');});
+ document.getElementById('copiar-caminho').addEventListener('click',function(){copiar(document.getElementById('caminho').textContent,'Caminho copiado.');});
+})();
+</script>

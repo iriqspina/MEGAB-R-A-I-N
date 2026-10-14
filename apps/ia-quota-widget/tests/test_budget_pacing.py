@@ -81,17 +81,15 @@ def test_hour_scale_window_has_no_business_day_target():
     assert result["target_per_business_day"] is None
 
 
-def test_missing_duration_falls_back_to_business_days():
+def test_missing_duration_never_invents_relative_pacing():
     resets_at = _START + timedelta(days=3)
     now = _START
     window = {"id": "weekly", "used_percent": 50.0, "resets_at": resets_at.isoformat()}
     result = window_pacing(window, now, business_days=6)
-    # fallback = 6 dias; reset em 3 dias => metade da janela, ritmo uniforme
-    assert result["elapsed_fraction"] == 0.5
-    assert result["ideal_used_by_now"] == 50.0
-    assert result["status"] == "ok"
-    # duração adivinhada: status usa o fallback, mas não inventa uma cifra
-    # por dia com precisão que a leitura não tem (achado da revisão Fable).
+    assert result["elapsed_fraction"] is None
+    assert result["ideal_used_by_now"] is None
+    assert result["status"] == "NAO_MEDIDO"
+    assert result['duration_is_fallback'] is True
     assert result["target_per_business_day"] is None
 
 

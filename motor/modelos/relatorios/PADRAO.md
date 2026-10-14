@@ -1,5 +1,11 @@
 # PADRÃO ÚNICO DE RELATÓRIO · POP v1.2 · 260915
 
+## Brain app: manter o HTML original · 261012
+
+Pedido literal do <USUARIO>: "aparecessem no aplicativo Mega Brain exatamente como eles eram feitos antes, com a mesma estética". O aplicativo apresenta o próprio HTML, preservando composição, cores, fontes, imagens, navegação, Ferramentas do cursor e Decisões respondíveis. Novas entregas continuam feitas no padrão HTML vigente; o app é o destino de apresentação. Relatórios existentes mantêm sua estética escolhida: não recriar seu conteúdo em cartões com o tema da central nem aplicar nova pele ao abrir.
+
+A moldura do aplicativo pode oferecer biblioteca, comparação e Salvar no projeto, fora do documento. Finalizar respostas abre a revisão; a confirmação em Enviar prepara o recebimento no projeto. Abrir/revisar não significa aprovação humana. Compatibilidade precisa de comparação do mesmo arquivo no Qt em 1440 e 390 px, com prova separada de nota, decisão e salvamento. Fonte e teste desta correção: `evidence/261012_central-relatorios/estetica-original/`.
+
 Decisão do <USUARIO> (260915, esta sessão): **todo relatório equivalente, em todos os
 projetos, usa UM padrão visual — o template POP v1.2**, o mesmo aprovado por ele em
 260914 (DECISOES 260914). Fim das 8 famílias de estética.
@@ -21,6 +27,16 @@ espelhada no template). A pele legado tem variante clara por seleção explícit
 (`html[data-tema="claro"]`) — sem o atributo, tudo segue escuro. Prova funcional:
 `node bin/mb-verificar-pop-tema.mjs <html>` (8 cenários + varredura de cliques
 nos 2 temas + contraste computado + rede).
+
+## Elementos obrigatórios · v1.3 · 261010 (pedido do <USUARIO>)
+
+"Lembre-se disso como elemento necessário principal e recrie para os relatórios megabrain dos projetos."
+1. **Ferramentas do cursor** em todo relatório POP: segurar 2 s → menu em leque → Comentar. Os geradores
+   inserem via `mb_pop_tema.html_interacoes()`; HTML à mão via `bin/mb-interacoes.py`; o template
+   `260914_pop/relatorio-pop.html` já traz o bloco entre as marcas `mb-interacoes`.
+2. **Decisões respondíveis** quando o relatório pede decisão: caixas por pergunta, recomendação marcada,
+   Finalizar único, envio ao Claude no claude.ai e Copiar/Baixar fora dele.
+Fonte e contrato: `motor/modelos/interacoes/LEIAME.md`.
 
 ## Fonte única do padrão
 

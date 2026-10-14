@@ -1,0 +1,45 @@
+{
+  "_fonte": "Pedidos do <USUARIO> que cada projeto aplica na própria sessão. Lido por bin/mb-abertura-sessao.py; o projeto marca como feito escrevendo o id em .mb-atualizacoes-feitas.txt (uma linha por id). Vale para qualquer agente (Claude, Codex, Kimi, Gemini).",
+  "atualizacoes": [
+    {
+      "id": "261013-sessoes-conectadas-app",
+      "data": "2026-10-13",
+      "titulo": "Sessões MegaBrain se apresentam no aplicativo",
+      "pedido_literal": "nova sessão, independente do aplicativo, usando MegaBrain conecta ao aplicativo e mostra atualização",
+      "instrucao": "Executar startup central mb-inicio-sessao.py --project RAIZ ao iniciar/retomar MegaBrain. Passar identidade/aplicativo reais quando disponíveis. Usar orquestracao1 em entrega não trivial. Conferir Sessões → aplicativo, horário/versão e recibo; preservar fontes e histórico.",
+      "referencia": "S:\\projetos multi i.a\\MEGA B R A I  N\\memoria\\cerebro\\raw\\261013_pedido-sessoes-conectadas.md",
+      "verificar": "Registro daquela sessão e projeto, recibo nativo do destino e indicação atual no aplicativo são provas distintas. Marcar atualização feita só após observação.",
+      "nao_fazer": "Não fingir conexão por arquivo/health; não abrir navegador; não prometer integração com clientes sem startup nem recarga de chats existentes."
+    },
+    {
+      "id": "261010-relatorios-interativos",
+      "data": "2026-10-10",
+      "titulo": "relatórios com Ferramentas do cursor e Decisões respondíveis",
+      "pedido_literal": "adorei, lembre-se disso como elemento necessário principal e recrie para os relatórios megabrain dos projetos ... lembre aos projetos de se atualizarem na proxima sessão com esses elementos e recriáveis, até mesmo fora do claude",
+      "instrucao": "rode python MEGABRAIN/bin/mb-interacoes.py nos HTML de 00_PARA-VOCE (entrada INICIO e relatórios vivos da tarefa) e refaça com MEGABRAIN/modelos/interacoes/261010_decisoes-respondiveis/ todo relatório que ainda pede decisão do <USUARIO>",
+      "referencia": "MEGABRAIN/modelos/interacoes/LEIAME.md",
+      "verificar": "abrir o HTML, segurar o clique 2 s (menu em leque abre), Comentar cria nota; em relatório de decisão, Finalizar mostra o resumo e Copiar/Baixar funcionam fora do claude.ai",
+      "nao_fazer": "não apagar nem mover relatórios antigos; não migrar outros projetos por implicação; preservar edições humanas"
+    },
+    {
+      "id": "261011-central-modular-esteiras",
+      "data": "2026-10-11",
+      "titulo": "central única, módulos e processos visuais",
+      "pedido_literal": "Em vez de você me mandar um HTML, todas as coisas, eles estão agora num aplicativo só.",
+      "instrucao": "Ler a preferência CENTRAL-APP na identidade canônica e o verbete central 261011_central-modular-e-esteiras. Atualizar as fontes ESTADO/HANDOFF/catálogo do próprio projeto para a central ler. Quando a central estiver conectada, reutilizar a visão do projeto nela; não gerar painel concorrente. Explicar processos como esteira com hierarquia do alto à esquerda para direita/baixo.",
+      "referencia": "<MEGABRAIN_ROOT>/memoria/cerebro/wiki/261011_central-modular-e-esteiras.md",
+      "verificar": "Confirmar que a central mostra a atualização real do projeto e permite acesso à fonte/entrega; registrar somente depois de verificar. Sessões externas não são automaticamente reconfiguradas.",
+      "nao_fazer": "Não apagar, mover ou migrar acervos; não afirmar aprovação visual humana; não trocar globalmente o gesto de 2s dos relatórios legados."
+    },
+    {
+      "id": "261012-relatorios-app-ia-responsavel",
+      "data": "2026-10-12",
+      "titulo": "Relatórios no aplicativo e você significa IA responsável",
+      "pedido_literal": "todos eles ... eu quero que abra no aplicativo Mega Brain; você se refere à IA no geral, não necessariamente ao agente interlocutor",
+      "instrucao": "Ler RELATORIOS-APP e Você significa a IA responsável na identidade central. Apresentar HTML com python <CENTRAL>/bin/mb-abrir-entrega.py <arquivo>; atualizar fontes/catálogo sem mover acervo. Verificar Agora, Resultados, Referências e biblioteca no aplicativo; usar arraste/botão para colocar na mesa. Fiscalização pode ser atribuída ao orquestrador/IA responsável. Não abrir relatórios pelo navegador.",
+      "referencia": "S:\\projetos multi i.a\\MEGA B R A I  N\\memoria\\cerebro\\wiki\\261012_relatorios-app-e-ia-responsavel.md",
+      "verificar": "Provar arquivo indexado e aberto no MegaBrain, nova atualização aparecendo, nota/decisão recebida com hash e rascunho preservado. Registrar aplicação somente após prova; configuração em disco não recarrega chats abertos.",
+      "nao_fazer": "Não mover/copiar/apagar acervos; não alterar associação global do Windows; não presumir conclusão/correção nem participação de outra conta. HTML incompatível ou raiz desconectada é pendência explícita."
+    }
+  ]
+}

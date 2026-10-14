@@ -108,13 +108,14 @@ def _result(
     windows: Sequence[dict[str, Any]] | None = None,
     message: str = "",
     fetched_at: str | None = None,
+    details: dict | None = None,
 ) -> dict[str, Any]:
     """Monta a resposta no formato do contrato.
 
     ``fetched_at`` só é preenchido quando houve leitura boa: um horário em cima
     de um erro faz a UI achar que o dado é fresco.
     """
-    return {
+    result = {
         "provider": provider,
         "label": PROVIDER_LABELS.get(provider, provider),
         "status": status,
@@ -123,6 +124,9 @@ def _result(
         "windows": list(windows or []),
         "message": message,
     }
+    if details:
+        result["details"] = details
+    return result
 
 
 def normalize_percent(value: Any) -> float | None:
@@ -527,6 +531,7 @@ def _fetch_codex_account(
             source=CODEX_SOURCE,
             message="Conta autenticada, mas sem janela de cota exposta.",
         )
+    from quota_details_data import codex_details
     return _result(
         provider_id,
         "ok",
@@ -534,6 +539,7 @@ def _fetch_codex_account(
         windows=windows,
         fetched_at=_now_iso(),
         message=f"Plano {plan}." if plan else "",
+        details=codex_details(rate.get("result") or {}),
     )
 
 
@@ -700,6 +706,7 @@ def _fetch_claude(timeout: float) -> dict[str, Any]:
     windows = parse_claude_usage(payload)
     if not windows:
         return _result("claude", "unavailable", source=CLAUDE_SOURCE, message="Nenhuma janela de cota na resposta.")
+    from quota_details_data import claude_details
     return _result(
         "claude",
         "ok",
@@ -707,6 +714,7 @@ def _fetch_claude(timeout: float) -> dict[str, Any]:
         windows=windows,
         fetched_at=_now_iso(),
         message=f"Plano {plan}." if plan else "",
+        details=claude_details(payload),
     )
 
 

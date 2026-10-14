@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "source_kind": "browser_observation",
+  "automatic": false,
+  "observed_at": "2026-10-11T21:19:44-03:00",
+  "accounts": {
+    "claude": {
+      "balance": 0,
+      "currency": "BRL",
+      "monthly_cap": 1200,
+      "monthly_spent": 0,
+      "extra_enabled": false,
+      "auto_reload": false,
+      "source": "https://claude.ai/settings/usage",
+      "scope": "créditos de uso",
+      "observed_at": "2026-10-11T21:19:44-03:00",
+      "resets": [
+        {
+          "title": "Reset completo",
+          "count": 1,
+          "total": 1,
+          "kind": "full",
+          "expires_at": "2026-10-22T16:00:00+00:00",
+          "usable": true
+        }
+      ],
+      "reset_observed_at": "2026-10-12T00:35:06.581+00:00"
+    },
+    "zai": {
+      "balance": 0,
+      "cash": 0,
+      "bonus": 0,
+      "currency": "USD",
+      "auto_reload": false,
+      "source": "https://z.ai/manage-apikey/billing",
+      "scope": "saldo da API, separado do Coding Plan",
+      "observed_at": "2026-10-11T21:19:44-03:00"
+    }
+  },
+  "limits": "Leituras com data própria. Consultas diretas atualizam cotas; saldos e ofertas de navegador têm verificação diária agendada, ainda sem execução futura observada."
+}

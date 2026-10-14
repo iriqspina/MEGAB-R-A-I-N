@@ -30,21 +30,29 @@ que também DESENVOLVE quando a tarefa pede; revisar é só uma das funções de
 Modelo local fraco gerando resposta: nunca, nem como fallback. Modos
 leve/padrão: pausados (spec: `03_docs/260824_spec-fase2.md`).
 
-Quando rodar gates: **entrega** (arquivo, peça, código, análise que sai da
-conversa) = completo 0–7 · **rascunho/exploração** = leve 1·4·5 · **pergunta,
+Todo pedido passa pela mesma triagem proporcional (pedido 260916): contexto,
+intenção, artefato, risco, evidência e autorização. `bin/mb-triagem.py` recomenda
+etapas com motivo; a IA confere a conversa inteira. Entrega não trivial mantém
+revisão e prova; conversa não gera plano, arquivo ou relatório por obrigação.
+Sensibilidade só amplia passos opcionais, nunca reduz o piso de qualidade.
+Saída padrão da triagem, em gates: **entrega** (arquivo, peça, código, análise que
+sai da conversa) = completo 0–7 · **rascunho/exploração** = leve 1·4·5 · **pergunta,
 papo** = nenhum (rodar protocolo em papo é o próprio slop). Subir de leve pra
 completo no meio é barato; descer não existe.
+Contrato: `referencias/260916_plataforma-contrato.md`. Entrada humana fixa:
+`00_PARA-VOCE/INICIO.html`; caminhos absolutos testados, link e pasta copiável.
 
 ## Início de sessão e roteador de orquestração
 
-**Antes de qualquer trabalho novo:** rode `python <MEGABRAIN_ROOT>/bin/mb-inicio-sessao.py`.
+**Ao iniciar ou retomar uma sessão MegaBrain, em qualquer cliente:** rode `python <MEGABRAIN_ROOT>/bin/mb-inicio-sessao.py --project <RAIZ_DO_PROJETO>`. O startup registra a sessão e pede abertura no aplicativo nativo. Se o cliente fornece ID e nome reais, use `--session-id` e `--application`; para stdin de hook, `--hook`. Confira no app Sessões → aplicativo e o recibo nativo; uma fila pendente não comprova abertura. Sem acesso ao PC/central, registre a indisponibilidade em vez de prometer conexão.
 Ele mostra as skills canônicas realmente disponíveis nesta central, confirma que
 `/orquestracao1` é a V6 padrão e entrega uma instrução curta para a IA ler as
 skills necessárias. O catálogo é uma triagem: **não substitui ler por inteiro a
 `SKILL.md` da skill que será usada.**
 
 Toda entrega nova que seja não trivial e decomponível entra por
-`/orquestracao1` (V6) como padrão, sem esperar uma segunda confirmação. Não
+`/orquestracao1` (V6) — modo prioritário em todos os projetos (decisão 260915) —
+sem esperar uma segunda confirmação. Não
 abra uma execução vazia nem use V6 para pergunta simples, conversa, agenda ou
 correção local óbvia; nesses casos o modo padrão é o trabalho direto. Retomada
 histórica ou pedido explícito de V5 usa `/orquestracao2`.
@@ -63,7 +71,7 @@ conversa com qualquer IA.
 No início de uma nova conversa ou projeto, oferecer uma vez, sem bloquear nem
 transformar em pergunta:
 
-> Orquestração: /orquestracao1 é a V6 primária para trabalho multiagente novo; /orquestracao2 mantém a V5 apenas para retomada ou pedido explícito. /hypadododiabo explora o melhor caso com limites reais.
+> Orquestração: /orquestracao1 é a V6 primária e o modo prioritário em todos os projetos para trabalho novo; /orquestracao2 mantém a V5 apenas para retomada ou pedido explícito. /hypadododiabo explora o melhor caso com limites reais.
 
 Se o início caracterizar **projeto grande**, sugerir também
 `/quaseultracode`: ciclo ideal-first de até 5 horas, com orçamento
@@ -141,7 +149,9 @@ agente não começa do zero). Detalhe passo a passo, quando precisar:
   central = parar e perguntar). Fonte que o usuário trouxe → `02_entrada` ou
   `cerebro/raw` + `/ingerir`. Output de outro agente = rascunho: audite antes
   de construir em cima. Caminhos e repos novos: confirmar com o usuário antes.
-- **1 ENQUADRAR** — artefato e app de destino? leitor e decisão dele? 3 critérios
+- **1 ENQUADRAR** — localizar a pasta estável e a entrada existente da tarefa;
+  registrar o mesmo endereço para produção, revisões e respostas (contrato 261002).
+  Artefato e app de destino? leitor e decisão dele? 3 critérios
   verificáveis? restrição dura? contraexemplo genérico nomeado (o slop esperado)?
   **Não existe teto de perguntas** (decisão 260824, revoga o "máx. 2"): abrir/
   retomar projeto e **ENTREGA** rodam a grelha completa — skill `/grelhar`
@@ -174,6 +184,7 @@ agente não começa do zero). Detalhe passo a passo, quando precisar:
   `dados/telemetria-orquestracao.json` compacto (240 eventos recentes; passado
   agregado por dia/provider). A rota usa a cota viva; o histórico só informa
   otimizações futuras, sem transformar dado velho em disponibilidade atual.
+- **DESPACHAR antes de alterar** — registrar aqui/agente/sessão, cliente e conta reais, motivo, fontes mínimas, arquivos exclusivos e revisor independente. Nova frente quando o trabalho é independente, precisa de ferramenta exclusiva ou olhar imparcial; continuar aqui quando a dependência/custo do handoff justificar. Preparar pacote técnico na pasta estável da tarefa com pedido literal, contexto da pergunta, critérios, fontes/hashes e referências visuais úteis. Revisão cega é opção para nova proposta, nunca motivo para esconder correção factual. Conferir cotas oficiais antes do despacho; registrar tokens por resposta/sessão quando fornecidos e snapshots por janela/data, sem converter porcentagem em tokens nem atribuir consumo compartilhado só à tarefa. Detalhes: `motor/skills/orquestracao1/SKILL.md`, seção Despacho delimitado por alteração.
 - **3 GERAR** — estrutura antes de prosa; uma afirmação por parágrafo; fato do
   mundo atual → buscar, nunca de memória; número/data/preço verificado ou
   `[ESTIMATIVA]`; específico > geral. **Antes de editar peça compartilhada**
@@ -191,7 +202,13 @@ agente não começa do zero). Detalhe passo a passo, quando precisar:
   genérico, raio não-concêntrico) — o vigia aponta, quem reescreve é você;
   material de outro agente → premissas verificadas? decisão não registrada?
   **1 reparo só** — se ainda está ruim, o erro é do Gate 1.
-- **5 VERIFICAR** — abre no app? caminho existe (TESTAR, não confiar)? número
+- **5 VERIFICAR** — conferir conteúdo físico e links da entrada estável da tarefa;
+  resultado, candidatos e histórico separados quando aplicáveis; técnicos fora de
+  `00_PARA-VOCE`; exclusões/correções humanas persistidas e respeitadas pelo gerador.
+  Nome, autoria, pasta ou metadado não confirma identidade de pessoa fotografada.
+  Conteúdo para leitura humana está em HTML visual e conciso, com sumário/ações
+  e detalhes recolhidos, sem `.md` entregue ao <USUARIO> nem paredão de texto?
+  Abre no app? caminho existe (TESTAR, não confiar)? número
   recalculado? data conferida? contradiz DECISOES? Skill/protocolo/script:
   conferir a cópia CARREGADA (tamanho/data/hash) contra a fonte — repo limpo não
   prova skill atualizada. Alto risco → subagente verificador com contexto zero e
@@ -202,7 +219,9 @@ agente não começa do zero). Detalhe passo a passo, quando precisar:
   velho, prazo, decisão sem dono — levar ao usuário no máx. 5 perguntas com
   evidência + impacto + recomendação. Cliente/dinheiro/multi-IA →
   `referencias/260815_pipeline-governanca-aprendizado.md`.
-- **6 PASSAR O BASTÃO** — esgotar execução autônoma antes de pedir qualquer coisa;
+- **6 PASSAR O BASTÃO** — responder com a mesma entrada absoluta testada e registrar
+  pasta/entrada estáveis, resultado atual e exclusões para a próxima rodada;
+  esgotar execução autônoma antes de pedir qualquer coisa;
   reescrever ESTADO (5 linhas) e HANDOFF (feito · aberto · próximo passo com
   verbo e objeto · PARA VOCÊ · `TRAVADO_POR: livre`); DECISOES: append com a
   alternativa descartada via `mb_trava.py anexar-decisao`, nunca por append
@@ -282,6 +301,13 @@ sessão pergunta tudo de novo). Lista completa: `referencias/260824_skill-comple
 
 ## Entrega humana — uma pasta só
 
-Todo novo documento para o usuário olhar ou decidir nasce em `00_PARA-VOCE/` do projeto, com prefixo YYMMDD. Use `bin/mb-entrega.py --projeto <raiz> --origem <arquivo>` para organizar uma entrega já produzida: ele preserva a origem e recusa sobrescrita. Orquestracao5 faz isso automaticamente. Scripts, fontes canônicas, testes, evidências e backups ficam fora da pasta humana.
+Leitura ou decisão do <USUARIO> → HTML padronizado, visual e conciso, no padrão do projeto: resultado/sumário e ações claros, detalhes recolhidos e links funcionais. Não entregar `.md` nem converter texto longo em paredão HTML. Markdown é fonte/estado/prova técnica entre agentes fora da pasta humana. Formato diferente só por pedido explícito ou necessidade do artefato, como editável nativo; imagem, vídeo e peça pedida mantêm o formato próprio. Atualizar a entrada vigente da tarefa, sem painel novo.
+
+Cada tarefa mantém uma pasta estável e uma entrada principal dentro da organização humana vigente do projeto. Antes de criar, localizar a tarefa existente; revisões e rodadas reutilizam o endereço. Data identifica a abertura, não uma nova pasta por rodada. Respeitar os assuntos locais; quando úteis, usar `resultado/`, `candidatos/` e `historico/` dentro da tarefa. Toda resposta sobre a entrega aponta à mesma entrada absoluta testada. Não criar painel concorrente.
+
+Scripts, fontes canônicas, testes, medições, revisões de agentes e backups ficam fora de `00_PARA-VOCE`. A V6 guarda rascunhos novos na execução técnica; cabe ao coordenador consolidar o artefato humano na pasta estável, após validar conteúdo físico, links e correções/exclusões persistentes. Ferramenta que proponha destino novo deve ser ajustada ao endereço da tarefa antes de publicar a entrega. O princípio global não autoriza migrar fisicamente outros projetos. Contrato: `referencias/260916_plataforma-contrato.md` (261002).
 
 Material concluído ainda útil vai para `_arquivo/<período>/`; pontual antigo comprovadamente sem uso pode ser apagado conforme autorização. Conferir referências antes; preservar backup de produção e o dia corrente. O painel vivo existente mantém seu caminho até migrar seus consumidores; ofereça um acesso a ele na pasta humana. Cite sempre a pasta completa de entrega.
+## Aprofundamento por famílias · uso contextual
+
+Para coleções de entregas que combinam repetição e particularidades, leia `motor/referencias/260915_templates-por-necessidade.md` na central (ou `referencias/260915_templates-por-necessidade.md` na distribuição do projeto). O ciclo parte de evidência, agrupa por necessidade e estrutura, explicita o núcleo reutilizável e personaliza o caso antes da prévia. <USUARIO> participa das decisões em rodadas curtas de perguntas. Não transformar esse modo em exigência para tarefas simples; o teto de três modelos pertence ao briefing Marketeiro e não a todo projeto.

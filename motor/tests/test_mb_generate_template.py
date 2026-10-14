@@ -175,6 +175,42 @@ class TestTemporariosNaoSaem(Base):
 
 
 class TestManifestoComProveniencia(Base):
+    def test_central_nativa_exporta_fontes_sem_sessoes_ou_ambiente(self):
+        central=self.tmp()/'central'
+        central.mkdir()
+        (central/'VERSAO.txt').write_text('2026-10-14 fixture\n',encoding='utf-8')
+        allowed=['apps/megabrain-dashboard/central_reports.py',
+                 'apps/megabrain-dashboard/web/package.json',
+                 'apps/megabrain-dashboard/remote/gateway.mjs',
+                 'apps/megabrain-dashboard/bootstrap/MegaBrainLauncher.cs',
+                 'apps/megabrain-dashboard/.env.example']
+        excluded=['apps/megabrain-dashboard/data/.private/native.key',
+                  'apps/megabrain-dashboard/data/feedback/example.json',
+                  'apps/megabrain-dashboard/runtime-packages/package/test.py',
+                  'apps/megabrain-dashboard/web/node_modules/react/package.json',
+                  'apps/megabrain-dashboard/remote/runtime/session.json',
+                  'apps/megabrain-dashboard/remote/.wrangler/state.json',
+                  'apps/megabrain-dashboard/remote/wrangler.private.jsonc',
+                  'apps/megabrain-dashboard/bootstrap/MegaBrain.exe',
+                  'apps/megabrain-dashboard/bootstrap/launcher-probe.json',
+                  'apps/megabrain-dashboard/.env.production',
+                  'evidence/session/transcript.jsonl']
+        for name in allowed+excluded:
+            p=central/name;p.parent.mkdir(parents=True,exist_ok=True)
+            p.write_text('fixture\n',encoding='utf-8')
+        out=central/'_github/export'
+        self.assertTrue(gt.gerar_template(central,out))
+        for name in allowed:self.assertTrue((out/name).is_file(),name)
+        for name in excluded:self.assertFalse((out/name).exists(),name)
+        self.assertIn('apps/megabrain-dashboard/data/',(out/'.gitignore').read_text(encoding='utf-8'))
+
+    def test_fontes_nativas_e_web_passam_pela_sanitizacao(self):
+        root=self.tmp()
+        for suffix in ['.ts','.tsx','.mjs','.cjs','.jsonc','.cs','.ps1']:
+            p=root/('source'+suffix)
+            p.write_text('C:\\Users\\<USUARIO>',encoding='utf-8')
+            self.assertIn(b'<USER_HOME>',gt.conteudo_publicado(p),suffix)
+
     def fixture_plugin(self) -> tuple[Path, Path]:
         central = self.tmp() / "central"
         canonica = central / "motor/skills/megabrain/SKILL.md"

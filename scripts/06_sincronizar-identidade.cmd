@@ -35,6 +35,7 @@ echo.
 "%PY%" "%SCRIPT%" --source "%FONTE%" --target gemini --modo conteudo --dir "%USERPROFILE%\.gemini"
 "%PY%" "%SCRIPT%" --source "%FONTE%" --target kimi   --modo conteudo --dir "%USERPROFILE%\.kimi"
 "%PY%" "%SCRIPT%" --source "%FONTE%" --target kimi   --modo conteudo --dir "%USERPROFILE%\.kimi-code"
+"%PY%" "%SCRIPT%" --source "%FONTE%" --target kimi      --modo conteudo --dir "%USERPROFILE%\.zcode"
 "%PY%" "%SCRIPT%" --source "%FONTE%" --target codex      --modo conteudo --dir "%USERPROFILE%\.codex"
 "%PY%" "%SCRIPT%" --source "%FONTE%" --target codex      --modo conteudo --dir "%USERPROFILE%\.codex-gpt2"
 "%PY%" "%SCRIPT%" --source "%FONTE%" --target claude-style --modo conteudo --dir "%USERPROFILE%\.claude"

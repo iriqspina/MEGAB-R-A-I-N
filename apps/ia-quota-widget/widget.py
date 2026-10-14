@@ -12,6 +12,7 @@ from widget_app.single_instance import SingleInstanceGuard
 def parse_args(argv):
     parser = argparse.ArgumentParser(description="Widget de cotas IA")
     parser.add_argument("--demo", action="store_true", help="usa dados ficticios rotulados, sem consultar nada")
+    parser.add_argument("--settings", action="store_true", help="abre diretamente as configurações na instância existente")
     parser.add_argument("--screenshot", metavar="PATH", help="grava um PNG da janela e sai")
     parser.add_argument(
         "--screenshot-delay-ms", type=int, default=400, help="espera antes de capturar (layout/poll assentarem)"
@@ -39,11 +40,12 @@ def main(argv=None):
     args = parse_args(sys.argv[1:] if argv is None else argv)
 
     app = QApplication(sys.argv[:1])
-    app.setQuitOnLastWindowClosed(True)
+    app.setQuitOnLastWindowClosed(False)
 
     if not args.skip_singleton_guard:
         guard = SingleInstanceGuard()
         if not guard.claim():
+            guard.request(f'settings:{max(0,min(4,args.settings_tab))}' if args.settings else 'show')
             print("ia-quota-widget ja esta em execucao.")
             return 0
 
@@ -60,12 +62,22 @@ def main(argv=None):
         for segment in window._segments.values():
             segment.set_expanded(True)
     window.show_positioned()
+    if not args.skip_singleton_guard:
+        def show_requested(command):
+            window._show_from_tray()
+            window.raise_()
+            window.activateWindow()
+            if command.startswith('settings'):
+                dialog=window.open_settings()
+                if ':' in command:
+                    dialog.tabs.setCurrentIndex(int(command.split(':')[1]))
+        guard.set_callback(show_requested)
     if args.move_to:
         x_str, y_str = args.move_to.split(",")
         window.move(int(x_str), int(y_str))
     window.poll_now()
 
-    if args.settings_screenshot:
+    if args.settings_screenshot or args.settings:
         dialog = window.open_settings()
         dialog.tabs.setCurrentIndex(args.settings_tab)
     if args.screenshot or args.settings_screenshot:

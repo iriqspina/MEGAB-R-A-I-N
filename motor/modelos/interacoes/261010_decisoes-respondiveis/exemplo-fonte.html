@@ -1,0 +1,99 @@
+<title>Relatório que responde</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* layout: modelo POP de relatório que coleta decisões; cada assunto = contexto visual + caixas de pergunta; barra de finalizar fixa no rodapé */
+:root{--bg:#0B0B16;--bg2:#12121F;--card:#191927;--card2:#23233A;--ink:#FFFFFF;--body:#C9C7E0;--muted:#8F8DAA;--line:rgba(255,255,255,.11);--accent:#EC0F7C;--ok:#58CC02;--info:#1CB0F6;--bad:#FF4B4B;--purple:#CE82FF;--cf-fundo:var(--card);--cf-tinta:var(--ink);--cf-borda:var(--line);--cf-acento:var(--accent);
+--display:"Archivo Black","Arial Black",system-ui,sans-serif;--sans:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"JetBrains Mono",ui-monospace,Consolas,monospace;color-scheme:dark}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){--bg:#F5F3EE;--bg2:#EAE7E0;--card:#FFFFFF;--card2:#F2EFE9;--ink:#191923;--body:#3F3F4C;--muted:#5E5E6E;--line:rgba(25,25,35,.14);--accent:#C70B68;--ok:#3B8500;--info:#0A78B0;--bad:#C92A2A;--purple:#7B36C2;color-scheme:light}}
+:root[data-theme="light"]{--bg:#F5F3EE;--bg2:#EAE7E0;--card:#FFFFFF;--card2:#F2EFE9;--ink:#191923;--body:#3F3F4C;--muted:#5E5E6E;--line:rgba(25,25,35,.14);--accent:#C70B68;--ok:#3B8500;--info:#0A78B0;--bad:#C92A2A;--purple:#7B36C2;color-scheme:light}
+:root[data-theme="dark"]{--bg:#0B0B16;--bg2:#12121F;--card:#191927;--card2:#23233A;--ink:#FFFFFF;--body:#C9C7E0;--muted:#8F8DAA;--line:rgba(255,255,255,.11);--accent:#EC0F7C;--ok:#58CC02;--info:#1CB0F6;--bad:#FF4B4B;--purple:#CE82FF;color-scheme:dark}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--body);font:16px/1.55 var(--sans)}
+#pagina{max-width:980px;margin:0 auto;padding-inline:16px;padding-block:28px 0}
+h1,h2{color:var(--ink);margin:0;text-wrap:balance}
+h1{font:400 clamp(34px,6vw,56px)/1 var(--display)}
+h2{font:400 clamp(22px,3vw,28px)/1.1 var(--display)}
+p{margin:0}
+.mono{font:500 12px/1.4 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.lead{max-width:62ch;margin-top:12px;font-size:18px}.lead b{color:var(--ink)}
+.regras{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:18px}
+.regra{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;font-size:14px}.regra b{display:block;color:var(--ink)}
+.assunto{margin-top:30px;background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:20px}
+.a-head{display:flex;gap:12px;align-items:flex-start}.a-head .grow{flex:1;min-width:0}
+.num{font:400 28px/1 var(--display);color:var(--bg);background:var(--accent);border-radius:10px;min-width:44px;height:44px;display:grid;place-items:center}
+[data-dr-status]{font:500 12px/1 var(--mono);color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:7px 10px;white-space:nowrap}
+.contexto{display:grid;grid-template-columns:1.1fr 1fr;gap:14px;margin-top:16px}
+.contexto>*{min-width:0}
+.visual{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}
+.visual svg{display:block;width:100%;height:auto}
+.visual figcaption{font-size:13px;color:var(--muted);margin-top:8px;display:flex;gap:8px;align-items:center}
+.tag{font:500 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:5px 7px;border-radius:6px;color:var(--purple);background:color-mix(in srgb,var(--purple) 16%,transparent)}
+.fatos{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.fatos li{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:15px}
+.fatos b{color:var(--ink)}
+.s-box{fill:var(--card2);stroke:var(--line)}.s-ok{fill:color-mix(in srgb,var(--ok) 16%,var(--card2));stroke:var(--ok)}.s-t{fill:var(--ink);font:600 13px var(--sans)}.s-s{fill:var(--muted);font:500 12px var(--sans)}
+@media (max-width:760px){.regras,.contexto{grid-template-columns:1fr}}
+</style>
+
+<div id="pagina">
+<header>
+ <p class="mono">MEGABRAIN · modelo recriável · relatório que responde · v1.0 · 10/10/2026</p>
+ <h1>Relatório que responde</h1>
+ <p class="lead">Modelo para qualquer projeto: o relatório explica cada assunto com imagem e linhas curtas, e <b>cada pergunta vira uma caixa</b> com a recomendação já marcada. A pessoa responde ali e clica em <b>Finalizar respostas</b>.</p>
+ <div class="regras">
+  <div class="regra"><b>Contexto antes</b>Imagem ou ilustração e 2 a 4 linhas por assunto.</div>
+  <div class="regra"><b>Uma caixa por pergunta</b>Alternativa quando há opções; texto quando precisa explicar.</div>
+  <div class="regra"><b>Recomendação marcada</b>Quem não mexe aceita o padrão; o resumo diz o que foi mexido.</div>
+  <div class="regra"><b>Segure 2 s</b>Abre as ferramentas do cursor: comentar em qualquer ponto.</div>
+ </div>
+</header>
+
+<section class="assunto">
+ <div class="a-head"><span class="num">1</span><div class="grow"><p class="mono">Exemplo · entrega</p><h2>Qual formato o cliente recebe?</h2></div><span data-dr-status="a1"></span></div>
+ <div class="contexto">
+  <figure class="visual">
+   <svg viewBox="0 0 440 150" role="img" aria-label="Fluxo: peça pronta, revisão, entrega ao cliente">
+    <rect class="s-box" x="8" y="40" width="120" height="60" rx="10"/><text class="s-t" x="68" y="66" text-anchor="middle">Peça pronta</text><text class="s-s" x="68" y="84" text-anchor="middle">arquivo aberto</text>
+    <rect class="s-box" x="160" y="40" width="120" height="60" rx="10"/><text class="s-t" x="220" y="66" text-anchor="middle">Revisão</text><text class="s-s" x="220" y="84" text-anchor="middle">1 rodada</text>
+    <rect class="s-ok" x="312" y="40" width="120" height="60" rx="10"/><text class="s-t" x="372" y="66" text-anchor="middle">Entrega</text><text class="s-s" x="372" y="84" text-anchor="middle">formato a decidir</text>
+    <path d="M130 70h26M282 70h26" stroke="currentColor" style="stroke:var(--muted)" stroke-width="1.5"/>
+   </svg>
+   <figcaption><span class="tag">ilustração</span>Onde a decisão entra no fluxo</figcaption>
+  </figure>
+  <ul class="fatos">
+   <li><b>Hoje:</b> cada entrega sai num formato diferente.</li>
+   <li>Padronizar reduz retrabalho na hora de exportar.</li>
+   <li>A escolha vale para os próximos trabalhos, não para os entregues.</li>
+  </ul>
+ </div>
+ <div data-dr-sec="a1"></div>
+</section>
+
+<section class="assunto">
+ <div class="a-head"><span class="num">2</span><div class="grow"><p class="mono">Exemplo · prazo</p><h2>Recado para o próximo passo</h2></div><span data-dr-status="a2"></span></div>
+ <div data-dr-sec="a2"></div>
+</section>
+</div>
+
+<script id="cf-script">/*{{CF_JS}}*/</script>
+<script id="dr-script">/*{{DR_JS}}*/</script>
+<script>
+DecisoesRespondiveis.iniciar({
+ chave: 'megabrain-exemplo-relatorio-que-responde',
+ titulo: 'Relatório que responde (exemplo)',
+ secoes: [
+  { id: 'a1', titulo: '1 · Formato de entrega', perguntas: [
+   { id: 'formato', n: '1.1', tipo: 'escolha', titulo: 'Qual formato vira o padrão?', porque: 'Muda o que é exportado no fim de cada trabalho.', rec: 'pdf_editavel', opcoes: [
+     { v: 'pdf_editavel', t: 'PDF + arquivo aberto', d: 'O cliente vê o PDF; o editável fica guardado.', meta: ['mais completo'] },
+     { v: 'so_pdf', t: 'Só PDF', d: 'Mais simples de enviar.', meta: ['mais leve'] },
+     { v: 'outro', t: 'Outro', d: 'Escreva qual.', extra: 'Ex.: PNG em pasta compartilhada' } ] },
+   { id: 'quando', n: '1.2', tipo: 'escolha', titulo: 'A partir de quando?', rec: 'proximo', opcoes: [
+     { v: 'proximo', t: 'Próximo trabalho', d: 'Sem mexer no que já saiu.' },
+     { v: 'data', t: 'Escolher data', d: 'Escolha o dia.', extra: 'data' } ] } ] },
+  { id: 'a2', titulo: '2 · Recado', perguntas: [
+   { id: 'recado', n: '2.1', tipo: 'texto', titulo: 'Algo que o agente precisa saber?', porque: 'Opcional. Clique numa sugestão ou escreva.', valor: '', ph: 'Ex.: prioridade, prazo, cliente…', sug: ['Nada por agora', 'Tenho prazo esta semana'] } ] }
+ ]
+});
+</script>

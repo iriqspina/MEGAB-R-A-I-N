@@ -12,29 +12,38 @@ uma conta enquanto outra folga → executar → registrar padrão no cérebro.
 
 ## Passo a passo (rodar antes de executar)
 
-1. **Leitura de situação:** `python <CENTRAL>/bin/mb-leitura-uso.py`
-   — lê `dados/orcamento_ia.json` (medição viva do widget Cotas IA + motor),
-   mostra por conta/janela: uso %, horas pra renovar, veredito
-   (folga/apertado/esgotado/não medido) e avisa se há **janela descrepante**
-   (uma conta ≥70% enquanto outra com folga ≥30 pontos abaixo).
-2. **Peso do pedido:** leve = edição local pequena, resposta única (fica na
-   sessão) · médio = leitura de muitos arquivos, varredura, prova, build
-   (considerar worker) · pesado = revisão, geração, pesquisa, plano
-   (despachar pra conta com folga: worker `claude -p`, `codex exec` no
-   CODEX_HOME livre, ou run V6 — o motor mede cota sozinho).
-3. **Rota:** pesado vai pra conta com FOLGA medida; a sessão atual comanda e
-   consolida. Sessão já apertada + pedido médio/pesado = despachar ou pedir
-   pra abrir sessão na conta folgada. Nenhuma conta saudável = dizer e
-   esperar janela (renovação de 5h geralmente resolve), sem queimar a última.
-4. **Projeto que pega mais processamento:** antes de aceitar "é pesado",
-   checar o histórico: `memoria/cerebro/wiki/` (tópicos de uso) e
-   `dados/telemetria-orquestracao.json` (240 eventos recentes por
-   provider/modelo). Projeto repetidamente caro = candidato a fase menor,
-   worker barato ou fatia.
-5. **Registrar:** decisão de rota não-óbvia ou discrepância vista → 1 tópico
-   curto em `memoria/cerebro/wiki/YYMMDD_<tema>.md` (reindexa com
-   `bin/mb-indice-cerebro.py`) e, se virou regra de trabalho, lição via
-   `/registrar-licao`.
+1. **Leitura real por conta:** `python <CENTRAL>/bin/mb-leitura-uso.py --json`.
+   O startup `mb-inicio-sessao.py` já inclui esse snapshot. Ele não atualiza rede:
+   medir cotas nos leitores oficiais antes de cada despacho; guardar fonte,
+   horário, conta/home, duração e reset de cada janela. Snapshot acima de 300 s
+   [HEURÍSTICA] ou inválido = `NAO_MEDIDO`, nunca saldo zero ou folga.
+2. **Comparabilidade:** comparar pressão apenas entre janelas de igual duração,
+   com todas as restrições da conta consideradas. Menor janela isolada não escolhe
+   rota; `base_model_inference` não representa saldo geral Codex. `primary` não
+   significa sempre 5 horas. Duração inferida fica separada de medição explícita.
+   Ritmo `used_percent / (100 * elapsed_fraction)` só com denominador positivo;
+   início da janela é `NAO_MEDIDO`. Percentuais de vendors não equivalem a tokens,
+   dinheiro, capacidade ou produtividade.
+3. **Plano antes de ferramentas:** listar tarefas úteis, dependências, acesso
+   necessário, responsável real, prova esperada e revisor independente. Codex 1
+   e Codex 2 são homes/contas distintos; ZCode é o cliente GLM oficial. Verificar
+   ferramenta e capacidade junto com a cota. Quem detém Figma pode executar essa
+   parte enquanto outro cliente pesquisa, organiza candidatos ou revisa artefatos.
+4. **Rota e economia:** distribuir trabalho independente para a conta capaz com
+   menor pressão comparável, reservando margem do limite mais restritivo. Separar
+   custo observado de [ESTIMATIVA]. Usar contexto mínimo e uma chamada útil por
+   papel; não fazer pergunta ao modelo só para descobrir a versão se houver
+   metadado/configuração. Cache lido não é token novo, nem prova de consumo de cota.
+   Não gastar para equalizar percentuais, duplicar pesquisa sem propósito ou
+   atribuir todo delta da conta a esta tarefa quando existem sessões paralelas.
+5. **Reavaliar:** repetir medição imediatamente antes do despacho, após erro/429,
+   mudança de escopo/capacidade e no fechamento. Não repetir após 429; escolher
+   alternativa capaz já autorizada ou registrar bloqueio. Toda rota guarda
+   fonte/idade, critérios, trabalho delegado, resultado e motivo de exceção.
+6. **Fechar:** comparar o previsto e o realmente executado, registrar desperdício
+   evitável e limites de atribuição. A melhoria é distribuição de trabalho útil,
+   não garantia de fechar um gap numérico. Atualizar lição/estado sem transformar
+   preferência em compra, troca global de conta ou reconfiguração de provider.
 
 ## Quando NÃO rodar (não virar burocracia)
 
@@ -50,8 +59,10 @@ uma conta enquanto outra folga → executar → registrar padrão no cérebro.
 - `bin/mb-compreensor.py` — contexto injetado da sessão (fuga de orçamento).
 - Cérebro `memoria/cerebro/wiki/` — padrão medido por projeto/conta.
 
-## Janela descrepante (definição prática)
+## Pressão desigual: sinal, não diagnóstico automático
 
-Uma conta ≥70% de uso enquanto outra ≥30 pontos abaixo de folga = erro de
-roteamento, não azar. Quem decide o canal é a leitura, não o hábito
-("sempre abro no Z"/"sempre no Claude" é o bug).
+Uma diferença de pelo menos 30 pontos percentuais com uma conta acima de 70%
+[HEURÍSTICA] chama atenção somente em janelas equivalentes e amostras atuais.
+Não comprova erro de rota: ferramenta exclusiva, qualidade exigida, limites de
+modelo, dependências ou custo adicional de handoff podem justificar a diferença.
+Registrar o motivo; reavaliar tarefas independentes antes do próximo despacho.

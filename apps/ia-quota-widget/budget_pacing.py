@@ -105,9 +105,12 @@ def window_pacing(
     hours_to_reset = seconds_to_reset / 3600.0
 
     duration_minutes = window.get("duration_minutes")
-    duration_is_fallback = not isinstance(duration_minutes, (int, float)) or isinstance(duration_minutes, bool) or duration_minutes <= 0
+    duration_is_fallback = not isinstance(duration_minutes, (int, float)) or isinstance(duration_minutes, bool) or not math.isfinite(duration_minutes) or duration_minutes <= 0
     if duration_is_fallback:
-        duration_minutes = business_days * 1440
+        unknown = _not_measured("duração da janela não informada; ritmo relativo não medido")
+        unknown.update(used_percent=round(used_percent,1),remaining_percent=round(100-used_percent,1),hours_to_reset=round(hours_to_reset,2),duration_is_fallback=True)
+        if used_percent >= 100:unknown['status']='pause'
+        return unknown
 
     total_seconds = duration_minutes * 60.0
     window_start = resets_at - timedelta(seconds=total_seconds)
@@ -149,6 +152,7 @@ def window_pacing(
         "target_per_hour": round(target_per_hour, 2),
         "target_per_business_day": round(target_per_business_day, 2) if target_per_business_day is not None else None,
         "reason": "",
+        "duration_is_fallback": False,
     }
 
 
@@ -174,9 +178,17 @@ def provider_pacing(
     for win in snapshot.get("windows") or []:
         if not isinstance(win, dict) or not win.get("id"):
             continue
-        windows_out[str(win["id"])] = window_pacing(
+        measured = window_pacing(
             win, now, business_days=business_days, decelerate_threshold=decelerate_threshold
         )
+        # Keep observed period/reset even when pacing cannot be calculated.
+        # A computed fallback duration is not a provider measurement.
+        duration = win.get("duration_minutes")
+        explicit = isinstance(duration, (int, float)) and not isinstance(duration, bool) and math.isfinite(duration) and duration > 0
+        measured["duration_minutes"] = duration if explicit else None
+        measured["resets_at"] = win.get("resets_at")
+        measured["label"] = win.get("label") or str(win["id"])
+        windows_out[str(win["id"])] = measured
 
     worst_status = "NAO_MEDIDO"
     if windows_out:

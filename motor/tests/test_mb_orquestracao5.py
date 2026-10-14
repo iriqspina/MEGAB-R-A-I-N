@@ -134,6 +134,24 @@ class Orquestracao5Tests(unittest.TestCase):
         self.assertTrue((destination / "PLANO.md").is_file())
         self.assertTrue((destination / "ROTA.json").is_file())
 
+    def test_stable_policy_keeps_run_material_outside_human_folder(self):
+        run = self.project / ".automations/runs/stable-policy"
+        run.mkdir(parents=True)
+        (run / "manifest.json").write_text(json.dumps({"config": {"version": 2},
+            "job": {"delivery_policy": "task_stable_v1"}}), encoding="utf-8")
+        (run / "candidate.md").write_text("Candidato", encoding="utf-8")
+        (run / "route.json").write_text("{}", encoding="utf-8")
+        destination = driver.inbox(self.project, run, {"status": "review_approved"}, LocalWriter)
+        self.assertEqual(destination, run / "entrega-rascunho")
+        self.assertFalse((self.project / "00_PARA-VOCE").exists())
+        self.assertEqual((destination / "CANDIDATO.md").read_text(encoding="utf-8"), "Candidato")
+        self.assertTrue((destination / "ROTA.json").exists())
+        self.assertIn("Rascunho técnico", (run / "HANDOFF.md").read_text(encoding="utf-8"))
+        (destination / "CANDIDATO.md").write_text("Correção humana", encoding="utf-8")
+        (run / "candidate.md").write_text("Nova geração", encoding="utf-8")
+        driver.inbox(self.project, run, {"status": "review_approved"}, LocalWriter)
+        self.assertEqual((destination / "CANDIDATO.md").read_text(encoding="utf-8"), "Correção humana")
+
     def test_v6_prepare_prints_route_without_auth_or_dispatch(self):
         brief = self.put("brief-v6.json", json.dumps({"objective": "Proposta", "criteria": ["Critério"],
             "profile": "auto"}))
@@ -143,6 +161,9 @@ class Orquestracao5Tests(unittest.TestCase):
             self.assertEqual(driver.main(), 0)
         preview = json.loads(output.getvalue())
         self.assertEqual(preview["orquestracao"], "orquestracao1")
+        prepared = json.loads(Path(preview["brief"]).read_text(encoding="utf-8"))
+        self.assertEqual(prepared["delivery_policy"], "task_stable_v1")
+        self.assertFalse((self.project / "00_PARA-VOCE").exists())
         self.assertEqual(preview["route"]["effective_profile"], "normal")
         self.assertIn("não medida", preview["route"]["reason"])
 

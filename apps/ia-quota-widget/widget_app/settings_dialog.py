@@ -13,7 +13,6 @@ bandeja) e Rainmeter (grudar nas bordas, comportamento ao passar o mouse).
 
 from __future__ import annotations
 
-from dataclasses import asdict
 from datetime import datetime, timedelta, timezone
 
 from PySide6.QtCore import Qt
@@ -30,6 +29,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QListWidget,
     QListWidgetItem,
+    QListView,
     QPushButton,
     QSlider,
     QSpinBox,
@@ -42,6 +42,8 @@ from . import persistence, theme
 from .contrast import hex_to_rgb
 from .snapshot_store import SnapshotStore
 from .ui_provider_segment import ProviderSegment, options_from, typography_from
+from .layout_policy import EDGE
+from .ui_quota_strip import QuotaStrip
 
 SUGGESTED_FONTS = (
     "Segoe UI",
@@ -59,6 +61,7 @@ SUGGESTED_FONTS = (
 )
 
 VISUAL_KEYS = (
+    "visual_mode", "strip_height",
     "font_family", "size_name", "size_value", "size_hint", "size_detail", "scale",
     "surface_preset", "bg_opacity_percent", "number_mode", "reset_mode",
     "show_pacing", "show_footer", "hover_mode",
@@ -79,16 +82,26 @@ class LivePreview(QFrame):
         self._store.update("claude", {
             "status": "ok",
             "windows": [
-                {"id": "session", "label": "Sessão", "used_percent": 57.0,
+                {"id": "session", "label": "Sessão", "used_percent": 57.0, "duration_minutes": 300,
                  "resets_at": (now + timedelta(hours=2, minutes=10)).isoformat()},
-                {"id": "weekly_all", "label": "Semana", "used_percent": 6.0,
+                {"id": "weekly_all", "label": "Semana", "used_percent": 6.0, "duration_minutes": 10080,
                  "resets_at": (now + timedelta(days=6)).isoformat()},
-                {"id": "weekly_scoped:Fable", "label": "Semana · Fable", "used_percent": 0.0,
+                {"id": "weekly_scoped:Fable", "label": "Semana · Fable", "used_percent": 0.0, "duration_minutes": 10080,
                  "resets_at": (now + timedelta(days=6)).isoformat()},
             ],
             "fetched_at": now.isoformat(),
             "message": "Plano max. (exemplo)",
-            "source": "prévia",
+            "source": "DEMO · prévia",
+            # Extras de exemplo: a prévia mostra os mesmos tipos de linha do
+            # widget (resets, crédito, participação), todos rotulados DEMO.
+            "details": {
+                "resets": [{"title": "Reset completo", "count": 1, "total": 1, "kind": "full", "usable": True,
+                            "expires_at": (now + timedelta(days=9)).isoformat()}],
+                "financial": [{"title": "Crédito DEMO", "amount": 250.0, "total": 250.0, "currency": "USD",
+                               "status": "measured", "note": "Valor fictício da prévia."}],
+                "product_shares": [{"name": "Code", "percent": 60.0}, {"name": "Chat", "percent": 40.0}],
+                "notes": [],
+            },
         })
         self._pacing = {"windows": {
             "session": {"status": "ok", "target_per_hour": 21.4},
@@ -96,12 +109,51 @@ class LivePreview(QFrame):
             "weekly_scoped:Fable": {"status": "ok", "target_per_business_day": 16.0},
         }}
         self.segment = ProviderSegment("claude", "Claude", self)
+        self.segment.browser_evidence = False  # prévia: só dado DEMO
         grid.addWidget(self.segment, 0, 0)
         grid.setColumnStretch(0, 1)
         self.segment.set_expanded(True)
         self.segment.show()
+        self.store = self._store
+        self.settings = persistence.Settings()
+        self.demo = True
+        self.provider_ids = ["claude"]
+        self._canonical_labels = theme.PROVIDER_LABELS
+        self._querying = set()
+        self._details = None
+        self.strip = QuotaStrip(self, QWidget())
+        grid.addWidget(self.strip, 1, 0)
+        self.strip.hide()
+
+    def _palette(self):
+        return theme.palette_for(self.settings.surface_preset)
+
+    def _preset(self):
+        return theme.surface_preset(self.settings.surface_preset)
+
+    def _show_menu(self):
+        self.strip.setToolTip("Prévia DEMO · use os controles abaixo para configurar")
+
+    def open_settings(self):
+        """The preview reuses its containing settings dialog, without a new window."""
+        dialog = self.window()
+        if isinstance(dialog, SettingsDialog):
+            dialog.show()
+            dialog.raise_()
+            dialog.activateWindow()
+            dialog.tabs.setFocus(Qt.OtherFocusReason)
+            return dialog
+
+    def open_quota_details(self, row_id, anchor):
+        from .ui_quota_details import QuotaDetails
+        if self._details is not None:
+            self._details.close()
+            self._details.deleteLater()
+        self._details = QuotaDetails(self, row_id, anchor)
+        self._details.open_at_anchor()
 
     def refresh(self, settings):
+        self.settings = settings
         palette = theme.palette_for(settings.surface_preset)
         r, g, b = hex_to_rgb(theme.surface_preset(settings.surface_preset)["bg"])
         alpha = settings.bg_opacity_percent / 100.0
@@ -113,6 +165,14 @@ class LivePreview(QFrame):
         self.segment.configure(typography_from(settings), options_from(settings))
         self.segment.apply_theme(palette)
         self.segment.update_from_store(self._store, True, self._pacing)
+        compact = settings.visual_mode == "trilho"
+        self.segment.setVisible(not compact)
+        self.strip.setVisible(compact)
+        if compact:
+            # Mesma Altura da faixa do widget (limitada a 160 px na prévia):
+            # o mesmo QuotaStrip/coluna rolável, nunca uma imitação.
+            self.strip.setFixedHeight(min(settings.strip_height, 160) - 2 * EDGE)
+            self.strip.configure()
 
 
 class SettingsDialog(QDialog):
@@ -124,6 +184,24 @@ class SettingsDialog(QDialog):
         self.setWindowTitle("Cotas IA — Configurações")
         self.setWindowFlag(Qt.WindowStaysOnTopHint, True)
         self.setMinimumWidth(600)
+        self.setObjectName('quotaSettings')
+        self.setStyleSheet('''
+            QDialog#quotaSettings { background:#18141f; color:#f5eef8; }
+            QDialog#quotaSettings QLabel, QDialog#quotaSettings QCheckBox { color:#ede3f4; font:13px "Segoe UI"; }
+            QDialog#quotaSettings QTabWidget::pane { background:#211b29; border:1px solid #54445f; border-radius:10px; padding:12px; }
+            QDialog#quotaSettings QTabBar::tab { background:#211b29; color:#d8c8e3; padding:12px 16px; margin-right:4px; border-radius:7px; }
+            QDialog#quotaSettings QTabBar::tab:selected { background:#6b385b; color:#ffffff; }
+            QDialog#quotaSettings QPushButton { background:#302638; color:#f5eef8; border:1px solid #6c577b; border-radius:8px; padding:9px 12px; min-height:24px; }
+            QDialog#quotaSettings QPushButton:hover { background:#513247; border-color:#ff82c4; }
+            QDialog#quotaSettings QPushButton:checked { background:#6b385b; border-color:#ff82c4; }
+            QDialog#quotaSettings QPushButton:focus, QDialog#quotaSettings QComboBox:focus, QDialog#quotaSettings QSpinBox:focus { border:2px solid #ff82c4; }
+            QDialog#quotaSettings QComboBox, QDialog#quotaSettings QSpinBox { background:#302638; color:#f5eef8; border:1px solid #6c577b; border-radius:7px; padding:7px; min-height:25px; }
+            QDialog#quotaSettings QComboBox::drop-down { width:24px; border:0; }
+            QDialog#quotaSettings QComboBox QAbstractItemView { background:#302638; color:#f5eef8; selection-background-color:#6b385b; border:1px solid #8b7198; padding:4px; }
+            QDialog#quotaSettings QListWidget { background:#302638; color:#f5eef8; border:1px solid #6c577b; border-radius:8px; }
+            QDialog#quotaSettings QSlider::groove:horizontal { background:#54445f; height:6px; border-radius:3px; }
+            QDialog#quotaSettings QSlider::handle:horizontal { background:#ff82c4; width:16px; margin:-6px 0; border-radius:8px; }
+        ''')
 
         root = QVBoxLayout(self)
         caption = QLabel(
@@ -152,6 +230,8 @@ class SettingsDialog(QDialog):
         self.tabs.addTab(self._build_numbers_tab(), "Números")
         self.tabs.addTab(self._build_window_tab(), "Janela")
         self.tabs.addTab(self._build_providers_tab(), "Provedores")
+        for combo in self.findChildren(QComboBox):
+            combo.setView(QListView(combo))
         root.addWidget(self.tabs, 1)
 
         buttons = QHBoxLayout()
@@ -301,6 +381,16 @@ class SettingsDialog(QDialog):
     def _build_window_tab(self) -> QWidget:
         tab = QWidget()
         form = QFormLayout(tab)
+        self.mode_combo = self._combo([("Legado · cards", "legacy"), ("Trilho · faixa", "trilho")], "visual_mode")
+        self.height_combo = self._combo([("Micro · 40 px", 40), ("Compacto · 72 px", 72), ("Conforto · 112 px", 112)], "strip_height")
+        form.addRow("Modo visual", self.mode_combo)
+        form.addRow("Altura da faixa", self.height_combo)
+        self.height_combo.setAccessibleName("Altura da faixa (vale nos dois modos)")
+        form.addRow("", self._note("A Altura da faixa vale nos dois modos e permanece fixa. "
+                                    "Em 72/112 px, cotas, renovação, resets e saldos ficam juntos, sem rolar. "
+                                    "O texto do monitor usa 9/11 px e o nome até 13/16 px; suas preferências continuam salvas. "
+                                    "Se a largura não bastar, as setas mostram outras contas. Clique no nome ou Enter abre todas as fontes e detalhes. "
+                                    "Micro (40 px) mantém rolagem; Legado abaixo de 300 px usa a mesma faixa. F5 atualiza."))
         self.top_check = self._check("Sempre acima das outras janelas", "always_on_top")
         self.lock_check = self._check("Travar posição e tamanho", "lock_position")
         self.snap_check = self._check("Grudar nas bordas da tela ao arrastar", "snap_edges")
@@ -335,13 +425,17 @@ class SettingsDialog(QDialog):
     # ------------------------------------------------------------ sincronia
 
     def begin_session(self):
-        self._opened_with = asdict(self._window.settings)
+        self._opened_with = self._window.settings.to_dict()
         self.sync_from_window()
 
     def sync_from_window(self):
         s = self._window.settings
         self._syncing = True
         try:
+            self._select(self.mode_combo, s.visual_mode)
+            if self.height_combo.count()>3:self.height_combo.removeItem(3)
+            if self.height_combo.findData(s.strip_height)<0:self.height_combo.addItem(f'Personalizado · {s.strip_height} px',s.strip_height)
+            self._select(self.height_combo, s.strip_height)
             self.font_combo.setCurrentFont(QFont(s.font_family))
             for family, button in self.gallery_buttons.items():
                 button.setChecked(family == s.font_family)

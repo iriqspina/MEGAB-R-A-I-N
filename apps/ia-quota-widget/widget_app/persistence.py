@@ -17,6 +17,11 @@ DEFAULT_PROVIDER_VISIBILITY = {
 }
 
 DEFAULT_SETTINGS = {
+    "schema_version": 2,
+    # Opt-in until activation by the coordinator; old profiles stay legacy.
+    "visual_mode": "legacy",
+    "strip_height": 72,
+    "strip_width": 800,
     "pos_x": None,
     "pos_y": None,
     "bg_opacity_percent": 76,
@@ -53,6 +58,11 @@ DEFAULT_SETTINGS = {
 
 @dataclass
 class Settings:
+    schema_version: int = 2
+    visual_mode: str = "legacy"
+    strip_height: int = 72
+    strip_width: int = 800
+    _extra: dict = field(default_factory=dict, repr=False)
     pos_x: int | None = None
     pos_y: int | None = None
     bg_opacity_percent: int = 76
@@ -88,7 +98,17 @@ class Settings:
         self.visible_providers[provider_id] = visible
 
     def to_dict(self) -> dict:
-        return asdict(self)
+        values = asdict(self)
+        extra = values.pop("_extra")
+        return {**extra, **values}
+
+
+def migrate_settings(raw: dict) -> dict:
+    """Add missing keys in memory; retain unknown keys and user preferences."""
+    merged = {**DEFAULT_SETTINGS, **raw}
+    version = raw.get("schema_version", 1)
+    merged["schema_version"] = max(2, version) if isinstance(version, int) else 2
+    return merged
 
 
 def load_settings() -> Settings:
@@ -99,9 +119,12 @@ def load_settings() -> Settings:
         raw = json.loads(paths.SETTINGS_PATH.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
         return Settings()
-    merged = {**DEFAULT_SETTINGS, **raw}
+    if not isinstance(raw, dict):
+        return Settings()
+    merged = migrate_settings(raw)
     known = {f for f in DEFAULT_SETTINGS}
-    return Settings(**{k: v for k, v in merged.items() if k in known})
+    return Settings(**{k: v for k, v in merged.items() if k in known},
+                    _extra={k: v for k, v in raw.items() if k not in known})
 
 
 def save_settings(settings: Settings) -> None:

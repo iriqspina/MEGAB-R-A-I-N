@@ -148,7 +148,7 @@ class PercentTrack(QWidget):
             return
         self._percent = percent
         self._color = color
-        self._text = f"{round(percent)}%" if percent is not None else "—"
+        self._text = percent_label(percent)
         start = self._shown if self._shown is not None else 0
         target = percent if percent is not None else None
         if self._anim is not None:
@@ -273,6 +273,11 @@ class WindowBar(QWidget):
         # completo em _extra_full; o visível recebe elipse na largura real.
         self._extra.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
         self._extra_full = ""
+        # parts[0] = renovação (sempre visível, também recolhido — pedido
+        # 261011: recolher não esconde informação); o resto (ritmo) só
+        # quando expandido.
+        self._extra_parts: list[str] = []
+        self._expanded = False
 
         # Coluna: rótulo + barra na linha de cima; renovação/ritmo embaixo.
         # Largura mínima ESTÁVEL (rótulo+barra), o que impede o ciclo em que
@@ -290,28 +295,38 @@ class WindowBar(QWidget):
         column.addWidget(self._extra)
         self.update_window(window)
 
-    def update_window(self, window: dict):
+    def update_window(self, window: dict, *, remaining: bool = False):
         """Atualiza rótulo, % e barra NO MESMO widget. Recriar a linha a cada
         leitura re-animava a barra do zero e mexia no layout inteiro — o
         <USUARIO> pediu (260915) que a barra só deslize pro novo valor."""
         used = window.get("used_percent")
-        label_text = theme.WINDOW_CATEGORY_LABELS.get(self._category) or friendly_window_label(window.get("label"))
+        shown = 100.0 - used if remaining and used is not None else used
+        self._category = theme.window_category(window)
+        label_text = theme.window_display_label(window) or friendly_window_label(window.get("label"))
+        window_id = str(window.get("id", ""))
+        if window_id.startswith("weekly_scoped:"):
+            # Cota específica nunca se confunde com a semana geral.
+            label_text = f"{window_id.split(':', 1)[1]} · {label_text}"
         self._label.setText(label_text)
-        self._pct.setText(percent_label(used) if used is not None else "—")
-        self._track.set_value(used, theme.window_category_color(self._category))
+        self._pct.setText(percent_label(shown))
+        self._track.set_value(shown, theme.window_category_color(self._category))
         friendly = friendly_window_label(window.get("label"))
-        self.setToolTip(friendly if friendly else label_text)
+        self.setToolTip(str(window.get("label") or friendly or label_text) + (" · livre" if remaining else " · usado"))
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self._apply_extra_text()
 
     def set_extra(self, parts: list[str]):
-        self._extra_full = " · ".join(part for part in parts if part)
-        self._apply_extra_text()
+        self._extra_parts = list(parts)
+        self.set_expanded(self._expanded)
 
     def set_expanded(self, expanded: bool):
-        self._extra.setVisible(bool(self._extra_full) and expanded)
+        self._expanded = bool(expanded)
+        parts = self._extra_parts if self._expanded else self._extra_parts[:1]
+        self._extra_full = " · ".join(part for part in parts if part)
+        self._apply_extra_text()
+        self._extra.setVisible(bool(self._extra_full))
 
     def _apply_extra_text(self):
         self._extra.setToolTip(self._extra_full)
@@ -410,9 +425,24 @@ class ProviderSegment(QFrame):
         self._bars_layout.setSpacing(3)
         self._bars_horizontal = False
 
+        # Resets, carteira/crédito, participação, saldo do navegador e fonte:
+        # o MESMO renderizador do contrato que as colunas do Trilho usam
+        # (só os campos de cota ficam com as WindowBar deste card).
+        from .ui_inline_quota import FieldList
+        # All details wrap inside the scrolling board, including their sources;
+        # information is not moved into a tooltip-only ellipsis.
+        self._fields = FieldList(self)
+        self.browser_evidence = True
+        from .ui_glance_quota import GlanceView
+        self.glance = GlanceView(self)
+        self.overview_mode = False
+        self.glance.hide()
+
         self._root.addWidget(self._name_wrap)
         self._root.addWidget(self._hint)
         self._root.addWidget(self._bars_wrap)
+        self._root.addWidget(self.glance)
+        self._root.addWidget(self._fields)
         # Card esticado à altura do mais alto da fileira: a sobra fica aqui,
         # embaixo — nome, status e barras continuam colados no topo.
         self._root.addStretch(1)
@@ -452,7 +482,7 @@ class ProviderSegment(QFrame):
             layout.addWidget(bar, 1 if horizontal else 0)
         self._root.replaceWidget(old_wrap, self._bars_wrap)
         old_wrap.deleteLater()
-        self._bars_wrap.show()
+        self._bars_wrap.setVisible(not self.overview_mode)
         for bar in self._bars:
             bar.set_expanded(self._expanded)
 
@@ -544,6 +574,8 @@ class ProviderSegment(QFrame):
             self._bars_layout.setContentsMargins(self._px(16), self._px(2), 0, 0)
         for bar in self._bars:
             bar.apply_style(self._palette, self._typo, self._scale)
+        self._fields.apply_style(self._palette, self._typo.get("family"),
+                                 self._px(self._typo["hint"]), self._px(self._typo["detail"]))
 
     # ------------------------------------------------------------ opções de exibição
 
@@ -583,6 +615,7 @@ class ProviderSegment(QFrame):
         display = store.display(self.store_key, self.window_filter)
         worst = store.worst_window(self.store_key, self.window_filter) if display is not None else None
         self._name.setText(theme.PROVIDER_LABELS.get(self.provider_id, self.provider_id))
+        self.set_expanded(expanded)
         self._last_display = (display, worst)
         self._last_pacing = pacing
         self._render((display, worst), pacing)
@@ -611,6 +644,7 @@ class ProviderSegment(QFrame):
             self._hint.setText("aguardando consulta")
             self._hint.setToolTip("")
             self._clear_bars()
+            self._render_fields(None)
             return
 
         status = display["status"]
@@ -641,6 +675,34 @@ class ProviderSegment(QFrame):
         self._hint.setText(hint)
         self._hint.setToolTip(display.get("message") or hint)
         self._rebuild_bars(display, pacing)
+        self._render_fields(display)
+
+    def _render_fields(self, display: dict | None):
+        from .inline_contract import QUOTA_KINDS, browser_account, provider_fields
+        if display is None:
+            fields = []
+        else:
+            browser = browser_account(self.provider_id) if self.browser_evidence else None
+            fields = [f for f in provider_fields(self.provider_id, display,
+                                                 number_mode=self._options.get("number_mode"),
+                                                 reset_mode=self._options.get("reset_mode"),
+                                                 browser=browser, name=self._name.text())
+                      if f.kind not in QUOTA_KINDS and f.kind != "status"]
+        self._fields.set_fields(fields)
+        self._fields.setVisible(bool(fields) and (not self.overview_mode or self._expanded))
+        self._bars_wrap.setVisible(not self.overview_mode)
+        self.glance.setVisible(self.overview_mode)
+        if self.overview_mode:
+            self.glance.set_data(self.provider_id,display,number_mode=self._options.get('number_mode'),reset_mode=self._options.get('reset_mode'),browser=browser_account(self.provider_id) if self.browser_evidence else None,name=self._name.text(),palette=self._palette,family=self._typo.get('family'))
+            self._name.setStyleSheet(f"color:{self._palette['text']};font-weight:600;font-family:'{self._typo.get('family')}';font-size:16px;")
+            self._dot.set_diameter(12)
+            from .inline_contract import header_state,short_date
+            dates=self.glance.manual_dates()
+            caption=header_state(display)[1]+(" · manual "+"+".join(sorted({short_date(d)[:5] for d in dates})) if dates else "")
+            self._hint.setText(caption)
+            self._hint.setStyleSheet(f"color:{self._palette['text_secondary']};font-size:9px;")
+            self._hint.show()
+        else:self._hint.show()
 
     def _clear_bars(self):
         self._bars = []
@@ -681,7 +743,7 @@ class ProviderSegment(QFrame):
             for bar in reusable.values():
                 bar.deleteLater()
         for window, bar in zip(windows, self._bars):
-            bar.update_window(window)
+            bar.update_window(window, remaining=self._options.get("number_mode") == "remaining")
             extras = [self._reset_text(window.get("resets_at"))]
             if self._options.get("show_pacing", True):
                 extras.append(pacing_text(pacing_windows.get(window.get("id"))))

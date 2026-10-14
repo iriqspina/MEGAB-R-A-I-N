@@ -1,5 +1,31 @@
 # MEGABRAIN
 
+## Instale o aplicativo e abra o tutorial
+
+1. [Baixe o ZIP da versão atual](https://github.com/iriqspina/MEGAB-R-A-I-N/archive/refs/heads/main.zip)
+   e extraia a pasta inteira em um lugar onde você possa escrever.
+2. No Windows, instale Python 3.11 a 3.14 se ainda não tiver. Dê dois cliques em
+   **`INSTALAR-MEGABRAIN.cmd`** na raiz extraída. O instalador obtém as dependências,
+   compila o lançador local e abre o relatório dentro do aplicativo.
+3. Use **Guia do MegaBrain** para o tutorial de todas as áreas da interface.
+   Abra novamente pelo atalho `00_PARA-VOCE/MegaBrain Central.lnk`.
+
+O aplicativo organiza projetos, pedidos, resultados e referências lado a lado;
+recebe relatórios HTML locais; guarda comentários e decisões por versão;
+mostra retornos, atividade, sessões e cotas quando suas fontes estão disponíveis.
+O exemplo compartilhável está em
+`00_PARA-VOCE/261014_compartilhar-megabrain/261014_COMECE-AQUI.html`.
+
+Esta distribuição começa sem contas, projetos privados ou acesso remoto.
+Execução por IA exige seus clientes oficiais e assinaturas autenticadas;
+a produção isolada tem requisitos adicionais documentados no guia.
+Uso por celular fora da rede exige configuração própria e computador ligado.
+O instalador não contrata serviços nem configura essa infraestrutura.
+
+Para enviar um relatório a outra instalação, compartilhe o HTML e seus recursos
+relativos. O destinatário coloca o conjunto em `00_PARA-VOCE/<tarefa>/` do projeto
+e apresenta o arquivo pelo `bin/mb-abrir-entrega.py` da própria instalação.
+
 MEGABRAIN é um protocolo local-first para organizar trabalho com mais de uma
 IA sem perder o contexto, a decisão ou a prova do que foi feito. Ele separa
 planejamento, execução, revisão e passagem de bastão em arquivos que podem ser
@@ -62,9 +88,8 @@ O export público é gerado por `bin/mb-generate-template.py`. Ele exclui dados
 locais, entregas pessoais, logs, memória de conteúdo, credenciais, builds e o
 aplicativo Pets. Nunca publique a pasta central privada diretamente.
 
-Este repositório não inclui licença de uso. A visibilidade pública não concede
-permissão automática para copiar, redistribuir ou usar o conteúdo além do que a
-lei permitir; para outro uso, fale com o titular.
+Este repositório não inclui licença geral. O titular pode autorizar uso diretamente,
+como no compartilhamento pessoal desta distribuição; outros usos precisam de autorização.
 
 ## Estrutura
 

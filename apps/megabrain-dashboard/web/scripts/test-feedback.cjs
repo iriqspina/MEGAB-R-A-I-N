@@ -1,0 +1,13 @@
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+const {test}=require('node:test'),ts=require('typescript');
+require.extensions['.tsx']=(module,file)=>module._compile(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{jsx:ts.JsxEmit.ReactJSX,module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText,file);
+const React=require('react'),{renderToStaticMarkup}=require('react-dom/server');
+const Receipt=require(path.join(__dirname,'../src/FeedbackReceipt.tsx')).default;
+const receipt={id:'r',at:'2026-10-12T01:48:17Z',target:'feedback-summary:known',feedback_key:'known',decision_count:6,note_count:1};
+const note={id:'n',at:receipt.at,target:'feedback:known',feedback_key:'known',text:'Uma respiração falha',onde:'Uma respiração'};
+const render=comments=>renderToStaticMarkup(React.createElement(Receipt,{comments}));
+test('receber nota não anuncia correção',()=>{const html=render([receipt,note]);assert.match(html,/Suas respostas chegaram/);assert.match(html,/aguardam execução/);assert.match(html,/Uma respiração falha/);assert.doesNotMatch(html,/Revisão pronta/);});
+test('nota mantém âncora e correção registrada',()=>{const html=render([{...receipt,status:'CORRIGIDO_VERIFICADO'},{...note,correction:'Botão testado no protótipo'}]);assert.match(html,/Revisão pronta para testar/);assert.match(html,/Botão testado/);assert.match(html,/Uma respiração/);});
+test('notas de outra tarefa não entram no comprovante',()=>{assert.doesNotMatch(render([receipt,{...note,feedback_key:'other',text:'outra tarefa'}]),/outra tarefa/);});
+test('fase nova mostra notas corrigidas da fase anterior da mesma tarefa',()=>{const html=render([{...receipt,source:'same',feedback_key:'phase2'},{...note,source:'same',correction:'Histórico corrigido'}]);assert.match(html,/Histórico corrigido/);});
+test('ordena recibos pelo instante real com fuso',()=>{const html=render([{...receipt,at:'2026-10-12T01:00:00Z'},{...receipt,id:'new',at:'2026-10-11T23:00:00-03:00',status:'CORRIGIDO_VERIFICADO'}]);assert.match(html,/Revisão pronta para testar/);});

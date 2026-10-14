@@ -1,25 +1,25 @@
-﻿# MEGABRAIN · visão pessoal
+# MegaBrain Central para Windows
 
-Painel pessoal local: próximo passo e prioridade em uma superfície principal, sinais da leitura, decisões recentes e contexto do projeto. A origem continua sendo `collect()`; o painel não recalcula nem escreve no estado dos projetos.
+Instale pela raiz: dois cliques em `INSTALAR-MEGABRAIN.cmd`. O instalador cria um
+ambiente Python local compartilhado com o widget de cotas, instala dependências,
+compila o lançador e cria `00_PARA-VOCE/MegaBrain Central.lnk`. Abre o relatório
+de boas-vindas dentro do aplicativo. Não requer Node para consultar a interface.
 
-## Abrir
+Requisitos: Windows 64 bits, Python 3.11 a 3.14, internet para obter dependências
+e compilador .NET Framework 4 do Windows. A instalação não configura contas de IA,
+serviço global, firewall ou túnel. Seus arquivos e dados começam locais.
 
-`launch.vbs` abre sem terminal; `launcher.cmd` serve para depuração. Ambos usam o Python de `apps/ia-quota-widget/.venv`, com PySide6 e QtWebEngine já disponíveis no ambiente verificado em 260910.
+O botão **Guia do MegaBrain** explica as funções e os limites por assunto.
+Projetos são descobertos ao lado da pasta MegaBrain quando contêm ESTADO.md,
+MEGABRAIN ou 00_PARA-VOCE. Apresentar uma sessão não cadastra automaticamente
+um projeto fora desse conjunto.
 
-A janela mantém **Escolher projeto**, **Atualizar** e releitura a cada 20 segundos. A visualização usa `QWebEngineView` para interpretar o CSS de navegador. Atualizações sem alteração de conteúdo não recarregam a página, preservando foco e rolagem. Os links dos documentos `.md` e `.json` abrem no aplicativo associado pelo Windows.
+Para um relatório recebido: copie o HTML e recursos relativos para
+`00_PARA-VOCE/<tarefa>/` de um projeto. Use o Python do ambiente criado para
+`bin/mb-abrir-entrega.py <arquivo-absoluto>`. O relatório abre no aplicativo;
+a confirmação fica no recibo nativo, separada do pedido de abertura.
 
-`python apps/megabrain-dashboard/dashboard.py --html-only --project <pasta>` gera `data/dashboard.html` sem importar PySide6. Nesse arquivo, **Recarregar prévia** apenas reabre o HTML já gerado; não executa Python.
-
-## Dados e aparência
-
-A data exibida é a data registrada na fonte, não a hora do clique. O arquivo `dados/estado.json`, quando presente, conserva a precedência original sobre os documentos Markdown. Os documentos atuais podem ser posteriores à fotografia dos dados; os links permitem conferir ambos.
-
-`assets/dashboard.css` define o vidro claro e as adaptações de largura. Figtree, Instrument Sans e JetBrains Mono são usadas quando instaladas; Segoe UI e Consolas são alternativas locais. Nenhuma fonte remota, imagem externa, gráfico decorativo ou medição inventada é necessária.
-
-## Verificar
-
-`python -m unittest discover -s apps/megabrain-dashboard/tests -v`
-
-Relatório da revisão e prévia para <USUARIO> em `<MEGABRAIN_ROOT>\00_PARA-VOCE\260910_v7-megabrain\`.
-
-Limite desta revisão: a inspeção visual pelo navegador foi bloqueada pela política da ferramenta. Testes de dados e geração do HTML não equivalem a validação visual da janela.
+Execução por IA exige clientes oficiais instalados e autenticados nas suas contas.
+O isolamento de código exige configuração compatível de Windows/Node/Codex.
+O revisor ZCode depende de versão verificada. A instalação do app não comprova
+esses recursos nem conecta fornecedores. Celular remoto exige configuração própria.

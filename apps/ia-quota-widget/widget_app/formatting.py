@@ -49,6 +49,9 @@ def reset_label(iso_value) -> str:
     if minutes < 60:
         return f"renova em {minutes} min"
     hours = minutes // 60
+    # Under 10 h the floor hid up to 59 min (261012 audit: 3 h 56 shown as 3 h).
+    if hours < 10 and minutes % 60:
+        return f"renova em {hours} h {minutes % 60} min"
     if hours < 48:
         return f"renova em {hours} h"
     days = hours // 24
@@ -83,7 +86,7 @@ def percent_label(value) -> str:
     if value is None:
         return "—"
     # 0,3 % arredondado vira "0%", que lê como "nada usado" — e não é.
-    if 0 < value < 0.5:
+    if 0 < value < 1:
         return "<1%"
     return f"{round(value)}%"
 

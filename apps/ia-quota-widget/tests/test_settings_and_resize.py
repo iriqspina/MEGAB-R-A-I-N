@@ -83,19 +83,19 @@ def test_reset_label_absolute_today_tomorrow_and_weekday():
 # ------------------------------------------------------------------ redimensionar
 
 
-def test_manual_width_respected_height_hugs_content(window, monkeypatch):
-    # 260914 (print "layout todo esquisito"): largura manual acima do
-    # conteúdo é respeitada — a sobra vira colunas no fluxo; altura cola no
-    # conteúdo, porque altura extra só deixava espaço morto embaixo.
+def test_manual_width_respected_height_is_the_strip_height(window, monkeypatch):
+    # 260914: largura manual acima do conteúdo é respeitada (sobra vira
+    # colunas no fluxo). Superseded 2026-10-11 (ALTURA FIXA DA FAIXA
+    # INTEIRA): a altura não cola mais no conteúdo — é a Altura da faixa.
     monkeypatch.setattr(window, "_available_rect", lambda: QRect(0, 0, 2000, 2000))
     window.settings.window_width, window.settings.window_height = 900, 700
     window._resize_to_content()
     assert window.width() == 900
-    assert window.height() == window.minimumHeight()
-    assert window.height() < 700
+    assert window.height() == window.settings.strip_height == 72
     window.settings.window_width, window.settings.window_height = 200, 150
     window._resize_to_content()
-    assert window.size() == QSize(window.minimumWidth(), window.minimumHeight())
+    assert window.width() == window.minimumWidth()
+    assert window.height() == 72
     window._fit_to_content()
     assert window.settings.window_width is None
     assert persistence.load_settings().window_width is None
@@ -136,23 +136,25 @@ def test_dragging_right_edge_resizes_and_persists_without_system_resize(window, 
     assert persistence.load_settings().window_width == width_before + 60
 
 
-def test_window_cannot_shrink_below_content_no_scrollbars(window, monkeypatch):
-    # 260914: sem barra de rolagem — o mínimo da janela É o conteúdo;
-    # tentar encolher abaixo disso clampa no mínimo.
+def test_content_taller_than_strip_scrolls_instead_of_growing(window, monkeypatch, qt_app):
+    # Superseded 2026-10-11: antes (260914) o mínimo da janela era o conteúdo,
+    # sem rolagem. Agora a Altura da faixa é exata e o quadro rola.
     monkeypatch.setattr(window, "windowHandle", lambda: None)
-    window.update_settings({"expanded": True})
+    window.update_settings({"expanded": True, "strip_height": 112})
     for source in ("codex", "claude", "zai"):
         window._on_snapshot(source, demo_snapshot(source))
-    window._resize_to_content()
+    window.show_positioned()
+    qt_app.processEvents()
     content_height = window._content.sizeHint().height()
-    assert content_height > 150  # com dado e detalhes, o conteúdo passa do mínimo antigo
-    assert window.minimumHeight() >= content_height
+    assert content_height > 150
+    assert window.height() == 112 and window.minimumHeight() == 40
+    assert window._board.verticalScrollBar().maximum() > 0
     start = QPoint(window.width() // 2, window.height() - 2)
     window.mousePressEvent(_mouse(QEvent.MouseButtonPress, start, QPoint(500, 1200)))
     window.mouseMoveEvent(_mouse(QEvent.MouseMove, start, QPoint(500, 1200 - window.height())))
     window.mouseReleaseEvent(_mouse(QEvent.MouseButtonRelease, start, QPoint(500, 1200 - window.height()), Qt.NoButton))
-    assert window.height() == window.minimumHeight()  # clampa, não corta
-    assert window.height() >= content_height
+    assert window.height() == window.minimumHeight() == window.settings.strip_height == 40
+    window.hide()
 
 
 def test_locked_window_ignores_edge_press_and_drag(window, monkeypatch):

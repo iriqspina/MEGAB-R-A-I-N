@@ -27,7 +27,7 @@ goto :fim
 
 :abrir
 for /f "delims=" %%A in ('dir /b /o-d "00_painel\*_padroes.md"') do (
-  start "" "00_painel\%%A"
+  python bin\mb-abrir-entrega.py "00_painel\%%A"
   goto :fim
 )
 

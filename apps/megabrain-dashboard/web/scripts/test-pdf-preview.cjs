@@ -1,0 +1,5 @@
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+const {test}=require('node:test'),ts=require('typescript'),Module=require('node:module');
+const file=path.join(__dirname,'../src/pdf_preview.ts'),mod=new Module(file,module);mod._compile(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText,file);const {isLocalPdfPreview:ok}=mod.exports;const origin='http://127.0.0.1:8766',route='/api/files/ce44b65b2daf064d6c15';
+test('PDF catalogado local usa visualizador nativo; HTML conserva isolamento',()=>{assert.equal(ok('pdf',route,origin),true);assert.equal(ok('pdf',origin+route,origin),true);assert.equal(ok('html',route,origin),false);});
+test('não remove isolamento de URLs arbitrárias externas ou com credenciais',()=>{for(const url of ['https://example.com'+route,'http://user@127.0.0.1:8766'+route,route+'?a=b',route+'#x','/some.pdf','/api/files/not-an-id'])assert.equal(ok('pdf',url,origin),false);});

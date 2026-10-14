@@ -24,6 +24,12 @@ def main() -> int:
     parser.add_argument("--html-only", action="store_true")
     parser.add_argument("--inicio", action="store_true", help="Entrada fixa de entregas e controle de sensibilidade")
     args = parser.parse_args()
+    if not args.html_only:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location('mb_abrir_entrega', CENTRAL/'bin/mb-abrir-entrega.py')
+        opener = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(opener)
+        return opener.main(['--project', str(args.project)])
     from mb_catalogo import gerar as gerar_inicio
     html_path = gerar_inicio(args.project) if args.inicio else refresh(args.project)
     if args.html_only:

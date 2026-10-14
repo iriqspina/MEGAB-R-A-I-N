@@ -94,6 +94,7 @@ def _normalize_window(raw: dict) -> dict:
 
 
 def normalize_snapshot(provider_id: str, raw: dict) -> dict:
+    from quota_details_data import sanitize_details
     status = raw.get("status")
     if status not in VALID_STATUSES:
         status = "error"
@@ -108,6 +109,7 @@ def normalize_snapshot(provider_id: str, raw: dict) -> dict:
         "fetched_at": raw.get("fetched_at"),
         "windows": windows,
         "message": _redact(message),
+        "details": sanitize_details(raw.get("details")),
     }
 
 

@@ -1,0 +1,9 @@
+{
+  "name": "megabrain-mod",
+  "version": "0.3.0",
+  "description": "Megabrain dentro do Claude Code: faixa de estado, painel /mb, vigia de slop e TL;DR, guardas de comando e de arquivo. Tudo ajustável em AJUSTES.ts.",
+  "types": "./types/index.d.ts",
+  "author": {
+    "name": "iriqspina"
+  }
+}

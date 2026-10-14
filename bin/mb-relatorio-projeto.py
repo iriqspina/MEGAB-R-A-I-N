@@ -1116,6 +1116,7 @@ Se o "gerado em" lá em cima está velho, o retrato está velho.</p>
 </div>
 <div id="toasts" aria-live="polite"></div>
 <script>{js()}</script>
+{mb_pop_tema.html_interacoes()}
 </body></html>
 """
 

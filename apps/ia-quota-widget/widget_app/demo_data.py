@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta, timezone
+
 from . import theme
 from .providers_bridge import now_iso
 
@@ -33,12 +35,20 @@ def demo_snapshot(provider_id: str) -> dict:
     # igual pra todos não é conteúdo de coluna, é rodapé (o banner MODO DEMO
     # já cobre isso uma vez só).
     status = _DEMO_STATUS.get(provider_id, "ok")
+    windows = []
+    for original in _DEMO_WINDOWS.get(provider_id, []):
+        window = dict(original)
+        minutes = {"session": 300, "daily": 1440, "weekly": 10080, "monthly": 43200}.get(theme.window_category(window))
+        if minutes and window.get("resets_at"):
+            window["duration_minutes"] = minutes
+            window["resets_at"] = (datetime.now(timezone.utc) + timedelta(minutes=minutes)).isoformat()
+        windows.append(window)
     return {
         "provider": provider_id,
         "label": provider_id,
         "status": status,
         "source": theme.PROVIDER_SOURCE_HINT.get(provider_id, provider_id),
         "fetched_at": now_iso(),
-        "windows": [] if status != "ok" else _DEMO_WINDOWS.get(provider_id, []),
+        "windows": [] if status != "ok" else windows,
         "message": _DEMO_MESSAGE.get(provider_id, ""),
     }
