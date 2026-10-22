@@ -2,6 +2,6 @@
   "name": "megabrain-remote-gateway",
   "private": true,
   "type": "module",
-  "scripts": { "test": "node --test gateway.test.mjs" },
+  "scripts": { "test": "node --test gateway.test.mjs gateway.contract.test.mjs" },
   "engines": { "node": ">=22" }
 }

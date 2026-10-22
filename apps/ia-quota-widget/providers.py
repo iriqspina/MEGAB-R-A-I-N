@@ -532,14 +532,17 @@ def _fetch_codex_account(
             message="Conta autenticada, mas sem janela de cota exposta.",
         )
     from quota_details_data import codex_details
+    details = codex_details(rate.get("result") or {})
+    details.setdefault("notes", [])
+    details["notes"] = (details.get("notes") or []) + codex_effort_notes(env or {})
     return _result(
         provider_id,
         "ok",
         source=CODEX_SOURCE,
         windows=windows,
         fetched_at=_now_iso(),
-        message=f"Plano {plan}." if plan else "",
-        details=codex_details(rate.get("result") or {}),
+        message=f"Plano {plan_display(plan)}." if plan else "",
+        details=details,
     )
 
 
@@ -713,7 +716,7 @@ def _fetch_claude(timeout: float) -> dict[str, Any]:
         source=CLAUDE_SOURCE,
         windows=windows,
         fetched_at=_now_iso(),
-        message=f"Plano {plan}." if plan else "",
+        message=f"Plano {plan_display(plan)}." if plan else "",
         details=claude_details(payload),
     )
 
@@ -1066,6 +1069,53 @@ ZAI_SOURCE = "api.z.ai/api/monitor/usage/quota/limit"
 _ZAI_UNIT_MINUTES = {3: 60, 6: 10080}
 _ZAI_TYPE_LABELS = {"TIME_LIMIT": "Ferramentas"}
 
+# Nome de exibição por plano, na linguagem do próprio fornecedor (261020:
+# padronizar "tipo" sem inventar nome). Chave = valor cru da API.
+PLAN_LABELS = {
+    "prolite": "Pro Lite",
+    "pro_lite": "Pro Lite",
+    "plus": "Plus",
+    "pro": "Pro",
+    "max": "Max",
+    "team": "Team",
+}
+
+
+def plan_display(raw) -> str:
+    if not isinstance(raw, str) or not raw:
+        return ""
+    return PLAN_LABELS.get(raw.strip().lower(), raw.strip())
+
+
+def codex_effort_notes(env) -> list[str]:
+    """Esforços disponíveis + modelo configurado, lidos do config.toml LOCAL.
+
+    Leitura de arquivo, custo zero (pedido 261020: efforts do Codex visíveis
+    sem gastar IA). Fonte declarada; sem config não inventa nada.
+    """
+    home = Path(env.get("CODEX_HOME") or (Path.home() / ".codex"))
+    config = home / "config.toml"
+    try:
+        text = config.read_text(encoding="utf-8")
+    except OSError:
+        return []
+    notes: list[str] = []
+    m = re.search(r"^enabled-reasoning-efforts\s*=\s*\[([^\]]*)\]", text, re.M)
+    if m:
+        efforts = [e.strip().strip("\"'") for e in m.group(1).split(",") if e.strip()]
+        if efforts:
+            notes.append("Esforços disponíveis: " + ", ".join(efforts) + ".")
+    model = re.search(r"^model\s*=\s*[\"']([^\"']+)[\"']", text, re.M)
+    effort = re.search(r"^model_reasoning_effort\s*=\s*[\"']([^\"']+)[\"']", text, re.M)
+    if model or effort:
+        partes = []
+        if effort:
+            partes.append(f"esforço configurado: {effort.group(1)}")
+        if model:
+            partes.append(f"modelo: {model.group(1)}")
+        notes.append("Config local: " + " · ".join(partes) + ".")
+    return notes
+
 
 def zai_dpapi_path() -> Path:
     return _home() / ".config" / "zai" / "cli-key.dpapi"
@@ -1230,13 +1280,15 @@ def _fetch_zai(timeout: float) -> dict[str, Any]:
     if not windows:
         return _result("zai", "unavailable", source=ZAI_SOURCE, message="Nenhuma janela de cota na resposta.")
     level = (payload.get("data") or {}).get("level")
+    from quota_details_data import zai_details
     return _result(
         "zai",
         "ok",
         source=ZAI_SOURCE,
         windows=windows,
         fetched_at=_now_iso(),
-        message=f"Plano {level}." if isinstance(level, str) and level else "",
+        message=f"Plano {plan_display(level)}." if isinstance(level, str) and level else "",
+        details=zai_details(payload, windows),
     )
 
 

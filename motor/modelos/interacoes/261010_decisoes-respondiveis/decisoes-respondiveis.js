@@ -1,17 +1,39 @@
-/* decisoes-respondiveis v1.1 · 261013 · MEGABRAIN
+/* decisoes-respondiveis v1.3 · 261020 · MEGABRAIN
+   v1.3: IAS batido com a linguagem real de cada vendor (comentário do Usuário
+         no painel Enviar pro terminal): Codex ganha ultra e max e perde minimal
+         (fonte: enabled-reasoning-efforts do ~/.codex/config.toml, codex 0.163);
+         Claude ganha xhigh/max no effort e fable nos modelos (claude --help
+         2.1.302); ZCode ganha --model provider/model (zai/GLM-5.3, registro
+         local do ZCode 0.16.9); Kimi sai (conta cancelada 16/09, decisão
+         260916e). Espelha central_dispatch.CATALOG.
+   v1.2: painel "enviar pro terminal (bash)" no revisar — escolhe IA, modelo e
+         effort e despacha as respostas confirmadas para uma CLI local (janela
+         nova de terminal) através do window.MegaBrainReport.dispatch do app.
+         Fora do app MegaBrain o painel não aparece e vale o fluxo antigo.
    v1.1: barra no fluxo do documento em viewport de até 480 px de altura, sem cobrir alternativas.
    Fonte única: MEGA B R A I  N/motor/modelos/interacoes/261010_decisoes-respondiveis/decisoes-respondiveis.js
    Primeira aplicação: Portfólio · Decisões do Portfólio (10/10/2026), aprovada pelo Usuário ("adorei").
    O que faz: transforma um relatório em formulário de decisão. Cada pergunta vira uma caixa com
    alternativas (recomendação já marcada) ou resposta escrita (com sugestões), barra de progresso e
    UM botão Finalizar. No claude.ai: comentário "Send to Claude" (acorda a sessão) + respostas.json.
-   Fora do claude.ai: Copiar respostas e Baixar respostas (.json), para qualquer agente ler.
+   No app MegaBrain: além disso, despacho pro terminal com a IA escolhida (v1.2).
+   Fora dos dois: Copiar respostas e Baixar respostas (.json), para qualquer agente ler.
    Uso: DecisoesRespondiveis.iniciar({ chave, titulo, secoes:[{id, titulo, perguntas:[...]}] })
    Marcação: <div data-dr-sec="ID"></div> onde as caixas entram; opcionais <span data-dr-status="ID">
    e <span data-dr-dot="ID">. Liga CursorFerramentas sozinho se o script dele estiver na página. */
 (function (global) {
   'use strict';
   if (global.DecisoesRespondiveis) return;
+
+  /* Espelha central_dispatch.CATALOG do app MegaBrain; o servidor revalida tudo. */
+  var IAS = {
+    claude: { nome: 'Claude Code', modelos: ['padrão', 'fable', 'opus', 'sonnet', 'haiku', 'outro'], efforts: ['padrão', 'low', 'medium', 'high', 'xhigh', 'max'] },
+    codex: { nome: 'Codex', modelos: ['padrão', 'gpt-6.1-sol', 'outro'], efforts: ['padrão', 'low', 'medium', 'high', 'xhigh', 'ultra', 'max'] },
+    zcode: { nome: 'ZCode (GLM)', modelos: ['padrão', 'zai/GLM-5.3', 'zai/GLM-5.3-Flash', 'outro'], efforts: ['—'], nota: 'modelo vai por --model provider/model; esforço (low/high/max) fica na sessão' },
+    gemini: { nome: 'Gemini', modelos: ['padrão', 'gemini-2.5-pro', 'gemini-2.5-flash', 'outro'], efforts: ['—'], nota: 'login pendente desde 261014' }
+  };
+  /* Aceita '/' pelo formato provider/model do ZCode (zai/GLM-5.3). */
+  var MODELO_LIVRE = /^[A-Za-z0-9._:/\-\[\]]{1,80}$/;
 
   var CSS = [
     ':root{--dr-card:var(--card,#191927);--dr-card2:var(--card2,#23233A);--dr-ink:var(--ink,var(--tinta,#FFFFFF));--dr-body:var(--body,var(--corpo,#C9C7E0));--dr-muted:var(--muted,var(--fraco,#8F8DAA));--dr-line:var(--line,var(--linha,rgba(255,255,255,.11)));--dr-accent:var(--accent,var(--magenta,#EC0F7C));--dr-ok:var(--ok,var(--verde,#58CC02));--dr-info:var(--info,var(--azul,#1CB0F6));--dr-bad:var(--bad,var(--coral,#FF4B4B));--dr-bg:var(--bg,var(--fundo,#0B0B16))}',
@@ -57,6 +79,16 @@
     '.dr-aviso{margin-top:12px;border-radius:10px;padding:12px 14px;font-size:15px;color:var(--dr-ink);background:var(--dr-card2);border:1px solid var(--dr-line)}',
     '.dr-aviso.ok{border-color:color-mix(in srgb,var(--dr-ok) 50%,transparent)}.dr-aviso.erro{border-color:color-mix(in srgb,var(--dr-bad) 50%,transparent)}',
     '.dr-saida{width:100%;box-sizing:border-box;min-height:140px;margin-top:12px;font:13px/1.5 ui-monospace,Consolas,monospace;color:var(--dr-ink);background:var(--dr-card2);border:1px solid var(--dr-line);border-radius:10px;padding:10px}',
+    '.dr-term{margin-top:18px;border:1.5px dashed color-mix(in srgb,var(--dr-accent) 55%,var(--dr-line));border-radius:12px;padding:14px;background:color-mix(in srgb,var(--dr-accent) 6%,var(--dr-card))}',
+    '.dr-term h3{margin:0;color:var(--dr-ink);font-size:16px}',
+    '.dr-term small{display:block;margin-top:2px;color:var(--dr-muted);font-size:13px;line-height:1.4}',
+    '.dr-term-campos{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:12px}',
+    '.dr-term-campos label{display:grid;gap:6px;font:600 12px/1.3 inherit;color:var(--dr-muted);text-transform:uppercase;letter-spacing:.04em}',
+    '.dr-term select,.dr-term .dr-term-outro{width:100%;box-sizing:border-box;font-family:inherit;font-size:15px;color:var(--dr-ink);background:var(--dr-card2);border:1.5px solid var(--dr-line);border-radius:8px;padding:9px 10px}',
+    '.dr-term select:focus,.dr-term .dr-term-outro:focus{outline:2px solid var(--dr-info);outline-offset:1px;border-color:var(--dr-accent)}',
+    '.dr-term select:disabled{opacity:.55}',
+    '.dr-term-retorno{margin-top:10px;font-size:14px;color:var(--dr-body);min-height:0}',
+    '.dr-term-retorno.ok{color:var(--dr-ok)}.dr-term-retorno.erro{color:var(--dr-bad)}',
     '.dr-barra{position:sticky;bottom:0;margin-top:28px;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));background:color-mix(in srgb,var(--dr-bg) 92%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-top:1px solid var(--dr-line);display:flex;flex-wrap:wrap;gap:12px;align-items:center;z-index:5}',
     '.dr-prog{flex:1;min-width:200px}.dr-prog p{margin:0;font-size:14px;color:var(--dr-ink);font-weight:600}.dr-prog small{display:block;font-size:12px;color:var(--dr-muted)}',
     '.dr-trilho{height:6px;border-radius:999px;background:var(--dr-card2);margin-top:6px;overflow:hidden}.dr-trilho i{display:block;height:100%;width:0;background:var(--dr-ok);border-radius:999px;transition:width .25s}',
@@ -74,7 +106,12 @@
     var doc = document, KEY = o.chave || ('dr:' + location.pathname), TIT = o.titulo || doc.title || 'Decisões';
     if (!doc.getElementById('dr-estilo')) { var st = doc.createElement('style'); st.id = 'dr-estilo'; st.textContent = CSS; (doc.head || doc.documentElement).insertBefore(st, (doc.head || doc.documentElement).firstChild); }
     var SEC = o.secoes || [], TOTAL = 0, R = {}, IDX = {};
-    SEC.forEach(function (s) { s.perguntas.forEach(function (q) { TOTAL++; IDX[q.id] = q; R[q.id] = { valor: q.tipo === 'texto' ? (q.valor || '') : q.rec, extra: '', mexeu: false }; }); });
+    SEC.forEach(function (s) { s.perguntas.forEach(function (q) { TOTAL++; IDX[q.id] = q; R[q.id] = { valor: q.tipo === 'texto' ? (q.valor || '') : q.rec, extra: '', mexeu: false, anexos: [] }; }); });
+    var anexosAPI = global.CursorFerramentas && global.CursorFerramentas.anexos, camposAnexos = [], bloqueiosAnexos = {};
+    function refs(value) { return anexosAPI ? anexosAPI.normalizar(value) : []; }
+    function limiteAnexos() { var ids = {}; Object.keys(R).forEach(function (id) { refs(R[id].anexos).forEach(function (a) { ids[a.id] = true; }); }); return Object.keys(ids).length > 6; }
+    function anexosBloqueados() { return limiteAnexos() || Object.keys(bloqueiosAnexos).some(function (k) { return bloqueiosAnexos[k]; }); }
+    function estadoAnexos() { ['dr-finalizar', 'dr-enviar', 'dr-term-enviar'].forEach(function (id) { var el = doc.getElementById(id); if (el) el.disabled = anexosBloqueados(); }); var aviso = doc.getElementById('dr-anexos-aviso'); if (aviso) { aviso.hidden = !anexosBloqueados(); aviso.textContent = limiteAnexos() ? 'Até 6 prints no total por envio. Remova os extras; seu rascunho foi preservado.' : 'Espere os prints terminarem ou remova o anexo com erro. Rascunho preservado.'; } }
 
     var CF = null;
     function notas() { return CF ? CF.notas() : []; }
@@ -111,21 +148,40 @@
     var raiz = o.raiz || (ancora && (ancora.closest('main') || ancora.closest('#pagina'))) || doc.body;
     var banner = doc.createElement('div'); banner.className = 'dr-banner'; banner.hidden = true; banner.setAttribute('role', 'status');
     var primeiro = doc.querySelector('[data-dr-sec]'); if (o.bannerEm) o.bannerEm.appendChild(banner); else if (primeiro && primeiro.parentNode) (primeiro.closest('section') || primeiro).insertAdjacentElement('beforebegin', banner);
+    var MB = global.MegaBrainReport;
+    var podeTerm = !!(MB && typeof MB.dispatch === 'function');
     var rev = doc.createElement('section'); rev.className = 'dr-revisar'; rev.hidden = true; rev.id = 'dr-revisar';
     rev.innerHTML = '<h2 id="dr-revisar-titulo">Revise e envie</h2><p>“Sua escolha” = você mexeu. “Recomendação” = ficou o que vinha marcado.</p><p class="dr-aviso" id="dr-aviso-claude">Conferindo se o Claude pode ser avisado daqui…</p><div class="dr-resumo" id="dr-resumo"></div>' +
+      (podeTerm
+        ? '<div class="dr-term" id="dr-term"><h3>📲 Enviar pro terminal (bash)</h3><small>Abre uma janela de terminal no projeto com a IA escolhida recebendo estas respostas. Modelo e effort vão por linha de comando quando a IA aceita.</small><div class="dr-term-campos">' +
+          '<label>IA<select id="dr-term-ia" aria-label="IA de destino">' + Object.keys(IAS).map(function (k) { return '<option value="' + k + '">' + esc(IAS[k].nome) + '</option>'; }).join('') + '</select></label>' +
+          '<label>Modelo<select id="dr-term-modelo" aria-label="Modelo"></select><input class="dr-term-outro" id="dr-term-outro" hidden placeholder="digite o modelo" aria-label="Modelo livre"></label>' +
+          '<label>Effort<select id="dr-term-effort" aria-label="Effort"></select></label>' +
+          '</div><p class="dr-term-retorno" id="dr-term-retorno" role="status"></p><div class="dr-acoes"><button class="dr-btn prim" type="button" id="dr-term-enviar">📲 Enviar pro terminal</button></div></div>'
+        : '<p class="dr-porque" style="margin-top:14px">Terminal: disponível quando este relatório é aberto no aplicativo MegaBrain.</p>') +
       '<div class="dr-acoes"><button class="dr-btn prim" type="button" id="dr-enviar">Enviar</button><button class="dr-btn" type="button" id="dr-voltar">Voltar e ajustar</button><button class="dr-btn" type="button" id="dr-copiar">Copiar respostas</button><button class="dr-btn" type="button" id="dr-baixar" hidden>Baixar respostas</button></div><div id="dr-retorno"></div><textarea class="dr-saida" id="dr-saida" readonly hidden aria-label="Respostas em texto"></textarea>';
     var barra = doc.createElement('div'); barra.className = 'dr-barra';
     barra.innerHTML = '<div class="dr-prog"><p id="dr-prog-txt"></p><small>O que você não mexer vai com a recomendação.</small><div class="dr-trilho"><i id="dr-prog-bar"></i></div></div><span id="dr-cf-lugar"></span><button class="dr-btn prim" type="button" id="dr-finalizar">Finalizar respostas</button>';
     raiz.appendChild(rev); if (o.barra !== false) raiz.appendChild(barra);
+    var avisoAnexos = doc.createElement('p'); avisoAnexos.id = 'dr-anexos-aviso'; avisoAnexos.className = 'dr-aviso'; avisoAnexos.setAttribute('role', 'status'); avisoAnexos.hidden = true; barra.insertAdjacentElement('beforebegin', avisoAnexos);
     if (o.cursor !== false) {
       if (o.cursor && typeof o.cursor.notas === 'function') CF = o.cursor;
       else if (global.CursorFerramentas) try { CF = global.CursorFerramentas.iniciar({ modo: 'auto', chave: KEY + '-notas', chip: o.chipEm || doc.getElementById('dr-cf-lugar') || true }); } catch (e) { CF = null; }
     }
 
-    function aplicar(src) { if (!src) return; Object.keys(src).forEach(function (k) { if (R[k] && src[k]) R[k] = { valor: src[k].valor, extra: src[k].extra || '', mexeu: !!src[k].mexeu }; }); }
+    function aplicar(src) { if (!src) return; Object.keys(src).forEach(function (k) { if (R[k] && src[k]) R[k] = { valor: src[k].valor, extra: src[k].extra || '', mexeu: !!src[k].mexeu, anexos: refs(src[k].anexos) }; }); }
     var FINAL = null;
     try { var ls = JSON.parse(global.localStorage.getItem(KEY) || 'null'); if (ls && ls.respostas) aplicar(ls.respostas); } catch (e) {}
     function salvar() { try { global.localStorage.setItem(KEY, JSON.stringify({ salvo_em: new Date().toISOString(), respostas: R })); } catch (e) {} }
+    if (anexosAPI) Object.keys(IDX).forEach(function (id) {
+      var q = IDX[id], text = doc.getElementById('dr_' + id), extraTexto = q.tipo === 'escolha' && q.opcoes.some(function (op) { return op.extra && op.extra !== 'data'; });
+      if (q.tipo !== 'texto' && !extraTexto) return;
+      var target = text || doc.getElementById('dr_f_' + id);
+      var field = anexosAPI.montarCampo({ elemento: target, container: doc.getElementById('dr_f_' + id), contexto: { pergunta: id }, transporte: o.anexos,
+        getAnexos: function () { return R[id].anexos; }, setAnexos: function (values) { R[id].anexos = values; R[id].mexeu = true; salvar(); atualizar(); estadoAnexos(); },
+        aoEstado: function (s) { bloqueiosAnexos[id] = s.bloqueado; estadoAnexos(); }
+      }); camposAnexos.push(field);
+    });
     function preencher() {
       Object.keys(IDX).forEach(function (id) {
         var q = IDX[id], r = R[id];
@@ -171,10 +227,14 @@
       t.value = t.value ? (t.value.replace(/\s+$/, '') + '; ' + b.textContent) : b.textContent; R[id].valor = t.value; R[id].mexeu = true; salvar(); atualizar(); t.focus();
     });
 
-    function rotulo(q) { var r = R[q.id]; if (q.tipo === 'texto') return r.valor || '(vazio)'; var op = q.opcoes.filter(function (x) { return x.v === r.valor; })[0]; return (op ? op.t : r.valor) + (r.extra ? ' · ' + r.extra : ''); }
-    function textoResumo() {
+    function rotulo(q) { var r = R[q.id], a = refs(r.anexos), images = a.length ? ' · 📎 ' + a.map(function (x) { return x.name + ' (' + x.path + ')'; }).join(', ') : ''; if (q.tipo === 'texto') return (r.valor || (a.length ? 'Print anexado' : '(vazio)')) + images; var op = q.opcoes.filter(function (x) { return x.v === r.valor; })[0]; return (op ? op.t : r.valor) + (r.extra ? ' · ' + r.extra : '') + images; }
+    function textoRespostas() {
       var L = ['RESPOSTAS · ' + TIT + ' · ' + new Date().toLocaleString('pt-BR')];
       SEC.forEach(function (s) { L.push(''); L.push(s.titulo || s.id); s.perguntas.forEach(function (q) { L.push((q.n ? q.n + ' ' : '') + q.titulo + ' → ' + rotulo(q) + (R[q.id].mexeu ? '' : ' [recomendação]')); }); });
+      return L.join('\n');
+    }
+    function textoResumo() {
+      var L = [textoRespostas()];
       var ns = notas(); if (ns.length) { L.push(''); L.push('NOTAS NA PÁGINA'); ns.forEach(function (n) { L.push(n.n + '. ' + n.texto + ' (perto de: ' + n.onde + ')'); }); }
       return L.join('\n');
     }
@@ -214,7 +274,7 @@
       function alt() { doc.getElementById('dr-saida').select(); retorno('', 'Selecionei o texto abaixo. Use Ctrl+C e cole no chat.'); }
       try { navigator.clipboard.writeText(txt).then(function () { retorno('ok', 'Respostas copiadas. Cole no chat do agente.'); }, alt); } catch (e) { alt(); }
     }
-    doc.getElementById('dr-finalizar').addEventListener('click', function () { checar(); montarResumo(); rev.hidden = false; doc.getElementById('dr-retorno').innerHTML = ''; rev.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+    doc.getElementById('dr-finalizar').addEventListener('click', function () { if (anexosBloqueados()) { retorno('erro', 'Espere os prints terminarem e remova anexos com erro. Até 6 por envio; seu rascunho foi preservado.'); return; } checar(); montarResumo(); rev.hidden = false; doc.getElementById('dr-retorno').innerHTML = ''; rev.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
     doc.getElementById('dr-voltar').addEventListener('click', function () { rev.hidden = true; });
     doc.getElementById('dr-copiar').addEventListener('click', function () { copiar(textoResumo()); });
     doc.getElementById('dr-baixar').addEventListener('click', function () {
@@ -223,6 +283,7 @@
       catch (e) { copiar(textoResumo()); }
     });
     doc.getElementById('dr-enviar').addEventListener('click', function () {
+      if (anexosBloqueados()) { retorno('erro', 'Os prints ainda não estão prontos. Rascunho preservado; tente de novo ou remova o anexo.'); return; }
       var btn = this, p = payload(); btn.disabled = true; retorno('', 'Enviando…');
       var avisoP = comP.then(function (c) {
         if (!c || pode !== 'available' || typeof c.sendToClaude !== 'function') return 'sem';
@@ -244,11 +305,45 @@
         });
       });
     });
+
+    /* despacho pro terminal (v1.2) — só existe dentro do app MegaBrain */
+    if (podeTerm) {
+      var selIa = doc.getElementById('dr-term-ia'), selMo = doc.getElementById('dr-term-modelo'), selEf = doc.getElementById('dr-term-effort');
+      var inpOutro = doc.getElementById('dr-term-outro'), btnT = doc.getElementById('dr-term-enviar'), retT = doc.getElementById('dr-term-retorno');
+      function opcoesSel(valores) { return valores.map(function (v) { return '<option value="' + esc(v) + '">' + esc(v) + '</option>'; }).join(''); }
+      function montarTermCampos() {
+        var entrada = IAS[selIa.value]; if (!entrada) return;
+        selMo.innerHTML = opcoesSel(entrada.modelos); inpOutro.hidden = true; inpOutro.value = '';
+        selEf.innerHTML = opcoesSel(entrada.efforts);
+        selEf.disabled = entrada.efforts.length === 1 && entrada.efforts[0] === '—';
+        retT.className = 'dr-term-retorno'; retT.textContent = entrada.nota ? 'Nota: ' + entrada.nota + '.' : '';
+      }
+      montarTermCampos();
+      selIa.addEventListener('change', montarTermCampos);
+      selMo.addEventListener('change', function () { inpOutro.hidden = selMo.value !== 'outro'; if (!inpOutro.hidden) inpOutro.focus(); });
+      btnT.addEventListener('click', function () {
+        if (anexosBloqueados()) { retT.className = 'dr-term-retorno erro'; retT.textContent = 'Espere os prints terminarem; até 6 por envio. Rascunho preservado.'; return; }
+        var modelo = selMo.value === 'outro' ? (inpOutro.value.trim() || 'padrão') : selMo.value;
+        if (selMo.value === 'outro' && !MODELO_LIVRE.test(modelo)) { retT.className = 'dr-term-retorno erro'; retT.textContent = 'Modelo livre inválido: use letras, números, ponto, dois-pontos, hífen ou colchetes (até 80).'; return; }
+        btnT.disabled = true; retT.className = 'dr-term-retorno'; retT.textContent = 'Abrindo o terminal…';
+        var p = payload();
+        try { MB.dispatch({ ia: selIa.value, modelo: modelo, effort: selEf.value, titulo: TIT, finalizado: true, respostas: p.respostas, notas: p.notas, resumo_texto: p.resumo_texto }); }
+        catch (e) { btnT.disabled = false; retT.className = 'dr-term-retorno erro'; retT.textContent = 'Não consegui pedir o despacho: ' + (e && e.message ? e.message : 'erro'); }
+      });
+      global.addEventListener('mb-dispatch-result', function (ev) {
+        var d = (ev && ev.detail) || {}; btnT.disabled = false;
+        retT.className = 'dr-term-retorno ' + (d.ok ? 'ok' : 'erro');
+        retT.textContent = (d.ok ? '✅ ' : '⚠ ') + (d.message || (d.ok ? 'Terminal aberto.' : 'não deu'));
+        if (d.ok) { FINAL = payload(); bannerFinal(FINAL); }
+      });
+    }
+
     preencher();
     try { fetch('respostas.json', { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) { if (d && d.finalizado) { FINAL = d; bannerFinal(d); } }).catch(function () {}); } catch (e) {}
 
-    return { respostas: function () { return JSON.parse(JSON.stringify(R)); }, resumoTexto: textoResumo, abrirRevisao: function () { doc.getElementById('dr-finalizar').click(); }, cursor: CF };
+    estadoAnexos();
+    return { respostas: function () { return JSON.parse(JSON.stringify(R)); }, resumoTexto: textoResumo, resumoRespostas: textoRespostas, abrirRevisao: function () { doc.getElementById('dr-finalizar').click(); }, cursor: CF, suportaAnexos: true, anexosPendentes: anexosBloqueados };
   }
 
-  global.DecisoesRespondiveis = { iniciar: iniciar, versao: '1.1' };
+  global.DecisoesRespondiveis = { iniciar: iniciar, versao: '1.2' };
 })(window);

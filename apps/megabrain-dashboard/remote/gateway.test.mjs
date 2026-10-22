@@ -104,6 +104,70 @@ test('HEAD strips upstream body and known contract routes pass', async () => {
   assert.equal((await gateway.fetch(write('/api/workspace',{method:'PUT'}),env)).status,200);
   assert.equal((await gateway.fetch(write('/api/projects/abc/routing',{method:'PUT'}),env)).status,200);
 });
+// 261020: routes the app gained after 261011 (reports, returns, attachments, bridge).
+const FID = 'e'.repeat(20), PID = 'd'.repeat(20), AID = 'f'.repeat(64), OID = '261020-061500-abcdef';
+const UPLOAD_LIMIT = 4 * Math.floor((8 * 1024 * 1024 + 2) / 3) + 8192; // central_attachments.MAX_UPLOAD_BODY
+test('report, returns and bridge routes pass only with exact backend ids and methods', async () => {
+  const {env,calls}=fixture();
+  for(const path of [`/api/reports/${FID}/status`,`/api/reports/${FID}/view?ticket=t-123`,`/api/reports/${FID}/render?ticket=t-123&version=${'a'.repeat(64)}`,
+    `/api/reports/${FID}/note-receipts?hash=${'a'.repeat(64)}`,'/api/returns?after=3','/api/quotas','/api/session-connections','/api/bridge/vendors',
+    `/api/projects/${PID}/attachments/${AID}`,`/api/projects/${PID}/bridge`,'/cursor-ferramentas-v1.2.js?v=261018-anexos']) {
+    assert.equal((await gateway.fetch(req(path),env)).status,200,path);
+  }
+  for(const path of [`/api/reports/${FID}/draft`,`/api/reports/${FID}/feedback`,`/api/reports/${FID}/resolve`,`/api/projects/${PID}/attachments`,
+    `/api/projects/${PID}/bridge/send`,`/api/projects/${PID}/bridge/orders/${OID}/stop`]) {
+    assert.equal((await gateway.fetch(write(path),env)).status,200,path);
+  }
+  assert.equal((await gateway.fetch(write(`/api/projects/${PID}/bridge`,{method:'PUT'}),env)).status,200);
+  const forwarded=calls.length;
+  for(const [method,path] of [['GET','/api/reports/abc/status'],['GET',`/api/reports/${'E'.repeat(20)}/status`],['GET',`/api/reports/${FID}/feedback`],
+    ['GET',`/api/reports/${FID}/logs`],['POST',`/api/reports/${FID}/status`],['GET',`/api/projects/${PID}/attachments/${'f'.repeat(24)}`],
+    ['GET',`/api/projects/${PID}/attachments/../../.env`],['POST',`/api/projects/${PID}/bridge/orders/x/stop`],['POST',`/api/projects/${PID}/bridge/orders/${OID}`],
+    ['DELETE',`/api/projects/${PID}/bridge`],['GET','/api/returns/x'],['GET','/cursor-ferramentas.js'],['GET','/cursor-ferramentas-v1.2.js.map']]) {
+    const request=method==='GET'?req(path):write(path,{method});
+    assert.ok((await gateway.fetch(request,env)).status>=400,`${method} ${path}`);
+  }
+  for(const path of [`/api/reports/${FID}/render?ticket=t&path=../x`,`/api/reports/${FID}/view?url=https://evil.test`,`/api/files/${FID}?target=x`])
+    assert.equal((await gateway.fetch(req(path),env)).status,400,path);
+  assert.equal(calls.length,forwarded);
+});
+test('report writes keep same-origin JSON before the backend', async () => {
+  const {env,calls}=fixture();
+  for(const request of [req(`/api/reports/${FID}/feedback`,{method:'POST',body:'{}',headers:{'content-type':'application/json'}}),
+    write(`/api/reports/${FID}/feedback`,{headers:{origin:'https://evil.test'}}),write(`/api/projects/${PID}/attachments`,{headers:{'content-type':'text/plain'}}),
+    write(`/api/projects/${PID}/bridge/send`,{headers:{'sec-fetch-site':'cross-site'}})]) {
+    assert.ok((await gateway.fetch(request,env)).status>=400);
+  }
+  assert.equal(calls.length,0);
+});
+test('only the exact upload route accepts the attachment body size, measured on the stream', async () => {
+  const {env,calls}=fixture();
+  const big='x'.repeat(2_000_000);
+  const upload=await gateway.fetch(write(`/api/projects/${PID}/attachments`,{body:big}),env);
+  assert.equal(upload.status,200); assert.equal(calls.length,1); assert.equal(calls[0][1].body.byteLength,big.length);
+  for(const path of [`/api/reports/${FID}/feedback`,'/api/pair',`/api/projects/${PID}/comments`,`/api/projects/${PID}/attachments/extra`])
+    assert.ok([404,413].includes((await gateway.fetch(write(path,{body:big}),env)).status),path);
+  // Streamed without Content-Length: the real byte count decides.
+  const stream=new ReadableStream({start(c){c.enqueue(new Uint8Array(UPLOAD_LIMIT));c.enqueue(new Uint8Array(1));c.close();}});
+  const over=await gateway.fetch(new Request(PUBLIC_ORIGIN+`/api/projects/${PID}/attachments`,{method:'POST',body:stream,duplex:'half',headers:{origin:PUBLIC_ORIGIN,'content-type':'application/json'}}),env);
+  assert.equal(over.status,413);
+  const declared=await gateway.fetch(write(`/api/projects/${PID}/attachments`,{body:'{}',headers:{'content-length':String(UPLOAD_LIMIT+1)}}),env);
+  assert.equal(declared.status,413);
+  assert.equal(calls.length,1);
+});
+test('computer-only actions get a readable 403 and never reach the backend', async () => {
+  const {env,calls}=fixture();
+  for(const [method,path] of [['POST',`/api/dispatch/${FID}`],['POST','/api/present'],['GET','/api/report-audit'],['HEAD','/api/report-audit'],
+    ['POST','/api/quotas/open-widget'],['GET','/api/quotas/widget-settings'],['POST','/api/quotas/widget-settings'],['GET','/api/quotas/widget-settings/requests/req-1234']]) {
+    const response=await gateway.fetch(method==='POST'?write(path):req(path,{method}),env);
+    assert.equal(response.status,403,`${method} ${path}`);
+    if(method!=='HEAD'){const body=await response.json();assert.equal(body.error,'local_only');assert.match(body.message,/computador|PC/);}
+  }
+  for(const [method,path] of [['GET','/api/present'],['GET',`/api/dispatch/${FID}`],['POST','/api/dispatch/abc'],['DELETE','/api/report-audit']]) {
+    assert.equal((await gateway.fetch(method==='GET'?req(path):write(path,{method}),env)).status,404,`${method} ${path}`);
+  }
+  assert.equal(calls.length,0);
+});
 test('execution routes require fixed opaque ids and do not expose job logs or paths', async () => {
   const {env,calls}=fixture();const job='a'.repeat(32);const artifact='b'.repeat(24);
   for(const kind of ['artifacts','preview','render','resources','view']){

@@ -1,0 +1,17 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<title>canário do gate visual — 7 defeitos plantados</title>
+<style>.g{display:grid;grid-template-columns:1fr 1fr;gap:8px}.seta{color:pink;font-size:24px}</style>
+</head><body>
+<h1>Título</h1>
+<h3>Pula o h2</h3>
+<h2>🖼 Assunto com emoji e sem imagem</h2>
+<div class="g">
+  <figure id="antes">antes</figure>
+  <div class="seta">↓</div>
+  <figure id="depois">depois</figure>
+</div>
+<figcaption>figcaption aberto fora de figure</figcaption>
+<img src="nao-existe.png" alt="imagem quebrada">
+<span class="mono">classe morta .mono</span>
+<button onclick="funcaoInexistente()">clique</button>
+</body></html>

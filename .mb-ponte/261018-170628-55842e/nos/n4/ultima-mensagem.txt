@@ -1,0 +1,9 @@
+TL;DR — Nó n4 executado: mapa corrigido e regenerado, com **20 testes e 43 verificações da interface aprovados**.
+
+1. Resumo gravado em [resultado.md](<<MEGABRAIN_ROOT>/.mb-ponte/261018-170628-55842e/nos/n4/resultado.md>).
+2. Prints, arquivos, hashes e reversão registrados em [resultado.json](<<MEGABRAIN_ROOT>/evidence/261018_ponte-orquestradores/mapa-revisao-gpt/resultado.json>).
+3. Revisão final GLM e apresentação no aplicativo ficam com **n0**, conforme a tarefa. O app não foi reiniciado.
+
+```text
+<MEGABRAIN_ROOT>\.mb-ponte\261018-170628-55842e\nos\n4
+```

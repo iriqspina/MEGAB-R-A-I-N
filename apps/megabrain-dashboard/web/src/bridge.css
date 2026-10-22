@@ -1,0 +1,76 @@
+/* 261018 Ponte de correção — usa os tokens do tema (escuro e claro). */
+.bridge-panel{border:1px solid color-mix(in srgb,var(--blue) 35%,var(--line));border-radius:14px;padding:10px 12px;margin-bottom:14px;background:color-mix(in srgb,var(--blue) 6%,var(--panel));display:grid;gap:8px;min-width:0}
+.bridge-panel>header{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.bridge-panel>header strong{display:flex;align-items:center;gap:8px;font-size:14px}
+.bridge-power{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;padding:5px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.bridge-power.on{color:var(--green);border-color:color-mix(in srgb,var(--green) 45%,transparent);background:color-mix(in srgb,var(--green) 10%,transparent)}
+.bridge-flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
+.bridge-flow span,.bridge-flow b{padding:3px 7px;border-radius:6px;background:color-mix(in srgb,var(--muted) 10%,transparent)}
+.bridge-flow b{color:var(--blue);background:color-mix(in srgb,var(--blue) 14%,transparent)}
+.bridge-vendors{display:flex;flex-wrap:wrap;gap:6px}
+.bridge-vendors button{position:relative;display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:10px;border:1px solid var(--line);font-size:12px;font-weight:700;color:inherit;background:color-mix(in srgb,var(--panel) 80%,transparent)}
+.bridge-vendors button small{font-size:10px;font-weight:500;color:var(--muted)}
+.bridge-vendors button.on{border-color:var(--blue);color:var(--blue);background:color-mix(in srgb,var(--blue) 14%,transparent);box-shadow:0 0 0 2px color-mix(in srgb,var(--blue) 20%,transparent)}
+.bridge-vendors button:disabled{opacity:.42}
+.bridge-vendors.compact button{padding:4px 8px;font-size:11px;border-radius:7px}
+.bridge-warn{font-style:normal;font-size:9px;font-weight:800;width:14px;height:14px;border-radius:50%;display:inline-grid;place-items:center;background:var(--amber);color:#1b1923}
+.bridge-mode{display:grid;gap:4px}.bridge-mode summary{cursor:pointer;font-size:11px;color:var(--muted)}.bridge-mode[open] summary{margin-bottom:4px}
+.bridge-mode label{display:flex;align-items:center;gap:7px;margin:0;font-size:11px;font-weight:500;color:var(--muted)}
+.bridge-mode input{width:13px;height:13px;margin:0;accent-color:var(--blue)}
+.bridge-note,.bridge-empty{display:flex;gap:7px;align-items:flex-start;font-size:11px;color:var(--muted);line-height:1.45}
+.bridge-queue{display:grid;gap:6px;padding:8px;border-radius:10px;background:color-mix(in srgb,var(--amber) 9%,transparent);border:1px solid color-mix(in srgb,var(--amber) 30%,transparent)}
+.bridge-queue>small{font-size:11px;color:var(--amber)}
+.bridge-queue>div{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.bridge-queue>div>span{display:flex;align-items:center;gap:6px;font-size:12px;min-width:0;overflow-wrap:anywhere}
+.bridge-queue .secondary{min-height:32px;padding:6px 10px;font-size:11px}
+.bridge-orders{display:grid;gap:10px}
+.bridge-order{border-top:1px solid var(--line);padding-top:10px;display:grid;gap:7px;min-width:0}
+.bridge-order>header{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.bridge-order>header small{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}
+.bridge-tag{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:800;letter-spacing:.3px;padding:4px 8px;border-radius:6px;text-transform:uppercase}
+.bridge-tag.blue{color:var(--blue);background:color-mix(in srgb,var(--blue) 14%,transparent)}
+.bridge-tag.green{color:var(--green);background:color-mix(in srgb,var(--green) 14%,transparent)}
+.bridge-tag.amber{color:var(--amber);background:color-mix(in srgb,var(--amber) 14%,transparent)}
+.bridge-tag.pink{color:var(--pink);background:color-mix(in srgb,var(--pink) 14%,transparent)}
+.bridge-ask{font-size:12px;line-height:1.45;overflow-wrap:anywhere}
+.bridge-plan,.bridge-result p{display:flex;gap:7px;align-items:flex-start;font-size:12px;line-height:1.45;overflow-wrap:anywhere}
+.bridge-result{display:grid;gap:4px;padding:8px;border-radius:9px;background:color-mix(in srgb,var(--green) 9%,transparent)}
+.bridge-result.parcial,.bridge-result.falhou{background:color-mix(in srgb,var(--amber) 10%,transparent)}
+.bridge-tree{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.bridge-tree .node{display:flex;gap:8px;align-items:flex-start;margin-left:calc(var(--depth,0) * 16px);min-width:0}
+.bridge-tree .node>div{min-width:0;flex:1}
+.bridge-tree .node strong{display:block;font-size:12px}
+.bridge-tree .node small{display:block;font-size:10px;color:var(--muted)}
+.bridge-tree .node p{font-size:11px;line-height:1.4;overflow-wrap:anywhere}
+.bridge-tree .dot{width:9px;height:9px;border-radius:50%;margin-top:4px;background:var(--muted);flex-shrink:0}
+.bridge-tree .rodando .dot,.bridge-tree .iniciando .dot{background:var(--blue);box-shadow:0 0 0 3px color-mix(in srgb,var(--blue) 25%,transparent);animation:bridge-pulse 1.4s ease-in-out infinite}
+.bridge-tree .concluido .dot{background:var(--green)}
+.bridge-tree .falhou .dot,.bridge-tree .interrompido .dot,.bridge-tree .lost .dot{background:var(--pink)}
+.bridge-tree details summary{cursor:pointer;font-size:10px;color:var(--muted)}
+.bridge-tree pre{margin:4px 0 0;max-height:180px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font-size:10px;line-height:1.4;padding:6px;border-radius:6px;background:color-mix(in srgb,var(--bg) 70%,transparent)}
+.bridge-stop{justify-self:start;min-height:30px;padding:5px 10px;font-size:11px}
+.bridge-more{justify-self:start}
+.report-bridge{display:flex;align-items:center;flex-wrap:wrap;gap:6px;width:100%;font-size:11px;color:var(--muted)}
+/* A faixa da ponte ocupa a linha inteira; o campo de comentário fica na linha de baixo. */
+.report-live>.report-note{flex-wrap:wrap}.report-note>.report-bridge{flex:1 0 100%}
+.report-bridge>span{display:inline-flex;align-items:center;gap:5px}
+.report-bridge .bridge-power{padding:3px 8px;font-size:10px}
+@keyframes bridge-pulse{50%{box-shadow:0 0 0 5px color-mix(in srgb,var(--blue) 8%,transparent)}}
+@media (prefers-reduced-motion:reduce){.bridge-tree .dot{animation:none!important}}
+/* 261020: escolhas por papel e por comentário; uma coluna em telas estreitas. */
+.bridge-pipeline,.bridge-presets{min-width:0;border-top:1px solid var(--line);padding-top:7px}
+.bridge-pipeline>summary,.bridge-presets>summary,.report-route>summary{cursor:pointer;font-size:12px;color:var(--blue);padding:4px 0;overflow-wrap:anywhere}
+.bridge-pipeline[open],.bridge-presets[open]{display:grid;gap:9px}
+.bridge-pipeline-roles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;min-width:0}
+.bridge-route{margin:0;padding:8px;border:1px solid var(--line);border-radius:9px;min-width:0;max-width:100%;display:grid;gap:6px}
+.bridge-route legend{padding:0 4px;font-size:11px;font-weight:700;color:var(--muted);max-width:100%;overflow-wrap:anywhere}
+.bridge-route-fields{display:flex;flex-wrap:wrap;gap:6px;min-width:0}
+.bridge-route label,.bridge-presets>label{display:grid;gap:3px;flex:1 1 130px;min-width:0;margin:0;font-size:10px;color:var(--muted)}
+.bridge-route select,.bridge-presets select{width:100%;min-width:0;max-width:100%;padding:7px 5px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--text);font:inherit;font-size:11px;text-overflow:ellipsis}
+.bridge-route small,.bridge-preset small{font-size:10px;line-height:1.4;color:var(--muted);overflow-wrap:anywhere}
+.bridge-route:disabled{opacity:.7}
+.bridge-problem,.bridge-route .bridge-problem,.bridge-preset .bridge-problem{font-size:11px;color:var(--amber);overflow-wrap:anywhere}
+.bridge-preset{display:grid;gap:6px;font-size:12px;line-height:1.45;padding:9px;border-radius:8px;background:color-mix(in srgb,var(--blue) 7%,var(--panel));min-width:0;overflow-wrap:anywhere}
+.bridge-preset .secondary{justify-self:start;font-size:11px;white-space:normal}
+.report-route{width:100%;min-width:0}.report-route .bridge-route{max-width:760px}
+@media(max-width:600px){.bridge-pipeline-roles{grid-template-columns:minmax(0,1fr)}.bridge-route-fields{display:grid;grid-template-columns:minmax(0,1fr)}.bridge-panel>header{flex-wrap:wrap}.bridge-pipeline>.secondary{white-space:normal}.report-route{flex:1 0 100%}}

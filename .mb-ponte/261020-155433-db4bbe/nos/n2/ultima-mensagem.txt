@@ -1,0 +1,3 @@
+TL;DR — Revisão concluída: **aprovar com ajustes**. Os 9 testes específicos passaram; encontrei informação incorreta sobre modelos do ZCode e falta de teste para a cópia do catálogo no HTML. A suíte ampla ficou inconclusiva.
+
+Parecer gravado em [n2/resultado.md](<<MEGABRAIN_ROOT>/.mb-ponte/261020-155433-db4bbe/nos/n2/resultado.md>). Nenhum arquivo de implementação foi alterado.

@@ -1,0 +1,18 @@
+DESPACHO MEGABRAIN — respostas confirmadas pelo <USUARIO>
+Relatório: 261018_PONTE-ORQUESTRADORES.html
+Projeto: <MEGABRAIN_ROOT>
+Enviado em: 2026-10-20T16:21:49
+IA escolhida: Codex (modelo: gpt-6.1-sol, effort: xhigh)
+
+RESPOSTAS · Ponte de correção · 18/out · 20/10/2026, 16:21:48
+
+1 · IA padrão do planejador
+1.1 Qual IA planeja os comentários novos por padrão? → Cada projeto com a sua
+1.2 Algo mais sobre a ponte? → quero poder selecionar quais vão fazer qual papel na pipeline, mas tmb quero modelos prontos com base nos diferenciais e comparativos dos vendors, pq cada modelo tem um ponto positivo. tipo claude eu acho que tem uma boa noção de design, o astra tem pontos positivos, etc. já fizemos pesquisas sobre isso, busque no megabrain.
+
+NOTAS NA PÁGINA
+1. aumenta pra 3 minutos. se tiver mais um novo comentário, pelo menos, espera mais 3 minutos, até parar de ter novos ou alterações nas notas. se houve uma alteração na nota/comentário, mande ao mesmo agente que já tem o contexto (perto de: Antes: Parado no banco. Depois: Planejador em 60 s)
+2. quero poder escolher também nos comentários pra qual i.a. vai, qual modelo e qual effort (perto de: MEGABRAIN · CENTRAL · PONTE DE CORREÇÃO ◐ Tema Comentário → planejador → orquestradores → )
+3. o que seria modo janela? (perto de: Quero modo janela)
+
+Instrução: estas são as decisões dele para este relatório. Leia ESTADO.md/HANDOFF.md do projeto se existirem, aja nas respostas dentro do projeto e mantenha a pasta 00_PARA-VOCE como porta de entrega. O pacote completo está em respostas.json ao lado deste prompt.

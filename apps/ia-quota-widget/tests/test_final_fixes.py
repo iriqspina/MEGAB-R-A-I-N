@@ -109,10 +109,18 @@ def test_backoff_covers_timer_manual_and_visibility_toggle(window, monkeypatch):
     window._on_snapshot('codex_gpt2', demo_snapshot('codex_gpt2'))
     window._on_snapshot('zai', demo_snapshot('zai'))
     window.manual_refresh()
-    assert calls == ['codex', 'codex_gpt2', 'zai', 'codex', 'codex_gpt2', 'zai']
+    # 261020 A8: manual_refresh força TODAS as fontes, inclusive as em pausa
+    # de backoff (claude segue limitada no servidor, mas é consultada).
+    assert calls == ['codex', 'codex_gpt2', 'zai', 'codex', 'codex_gpt2', 'claude', 'zai']
     window._toggle_provider_visibility('claude', False)
     window._toggle_provider_visibility('claude', True)
-    assert 'claude' not in calls
+    # Toggle de visibilidade não dispara consulta: a lista não cresce.
+    assert calls == ['codex', 'codex_gpt2', 'zai', 'codex', 'codex_gpt2', 'claude', 'zai']
+    # claude segue em consulta (forçada pelo Recarregar tudo) até o snapshot voltar.
+    assert window._querying == {'codex', 'codex_gpt2', 'claude', 'zai'}
+    assert window._segments['claude']._hint.text() == 'consultando…'
+    # Snapshot 429 volta: hint retoma 'limitado' e a consulta sai do ar.
+    window._on_snapshot('claude', {'status': 'rate_limited', 'windows': [], 'message': 'HTTP 429'})
     assert 'claude' not in window._querying
     assert window._segments['claude']._hint.text() == 'limitado'
 

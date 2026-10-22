@@ -95,13 +95,15 @@ def _normalize_window(raw: dict) -> dict:
 
 def normalize_snapshot(provider_id: str, raw: dict) -> dict:
     from quota_details_data import sanitize_details
+
+    from . import account_state
     status = raw.get("status")
     if status not in VALID_STATUSES:
         status = "error"
     windows_raw = raw.get("windows") or []
     windows = [_normalize_window(w) for w in windows_raw if isinstance(w, dict)]
     message = str(raw.get("message") or "")[:240]
-    return {
+    snapshot = {
         "provider": provider_id,
         "label": str(raw.get("label") or provider_id),
         "status": status,
@@ -111,6 +113,10 @@ def normalize_snapshot(provider_id: str, raw: dict) -> dict:
         "message": _redact(message),
         "details": sanitize_details(raw.get("details")),
     }
+    estado = account_state.estado_de(provider_id)
+    if estado:
+        snapshot["account_state"] = estado
+    return snapshot
 
 
 def fetch_provider_safe(provider_id: str) -> dict:

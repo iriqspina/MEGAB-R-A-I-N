@@ -2,6 +2,26 @@
   "_fonte": "Pedidos do <USUARIO> que cada projeto aplica na própria sessão. Lido por bin/mb-abertura-sessao.py; o projeto marca como feito escrevendo o id em .mb-atualizacoes-feitas.txt (uma linha por id). Vale para qualquer agente (Claude, Codex, Kimi, Gemini).",
   "atualizacoes": [
     {
+      "id": "261020-relatorios-glm-max",
+      "data": "2026-10-20",
+      "titulo": "GLM principal MAX produz relatórios; revisão e aprendizado verificáveis",
+      "pedido_literal": "glm max responsável pela criação majoritária dos relatórios obrigatoriamente salvo crédito extremo sem reset; Codex e Claude corrigem e criam modelos para ele reproduzir",
+      "instrucao": "Ler identidade RELATORIOS-GLM e skill central /relatorios-glm; encaminhar relatório novo/regenerado ao GLM principal MAX, inspecionar prints com Codex/Claude, devolver correções GLM e validar gate da versão final. Economizar Claude sem max/ultracode. Preservar entrada e histórico.",
+      "referencia": "S:\\projetos multi i.a\\MEGA B R A I  N\\motor\\skills\\relatorios-glm\\SKILL.md",
+      "verificar": "Executar ciclo real no projeto, com autoria/metadados GLM MAX, revisão independente, prints e prova da entrega no app. Só então marcar este ID feito.",
+      "nao_fazer": "Não marcar aplicado por cópia em disco, não retomar pausados, não reconfigurar ordens em andamento, não substituir GLM por falha técnica, não prometer zero erro."
+    },
+    {
+      "id": "261015-reinicios-simples-autorizados",
+      "data": "2026-10-15",
+      "titulo": "Reinícios simples sem nova confirmação",
+      "pedido_literal": "nunca mais me peça se pode reiniciar, pode sempre, é algo rápido simples que nao interfere diretamente em algo que to fazendo, lembre disso sempre em todos os projetos",
+      "instrucao": "Reiniciar sem perguntar aplicativos, widgets e serviços envolvidos na tarefa quando for operação simples e rápida. Autorização permanente inclui encerrar o processo antigo necessário. Preservar configurações/trabalho, identificar alvo real, reabrir e verificar carregamento. A regra prevalece sobre a exigência genérica antiga de confirmação para matar processo.",
+      "referencia": "S:\\projetos multi i.a\\MEGA B R A I  N\\memoria\\cerebro\\raw\\261015_reinicios-simples-autorizados.json",
+      "verificar": "Ler fonte canônica de identidade e conferir regra carregável; reinício concreto exige alvo e retorno reais.",
+      "nao_fazer": "Não atingir outros aplicativos/contas/sessões nem descartar trabalho não salvo. Arquivo sincronizado não comprova recarga de sessão aberta."
+    },
+    {
       "id": "261013-sessoes-conectadas-app",
       "data": "2026-10-13",
       "titulo": "Sessões MegaBrain se apresentam no aplicativo",

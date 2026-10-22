@@ -1,0 +1,27 @@
+{
+  "versao": 1,
+  "ordem_id": "261018-170741-cb0ad1",
+  "criado_em": "2026-10-18T20:07:41+00:00",
+  "projeto": "S:\\projetos multi i.a\\MEGA B R A I  N",
+  "central": "S:\\projetos multi i.a\\MEGA B R A I  N",
+  "origem": "revisao-independente",
+  "vendor": "glm",
+  "modo": "segundo_plano",
+  "vendors_ativos": [
+    "claude",
+    "gpt",
+    "glm"
+  ],
+  "comentarios": [
+    {
+      "id": "revisao-ponte",
+      "at": "2026-10-18T20:07:41+00:00",
+      "texto": "Revisão independente (GLM) do código da ponte de correção criado pelo Claude em 18/10."
+    }
+  ],
+  "coordenacao": "",
+  "limites": {
+    "profundidade": 3,
+    "nos": 16
+  }
+}

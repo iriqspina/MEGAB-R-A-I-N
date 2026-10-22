@@ -1,0 +1,16 @@
+{
+  "status": "corrigido",
+  "resumo": "Prints por Ctrl+V e arquivo nos cinco campos de contexto, mapa aperfeiçoado pelo GPT e notas sem reenvio entre perfis. Corrigido também o encerramento da ponte para aplicar a conclusão aos três comentários sem perder os textos originais; revisões GLM aprovadas, 341 testes Python passaram (3 pulados) e aplicativo recarregado com as fontes atuais.",
+  "provas": [
+    "evidence/261018_ponte-orquestradores/final-python.json",
+    "evidence/261018_ponte-orquestradores/final-web.json",
+    "evidence/261018_ponte-orquestradores/integration-result.json",
+    "evidence/261018_ponte-orquestradores/integration-repeat-profiles.json",
+    "evidence/261018_ponte-orquestradores/revisao-fechamento-glm.md",
+    "evidence/261018_ponte-orquestradores/native-presentation.json",
+    ".mb-ponte/261018-170628-55842e/nos/n0/resultado.md"
+  ],
+  "pendencias": [],
+  "concluido_em": "2026-10-18T21:16:19+00:00",
+  "por": "n0"
+}

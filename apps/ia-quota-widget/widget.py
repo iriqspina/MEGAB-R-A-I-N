@@ -70,8 +70,10 @@ def main(argv=None):
             if command.startswith('settings'):
                 dialog=window.open_settings()
                 if ':' in command:
-                    dialog.tabs.setCurrentIndex(int(command.split(':')[1]))
+                    if hasattr(dialog, 'tabs'):
+                        dialog.tabs.setCurrentIndex(int(command.split(':')[1]))
         guard.set_callback(show_requested)
+        guard.set_settings_callback(window.apply_external_settings)
     if args.move_to:
         x_str, y_str = args.move_to.split(",")
         window.move(int(x_str), int(y_str))
@@ -79,7 +81,8 @@ def main(argv=None):
 
     if args.settings_screenshot or args.settings:
         dialog = window.open_settings()
-        dialog.tabs.setCurrentIndex(args.settings_tab)
+        if hasattr(dialog, 'tabs'):
+            dialog.tabs.setCurrentIndex(args.settings_tab)
     if args.screenshot or args.settings_screenshot:
         QTimer.singleShot(
             args.screenshot_delay_ms,

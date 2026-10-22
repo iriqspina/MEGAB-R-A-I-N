@@ -1,0 +1,7 @@
+{
+ "liberado_para_producao":true,
+ "coordenador":"n0 GPT/Codex1",
+ "revisor":"n1 GLM/ZCode, parecer AJUSTAR no disco lido integralmente",
+ "achados_incorporados":["A1:limite independente do upload", "A2:anexos persistidos são caminhos strings canônicos", "A3:central_server exclusivo n2, central_reports exclusivo n3 e mtimes rechecados", "A4:canal postMessage, CSP mantido, rascunhos com referências curtas"],
+ "observacao":"Workers iniciaram leitura/inventário antes do parecer; fontes só após incorporar achados. A2 usa caminho absoluto canônico resolvido no servidor por facilitar localização na tarefa; não há aceitação de caminho arbitrário do cliente. Menores também adotados. Consulte plano.json atualizado e revisao-plano-glm.md."
+}

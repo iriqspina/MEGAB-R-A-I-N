@@ -1,0 +1,11 @@
+{
+ "objective":"Corrigir os três comentários da ordem da ponte, com prints nos campos coerentes e mapa revisto pelo Codex 1.",
+ "criteria":["Mapa corrigido por fornecedor diferente de Claude, gerado e verificado em 1440/390.","Colar e selecionar imagens, persistir e vincular às notas, comentários, decisões e pedidos sem perder rascunhos.","API autenticada com limites e isolamento entre projetos.","Testes, build, revisão cruzada e app real comprovados antes de concluir."],
+ "context":"Fontes: .mb-ponte/261018-170628-55842e/nos/n0/TAREFA.md e plano.json. Entrada estável mapa 00_PARA-VOCE/261011_harnesses/261017_MAPA-DO-HARNESS.html; app 00_PARA-VOCE/261011_app-megabrain/261011_APP-MEGABRAIN.html. Não duplicar relatórios. Conta e produtor explicitamente GPT/Codex1, revisão GLM/ZCode; ponte despacha clientes reais. Prepare é prévia, não substitui fornecedor escolhido pelo <USUARIO> nem validação runtime.",
+ "ideal":"<USUARIO> cola ou escolhe um print junto à sua observação, vê o anexo e o pedido chega à IA com caminho válido. Mapa compreensível preservando cidade e metrô, com leitura e animação verificadas.",
+ "generic_rejected":"Botão de anexo decorativo sem persistência, teste só estrutural e mapa redesenhado sem evidência.",
+ "questions":[],
+ "milestones":[{"title":"Plano revisto","exit":"Parecer GLM no disco"},{"title":"Produção isolada por arquivo","exit":"Três workers retornam fontes e testes"},{"title":"Integração e prova","exit":"Build/testes/prints e apresentação nativa"},{"title":"Conclusão","exit":"Complementos lidos e resultado da ponte registrado"}],
+ "effort_policy":"Papéis fortes herdados do cliente da ponte; sem troca de modelo global nem chamada paga. Revisão de plano e final GLM/ZCode.",
+ "quota_side":"Snapshot 18/10 17:07:18: Codex24% semana; GLM6,3% semana e0,2%5h; Claude85%5h desacelerar. Spark antigo NAO_MEDIDO. Prioridade humana explícita Codex1. Percentuais não equivalem a custo/tokens."
+}

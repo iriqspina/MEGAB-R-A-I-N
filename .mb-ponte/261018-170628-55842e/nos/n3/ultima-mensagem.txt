@@ -1,0 +1,5 @@
+TL;DR — Nó n3 executado. Resumo gravado em [resultado.md](<<MEGABRAIN_ROOT>/.mb-ponte/261018-170628-55842e/nos/n3/resultado.md>).
+
+1. Interface implementada com colagem, escolha de prints, prévias, remoção e preservação de rascunhos.
+2. Passaram **55 testes JavaScript, 38 verificações Chromium, 11 verificações Qt e `npm run check`**.
+3. Falhas antigas e limites estão documentados. Build global, reinício e integração final permanecem com o nó n0; não concluí a ordem.

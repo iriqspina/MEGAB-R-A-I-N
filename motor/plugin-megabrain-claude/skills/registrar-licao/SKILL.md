@@ -9,13 +9,15 @@ Grava 3 linhas num arquivo de lições. O hook `SessionStart` do plugin (quando 
 
 ## Onde gravar — dois destinos
 
-O hook `SessionStart` do plugin carrega os dois automaticamente. Escolha pelo alcance da lição.
+O global chega às sessões por proximidade (o hook de prompt devolve as 5 entradas mais próximas do pedido, pelo índice `motor/dna/indice-licoes.json`); o de projeto, pelo hook `SessionStart`. Escolha pelo alcance da lição.
 
-### GLOBAL (default) — `<MEGABRAIN_ROOT>/licoes-megabrain.md`
+### GLOBAL (default) — `<MEGABRAIN_ROOT>/memoria/nucleo/licoes-megabrain.md`
 
-No Windows, o caminho padrão é `<MEGABRAIN_ROOT>\licoes-megabrain.md` (definido pela variável de ambiente `MEGABRAIN_ROOT`; sem ela, o hook usa esse fallback).
+No Windows: `<MEGABRAIN_ROOT>\memoria\nucleo\licoes-megabrain.md` (`MEGABRAIN_ROOT` = pasta da central; sem a variável, use esse caminho). É o único arquivo global de lições: `bin/mb-indice-licoes.py` indexa ele e só ele.
 
-Use quando a lição vale **para qualquer projeto**: comportamento de ferramenta, limite de formato, armadilha de processo, padrão que se repete entre clientes. O hook cria esse arquivo na primeira execução.
+**Nunca grave em `<MEGABRAIN_ROOT>/licoes-megabrain.md` (raiz da central).** Esse arquivo ficava fora do índice e foi retirado em 261016, com as entradas levadas para o núcleo; se ele reaparecer, é órfão.
+
+Use quando a lição vale **para qualquer projeto**: comportamento de ferramenta, limite de formato, armadilha de processo, padrão que se repete entre clientes.
 
 **Este é o destino padrão.** Na dúvida, é aqui.
 
@@ -37,6 +39,28 @@ Não achou e a lição é claramente do projeto → crie `licoes-megabrain.md` n
 > Essa lição seria útil num cliente completamente diferente? **Sim → global. Não → projeto.**
 
 Em qualquer destino: **anexe ao fim**, nunca reescreva o arquivo.
+
+### Como anexar — sempre pelo `mb_trava.py`
+
+Não use `>>`, editor nem escrita direta. O `anexar` espera a trava do arquivo, lê e grava dentro dela e mantém o fim de linha (CRLF ou LF) que o arquivo já tem. Em 261016 um append direto entrou com a trava ativa e trocou o fim de linha do arquivo inteiro.
+
+Git Bash (heredoc com aspas, para a barra invertida não ser interpretada):
+
+```bash
+python "<MEGABRAIN_ROOT>/bin/mb_trava.py" anexar \
+  --arquivo "<MEGABRAIN_ROOT>/memoria/nucleo/licoes-megabrain.md" \
+  --agente <cliente>-<4 caracteres da sessão> --porque "registrar-licao" --entrada - <<'EOF'
+## YYMMDD — <contexto>
+GATILHO: ...
+LIÇÃO: ...
+ATALHO: ...
+EOF
+```
+
+- PowerShell ou outro shell: grave a entrada num arquivo UTF-8 temporário e passe `--entrada <caminho>`.
+- Lição de projeto: troque só o `--arquivo` (a trava continua morando na central).
+- `RECUSADO: ... está com <agente>` = outra sessão está gravando. Espere alguns segundos e repita; não contorne.
+- `anexar: ok` é a confirmação. O índice de proximidade se atualiza sozinho na próxima consulta.
 
 ## Formato da entrada
 
@@ -82,7 +106,7 @@ Não registre:
 
 ## Promoção — quando a lição vira skill
 
-Ao gravar, verifique se o arquivo já tem entradas com o **mesmo gatilho**.
+Ao gravar, verifique se o arquivo já tem entradas com o **mesmo gatilho**. No global, que tem centenas de entradas, procure com `python "<MEGABRAIN_ROOT>/bin/mb-indice-licoes.py" --buscar "<gatilho>" --n 5` em vez de ler o arquivo inteiro.
 
 | Ocorrências | Ação |
 |---|---|
@@ -94,7 +118,9 @@ Lição que se repete três vezes não é memória, é procedimento não escrito
 
 ## Manutenção
 
-Quando o arquivo passar de ~40 entradas, faça a consolidação direto, sem pedir permissão: agrupe por tema, funda entradas redundantes, apague as que descreviam ferramentas ou versões que não existem mais. Arquivo de lições inchado vira o problema que ele deveria resolver. Depois liste em uma linha o que foi fundido e o que saiu — é a única coisa que precisa de revisão dele.
+**Arquivo de projeto:** quando passar de ~40 entradas, faça a consolidação direto, sem pedir permissão: agrupe por tema, funda entradas redundantes, apague as que descreviam ferramentas ou versões que não existem mais. Arquivo de lições inchado vira o problema que ele deveria resolver. Backup antes em `evidence/`, grave com `mb_trava.py escrever` e depois liste em uma linha o que foi fundido e o que saiu — é a única coisa que precisa de revisão dele.
+
+**Global (`memoria/nucleo/`):** não consolide por contagem. Ele é lido por proximidade (5 entradas por pedido), não injetado inteiro, e tem centenas de entradas de propósito. Consolide só os grupos que `python bin/mb-indice-licoes.py --recontar` marcar como 3×+, com o mesmo backup e `mb_trava.py escrever`.
 
 ## Cabeçalho para arquivo novo
 
@@ -118,3 +144,4 @@ fazer direto). Só entra o que muda comportamento futuro.
 4. **Sobrescrever o arquivo.** Sempre anexe. Perder o histórico apaga o valor acumulado.
 5. **Registrar preferência permanente aqui.** Preferência é configuração, não lição — o lugar dela é o `SYSTEM.md`.
 6. **Nunca consolidar.** Sem poda, o arquivo cresce até virar ruído.
+7. **Gravar na raiz da central.** `<MEGABRAIN_ROOT>/licoes-megabrain.md` fica fora do índice: 76 lições gravadas lá não apareciam por proximidade até 261016.

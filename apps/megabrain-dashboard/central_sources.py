@@ -38,16 +38,33 @@ class Sources:
     def __init__(self,store,parent=None):
         self.store=store; self.parent=Path(parent or ROOT.parent).resolve(); self.lock=threading.RLock()
         self.projects={}; self.files={}; self.cache={}; self.scan_time=0; self.fingerprints={}; self.session_cache=(0,[])
+        self.summary_lock=threading.RLock(); self.summary_cache={}; self.summary_flights={}; self.summary_generation={}
+        self.summary_snapshot=None;self.summary_snapshot_flight=None;self.summary_snapshot_generation=0
+        self.summary_ttl=15
         from central_returns import Returns
         self.returns=Returns(store)
+        from central_catalog import Catalog
+        self.catalog=Catalog(store); self._catalog_seen={}
         self.discover()
     def discover(self):
         roots=[]
         if ROOT.parent==self.parent: roots.append(ROOT)
         for p in sorted(self.parent.iterdir(),key=lambda p:p.name.casefold()):
             if p.is_dir() and not p.name.startswith('.') and p.resolve().is_relative_to(self.parent) and any((p/n).exists() for n in ('MEGABRAIN','ESTADO.md','00_PARA-VOCE','memoria/estado/ESTADO.md')): roots.append(p.resolve())
-        with self.lock: self.projects={ident(p):p for p in dict.fromkeys(roots)}
+        discovered={ident(p):p for p in dict.fromkeys(roots)}
+        with self.lock:
+            changed=list(discovered.items())!=list(self.projects.items())
+            previous=list(self.projects); self.projects=discovered
+        if changed:
+            # A new order also changes the assigned catalogue colors.
+            for pid in set(previous)|set(discovered): self.invalidate_summary(pid)
         self.scan_time=time.time()
+
+    def invalidate_summary(self,pid):
+        with self.summary_lock:
+            self.summary_cache.pop(pid,None)
+            self.summary_generation[pid]=self.summary_generation.get(pid,0)+1
+            self.summary_snapshot=None;self.summary_snapshot_generation+=1
     def root(self,pid):
         with self.lock: root=self.projects.get(pid)
         if root is None: raise KeyError('Projeto não encontrado.')
@@ -106,17 +123,68 @@ class Sources:
             with self.lock: self.files[fid]=(p,root.resolve())
             return dict(id=fid,name=p.name,type=EXTS[p.suffix.lower()],role=role,url=f'/api/files/{fid}',updated_at=stamp(p),size=p.stat().st_size,author='Não informado',origin=str(p.relative_to(root)),historical=any(x.casefold() in ARCHIVES for x in p.relative_to(root).parts[:-1]))
         except OSError: return None
-    def summaries(self):
-        if time.time()-self.scan_time>60: self.discover()
-        rows=[]
-        for i,(pid,root) in enumerate(list(self.projects.items())):
+    def project_summary(self,pid,force=False):
+        """One root per scan; concurrent readers share a scan without holding the file index lock."""
+        started=time.monotonic()
+        while True:
+            with self.summary_lock:
+                cached=self.summary_cache.get(pid)
+                if cached and time.monotonic()-cached[0]<self.summary_ttl and (not force or cached[0]>=started):
+                    return dict(cached[1])
+                flight=self.summary_flights.get(pid)
+                if flight is None:
+                    flight=threading.Event();self.summary_flights[pid]=flight
+                    generation=self.summary_generation.get(pid,0)
+                    break
+            flight.wait()
+        try:
+            with self.lock:
+                root=self.projects.get(pid)
+                if root is None: raise KeyError('Projeto não encontrado.')
+                color=COLORS[list(self.projects).index(pid)%len(COLORS)]
             paths=self.source_paths(root); source=paths['ESTADO']
             try: text=source.read_text(encoding='utf-8-sig')[:24000] if source else ''
             except OSError: text=''
             reg=read_json(root/'dados/entregas.json').get('entregas',[])
             reports=self.report_paths(root)
-            rows.append(dict(id=pid,name='MegaBrain' if root==ROOT else root.name,color=COLORS[i%len(COLORS)],updated_at=stamp(source) if source else None,summary=brief(text),source_age=stamp(source) if source else None,delivery_count=len(reg),report_count=len(reports),source='ESTADO.md' if source else 'Sem estado registrado'))
-        return {'projects':rows,'revision':ident(rows),'scanned_at':now()}
+            row=dict(id=pid,name='MegaBrain' if root==ROOT else root.name,color=color,updated_at=stamp(source) if source else None,summary=brief(text),source_age=stamp(source) if source else None,delivery_count=len(reg),report_count=len(reports),source='ESTADO.md' if source else 'Sem estado registrado')
+            with self.summary_lock:
+                # Poll/discovery may invalidate while the filesystem scan is in flight.
+                if self.summary_generation.get(pid,0)==generation:
+                    self.summary_cache[pid]=(time.monotonic(),row)
+            return dict(row)
+        finally:
+            with self.summary_lock:
+                self.summary_flights.pop(pid,None);flight.set()
+
+    def summaries(self):
+        if time.time()-self.scan_time>60: self.discover()
+        while True:
+            with self.summary_lock:
+                cached=self.summary_snapshot
+                if cached and time.monotonic()-cached[0]<self.summary_ttl:
+                    return {**cached[1],'projects':[dict(row) for row in cached[1]['projects']]}
+                flight=self.summary_snapshot_flight
+                if flight is None:
+                    flight=threading.Event();self.summary_snapshot_flight=flight
+                    generation=self.summary_snapshot_generation
+                    break
+            flight.wait()
+        try:
+            with self.lock: ids=list(self.projects)
+            rows=[]
+            for pid in ids:
+                try: rows.append(self.project_summary(pid))
+                except KeyError: continue  # Removed by discovery during this snapshot.
+            result={'projects':rows,'revision':ident(rows),'scanned_at':now()}
+            with self.summary_lock:
+                if self.summary_snapshot_generation==generation:
+                    # Age begins after the complete catalogue, even if a cold scan exceeded the TTL.
+                    self.summary_snapshot=(time.monotonic(),result)
+            return {**result,'projects':[dict(row) for row in rows]}
+        finally:
+            with self.summary_lock:
+                self.summary_snapshot_flight=None;flight.set()
     def sessions(self,root):
         if time.time()-self.session_cache[0]>30:
             try:
@@ -135,7 +203,7 @@ class Sources:
     def detail(self,pid,force=False,summary=None):
         root=self.root(pid)
         if not force and pid in self.cache and time.time()-self.cache[pid][0]<8: return self.cache[pid][1]
-        summary=dict(summary) if summary is not None else next(p for p in self.summaries()['projects'] if p['id']==pid)
+        summary=dict(summary) if summary is not None else self.project_summary(pid,force=force)
         paths=self.source_paths(root)
         try: text=paths['ESTADO'].read_text(encoding='utf-8-sig')[:24000] if paths['ESTADO'] else ''
         except OSError: text=''
@@ -189,6 +257,9 @@ class Sources:
         data=dict(project=summary,deliveries=deliveries,assets=assets,activity=activity,sessions=self.sessions(root),comments=self.store.listing('comments',pid),references=refs)
         data['revision']=ident(data)
         self.cache[pid]=(time.time(),data)
+        # 261021 F0b: alimenta o índice de busca; falha dele nunca derruba o detalhe.
+        try: self.catalog.ingest(pid,data)
+        except Exception: logging.getLogger('megabrain.catalog').exception('Falha ao indexar o detalhe; busca mantém a última observação')
         return data
     def poll(self):
         # Rediscovery belongs to polling, even when nobody requests summaries.
@@ -219,8 +290,25 @@ class Sources:
                 continue
             old=self.fingerprints.get(pid)
             if old and old!=value:
-                self.cache.pop(pid,None); self.store.event(pid,'Fontes do projeto atualizadas')
+                self.cache.pop(pid,None); self.invalidate_summary(pid); self.store.event(pid,'Fontes do projeto atualizadas')
             self.fingerprints[pid]=value
+        # 261021 F0b: preenchimento gradual do índice de busca — um projeto por ciclo,
+        # apenas na raiz real (a mesma guarda de central_operations), sem varrer raízes de teste.
+        if self.parent==ROOT.parent.resolve():
+            for pid in list(self.projects):
+                fingerprint=self.fingerprints.get(pid)
+                if fingerprint is None or self._catalog_seen.get(pid)==fingerprint: continue
+                try:
+                    if pid not in self._catalog_seen and self.catalog.covered(pid):
+                        self._catalog_seen[pid]=fingerprint; continue
+                except Exception:
+                    logging.getLogger('megabrain.catalog').exception('Falha ao ler cobertura do índice de busca'); continue
+                try:
+                    self.detail(pid,force=True); self._catalog_seen[pid]=fingerprint
+                except Exception:
+                    self._catalog_seen[pid]=fingerprint
+                    logging.getLogger('megabrain.catalog').exception('Falha ao indexar o projeto no catálogo de busca: %s',pid)
+                break
         self.returns.observe(self)
     def file(self,fid):
         with self.lock: item=self.files.get(fid)

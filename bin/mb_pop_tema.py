@@ -130,7 +130,7 @@ HTML_TEMA_CONTROLE = """\
 # ═══ INTERAÇÕES OBRIGATÓRIAS (261010) ═══
 # Pedido do <USUARIO> (Portfólio, 10/10/2026): "lembre-se disso como elemento necessário
 # principal e recrie para os relatórios megabrain dos projetos". Todo relatório POP sai com
-# as Ferramentas do cursor (segurar 2 s → menu em leque → Comentar). Relatório que pede
+# as Ferramentas do cursor (segurar 0,4 s parado → menu em leque → Comentar; era 2 s até 261017). Relatório que pede
 # decisão usa também motor/modelos/interacoes/261010_decisoes-respondiveis/.
 # Fonte única do componente: motor/modelos/interacoes/261010_cursor-ferramentas/ na central,
 # MEGABRAIN/modelos/interacoes/... na cópia do projeto. Sem o arquivo, nada é inserido.

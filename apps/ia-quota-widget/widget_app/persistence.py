@@ -1,4 +1,6 @@
 import json
+import os
+import uuid
 from dataclasses import asdict, dataclass, field
 
 from . import paths
@@ -129,7 +131,10 @@ def load_settings() -> Settings:
 
 def save_settings(settings: Settings) -> None:
     paths.ensure_data_dir()
-    paths.SETTINGS_PATH.write_text(
-        json.dumps(settings.to_dict(), ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
+    temp = paths.SETTINGS_PATH.with_name(paths.SETTINGS_PATH.name + '.' + uuid.uuid4().hex + '.tmp')
+    try:
+        temp.write_text(json.dumps(settings.to_dict(), ensure_ascii=False, indent=2), encoding="utf-8")
+        os.replace(temp, paths.SETTINGS_PATH)
+    finally:
+        if temp.exists():
+            temp.unlink()

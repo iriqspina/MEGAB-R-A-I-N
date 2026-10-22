@@ -4,6 +4,14 @@ from pathlib import Path
 from central_store import now,ident
 from central_reports import MAX_REPORT
 
+# Events the user cares about: a report arrived, an answer came back, a request ended, a comment was made.
+# Everything else (source changed, external operation, configuration...) is machine activity. It stays in
+# the feed, grouped apart, and never counts as unread.
+# 261018 (R1-01): report_answered = relatorio regravado enquanto havia comentario seu em aberto nele (a resposta da IA).
+IMPORTANT_KINDS = ('report_arrived', 'report_answered', 'feedback_received', 'feedback_corrected', 'session_completed',
+                   'session_partial', 'session_failed', 'session_interrupted', 'comment')
+FEED_LIMIT = 100  # per group: a flood of machine events must not push real news out of the feed
+
 class Returns:
     def __init__(self, store):
         self.store = store
@@ -64,8 +72,12 @@ class Returns:
                 row.update(first_seen=old.get('first_seen', at), arrived_at=old.get('arrived_at', at),
                            sequence=old.get('sequence', 0), baseline=old.get('baseline', baseline))
                 if changed and not baseline and not row['historical']:
+                    kind = 'report_arrived'
+                    if old:
+                        waiting = c.execute("SELECT 1 FROM comments WHERE json_extract(data,'$.target')=? AND json_extract(data,'$.status') LIKE 'Recebido%' LIMIT 1", ('file:'+row['id'],)).fetchone()
+                        kind = 'report_answered' if waiting else 'report_updated'
                     event = dict(project_id=row['project_id'], title=row['title'], at=at,
-                        kind='report_updated' if old else 'report_arrived', file_id=row['id'], source_hash=row['hash'])
+                        kind=kind, file_id=row['id'], source_hash=row['hash'])
                     cur = c.execute('INSERT INTO events(project,data) VALUES(?,?)', (row['project_id'], json.dumps(event, ensure_ascii=False)))
                     row.update(sequence=cur.lastrowid, arrived_at=at, baseline=False)
                 c.execute('INSERT OR REPLACE INTO report_inbox VALUES(?,?)', (row['key'], json.dumps(row, ensure_ascii=False)))
@@ -73,11 +85,19 @@ class Returns:
 
     def snapshot(self, sources, after=0):
         reports = []
+        kind = "json_extract(data,'$.kind')"
+        marks = ','.join('?' * len(IMPORTANT_KINDS))
         with self.store.db() as c:
             rows = c.execute('SELECT data FROM report_inbox').fetchall()
-            events = c.execute('SELECT id,data FROM events ORDER BY id DESC LIMIT 100').fetchall()
+            news = c.execute(f'SELECT id,data FROM events WHERE {kind} IN ({marks}) ORDER BY id DESC LIMIT ?',
+                             (*IMPORTANT_KINDS, FEED_LIMIT)).fetchall()
+            machine = c.execute(f'SELECT id,data FROM events WHERE {kind} IS NULL OR {kind} NOT IN ({marks}) ORDER BY id DESC LIMIT ?',
+                                (*IMPORTANT_KINDS, FEED_LIMIT)).fetchall()
+            technical_count = c.execute(f'SELECT COUNT(*) FROM events WHERE {kind} IS NULL OR {kind} NOT IN ({marks})',
+                                        IMPORTANT_KINDS).fetchone()[0]
             revision = c.execute('SELECT COALESCE(MAX(id),0) FROM events').fetchone()[0]
-            unread = c.execute('SELECT COUNT(*) FROM events WHERE id>?', (max(0, after),)).fetchone()[0]
+            unread = c.execute(f'SELECT COUNT(*) FROM events WHERE id>? AND {kind} IN ({marks})',
+                               (max(0, after), *IMPORTANT_KINDS)).fetchone()[0]
         for r in rows:
             row = json.loads(r[0])
             try:
@@ -86,5 +106,8 @@ class Returns:
             except (KeyError,OSError): continue
             reports.append({k:v for k,v in row.items() if k not in {'path','stamp'}})
         reports.sort(key=lambda r:(r['sequence'],r['source_updated_at'] or ''), reverse=True)
-        return dict(reports=reports, events=[dict(json.loads(r['data']), id=r['id']) for r in events],
-                    revision=revision, unread=unread, observed_at=now())
+        events = [dict(json.loads(r['data']), id=r['id'], important=True) for r in news] + \
+                 [dict(json.loads(r['data']), id=r['id'], important=False) for r in machine]
+        events.sort(key=lambda e: e['id'], reverse=True)
+        return dict(reports=reports, events=events, revision=revision, unread=unread,
+                    technical_count=technical_count, observed_at=now())

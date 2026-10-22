@@ -2,6 +2,7 @@
 from dataclasses import dataclass
 from math import isfinite
 from .inline_contract import provider_fields, short_date, full_date, _number
+from quota_details_data import resolve_resets
 
 @dataclass(frozen=True)
 class GlanceEntry:
@@ -29,10 +30,9 @@ def overview(row_id,display,*,number_mode='used',reset_mode='relative',browser=N
     quotas=[GlanceEntry(f.id,f.label,compact_renewal(f.text),f.tooltip,'quota',f.percent,f.color) for f in fields if f.kind=='quota']
     details=(display or {}).get('details') or {}
     items=[]
-    resets=details.get('resets') or []
-    reset_date=''
-    if not resets and browser and browser.get('resets'):
-        resets=browser['resets'];reset_date=browser.get('reset_observed_at') or browser.get('observed_at') or ''
+    resolved=resolve_resets(details,browser,fetched_at=(display or {}).get('fetched_at'),stale=(display or {}).get('stale') or (display or {}).get('status')!='ok')
+    resets=resolved['current']
+    reset_date=resolved['observed_at'] if resolved['source']=='browser' else ''
     for index,reset in enumerate(resets):
         kind=reset.get('kind');label={'account':'♻ Estoque','full':'♻ Completo','five_hour':'♻ 5 h'}.get(kind,'♻ Reset')
         count=reset.get('count');total=reset.get('total')
@@ -44,7 +44,7 @@ def overview(row_id,display,*,number_mode='used',reset_mode='relative',browser=N
         if reset.get('expires_at'):tooltip+=' Validade: '+full_date(reset['expires_at'])
         if reset_date:tooltip+=' Navegador, verificado '+full_date(reset_date)
         items.append(GlanceEntry(f'reset:{index}',label,value,tooltip,'reset',manual_date=reset_date))
-    if not resets:items.append(GlanceEntry('reset:unknown','♻ Resets','—','Estoque não informado; não é zero.','reset'))
+    if not resets:items.append(GlanceEntry('reset:unknown','♻ Resets','—','Estoque atual não confirmado; histórico não é disponibilidade. Não é zero.','reset'))
     if row_id=='spark':
         items.append(GlanceEntry('balance:spark','Saldo','ver Codex','Saldo/reset pertencem à conta Codex.'))
         return quotas,items

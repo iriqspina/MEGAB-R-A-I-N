@@ -1,0 +1,10 @@
+**TL;DR — Nó n5 concluído no escopo, com 22 testes aprovados e sem inferência real.**
+
+1. `image_paths` implementado para Codex e Claude, com validação dos arquivos e proteção dos logs.
+2. GLM-5.3 retorna indisponibilidade visual explícita. Integração e revisão do conjunto ficam com o n0.
+3. Resumo gravado e conferido em [resultado.md](<<MEGABRAIN_ROOT>/.mb-ponte/261018-170628-55842e/nos/n5/resultado.md>).
+
+```text
+<MEGABRAIN_ROOT>\.mb-ponte\261018-170628-55842e\nos\n5
+```
+

@@ -1,0 +1,425 @@
+{
+  "source_project": "S:\\projetos multi i.a\\MEGA B R A I  N",
+  "source_report": "00_PARA-VOCE\\260915_padronizacao-relatorios\\260915_GALERIA-OPCOES.html",
+  "cycle": {
+    "number": 3,
+    "created_at": "2026-10-21T00:30:14.524963+00:00",
+    "production": {
+      "actor": {
+        "vendor": "glm",
+        "session_id": "sess_b186ad54-9b9b-4a8b-8ba3-7c1350d5f004"
+      },
+      "actual_model": "GLM-5.3",
+      "source": {
+        "path": "evidence\\261020_relatorios-glm\\correcao-2\\client\\result.json",
+        "sha256": "56458c69fdf7eef4b95ce9c5fbf42555bbbafd08ce4488df5c15fc664d24c8e9"
+      },
+      "exception": null
+    },
+    "artifact": {
+      "sha256": "0e37e74c1deea3c6dcb2a1ca791b97e6905bbc0dce88c0565e6d16303a350daf",
+      "files": {
+        "00_PARA-VOCE\\260915_padronizacao-relatorios\\260915_GALERIA-OPCOES.html": "bfb29d7f04745083466cb6ef48e7fdfd3073e0269b1000796e09bbb9cf70019b"
+      },
+      "remote_resources": []
+    },
+    "review": {
+      "source": {
+        "path": "evidence\\261020_relatorios-glm\\review-final.json",
+        "sha256": "9870a3d7cc21667580c96dcb69e37a552841a7980c37770af5569a750ae51ac6"
+      },
+      "reviewer": {
+        "vendor": "codex",
+        "session_id": "01a15bc4-046a-7193-966b-bb03f26534e0"
+      },
+      "criteria": [
+        {
+          "id": "understanding",
+          "verdict": "pass",
+          "observation": "Topo resume GLM compõe/Codex revisa;33projetos e0Claude com escopo; aprendizado explicado por casos/testes.",
+          "evidence": [
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\top-390-escuro.png",
+              "sha256": "524e08422e8fbdeb47950f3c3f50f125a16cb1f37e644d00a7dcb6e2b9182c25"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\full-390-claro.png",
+              "sha256": "9d5d6626083bc60860325c25e58f5ff4db43fb69c4ca88de5168041bb927d0bf"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\full-1440-claro.png",
+              "sha256": "199cc2c23c6483e5eec4ddc7a0e5a7d76ec507719ff98b0669b2f79689af3a0f"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\full-1440-escuro.png",
+              "sha256": "92122c35ccf916e8a059f7be2f349e575024eb90f31aabeaace754505d466e3a"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\qa.json",
+              "sha256": "9cdb033771dcf42d83e82224247ab99deb7be68e1eeaa0f517773eea8b612cb8"
+            }
+          ]
+        },
+        {
+          "id": "organization",
+          "verdict": "pass",
+          "observation": "Quatro assuntos numerados, sequência de leitura estável e detalhes técnicos recolhidos; histórico na mesma tarefa.",
+          "evidence": [
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\top-390-escuro.png",
+              "sha256": "524e08422e8fbdeb47950f3c3f50f125a16cb1f37e644d00a7dcb6e2b9182c25"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\full-390-claro.png",
+              "sha256": "9d5d6626083bc60860325c25e58f5ff4db43fb69c4ca88de5168041bb927d0bf"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\full-1440-claro.png",
+              "sha256": "199cc2c23c6483e5eec4ddc7a0e5a7d76ec507719ff98b0669b2f79689af3a0f"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\full-1440-escuro.png",
+              "sha256": "92122c35ccf916e8a059f7be2f349e575024eb90f31aabeaace754505d466e3a"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\qa.json",
+              "sha256": "9cdb033771dcf42d83e82224247ab99deb7be68e1eeaa0f517773eea8b612cb8"
+            }
+          ]
+        },
+        {
+          "id": "hierarchy",
+          "verdict": "pass",
+          "observation": "Resultado antes da esteira e responsabilidades; contraste legível nos dois temas inspecionados.",
+          "evidence": [
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\top-390-escuro.png",
+              "sha256": "524e08422e8fbdeb47950f3c3f50f125a16cb1f37e644d00a7dcb6e2b9182c25"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\full-390-claro.png",
+              "sha256": "9d5d6626083bc60860325c25e58f5ff4db43fb69c4ca88de5168041bb927d0bf"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\full-1440-claro.png",
+              "sha256": "199cc2c23c6483e5eec4ddc7a0e5a7d76ec507719ff98b0669b2f79689af3a0f"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\full-1440-escuro.png",
+              "sha256": "92122c35ccf916e8a059f7be2f349e575024eb90f31aabeaace754505d466e3a"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\qa.json",
+              "sha256": "9cdb033771dcf42d83e82224247ab99deb7be68e1eeaa0f517773eea8b612cb8"
+            }
+          ]
+        },
+        {
+          "id": "functional_layout",
+          "verdict": "pass",
+          "observation": "Desktop usa esteira horizontal;390vertical com rótulos14px e sem corte; figcaption tem espaçamento e não se sobrepõe.",
+          "evidence": [
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\top-390-escuro.png",
+              "sha256": "524e08422e8fbdeb47950f3c3f50f125a16cb1f37e644d00a7dcb6e2b9182c25"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\full-390-claro.png",
+              "sha256": "9d5d6626083bc60860325c25e58f5ff4db43fb69c4ca88de5168041bb927d0bf"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\full-1440-claro.png",
+              "sha256": "199cc2c23c6483e5eec4ddc7a0e5a7d76ec507719ff98b0669b2f79689af3a0f"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\full-1440-escuro.png",
+              "sha256": "92122c35ccf916e8a059f7be2f349e575024eb90f31aabeaace754505d466e3a"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\qa.json",
+              "sha256": "9cdb033771dcf42d83e82224247ab99deb7be68e1eeaa0f517773eea8b612cb8"
+            }
+          ]
+        },
+        {
+          "id": "finalized_references",
+          "verdict": "pass",
+          "observation": "Fonte POP reutilizada e figuras rotuladas ilustração; cópia de caminhos absolutos e histórico preservado; testes dos controles passaram.",
+          "evidence": [
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\top-390-escuro.png",
+              "sha256": "524e08422e8fbdeb47950f3c3f50f125a16cb1f37e644d00a7dcb6e2b9182c25"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\full-390-claro.png",
+              "sha256": "9d5d6626083bc60860325c25e58f5ff4db43fb69c4ca88de5168041bb927d0bf"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\full-1440-claro.png",
+              "sha256": "199cc2c23c6483e5eec4ddc7a0e5a7d76ec507719ff98b0669b2f79689af3a0f"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\full-1440-escuro.png",
+              "sha256": "92122c35ccf916e8a059f7be2f349e575024eb90f31aabeaace754505d466e3a"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\qa.json",
+              "sha256": "9cdb033771dcf42d83e82224247ab99deb7be68e1eeaa0f517773eea8b612cb8"
+            }
+          ]
+        },
+        {
+          "id": "factuality",
+          "verdict": "pass",
+          "observation": "Seção4 atualizada mecanismo verificado, recortes26/15/10/7,33projetos/67hashes; distingue leitura pendente e limite de abertura direta.",
+          "evidence": [
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\top-390-escuro.png",
+              "sha256": "524e08422e8fbdeb47950f3c3f50f125a16cb1f37e644d00a7dcb6e2b9182c25"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\full-390-claro.png",
+              "sha256": "9d5d6626083bc60860325c25e58f5ff4db43fb69c4ca88de5168041bb927d0bf"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\full-1440-claro.png",
+              "sha256": "199cc2c23c6483e5eec4ddc7a0e5a7d76ec507719ff98b0669b2f79689af3a0f"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\full-1440-escuro.png",
+              "sha256": "92122c35ccf916e8a059f7be2f349e575024eb90f31aabeaace754505d466e3a"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\qa.json",
+              "sha256": "9cdb033771dcf42d83e82224247ab99deb7be68e1eeaa0f517773eea8b612cb8"
+            }
+          ]
+        }
+      ],
+      "findings": [
+        {
+          "id": "F1",
+          "criterion": "functional_layout",
+          "status": "resolved",
+          "observation": "SVG textual pequeno removido, mas legendas figcaption/small se juntam; rótulos DOM ainda pequenos.",
+          "evidence": [
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\top-390-escuro.png",
+              "sha256": "524e08422e8fbdeb47950f3c3f50f125a16cb1f37e644d00a7dcb6e2b9182c25"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\full-390-claro.png",
+              "sha256": "9d5d6626083bc60860325c25e58f5ff4db43fb69c4ca88de5168041bb927d0bf"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\full-1440-claro.png",
+              "sha256": "199cc2c23c6483e5eec4ddc7a0e5a7d76ec507719ff98b0669b2f79689af3a0f"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\full-1440-escuro.png",
+              "sha256": "92122c35ccf916e8a059f7be2f349e575024eb90f31aabeaace754505d466e3a"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\qa.json",
+              "sha256": "9cdb033771dcf42d83e82224247ab99deb7be68e1eeaa0f517773eea8b612cb8"
+            }
+          ],
+          "resolution": "GLM substituiu textoSVG por DOM14px e separou legendas com flex/gap; mobile vertical compacto.",
+          "acceptance_test": "Prints desktop claro/escuro e mobile vistos; QA sem overflow ou svgtext pequeno."
+        },
+        {
+          "id": "F2",
+          "criterion": "factuality",
+          "status": "resolved",
+          "observation": "Seção4 ainda mostra conferência pendente e contagens19/13 superadas por26/15; precisa estado atual.",
+          "evidence": [
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\top-390-escuro.png",
+              "sha256": "524e08422e8fbdeb47950f3c3f50f125a16cb1f37e644d00a7dcb6e2b9182c25"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\full-390-claro.png",
+              "sha256": "9d5d6626083bc60860325c25e58f5ff4db43fb69c4ca88de5168041bb927d0bf"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\full-1440-claro.png",
+              "sha256": "199cc2c23c6483e5eec4ddc7a0e5a7d76ec507719ff98b0669b2f79689af3a0f"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\full-1440-escuro.png",
+              "sha256": "92122c35ccf916e8a059f7be2f349e575024eb90f31aabeaace754505d466e3a"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\qa.json",
+              "sha256": "9cdb033771dcf42d83e82224247ab99deb7be68e1eeaa0f517773eea8b612cb8"
+            }
+          ],
+          "resolution": "GLM atualizou implantação, contagens e limite do bloqueio.",
+          "acceptance_test": "Fonte final diz mecanismo verificado e26/15/10/7, sem19/13 ou conferência final pendente."
+        },
+        {
+          "id": "F3",
+          "criterion": "hierarchy",
+          "status": "resolved",
+          "observation": "No tema claro o destaque verde limão do hero perde contraste; leitura móvel do diagrama é pequena.",
+          "evidence": [
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\top-390-escuro.png",
+              "sha256": "524e08422e8fbdeb47950f3c3f50f125a16cb1f37e644d00a7dcb6e2b9182c25"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\full-390-claro.png",
+              "sha256": "9d5d6626083bc60860325c25e58f5ff4db43fb69c4ca88de5168041bb927d0bf"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\full-1440-claro.png",
+              "sha256": "199cc2c23c6483e5eec4ddc7a0e5a7d76ec507719ff98b0669b2f79689af3a0f"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\full-1440-escuro.png",
+              "sha256": "92122c35ccf916e8a059f7be2f349e575024eb90f31aabeaace754505d466e3a"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\qa.json",
+              "sha256": "9cdb033771dcf42d83e82224247ab99deb7be68e1eeaa0f517773eea8b612cb8"
+            }
+          ],
+          "resolution": "Tokens de texto no claro e hero GLM compõe mantidos.",
+          "acceptance_test": "Print final claro visto com contraste e resultado primeiro."
+        },
+        {
+          "id": "F4",
+          "criterion": "finalized_references",
+          "status": "resolved",
+          "observation": "Botões técnicos copiam caminho relativo, contrariando acesso absoluto.",
+          "evidence": [
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\top-390-escuro.png",
+              "sha256": "524e08422e8fbdeb47950f3c3f50f125a16cb1f37e644d00a7dcb6e2b9182c25"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\full-390-claro.png",
+              "sha256": "9d5d6626083bc60860325c25e58f5ff4db43fb69c4ca88de5168041bb927d0bf"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\full-1440-claro.png",
+              "sha256": "199cc2c23c6483e5eec4ddc7a0e5a7d76ec507719ff98b0669b2f79689af3a0f"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\full-1440-escuro.png",
+              "sha256": "92122c35ccf916e8a059f7be2f349e575024eb90f31aabeaace754505d466e3a"
+            },
+            {
+              "path": "evidence\\261020_relatorios-glm\\qa-final\\qa.json",
+              "sha256": "9cdb033771dcf42d83e82224247ab99deb7be68e1eeaa0f517773eea8b612cb8"
+            }
+          ],
+          "resolution": "Caminhos completos nas ações de cópia mantidos.",
+          "acceptance_test": "Fonte final e destinos absolutos existentes conferidos."
+        }
+      ],
+      "recorded_at": "2026-10-21T00:30:14.689662+00:00"
+    },
+    "visual": [
+      {
+        "viewport_width": 1440,
+        "path": "evidence/261020_relatorios-glm/qa-final/full-1440-claro.png",
+        "verdict": "pass",
+        "observation": "Desktop usa esteira horizontal;390vertical com rótulos14px e sem corte; figcaption tem espaçamento e não se sobrepõe. Também visto full1440escuro.",
+        "image": {
+          "path": "evidence\\261020_relatorios-glm\\qa-final\\full-1440-claro.png",
+          "sha256": "199cc2c23c6483e5eec4ddc7a0e5a7d76ec507719ff98b0669b2f79689af3a0f"
+        },
+        "width": 1440,
+        "height": 2404,
+        "inspector": {
+          "vendor": "codex",
+          "session_id": "01a15bc4-046a-7193-966b-bb03f26534e0"
+        },
+        "source": {
+          "path": "evidence\\261020_relatorios-glm\\inspection-final.json",
+          "sha256": "d03ebdf6d5ce6cfd35f9106b86b86556a40dd5187f44737e7d2bb8abfa21f69b"
+        }
+      },
+      {
+        "viewport_width": 390,
+        "path": "evidence/261020_relatorios-glm/qa-final/full-390-claro.png",
+        "verdict": "pass",
+        "observation": "Vistos full390claro e top390escuro: hierarquia preservada, figuras verticais, legendas e blocos sem corte horizontal.",
+        "image": {
+          "path": "evidence\\261020_relatorios-glm\\qa-final\\full-390-claro.png",
+          "sha256": "9d5d6626083bc60860325c25e58f5ff4db43fb69c4ca88de5168041bb927d0bf"
+        },
+        "width": 390,
+        "height": 3952,
+        "inspector": {
+          "vendor": "codex",
+          "session_id": "01a15bc4-046a-7193-966b-bb03f26534e0"
+        },
+        "source": {
+          "path": "evidence\\261020_relatorios-glm\\inspection-final.json",
+          "sha256": "d03ebdf6d5ce6cfd35f9106b86b86556a40dd5187f44737e7d2bb8abfa21f69b"
+        }
+      }
+    ],
+    "tests": [
+      {
+        "command": "node evidence/261020_relatorios-glm/qa.mjs evidence/261020_relatorios-glm/correcao-2/assembled.html evidence/261020_relatorios-glm/qa-final",
+        "exit_code": 0,
+        "log": {
+          "path": "evidence\\261020_relatorios-glm\\qa-final\\qa.json",
+          "sha256": "9cdb033771dcf42d83e82224247ab99deb7be68e1eeaa0f517773eea8b612cb8"
+        },
+        "observation": "Quatro combinações1440/390claro/escuro: sem erroJS/overflow; details, tema, cópia e cursor menu responderam.",
+        "inspector": {
+          "vendor": "codex",
+          "session_id": "01a15bc4-046a-7193-966b-bb03f26534e0"
+        },
+        "source": {
+          "path": "evidence\\261020_relatorios-glm\\inspection-final.json",
+          "sha256": "d03ebdf6d5ce6cfd35f9106b86b86556a40dd5187f44737e7d2bb8abfa21f69b"
+        }
+      },
+      {
+        "command": "python -X utf8 evidence/261020_relatorios-glm/final_tests.py",
+        "exit_code": 0,
+        "log": {
+          "path": "evidence\\261020_relatorios-glm\\final-tests.log",
+          "sha256": "7aecb2a6b8e36a9a4010b16c19f9564d37243502e148097378a1e228f069fd63"
+        },
+        "observation": "58testes dirigidos passaram em quatro módulos; scope não é saúde global.",
+        "inspector": {
+          "vendor": "codex",
+          "session_id": "01a15bc4-046a-7193-966b-bb03f26534e0"
+        },
+        "source": {
+          "path": "evidence\\261020_relatorios-glm\\inspection-final.json",
+          "sha256": "d03ebdf6d5ce6cfd35f9106b86b86556a40dd5187f44737e7d2bb8abfa21f69b"
+        }
+      }
+    ],
+    "inspection_history": [],
+    "delivered_at": "2026-10-21T00:30:15.016183+00:00",
+    "promoted": [],
+    "revocation": null,
+    "mechanical_integration": {
+      "method": "compose-pop-cursor-history",
+      "source": {
+        "path": "evidence\\261020_relatorios-glm\\correcao-2\\fragment.html",
+        "sha256": "0d280e6012b8ebe46cf3f942ac03710b38299a2e2c1565493b8b037d1a62d6aa"
+      },
+      "source_sha256": "0d280e6012b8ebe46cf3f942ac03710b38299a2e2c1565493b8b037d1a62d6aa",
+      "result": {
+        "path": "evidence\\261020_relatorios-glm\\correcao-2\\client\\result.json",
+        "sha256": "56458c69fdf7eef4b95ce9c5fbf42555bbbafd08ce4488df5c15fc664d24c8e9"
+      },
+      "target_sha256": "bfb29d7f04745083466cb6ef48e7fdfd3073e0269b1000796e09bbb9cf70019b",
+      "note": "Montagem mecanica nao altera a autoria substantiva; revisao deve conferir visibilidade"
+    }
+  },
+  "technical_approval": "VERIFICADO_TECNICAMENTE",
+  "human_approval": "NAO_MEDIDO",
+  "approval_scope": "Artefato e ciclo revisados; nao aprova automaticamente novas composicoes",
+  "promoted_at": "2026-10-21T00:30:15.433048+00:00",
+  "purpose": "exemplar versionado; nao e treinamento de pesos"
+}

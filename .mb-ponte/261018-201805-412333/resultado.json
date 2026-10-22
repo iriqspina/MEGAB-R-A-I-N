@@ -1,0 +1,12 @@
+{
+  "status": "parcial",
+  "resumo": "Nota 'dsd' verificada na origem (hash da versão anotada confere e âncora #g-est existe no mapa) e tratada pela leitura mais conservadora: texto sem instrução acionável, provável teste do botão Enviar ao projeto — nada foi alterado no relatório e a nota segue intacta.",
+  "provas": [
+    "sha256 de 00_PARA-VOCE/261011_harnesses/261017_MAPA-DO-HARNESS.html = 806e45b6...da0588 igual ao pedido.json; nota registrada em apps/megabrain-dashboard/data/central.sqlite3 (comments fccb6658...); plano.json e nos/n0/resultado.md na pasta da ordem"
+  ],
+  "pendencias": [
+    "<USUARIO>: o que você quis dizer com 'dsd' cravado na placa da Copiadora? Se era teste do Enviar ao projeto, funcionou de ponta a ponta; se era pedido real, faltou o conteúdo — a nota fica guardada aguardando."
+  ],
+  "concluido_em": "2026-10-18T23:23:31+00:00",
+  "por": "n0"
+}

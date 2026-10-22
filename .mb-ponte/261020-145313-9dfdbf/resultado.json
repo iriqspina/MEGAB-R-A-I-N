@@ -1,0 +1,16 @@
+{
+  "status": "corrigido",
+  "resumo": "Cursor: Comentar agora alcança botões, links, select e títulos de painel, e segurar abre o leque sobre os botões do topo, da lateral e das barras sem clicar neles (antes 5 falhas em 1440px, agora 16/16 em 1440 e 390). Catálogo da mesa: seletor começa em 'Todos os projetos' e filtra por projeto; mostra só relatórios HTML/PDF em cartões com ícone do tipo e nome inteiro, recente primeiro. Notas app:* da mesa entram sozinhas na ponte; Cotas IA já abria junto e já configura dentro do MegaBrain (conferido).",
+  "provas": [
+    "evidence/261020_comentarios-app-home/saida/antes x saida/depois3 (resultado.json + prints 1440/390, instância isolada)",
+    "npm run build OK; test:ui 12/12; Python test_central_bridge/_completion/_security/test_isolated_server 51 OK",
+    "revisão GLM n1 sem achados graves (.mb-ponte/261020-145313-9dfdbf/nos/n1/resultado.md); app reiniciado 59012->74304->73504, health ok, assets = dist novo (restart.json)"
+  ],
+  "pendencias": [
+    "Conferir na sua janela: Comentar e segurar sobre botões do topo, lateral e painéis; bloco Relatórios do catálogo",
+    "Decidir se notas de quadro (module:*) também vão sozinhas para a ponte; hoje só as app:* vão",
+    "Intermitente: 1 de 3 rodadas, segurar no botão Personalizar de painel em 1440px clicou; não repetiu"
+  ],
+  "concluido_em": "2026-10-20T18:31:10+00:00",
+  "por": "n0"
+}

@@ -1,0 +1,84 @@
+{
+  "versao": 1,
+  "finalizado": true,
+  "enviado_em": "2026-10-20T16:21:49",
+  "titulo": "Ponte de correção · 18/out",
+  "relatorio": "261018_PONTE-ORQUESTRADORES.html",
+  "projeto": "S:\\projetos multi i.a\\MEGA B R A I  N",
+  "ia": "Codex",
+  "modelo": "gpt-6.1-sol",
+  "effort": "xhigh",
+  "respostas": {
+    "vendor_padrao": {
+      "valor": "por_projeto",
+      "extra": "",
+      "mexeu": true,
+      "anexos": []
+    },
+    "recado": {
+      "valor": "quero poder selecionar quais vão fazer qual papel na pipeline, mas tmb quero modelos prontos com base nos diferenciais e comparativos dos vendors, pq cada modelo tem um ponto positivo. tipo claude eu acho que tem uma boa noção de design, o astra tem pontos positivos, etc. já fizemos pesquisas sobre isso, busque no megabrain.",
+      "extra": "",
+      "mexeu": true,
+      "anexos": []
+    }
+  },
+  "notas": [
+    {
+      "id": "nmvh2drcm",
+      "texto": "aumenta pra 3 minutos. se tiver mais um novo comentário, pelo menos, espera mais 3 minutos, até parar de ter novos ou alterações nas notas. se houve uma alteração na nota/comentário, mande ao mesmo agente que já tem o contexto",
+      "criado_em": "2026-10-20T19:16:28.726Z",
+      "onde": "Antes: Parado no banco. Depois: Planejador em 60 s",
+      "ancora": {
+        "base": "#resposta",
+        "idx": [
+          1,
+          0,
+          0,
+          4
+        ]
+      },
+      "ox": 0.7728587048819414,
+      "oy": 0.31497163566166764,
+      "px": 626,
+      "py": 4152,
+      "n": 1,
+      "anexos": []
+    },
+    {
+      "id": "nmvh2fw0g",
+      "texto": "quero poder escolher também nos comentários pra qual i.a. vai, qual modelo e qual effort",
+      "criado_em": "2026-10-20T19:18:08.080Z",
+      "onde": "MEGABRAIN · CENTRAL · PONTE DE CORREÇÃO ◐ Tema Comentário → planejador → orquestradores → ",
+      "ancora": {
+        "base": "body",
+        "idx": []
+      },
+      "ox": 0.9106737320211961,
+      "oy": 0.7826391319565978,
+      "px": 1203,
+      "py": 6708,
+      "n": 2,
+      "anexos": []
+    },
+    {
+      "id": "nmvh2jtcl",
+      "texto": "o que seria modo janela?",
+      "criado_em": "2026-10-20T19:21:11.253Z",
+      "onde": "Quero modo janela",
+      "ancora": {
+        "base": "#dr_f_recado",
+        "idx": [
+          3,
+          1
+        ]
+      },
+      "ox": 0.4521969529697505,
+      "oy": 0.07433712121212122,
+      "px": 407,
+      "py": 7878,
+      "n": 3,
+      "anexos": []
+    }
+  ],
+  "resumo_texto": "RESPOSTAS · Ponte de correção · 18/out · 20/10/2026, 16:21:48\n\n1 · IA padrão do planejador\n1.1 Qual IA planeja os comentários novos por padrão? → Cada projeto com a sua\n1.2 Algo mais sobre a ponte? → quero poder selecionar quais vão fazer qual papel na pipeline, mas tmb quero modelos prontos com base nos diferenciais e comparativos dos vendors, pq cada modelo tem um ponto positivo. tipo claude eu acho que tem uma boa noção de design, o astra tem pontos positivos, etc. já fizemos pesquisas sobre isso, busque no megabrain.\n\nNOTAS NA PÁGINA\n1. aumenta pra 3 minutos. se tiver mais um novo comentário, pelo menos, espera mais 3 minutos, até parar de ter novos ou alterações nas notas. se houve uma alteração na nota/comentário, mande ao mesmo agente que já tem o contexto (perto de: Antes: Parado no banco. Depois: Planejador em 60 s)\n2. quero poder escolher também nos comentários pra qual i.a. vai, qual modelo e qual effort (perto de: MEGABRAIN · CENTRAL · PONTE DE CORREÇÃO ◐ Tema Comentário → planejador → orquestradores → )\n3. o que seria modo janela? (perto de: Quero modo janela)"
+}

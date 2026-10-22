@@ -1,0 +1,5 @@
+TL;DR — Revisão concluída e registrada em [resultado.md](<<MEGABRAIN_ROOT>/.mb-ponte/261020-170554-b2c2be/nos/n2/resultado.md>).
+
+Identifiquei ambiguidades sobre trabalho iniciado, exceção desta ordem, retomada e despacho simultâneo à pausa. A skill evita agrupar Salvar/Apagar, mas precisa ajustar uma contraindicação que conflita com Aguardar/Pausar.
+
+Nenhum código foi alterado; a ordem permanece aberta.

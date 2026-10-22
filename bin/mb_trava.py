@@ -262,6 +262,12 @@ def _anexar_preservando_terminadores(alvo: Path, bloco: str) -> bool:
         return True
     corpo = corpo.replace("\n", nl)
     separador = "" if not atual or atual.endswith(("\n", "\r")) else nl
+    # Bloco que abre com título markdown (lição, decisão) ganha uma linha em
+    # branco antes, como as entradas escritas à mão. O strip acima removia a
+    # que o chamador mandava, e o "## " colava no ATALHO da entrada anterior.
+    if (atual.strip() and corpo.startswith("#")
+            and not atual.endswith((nl + nl, "\n\n"))):
+        separador += nl
     return _gravar_texto_ou_falhar(alvo, atual + separador + corpo + nl)
 
 

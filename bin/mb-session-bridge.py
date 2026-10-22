@@ -3,6 +3,12 @@
 
 Portable entry point for clients/hooks. A queued request is never proof that
 the native window consumed it. Only the app can provide that receipt.
+
+261017 WP3: a session request carries origin "session"; the app shows it as a
+quiet notice and never changes the screen. When the native app is already open
+(central-runtime.json with a live pid and /api/health answering), the launcher
+is not called: it would only pull the window to the front. Only deliveries with
+a path (bin/mb-abrir-entrega.py) bring the window forward.
 """
 from __future__ import annotations
 
@@ -17,10 +23,16 @@ from pathlib import Path
 import subprocess
 import sys
 import time
+import urllib.request
 import uuid
 
 CENTRAL = Path(__file__).resolve().parents[1]
-BRIDGE_VERSION = "1.0.0"
+BRIDGE_VERSION = "1.1.0"
+APP_HEALTH_URL = "http://127.0.0.1:8766/api/health"
+SESSION_ORIGIN = "session"
+# 261022 — invocação sem cliente identificável (regra 261013: origem avulsa
+# rotulada explicitamente, não um "desconhecido" que parece bug no app).
+AVULSA = "Invocação avulsa"
 
 
 def _now() -> str:
@@ -79,15 +91,77 @@ def _session_lock(path: Path):
             os.close(fd)
 
 
+def _pid_alive(pid: int) -> bool:
+    """Existence check only. Never os.kill on Windows: it would terminate the process."""
+    if os.name == "nt":
+        import ctypes
+        from ctypes import wintypes
+        kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel.OpenProcess.argtypes = (wintypes.DWORD, wintypes.BOOL, wintypes.DWORD)
+        kernel.OpenProcess.restype = wintypes.HANDLE
+        kernel.GetExitCodeProcess.argtypes = (wintypes.HANDLE, ctypes.POINTER(wintypes.DWORD))
+        kernel.GetExitCodeProcess.restype = wintypes.BOOL
+        kernel.CloseHandle.argtypes = (wintypes.HANDLE,)
+        handle = kernel.OpenProcess(0x1000, False, pid)  # PROCESS_QUERY_LIMITED_INFORMATION
+        if not handle:
+            return False
+        try:
+            code = wintypes.DWORD()
+            return bool(kernel.GetExitCodeProcess(handle, ctypes.byref(code))) and code.value == 259  # STILL_ACTIVE
+        finally:
+            kernel.CloseHandle(handle)
+    try:
+        os.kill(pid, 0)
+    except PermissionError:
+        return True
+    except OSError:
+        return False
+    return True
+
+
+def _app_health(url: str = APP_HEALTH_URL) -> bool:
+    """Read-only GET; no proxy, short timeout."""
+    try:
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        with opener.open(url, timeout=1) as response:
+            return json.load(response).get("app") == "megabrain-central"
+    except Exception:
+        return False
+
+
+def _native_app_running(central: Path) -> bool:
+    """The native window of THIS central is open and its server answers."""
+    runtime = Path(central) / "apps/megabrain-dashboard/data/central-runtime.json"
+    try:
+        info = json.loads(runtime.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return False
+    if not isinstance(info, dict) or info.get("loaded") is not True:
+        return False
+    pid = info.get("pid")
+    if not isinstance(pid, int) or isinstance(pid, bool) or pid <= 0:
+        return False
+    return _pid_alive(pid) and _app_health()
+
+
+def _enqueue_session(central: Path, project: Path) -> dict:
+    """Same request format as bin/mb-abrir-entrega.py, plus origin "session"."""
+    request = dict(project=str(project), at=time.time(), id=uuid.uuid4().hex, origin=SESSION_ORIGIN)
+    queue = Path(central) / "apps/megabrain-dashboard/data/open-requests"
+    queue.mkdir(parents=True, exist_ok=True)
+    _atomic(queue / (request["id"] + ".json"), request)
+    return request
+
+
 def _application(explicit: str | None, env: dict) -> str:
     value = explicit or env.get("MB_CLIENT_APP")
     if value:
         # A client name, never command lines, URLs, credentials or raw env.
         clean = "".join(c for c in value[:64] if c.isalnum() or c in " ._()-")
-        return clean.strip() or "desconhecido"
+        return clean.strip() or AVULSA
     if env.get("CODEX_THREAD_ID"):
         return "Codex"
-    return "desconhecido"
+    return AVULSA
 
 
 def connect(project: Path | str, *, central: Path = CENTRAL,
@@ -109,6 +183,8 @@ def connect(project: Path | str, *, central: Path = CENTRAL,
     directory = Path(central) / "apps/megabrain-dashboard/data/session-connections"
     directory.mkdir(parents=True, exist_ok=True)
     path = directory / f"{session_key}.json"
+    # Outside the lock: a slow health answer must not make concurrent hooks time out.
+    running = False if no_open else _native_app_running(Path(central))
     with _session_lock(path):
         previous = {}
         try:
@@ -136,18 +212,17 @@ def connect(project: Path | str, *, central: Path = CENTRAL,
         else:
             app = Path(central) / "apps/megabrain-dashboard"
             launcher = app / "bootstrap/MegaBrain.exe"
-            if not launcher.is_file():
+            if not running and not launcher.is_file():
                 row["error"] = "native_launcher_unavailable"
             else:
                 try:
-                    spec = importlib.util.spec_from_file_location("mb_presentation_bridge", Path(central) / "bin/mb-abrir-entrega.py")
-                    module = importlib.util.module_from_spec(spec)
-                    spec.loader.exec_module(module)
-                    _, request = module.enqueue(project=project)
-                    row.update(presentation_request_id=request["id"], presentation_state="queued")
+                    request = _enqueue_session(Path(central), project)
+                    row.update(presentation_request_id=request["id"], presentation_state="queued",
+                               launcher="not_called_app_open" if running else "called")
                     _atomic(path, row)
-                    subprocess.Popen([str(launcher)], cwd=app,
-                                     creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+                    if not running:
+                        subprocess.Popen([str(launcher)], cwd=app,
+                                         creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
                 except (OSError, ValueError, AttributeError, ImportError):
                     # Fixed message: exception details could expose environment secrets.
                     row["error"] = "native_presentation_unavailable"

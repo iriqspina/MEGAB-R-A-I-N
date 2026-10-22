@@ -1,7 +1,8 @@
 @echo off
 setlocal
 chcp 65001 >nul
-rem Sincroniza a identidade nos 6 destinos de uma vez.
+rem Sincroniza a identidade nos 6 destinos de uma vez: Claude, Gemini, ZCode,
+rem Codex 1, Codex 2 e o estilo de saida do Claude. Kimi foi cancelado em 260916.
 rem Edite SO a fonte. Nunca edite as copias.
 
 set "MB=%~dp0..\"
@@ -33,8 +34,6 @@ echo.
 
 "%PY%" "%SCRIPT%" --source "%FONTE%" --target claude --modo conteudo --dir "%USERPROFILE%\.claude"
 "%PY%" "%SCRIPT%" --source "%FONTE%" --target gemini --modo conteudo --dir "%USERPROFILE%\.gemini"
-"%PY%" "%SCRIPT%" --source "%FONTE%" --target kimi   --modo conteudo --dir "%USERPROFILE%\.kimi"
-"%PY%" "%SCRIPT%" --source "%FONTE%" --target kimi   --modo conteudo --dir "%USERPROFILE%\.kimi-code"
 "%PY%" "%SCRIPT%" --source "%FONTE%" --target kimi      --modo conteudo --dir "%USERPROFILE%\.zcode"
 "%PY%" "%SCRIPT%" --source "%FONTE%" --target codex      --modo conteudo --dir "%USERPROFILE%\.codex"
 "%PY%" "%SCRIPT%" --source "%FONTE%" --target codex      --modo conteudo --dir "%USERPROFILE%\.codex-gpt2"
@@ -42,9 +41,9 @@ echo.
 
 echo.
 echo == Conferencia
-for %%F in ("%USERPROFILE%\.claude\CLAUDE.md" "%USERPROFILE%\.gemini\GEMINI.md" "%USERPROFILE%\.kimi\AGENTS.md" "%USERPROFILE%\.kimi-code\AGENTS.md" "%USERPROFILE%\.codex\AGENTS.md" "%USERPROFILE%\.codex-gpt2\AGENTS.md" "%USERPROFILE%\.claude\output-styles\megabrain.md") do (
+for %%F in ("%USERPROFILE%\.claude\CLAUDE.md" "%USERPROFILE%\.gemini\GEMINI.md" "%USERPROFILE%\.zcode\AGENTS.md" "%USERPROFILE%\.codex\AGENTS.md" "%USERPROFILE%\.codex-gpt2\AGENTS.md" "%USERPROFILE%\.claude\output-styles\megabrain.md") do (
   if exist %%F ( echo    OK    %%~zF bytes  %%~F ) else ( echo    FALTA %%~F )
 )
 echo.
-echo Pronto. Feche e reabra Claude Code / Kimi para recarregar.
+echo Pronto. Feche e reabra Claude Code / Codex / ZCode para recarregar.
 pause

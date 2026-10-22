@@ -1,0 +1,16 @@
+{
+ "id": "EXP-NNN",
+ "titulo": "",
+ "nivel": "macro|micro",
+ "origem": "",
+ "hipotese": "",
+ "dinamica": {"versao": "v1", "passos": []},
+ "caso_base": "linha de base nova",
+ "metricas": [{"id": "M1", "nome": "", "como_medir": "", "fonte": "", "meta": "[ESTIMATIVA]"}],
+ "rodadas": [],
+ "revisor": null,
+ "decisao": {"estado": "pendente", "motivo": null, "alternativa_descartada": null},
+ "aprendizados": [],
+ "humano": null,
+ "reversao": ""
+}

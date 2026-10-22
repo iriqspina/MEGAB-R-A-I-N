@@ -41,11 +41,14 @@ def _track(palette):
 
 
 def has_value(value):
-    """Positive amount/count. '—', 'n/d' and all-zero numbers are empty."""
+    """Positive stock/amount from the value only, never tooltip/expiry metadata."""
     text = str(value or "")
     if not text or "—" in text or "n/d" in text:
         return False
-    numbers = re.findall(r"\d+(?:[.,]\d+)?", text.replace(" ", ""))
+    # Every fraction contributes only its numerator, including compositions
+    # such as '0/2 retido + 0/5'. Totals do not represent remaining stock.
+    numeric_text = re.sub(r"(\d+(?:[.,]\d+)?)\s*/\s*\d+(?:[.,]\d+)?", r"\1", text.replace(" ", ""))
+    numbers = re.findall(r"\d+(?:[.,]\d+)?", numeric_text)
     if not numbers:
         return "sem limite" in text
     return any(float(n.replace(",", ".")) > 0 for n in numbers)

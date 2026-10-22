@@ -12,8 +12,8 @@
 .project-link .home-pip{width:5px;height:5px;border-radius:50%;margin-left:auto;flex-shrink:0;border:1px solid var(--pink)}
 
 .home-desk{display:flex;flex-direction:column;gap:14px;min-width:0}
-.home-overview{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(280px,1fr);gap:14px;align-items:start;min-width:0}
-.home-overview-main{display:flex;flex-direction:column;gap:14px;min-width:0}
+/* 261014 · as três seções do topo viraram painéis da própria grade (kind-strip); o corpo de cada uma
+   reutiliza os estilos das listas antigas, agora dentro de um painel arrastável e redimensionável. */
 .home-strip{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:12px 14px;min-width:0;color:var(--text)}
 .home-strip>header,.home-zone-head{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;min-width:0}
 .home-strip h2,.home-zone-head h2{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:700;letter-spacing:-.1px;color:var(--text)}
@@ -43,10 +43,16 @@
 .home-process-list .timeline-point{flex-shrink:0}
 .home-process-text,.home-recent-text{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
 .home-process-text strong,.home-recent-text strong{font-size:12px;font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.home-recent-text small.is-verified{color:var(--green)}
 .home-process-text small,.home-recent-text small{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 .home-process-list time,.home-recent-list time{font-size:11px;color:var(--muted);flex-shrink:0;white-space:nowrap}
 .home-recent .file-tile{width:34px;height:38px}
-.home-recent-list{max-height:min(460px,calc(100dvh - 300px));overflow:auto}
+.home-recent-list{flex:1;min-height:0}
+.home-strip-body{display:flex;flex-direction:column;gap:8px;height:100%;min-height:0}
+.home-strip-tools{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0;min-height:18px}
+.home-strip-tools:empty{display:none}
+.home-panel.kind-strip .home-panel-body{padding:10px 12px}
+.home-panel-title:focus-visible{outline:2px solid var(--pink);outline-offset:2px;border-radius:6px}
 .home-scope{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;font-size:11px;color:var(--muted);margin:-4px 0 8px}
 .home-scope .text-button{font-size:11px;padding:3px 2px}
 
@@ -100,7 +106,7 @@
 .start-view-options{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 4px}
 .start-view-options button[aria-pressed=true]{border-color:var(--pink);color:var(--pink)}
 
-@media(max-width:1100px){.home-overview{grid-template-columns:minmax(0,1fr)}.home-recent-list{max-height:360px}}
+@media(max-width:1100px){.home-recent-list{flex:1}}
 @media(max-width:759px){
   .desk-bar{gap:8px;min-height:46px}
   .desk-bar-title h1{font-size:16px}
@@ -130,4 +136,59 @@
  .home-visible .return-inbox{padding:12px;margin-top:10px}
  .home-visible .return-inbox h2{font-size:16px}
  .home-visible .return-inbox header p,.home-visible .return-empty{display:none}
+}
+
+/* 261014 · catálogo "Adicionar ao painel": alternância de um clique; aberto = etiqueta + contorno, não só cor. */
+.home-tag{display:inline-flex;align-items:center;gap:3px}
+.home-card[aria-pressed=true]{border-color:var(--pink)}
+.home-process-list button.is-open,.home-recent-list button.is-open{border-color:color-mix(in srgb,var(--pink) 50%,transparent);box-shadow:inset 3px 0 0 var(--pink)}
+.home-card:focus-visible,.home-process-list button:focus-visible,.home-recent-list button:focus-visible,.home-toggle:focus-visible{outline:2px solid var(--pink);outline-offset:2px}
+.home-catalog-groups{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2.2fr);gap:16px;min-width:0}
+.home-catalog-group{min-width:0}
+.home-catalog-group h3{font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+.home-catalog-group h4{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:650;color:var(--text);margin:12px 0 8px}
+.home-catalog-group h4 svg{color:var(--pink)}
+.home-catalog-select{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin:0 0 8px;min-width:0}
+.home-catalog-select select{flex:1;min-width:0;max-width:100%;min-height:36px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--text);font:inherit;font-size:12px}
+.home-toggle-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px;min-width:0}
+.home-toggle-list.is-reports{max-height:260px;overflow:auto}
+.home-toggle{display:flex;align-items:center;gap:8px;min-width:0;min-height:44px;padding:7px 9px;text-align:left;border:1px solid var(--line);border-radius:9px;background:transparent;color:var(--text);cursor:pointer}
+.home-toggle:hover{border-color:color-mix(in srgb,var(--pink) 45%,transparent)}
+.home-toggle>svg:first-child{flex-shrink:0;color:var(--pink)}
+.home-toggle>svg:last-child{flex-shrink:0;color:var(--muted)}
+.home-toggle-text{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+.home-toggle-text strong{font-size:12px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.home-toggle-text small{font-size:10.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.home-toggle.is-open{border:2px solid var(--pink);padding:6px 8px;background:color-mix(in srgb,var(--pink) 8%,transparent)}
+.home-toggle:active{cursor:grabbing}
+/* Relatórios do catálogo (261020): ícone do tipo em cima, nome inteiro embaixo, sem cortar em reticências. */
+.home-report-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px;min-width:0;max-height:420px;overflow:auto;padding:2px}
+.home-report-tile{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;padding:10px 8px 9px;text-align:center;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--text);cursor:pointer;font:inherit}
+.home-report-tile:hover{border-color:color-mix(in srgb,var(--pink) 45%,transparent)}
+.home-report-tile:focus-visible{outline:2px solid var(--pink);outline-offset:2px}
+.home-report-tile.is-open{border:2px solid var(--pink);padding:9px 7px 8px;background:color-mix(in srgb,var(--pink) 8%,transparent)}
+.home-report-icon{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;width:46px;height:52px;border-radius:8px;background:color-mix(in srgb,var(--pink) 12%,transparent);color:var(--pink)}
+.home-report-icon.is-pdf{background:color-mix(in srgb,#e5484d 14%,transparent);color:#e5484d}
+.home-report-icon em{font-style:normal;font-size:9.5px;font-weight:800;letter-spacing:.5px}
+.home-report-name{font-size:11.5px;font-weight:650;line-height:1.3;overflow-wrap:anywhere;word-break:break-word}
+.home-report-tile small{font-size:10px;color:var(--muted);line-height:1.25;overflow-wrap:anywhere}
+.home-report-tile .home-tag{position:absolute;top:5px;right:5px}
+.home-waiting{display:flex;align-items:flex-start;gap:10px;margin:0 0 10px;padding:10px 12px;border:1px solid color-mix(in srgb,var(--amber) 40%,transparent);border-radius:10px;font-size:12px;color:var(--muted);min-width:0}
+.home-waiting>svg{flex-shrink:0;color:var(--amber);margin-top:1px}
+.home-waiting strong{display:block;color:var(--text)}
+.home-waiting p{margin:4px 0 0}
+.home-waiting ul{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:4px 14px}
+.home-waiting li{display:flex;align-items:center;gap:6px;min-width:0;overflow-wrap:anywhere}
+.home-waiting .text-button{font-size:11px;padding:3px 2px}
+.home-zone-note{font-size:11px;color:var(--muted);margin:0 0 8px}
+.module-sessions>div{padding:8px 0;border-top:1px solid var(--line)}
+.module-sessions>div:first-child{border-top:0;padding-top:0}
+.module-sessions p,.module-sessions small{font-size:12px;color:var(--muted);margin-top:3px;overflow-wrap:anywhere}
+.home-panel.kind-global .home-panel-body,.home-panel.kind-module .home-panel-body{padding:10px}
+/* Painel de módulo: a área inteira aceita "segurar para comentar", como no quadro do projeto. */
+.home-module-hold{min-height:100%}
+@media(max-width:759px){
+  .home-catalog-groups{grid-template-columns:minmax(0,1fr)}
+  .home-toggle-list{grid-template-columns:minmax(0,1fr)}
+  .home-waiting ul{flex-direction:column}
 }

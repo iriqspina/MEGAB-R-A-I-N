@@ -1,0 +1,59 @@
+{
+  "objetivo": "Resolver os 2 comentários + 1 complemento da ordem: (A) Z.ai sem detalhes/'Resets —' no widget de cotas -> extrator de detalhes Z.ai alimentado pela mesma API de cota que o widget já consulta (automático, sem custo de IA, sem leitura via IA); (B) nota em #dr-term: esforços/modelos do painel 'Enviar pro terminal' batidos com a linguagem real de cada vendor (fontes locais: ~/.codex/config.toml, claude --help 2.1.302, zcode --help 0.16.9, gemini --help 0.58.0); Kimi sai do catálogo (conta cancelada 260916). Atualizar a mesma entrada 261020_RELATORIO.html com o 'depois' (recente primeiro).",
+  "criterios": [
+    "fetch_provider('zai') com leitura real devolve details com financial (créditos restante/total por janela) e notes (plano + renovação) — zero chamada nova de rede além da já existente e nenhum uso de modelo de IA",
+    "reset_summary continua honesto: nenhum contador de reset inventado para Z.ai",
+    "CATALOG do central_dispatch e espelho var IAS do decisoes-respondiveis.js e do 261020_RELATORIO.html ficam idênticos entre si: codex efforts = padrão,low,medium,high,xhigh,ultra,max (ultra/max novos, minimal removido); claude efforts = padrão,low,medium,high,xhigh,max (xhigh/max novos) e modelos ganham 'fable'; kimi removido; gemini e zcode com nota correta",
+    "teste novo compara CATALOG (Python) com var IAS (JS do motor) e falha se divergirem (automação anti-dessincronização)",
+    "suíte do widget (apps/ia-quota-widget/tests) e testes do dashboard passam",
+    "widget real reiniciado carregando a versão nova; print do popup de detalhes Z.ai com dados reais anexado ao relatório/evidência",
+    "261020_RELATORIO.html ganha seção 'corrigido' no topo do assunto (recente primeiro) sem apagar histórico"
+  ],
+  "tarefas": [
+    {
+      "id": "t1",
+      "titulo": "Extrator de detalhes Z.ai no widget (quota_details_data.zai_details + _fetch_zai com details)",
+      "papel": "worker",
+      "vendor": "glm",
+      "arquivos": ["apps/ia-quota-widget/quota_details_data.py", "apps/ia-quota-widget/providers.py", "apps/ia-quota-widget/tests/test_zai_details.py"],
+      "depende_de": [],
+      "revisor_vendor": "gpt"
+    },
+    {
+      "id": "t2",
+      "titulo": "Efforts/modelos batidos por vendor: central_dispatch.py + espelho JS do motor + IAS inline do 261020_RELATORIO.html + teste de consistência",
+      "papel": "worker",
+      "vendor": "glm",
+      "arquivos": ["apps/megabrain-dashboard/central_dispatch.py", "motor/modelos/interacoes/261010_decisoes-respondiveis/decisoes-respondiveis.js", "00_PARA-VOCE/261020_cotas-mapa-bapp/261020_RELATORIO.html", "apps/megabrain-dashboard/tests/test_dispatch_catalogo_consistente.py"],
+      "depende_de": [],
+      "revisor_vendor": "gpt"
+    },
+    {
+      "id": "t3",
+      "titulo": "Prova: suítes, leitura real zai, print do popup, reinício do widget real",
+      "papel": "worker",
+      "vendor": "glm",
+      "arquivos": ["evidence/261020_zai-detalhes-efforts/"],
+      "depende_de": ["t1", "t2"],
+      "revisor_vendor": "gpt"
+    },
+    {
+      "id": "t4",
+      "titulo": "Revisão independente do diff (t1+t2+t3) por vendor diferente",
+      "papel": "revisor",
+      "vendor": "gpt",
+      "arquivos": [],
+      "depende_de": ["t3"],
+      "revisor_vendor": null
+    },
+    {
+      "id": "t5",
+      "titulo": "Atualizar entrada 261020_RELATORIO.html com o 'depois' + resultado.md + concluir a ordem",
+      "papel": "worker",
+      "vendor": "glm",
+      "arquivos": ["00_PARA-VOCE/261020_cotas-mapa-bapp/261020_RELATORIO.html", ".mb-ponte/261020-155433-db4bbe/nos/n0/resultado.md"],
+      "depende_de": ["t4"],
+      "revisor_vendor": null
+    }
+  ]
+}

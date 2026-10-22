@@ -6,7 +6,7 @@ export function mutationKey(holder:{current:MutationAttempt|null},payload:unknow
 export async function api<T>(path:string,method='GET',body?:unknown,requestKey?:string):Promise<T>{
   const response=await fetch(`/api${path}`,{method,credentials:'same-origin',headers:{...(body!==undefined?{'Content-Type':'application/json'}:{}),...(method!=='GET'&&csrf?{'X-MB-CSRF':csrf}:{}),...(requestKey?{'Idempotency-Key':requestKey}:{})},...(body!==undefined?{body:JSON.stringify(body)}:{})});
   const data=await response.json().catch(()=>null);
-  if(!response.ok){const message=typeof data?.detail==='string'?data.detail:typeof data?.error==='string'?data.error:response.status===409?'Existe uma versão mais recente salva em outro dispositivo.':response.status===401?'Conecte este dispositivo ao seu MegaBrain.':`Não foi possível concluir (${response.status}).`;throw new ApiError(response.status,message);}
+  if(!response.ok){const message=typeof data?.detail==='string'?data.detail:typeof data?.message==='string'?data.message:typeof data?.error==='string'?data.error:response.status===409?'Existe uma versão mais recente salva em outro dispositivo.':response.status===401?'Conecte este dispositivo ao seu MegaBrain.':`Não foi possível concluir (${response.status}).`;throw new ApiError(response.status,message);}
   return data as T;
 }
 export async function session(){const s=await api<{authenticated:boolean;csrf:string;remote:boolean;version:string}>('/session');setCsrf(s.csrf);return s;}

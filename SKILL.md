@@ -169,7 +169,9 @@ agente não começa do zero). Detalhe passo a passo, quando precisar:
   dono → propagar em todos na mesma sessão: `referencias/260901_arvore-de-consistencia.md`
   (+ `260810_galerias-referencia.md`, `260810_impeccable-routing.md` se vira
   código); peça de interface → critérios verificáveis em
-  `referencias/260824_interface-que-sente.md`.
+  `referencias/260824_interface-que-sente.md`. Site/landing que precisa parecer
+  "acabado" ou divertido → sistema + laços de conceito, técnicas e prova em
+  `memoria/cerebro/wiki/261015_sites-acabados-lacos-de-conceito.md` (261015).
 - **2 ORÇAR CONTEXTO** — orçamento compartilhado: ler sob demanda (Glob→Grep→
   trecho), checkpoint em .md, delegar varredura pro modelo barato, exemplos
   canônicos e não exaustivos. **Sinal medível (v7.5)**: o hook registra
@@ -262,8 +264,8 @@ procedimento repetível → skill · garantia → hook/script em `bin/` · traba
 barulhento → subagente/modelo barato · conhecimento pesado raro → `referencias/`
 · estado entre sessões → `memoria/estado/` · conteúdo citável por path →
 `cerebro/` (raw → `/ingerir` → wiki) · fases macro do projeto → `MEGABRAIN.md` ·
-fora do sandbox (home, delete, SO) → `/kimi`
-(`referencias/260811_kimi-handoff.md`). Skill/AGENTS = pedido; hook/script =
+fora do sandbox (home, delete, SO) → Codex 1/2 ou ZCode (cliente real medido)
+(Kimi cancelado em 260916; histórico em `referencias/260811_kimi-handoff.md`). Skill/AGENTS = pedido; hook/script =
 garantia. Arquitetura em detalhe: `referencias/260810_workflow-architecture.md`.
 
 **Precedência contra skills de terceiros** (plugin `mattpocock-skills` e
@@ -311,3 +313,11 @@ Material concluído ainda útil vai para `_arquivo/<período>/`; pontual antigo 
 ## Aprofundamento por famílias · uso contextual
 
 Para coleções de entregas que combinam repetição e particularidades, leia `motor/referencias/260915_templates-por-necessidade.md` na central (ou `referencias/260915_templates-por-necessidade.md` na distribuição do projeto). O ciclo parte de evidência, agrupa por necessidade e estrutura, explicita o núcleo reutilizável e personaliza o caso antes da prévia. <USUARIO> participa das decisões em rodadas curtas de perguntas. Não transformar esse modo em exigência para tarefas simples; o teto de três modelos pertence ao briefing Marketeiro e não a todo projeto.
+
+## Relatórios: GLM compõe, Codex/Claude revisam (261020)
+
+Ao criar, regenerar ou corrigir relatório humano, aplicar `/relatorios-glm` (fonte central `motor/skills/relatorios-glm/SKILL.md`). GLM principal MAX é compositor obrigatório; Codex/Claude revisam fontes, imagens e controles e podem fornecer modelos finalizados. Última correção substantiva volta ao GLM. Exceção apenas crédito extremo comprovado sem reset útil; falha técnica não troca produtor. Esta regra específica prevalece sobre papéis genéricos anteriores somente para relatórios. Evitar Claude MAX e ultracode. Gate `bin/mb-relatorios-glm.py`, evidência e exemplo promovido por prova; nunca prometer erro zero ou recarga de chats abertos.
+
+## Laboratório de processos (261021)
+
+Mudança de dinâmica (macro: esteira; micro: etapa) vira experimento em `motor/laboratorio-processos/` (LEIAME + FORMATO-EXPERIMENTO + `experimentos/EXP-NNN_*.json`) antes de virar regra. Pesquisa de repertório usa o garimpo analógico com seleção comparativa (`metodos/261021_garimpo-analogico.md`): superproduzir ≥2×, 2 avaliadores independentes, pares na fronteira, registrar por que X > Y. Promover = 2 rodadas na mesma direção ou 1 + aprovação do <USUARIO>. Fonte: identidade `LAB-PROCESSOS`.

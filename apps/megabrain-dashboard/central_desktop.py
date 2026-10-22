@@ -20,10 +20,10 @@ def main():
         if sys.stdout is None: sys.stdout=output
         if sys.stderr is None: sys.stderr=output
     if sys.platform=='win32': ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('<USUARIO>.MegaBrain.Central')
-    from PySide6.QtCore import QTimer,QUrl
+    from PySide6.QtCore import Qt,QTimer,QUrl
     from PySide6.QtGui import QIcon,QDesktopServices
     from PySide6.QtWidgets import QApplication,QMainWindow,QMessageBox,QFileDialog
-    from PySide6.QtWebEngineCore import QWebEnginePage,QWebEngineProfile,QWebEngineSettings
+    from PySide6.QtWebEngineCore import QWebEnginePage,QWebEngineProfile,QWebEngineSettings,QWebEngineScript
     from PySide6.QtWebEngineWidgets import QWebEngineView
     from central_server import build_app,secret_file
     import uvicorn
@@ -60,6 +60,15 @@ def main():
     profile.setPersistentStoragePath(str(APP/'data/webengine'))
     profile.setCachePath(str(APP/'data/webengine/cache'))
     page=Page(profile,browser);browser.setPage(page)
+    from central_store import Store
+    from central_comment_visibility import cursor_archive_script
+    archive_script=QWebEngineScript()
+    archive_script.setName('megabrain-resolved-cursor-notes')
+    archive_script.setInjectionPoint(QWebEngineScript.InjectionPoint.DocumentCreation)
+    archive_script.setWorldId(QWebEngineScript.ScriptWorldId.MainWorld)
+    archive_script.setRunsOnSubFrames(False)
+    archive_script.setSourceCode(cursor_archive_script(Store()))
+    page.scripts().insert(archive_script)
     from central_voice import install_voice_bridge,install_renderer_recovery
     voice_channel,native_voice=install_voice_bridge(page,window,browser)
     def download(request):
@@ -80,10 +89,13 @@ def main():
     browser.loadFinished.connect(loaded)
     browser.load(QUrl('http://127.0.0.1:8766/#pair='+secret_file('native.key')))
     window.show()
+    # Show the existing quota widget through its singleton route; never open settings.
+    from central_quotas import ensure_widget
+    QTimer.singleShot(1000,ensure_widget)
     # Existing native window receives local presentation requests. No file/URL
     # is passed to the Windows default browser or file association.
     queue=APP/'data/open-requests';queue.mkdir(exist_ok=True)
-    from central_presentation import PresentationQueue
+    from central_presentation import PresentationQueue,dispatch_script,bring_forward
     presentation_queue=PresentationQueue(queue)
     pending=[False]
     def present_requests():
@@ -95,18 +107,21 @@ def main():
                 pending[0]=False
                 try:receipt=json.loads(receipt or 'null')
                 except (TypeError,ValueError):return
-                if presentation_queue.finish(receipt) and receipt.get('ok') is True:
-                    window.showNormal();window.raise_();window.activateWindow()
+                # 261017 WP3: a quiet receipt (session notice) never raises the window;
+                # a delivery restores only a minimized window and keeps maximized/full screen.
+                if presentation_queue.finish(receipt):
+                    bring_forward(window,receipt,Qt.WindowState.WindowMinimized)
             browser.page().runJavaScript('JSON.stringify(window.megabrainPresentationResult || null)',acknowledged)
             return
         payload=presentation_queue.next()
         if not payload:return
         pending[0]=True
-        def dispatched(ok):
+        def dispatched(result):
             pending[0]=False
-            if not ok:presentation_queue.retry()
-        code="(()=>{if(!window.megabrainReady)return false;window.megabrainPresentationResult=null;window.dispatchEvent(new CustomEvent('mb-present',{detail:"+json.dumps(payload).replace('<','\\u003c')+"}));return true;})()"
-        browser.page().runJavaScript(code,dispatched)
+            # 'busy': the person is using a report; the request waits in the queue (same expiry).
+            if result=='busy':presentation_queue.defer()
+            elif result is not True:presentation_queue.retry()
+        browser.page().runJavaScript(dispatch_script(payload),dispatched)
     presentation_timer=QTimer(window);presentation_timer.timeout.connect(present_requests);presentation_timer.start(800)
     def close_services():
         for service in services:service.should_exit=True

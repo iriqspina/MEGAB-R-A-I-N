@@ -1,0 +1,45 @@
+{
+ "gerado_em": "2026-10-19T22:55:11-03:00",
+ "limite": [
+  {
+   "id": "02124425",
+   "ia": "zcode-glm",
+   "categoria": "leitura-de-imagem",
+   "expira_em": "2026-11-18",
+   "reteste": "IA descreve retestes/visao.png citando 'K7Q-42' e o quadrado vermelho, sem olhar o prompt de geração"
+  },
+  {
+   "id": "aa73092c",
+   "ia": "zcode-glm",
+   "categoria": "entrega-visual",
+   "expira_em": "2026-11-18",
+   "reteste": "Gate visual reprova retestes/gate-visual.html apontando os 5 defeitos plantados"
+  }
+ ],
+ "por_ia": {
+  "_universal": {
+   "limites_ativos": 0,
+   "ocorrencias": 0
+  },
+  "claude": {
+   "limites_ativos": 0,
+   "ocorrencias": 0
+  },
+  "codex": {
+   "limites_ativos": 0,
+   "ocorrencias": 0
+  },
+  "fable": {
+   "limites_ativos": 0,
+   "ocorrencias": 0
+  },
+  "kimi": {
+   "limites_ativos": 0,
+   "ocorrencias": 0
+  },
+  "zcode-glm": {
+   "limites_ativos": 2,
+   "ocorrencias": 11
+  }
+ }
+}

@@ -1,0 +1,12 @@
+{
+  "id": "n0",
+  "pai": null,
+  "papel": "planejador",
+  "vendor": "glm",
+  "titulo": "Ordem manual do Claude: só o revisor GLM roda",
+  "profundidade": 0,
+  "status": "concluido",
+  "criado_em": "2026-10-18T20:07:41+00:00",
+  "fim": "2026-10-18T20:07:53+00:00",
+  "exit_code": 0
+}

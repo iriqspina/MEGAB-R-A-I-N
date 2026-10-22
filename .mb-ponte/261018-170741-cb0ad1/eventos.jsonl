@@ -1,0 +1,4 @@
+{"at": "2026-10-18T20:07:41+00:00", "tipo": "ordem_criada", "vendor": "glm", "comentarios": ["revisao-ponte"]}
+{"at": "2026-10-18T20:07:53+00:00", "tipo": "no_despachado", "no": "n1", "pai": "n0", "papel": "revisor", "vendor": "glm", "titulo": "Revisão independente da ponte"}
+{"at": "2026-10-18T20:07:53+00:00", "tipo": "no_iniciado", "no": "n1", "vendor": "glm", "pid": 92844}
+{"at": "2026-10-18T20:31:32+00:00", "tipo": "no_terminou", "no": "n1", "status": "concluido", "exit_code": 0}

@@ -4,6 +4,7 @@ from pathlib import Path
 
 from .formatting import age_seconds, parse_iso
 from .theme import STALE_GRACE_SECONDS
+from json_io import update_json
 
 
 class SnapshotStore:
@@ -38,15 +39,26 @@ class SnapshotStore:
     def update(self, provider_id: str, snapshot: dict) -> None:
         self._last_any[provider_id] = snapshot
         if snapshot.get("status") == "ok":
-            self._last_good[provider_id] = snapshot
+            if snapshot.get('windows') and parse_iso(snapshot.get('fetched_at')):
+                self._last_good[provider_id] = snapshot
             if self._cache_path is not None and snapshot.get('windows') and parse_iso(snapshot.get('fetched_at')):
                 self._disk_good[provider_id] = snapshot
-                temporary = self._cache_path.with_name(self._cache_path.name + ".tmp")
                 try:
-                    self._cache_path.parent.mkdir(parents=True, exist_ok=True)
-                    temporary.write_text(json.dumps({"schema_version": 1, "providers": self._disk_good}, ensure_ascii=False), encoding="utf-8")
-                    os.replace(temporary, self._cache_path)
-                except (OSError, TypeError, ValueError):
+                    def merge(current):
+                        from .providers_bridge import normalize_snapshot
+                        disk={}
+                        for key,raw in (current.get('providers') or {}).items():
+                            if not isinstance(raw,dict) or raw.get('status')!='ok':continue
+                            clean=normalize_snapshot(key,raw)
+                            stamp=parse_iso(clean.get('fetched_at'))
+                            if clean.get('windows') and stamp and stamp.tzinfo:disk[key]=clean
+                        for key,new in self._disk_good.items():
+                            old=disk.get(key);old_stamp=parse_iso((old or {}).get('fetched_at'));new_stamp=parse_iso(new.get('fetched_at'))
+                            if not old_stamp or (new_stamp and new_stamp.tzinfo and new_stamp>=old_stamp):disk[key]=new
+                        return {'schema_version':1,'providers':disk}
+                    saved=update_json(self._cache_path,merge,recover_invalid=True)
+                    self._disk_good=saved['providers']
+                except (OSError, TypeError, ValueError,AttributeError):
                     pass
 
     def display(self, provider_id: str, window_filter=None) -> dict | None:
@@ -63,6 +75,7 @@ class SnapshotStore:
                 "fetched_at": current.get("fetched_at"),
                 "stale": age is None or age >= STALE_GRACE_SECONDS,
                 "details": current.get("details") or {},
+                "account_state": current.get("account_state"),
             }
         else:
             good = self._last_good.get(provider_id)
@@ -75,6 +88,7 @@ class SnapshotStore:
                     "fetched_at": good.get("fetched_at"),
                     "stale": True,
                     "details": good.get("details") or {},
+                    "account_state": good.get("account_state") or current.get("account_state"),
                 }
             else:
                 result = {
@@ -85,6 +99,7 @@ class SnapshotStore:
                     "fetched_at": None,
                     "stale": False,
                     "details": {},
+                    "account_state": current.get("account_state"),
                 }
         if window_filter is not None:
             result["windows"] = [w for w in result["windows"] if window_filter(w)]

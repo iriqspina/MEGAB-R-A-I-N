@@ -1,0 +1,16 @@
+{"at": "2026-10-20T18:54:33+00:00", "tipo": "ordem_criada", "vendor": "glm", "comentarios": ["7f2ae0e861614cc4acae777f4e27c7df", "6f7b2b09d3384b9296c34f623e3855c5"]}
+{"at": "2026-10-20T18:54:34+00:00", "tipo": "no_iniciado", "no": "n0", "vendor": "glm", "pid": 72128}
+{"at": "2026-10-20T18:56:26+00:00", "tipo": "complemento", "comentario": "b86822f413f14698975aa4ad073c9e3d"}
+{"at": "2026-10-20T18:57:27+00:00", "tipo": "complemento", "comentario": "a92546ef03c946569f28138d4750c844"}
+{"at": "2026-10-20T19:16:51+00:00", "tipo": "complemento", "comentario": "3cd1a1d8ef9e40eea26aa1bd662bf0f6"}
+{"at": "2026-10-20T19:17:16+00:00", "tipo": "complemento", "comentario": "01051df40b004a079ae4bf9f45b1ea2b"}
+{"at": "2026-10-20T19:17:43+00:00", "tipo": "complemento", "comentario": "5be5fa6c44024950a4b7aec85692a8fd"}
+{"at": "2026-10-20T19:18:48+00:00", "tipo": "complemento", "comentario": "499f975fe6114094b28bd97271dd7a4f"}
+{"at": "2026-10-20T19:21:15+00:00", "tipo": "complemento", "comentario": "33afa18900b749a9a4062f7b80d2a0f3"}
+{"at": "2026-10-20T19:21:48+00:00", "tipo": "complemento", "comentario": "958286a2bd4e4169b601f649a2fd35fb"}
+{"at": "2026-10-20T19:23:47+00:00", "tipo": "complemento", "comentario": "02d63dbeb39f4bb38badf8ba68c1fdb3"}
+{"at": "2026-10-20T20:17:22+00:00", "tipo": "no_despachado", "no": "n2", "pai": "n0", "papel": "revisor", "vendor": "gpt", "titulo": "Revisar efforts batidos + seção do relatório"}
+{"at": "2026-10-20T20:17:23+00:00", "tipo": "no_iniciado", "no": "n2", "vendor": "gpt", "pid": 102500}
+{"at": "2026-10-20T20:21:29+00:00", "tipo": "no_terminou", "no": "n2", "status": "concluido", "exit_code": 0}
+{"at": "2026-10-20T20:30:29+00:00", "tipo": "ordem_concluida", "status": "corrigido"}
+{"at": "2026-10-20T20:31:18+00:00", "tipo": "no_terminou", "no": "n0", "status": "concluido", "exit_code": 0}

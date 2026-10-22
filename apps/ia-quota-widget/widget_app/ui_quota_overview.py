@@ -103,13 +103,18 @@ class QuotaOverview(QDialog):
                 reset=f'↻ {date_brt(window.get("resets_at"))} · {reset_label(window.get("resets_at"))}'
                 self.label(reset,layout);self.copy_text+=text+'\n'+reset+'\n'
             if not windows:self.label('— Nenhuma janela retornada nesta leitura.',layout)
+            from quota_details_data import resolve_resets
             extras=display.get('details') or {}
+            resolved=resolve_resets(extras,fetched_at=display.get('fetched_at'),stale=display.get('stale') or display.get('status')!='ok')
+            extras={**extras,'resets':resolved['current']}
             for item in extras.get('resets') or []:
                 condition='estoque informado; uso sujeito à elegibilidade da conta' if item.get('kind')=='account' else 'disponível agora' if item.get('usable') else 'indisponível agora'
                 text=f'♻ {item["title"]} · {item["count"]} restante(s) · '+condition
                 if item.get('expires_at'):text+='\n◷ Validade '+date_brt(item['expires_at'])
                 self.label(text,layout);self.copy_text+=text+'\n'
-            if not extras.get('resets'):self.label('♻ Quantidade de resets: não informada por esta fonte.',layout)
+            if not extras.get('resets'):
+                text='♻ Resets atuais: — não confirmado por esta fonte.'
+                self.label(text,layout);self.copy_text+=text+'\n'
             if extras.get('product_shares'):
                 self.label('◉ Participação no consumo semanal · soma das partes, não cota restante',layout)
                 for item in extras['product_shares']:

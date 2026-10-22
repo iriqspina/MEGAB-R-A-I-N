@@ -25,7 +25,7 @@ def test_codex_credits_have_no_invented_currency_and_remain_zero():
 
 
 def test_normalization_store_error_retains_last_good_details_with_stale_marker():
-    raw={'status':'ok','windows':[],'fetched_at':now_iso(),'details':{'financial':[{'title':'Saldo','amount':0,'currency':'BRL'}], 'credential':'DO-NOT-COPY'}}
+    raw={'status':'ok','windows':[{'id':'session','used_percent':0,'duration_minutes':300}],'fetched_at':now_iso(),'details':{'financial':[{'title':'Saldo','amount':0,'currency':'BRL'}], 'credential':'DO-NOT-COPY'}}
     normalized=normalize_snapshot('claude',raw)
     assert 'credential' not in normalized['details']
     store=SnapshotStore();store.update('claude',normalized);store.update('claude',{'status':'error'})

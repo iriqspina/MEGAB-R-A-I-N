@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "projectId": "fixture-megabrain",
+  "taskId": "261021_fixture-minima",
+  "title": "Fixture mínima do mestre POP",
+  "author": {"vendor": "fixture", "client": "nenhum", "model": "nenhum"},
+  "responseAt": "2026-10-21T19:10:00-03:00",
+  "summary": "Conteúdo sintético que exercita tema, figura de prova e de ilustração, fluxo, número com fonte e decisão.",
+  "context": "Usada pelo verificador e pelos adaptadores de cada fornecedor (PLANO_FINAL §5.4.3). Não é relatório real.",
+  "options": {"theme": "auto"},
+  "topics": [
+    {
+      "id": "resultado",
+      "number": "1",
+      "title": "Resultado mais recente",
+      "shortLines": [
+        {"icon": "check", "text": "O botão de atualizações rola até a seção de pedidos."},
+        {"icon": "alert", "text": "Com a seção fechada, aparece um aviso em vez de silêncio."}
+      ],
+      "figures": [
+        {"source": "evidence/261021_bapp-f0/d17-rolagem-depois.jpg", "role": "proof", "caption": "Depois do clique: seção de pedidos visível na cópia isolada.", "observedAt": "2026-10-21T19:02:13-03:00", "hash": "305806895b89bfcc07681441774959cb71eee6002c43259bd6d68255eb3ce7be"}
+      ],
+      "metrics": [
+        {"label": "Topo da seção de pedidos após o clique", "value": 573, "unit": "px", "scope": "cópia isolada 8768, janela 1366×768; antes 1540 px", "source": "evidence/261021_bapp-f0/d17-rolagem-depois.jpg", "observedAt": "2026-10-21T19:02:13-03:00"}
+      ]
+    },
+    {
+      "id": "fluxo",
+      "number": "2",
+      "title": "Como a lista é montada",
+      "shortLines": [
+        {"icon": "list", "text": "Primeiro todos os ativos, depois o histórico mais novo."}
+      ],
+      "figures": [
+        {"source": "diagrama-gerado", "role": "illustration", "caption": "Ilustração: ativos antes do histórico."}
+      ],
+      "process": {
+        "kind": "antes-depois",
+        "steps": [
+          {"label": "Antes: 250 mais novos", "detail": "ativo antigo some"},
+          {"label": "Agora: ativos + 250 do histórico", "detail": "corte avisado"}
+        ]
+      },
+      "details": "Detalhe técnico recolhido: filtro de projeto aplicado antes do limite."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "proximo-recorte",
+      "contextTopicId": "fluxo",
+      "question": "Qual recorte da F0 vem a seguir?",
+      "options": ["Localizador Buscar/Todos", "Resolvedor de destino"],
+      "recommended": "Localizador Buscar/Todos",
+      "explanation": true
+    }
+  ],
+  "sources": [
+    {"label": "Plano final", "path": "evidence/261020_bapp-planejamento/PLANO_FINAL.md", "observedAt": "2026-10-20T16:41:00-03:00"}
+  ],
+  "history": [
+    {"at": "2026-10-21T19:10:00-03:00", "text": "Fixture criada na F0 do B-APP."},
+    {"at": "2026-10-20T16:41:00-03:00", "text": "Plano final consolidado."}
+  ]
+}

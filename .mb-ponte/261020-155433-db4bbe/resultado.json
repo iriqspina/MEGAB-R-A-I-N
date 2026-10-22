@@ -1,0 +1,12 @@
+{
+  "status": "corrigido",
+  "resumo": "Z.ai agora tem detalhes automáticos no widget de cotas (plano, % livre por janela e créditos da própria API — sem custo de IA nem leitura por modelo, na mesma consulta que o widget já fazia; implementado pela sessão paralela e conferido aqui: 638 testes verdes + leitura real). Painel 'Enviar pro terminal' batido com a linguagem real de cada CLI: Codex ganha ultra e max (minimal saiu), Claude ganha xhigh/max e fable, ZCode ganha --model zai/GLM-5.3, Kimi saiu (cancelado 16/09), tudo testado 13/13 contra servidor+seletor+relatório e conferido por revisor independente (3 ajustes aplicados). Widget e app reiniciados com a versão nova.",
+  "provas": [
+    "evidence/261020_zai-detalhes-efforts/probe.json + apps/megabrain-dashboard/tests/test_dispatch_catalogo_consistente.py (13/13) + .mb-ponte/261020-155433-db4bbe/nos/n2/resultado.md"
+  ],
+  "pendencias": [
+    "Escolher IA/modelo/effort direto no comentário do relatório (a base pronta é o central_dispatch.CATALOG batido; o despacho já aceita). Validação visual humana do popup/seletor no app. Gemini segue sem login."
+  ],
+  "concluido_em": "2026-10-20T20:30:29+00:00",
+  "por": "n0"
+}

@@ -54,7 +54,8 @@ megabrain; o repositório público recebe a cópia sanitizada pelo
 - **Hook SessionStart** (`scripts/260821_session-start.js`) — injeta o núcleo
   do protocolo (texto de `megabrain-core`) e o arquivo de lições mais recente da
   pasta conectada (`licoes-megabrain.md`, `METAPROTOCOLO-LICOES.md`, `LICOES.md`,
-  `LESSONS.md`; até 2 níveis; escolha por mtime). Sem embeddings e sem arquivo
+  `LESSONS.md`; até 2 níveis; escolha por mtime; aberto na própria central,
+  usa sempre `memoria/nucleo/licoes-megabrain.md`). Sem embeddings e sem arquivo
   global por usuário (a v1.0.0 assumia `~/.megabrain/licoes.md`, que não existe
   no projeto real — descartada).
 

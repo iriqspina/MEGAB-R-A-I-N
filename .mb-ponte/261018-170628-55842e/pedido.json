@@ -1,0 +1,68 @@
+{
+  "versao": 1,
+  "ordem_id": "261018-170628-55842e",
+  "criado_em": "2026-10-18T20:06:28+00:00",
+  "projeto": "S:\\projetos multi i.a\\MEGA B R A I  N",
+  "central": "S:\\projetos multi i.a\\MEGA B R A I  N",
+  "origem": "enviar-ao-projeto",
+  "vendor": "gpt",
+  "modo": "segundo_plano",
+  "vendors_ativos": [
+    "claude",
+    "gpt",
+    "glm"
+  ],
+  "comentarios": [
+    {
+      "id": "5cd09832c8cb411282e5195366f5aff9",
+      "at": "2026-10-18T19:28:52+00:00",
+      "texto": "Respostas recebidas pelo relatório",
+      "notas": [
+        {
+          "texto": "precisa ser aperfeiçoado, revisado e corrigido por outro vendor",
+          "onde": "Mapa do harness: a cidade em volta das IAs Mapa em forma de cidade com metrô: 10 bairros, ",
+          "ancora": {
+            "base": "#mh-mapa",
+            "idx": []
+          },
+          "criado_em": "2026-10-18T19:28:29.938Z"
+        }
+      ],
+      "decisoes": null,
+      "relatorio": "00_PARA-VOCE\\261011_harnesses\\261017_MAPA-DO-HARNESS.html",
+      "relatorio_hash": "15e319465769e8750747e45764250c338b2380f7d951d22cd9d249b3afb47e1a",
+      "onde": "261017_MAPA-DO-HARNESS.html",
+      "versao_anterior": false,
+      "anexos": []
+    },
+    {
+      "id": "5c5f8e40508c450aa2b9f9c94a530bbf",
+      "at": "2026-10-18T19:31:15+00:00",
+      "texto": "leia o comentário e faça",
+      "notas": [],
+      "decisoes": null,
+      "relatorio": "00_PARA-VOCE\\261011_harnesses\\261017_MAPA-DO-HARNESS.html",
+      "relatorio_hash": "15e319465769e8750747e45764250c338b2380f7d951d22cd9d249b3afb47e1a",
+      "onde": "261017_MAPA-DO-HARNESS.html",
+      "versao_anterior": true,
+      "anexos": []
+    },
+    {
+      "id": "d2aae69c238e470faa46727864fc8ca5",
+      "at": "2026-10-18T19:32:27+00:00",
+      "texto": "quero poder adicionar prints com o crl v e escolhendo arquivo em todos os campos de input aqui do megabrain que são coesos de ter essa funcionalidade. e arrume os comentários, usando codex 1",
+      "notas": [],
+      "decisoes": null,
+      "relatorio": "00_PARA-VOCE\\261011_harnesses\\261017_MAPA-DO-HARNESS.html",
+      "relatorio_hash": "4b489359dea26cf7c39889b6850bb9a20279f024c729a688299f77e473ece70e",
+      "onde": "261017_MAPA-DO-HARNESS.html",
+      "versao_anterior": false,
+      "anexos": []
+    }
+  ],
+  "coordenacao": "Nota da sessão Claude que criou a ponte (18/10/2026 17:06, Brasília):\n1. \"arrume os comentários, usando codex 1\" pede que esta correção seja feita pelo Codex 1 (GPT, conta principal) — você. A nota \"precisa ser aperfeiçoado, revisado e corrigido por outro vendor\" está cravada no Mapa da cidade (00_PARA-VOCE/261011_harnesses/261017_MAPA-DO-HARNESS.html, âncora #mh-mapa), feito pelo Claude: revisão e correção do mapa ficam com outro fornecedor (GPT e/ou GLM), nunca Claude.\n2. Coordenação: a sessão Claude \"Megabrain bugs e visualização do harness\" está ativa e fez uma crítica de direção de arte do mapa (evidence/261017_cursor-harness/mapa/critica-r2/, últimos arquivos 16:48). Leia essa crítica e aproveite os achados. Arquivos do mapa: bin/mb-harness-mapa.py, dados/harness-mapa.json, motor/modelos/harness-mapa/*, 00_PARA-VOCE/261011_harnesses/261017_MAPA-DO-HARNESS.html. Só edite esses arquivos se nenhum deles mudou nos últimos 20 minutos; antes disso, faça a revisão independente (achados com print em evidence/261018_ponte-orquestradores/mapa-revisao-gpt/) e volte a conferir. O HTML sai do gerador (bin/mb-harness-mapa.py), nunca à mão. Faça backup antes de alterar.\n3. \"Adicionar prints com Ctrl+V e escolhendo arquivo em todos os campos de input do MegaBrain que são coesos\": campos de texto do app (apps/megabrain-dashboard/web/src — caixa \"Peça uma alteração neste relatório\" em ReportFrame.tsx, comentário de módulo, Novo pedido, decisões com texto) e as notas do cursor dentro dos relatórios (motor/modelos/interacoes/261010_cursor-ferramentas/, com cópias em web/public e web/dist). Hoje o servidor não recebe anexos: crie uma rota que guarde a imagem dentro do projeto (fora de 00_PARA-VOCE, ex.: .mb-anexos/) com limite de tamanho e tipo, e ligue o caminho ao comentário (o pedido da ponte já lê o campo \"anexos\" do comentário). Campos onde imagem não faz sentido (senha, busca, nomes) ficam fora.\n4. App fora do Git: backup em evidence/261018_ponte-orquestradores/ antes de editar; prove com python -m unittest discover -s tests (em apps/megabrain-dashboard), npm run build e npm run test:ui (em web/). Para o servidor novo valer, reinicie o MegaBrain do jeito simples (fechar a janela; abrir apps/megabrain-dashboard/bootstrap/MegaBrain.exe; conferir http://127.0.0.1:8766/api/health) — autorizado pelo <USUARIO>.\n5. \"Arrume os comentários\" — leitura conservadora: tratar estes comentários de ponta a ponta e registrar o resultado pela ponte (concluir). Se achar defeito no próprio sistema de comentários durante o trabalho, corrija e registre; dúvida de interpretação vira pendência.",
+  "limites": {
+    "profundidade": 3,
+    "nos": 16
+  }
+}

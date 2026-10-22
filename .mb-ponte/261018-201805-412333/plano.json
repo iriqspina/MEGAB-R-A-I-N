@@ -1,0 +1,62 @@
+{
+  "objetivo": "Processar a nota 'dsd' que o <USUARIO> cravou na placa 'Copiadora · Automático · segue quando alguém clica o botão' (âncora #g-est) do relatório 00_PARA-VOCE/261011_harnesses/261017_MAPA-DO-HARNESS.html, enviada pelo botão Enviar ao projeto: verificar origem e destino da nota, decidir ação pela leitura mais conservadora e devolver resposta ao <USUARIO> pela ponte.",
+  "criterios": [
+    "sha256 do relatório citado é igual ao hash registrado no pedido.json (806e45b61c369977524d6c22b959db3909bb96a2b32daf2342b17bdb72da0588) — prova que a nota foi feita na versão atual do arquivo",
+    "âncora #g-est existe no HTML do mapa e o nó 'copiadora' carrega a descrição 'Botão que copia suas regras para Claude, Codex 1 e 2, ZCode e Gemini' com condição 'alguém clica o botão'",
+    "nota 'dsd' registrada intacta na central (apps/megabrain-dashboard/data/central.sqlite3, comments id fccb6658c4ee450f83df223ec2e42b46, feedback.notas[0].texto='dsd', onde='Copiadora · Automático · segue quando alguém clica o botão')",
+    "'dsd' sem significado registrado: não está no glossário do <USUARIO> (dna/usuario/glossario-<USUARIO>.md) nem no cérebro (cerebro/) — leitura conservadora: texto de teste/acidente, sem instrução acionável",
+    "relatório NÃO alterado por esta ordem (hash antes/depois igual); única escrita é dentro da pasta da ordem (.mb-ponte/261018-201805-412333/)",
+    "plano.json e nos/n0/resultado.md gravados; mb-ponte.py concluir executado com status parcial, resumo, prova e pendência; eco conferido no banco (status do comentário atualizado na central.sqlite3)"
+  ],
+  "tarefas": [
+    {
+      "id": "t1",
+      "titulo": "Verificar evidência da nota: hash do relatório, âncora #g-est, rótulo da Copiadora e registro da nota na central",
+      "papel": "planejador-executor",
+      "vendor": "glm",
+      "arquivos": [],
+      "depende_de": [],
+      "revisor_vendor": null,
+      "nota": "só leitura; comandos re-executáveis por qualquer agente servem de revisão"
+    },
+    {
+      "id": "t2",
+      "titulo": "Decisão conservadora + registro: nada alterar no relatório, manter nota humana intacta, registrar dúvida como pendência (plano.json + resultado.md)",
+      "papel": "planejador-executor",
+      "vendor": "glm",
+      "arquivos": [
+        ".mb-ponte/261018-201805-412333/plano.json",
+        ".mb-ponte/261018-201805-412333/nos/n0/resultado.md"
+      ],
+      "depende_de": [
+        "t1"
+      ],
+      "revisor_vendor": null
+    },
+    {
+      "id": "t3",
+      "titulo": "Concluir a ordem pela ponte (mb-ponte.py concluir --status parcial) e conferir o eco do status no banco da central",
+      "papel": "planejador-executor",
+      "vendor": "glm",
+      "arquivos": [
+        ".mb-ponte/261018-201805-412333/eventos.jsonl"
+      ],
+      "depende_de": [
+        "t2"
+      ],
+      "revisor_vendor": null,
+      "nota": "concluir só escreve estado da ordem/comentário; bin/mb-ponte.py é de outra sessão (worktree city-map-orchestrator-bridge-6313a8) e é apenas EXECUTADO, não editado"
+    }
+  ],
+  "decisao_leitura": {
+    "termo": "dsd",
+    "leituras_possiveis": [
+      "teste do fluxo novo 'Enviar ao projeto' (texto jogado, primeira ordem nativa da ponte criada hoje)",
+      "mensagem truncada/acidente de digitação com pedido real não escrito"
+    ],
+    "escolhida": "conservadora: sem instrução acionável; nenhum arquivo alterado; nota humana mantida; dúvida registrada como pendência para o <USUARIO>",
+    "base": "glossário e cérebro sem registro de 'dsd'; pedido.json com 1 nota sem decisões nem anexos; ordem criada 69s após a nota (pipeline automático)"
+  },
+  "gravado_em": "2026-10-18T20:22:59-03:00",
+  "por": "n0 (GLM/ZCode), ordem 261018-201805-412333"
+}

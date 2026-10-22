@@ -1,0 +1,9 @@
+**TL;DR — Resumo gravado e ordem encerrada como parcial.** O projeto ficou em **Aguardando retorno**, com o disparo automático desligado.
+
+1. Implementei os controles agrupados de espera/pausa e criei a skill opcional `agrupar-acoes`.
+2. A revisão independente encontrou pendências: espera bloqueando etapas permitidas pelo plano, possibilidade de início após a verificação de pausa e falta de indicador permanente. **Não marquei essas lacunas como corrigidas.**
+3. O relatório atualizado foi apresentado no MegaBrain. Código, testes, provas e pendências estão registrados no [resumo solicitado](<<MEGABRAIN_ROOT>/.mb-ponte/261020-170554-b2c2be/nos/n0/resultado.md>).
+
+```text
+<MEGABRAIN_ROOT>\.mb-ponte\261020-170554-b2c2be\nos\n0
+```

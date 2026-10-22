@@ -1,0 +1,42 @@
+{
+  "id": "n0",
+  "pai": null,
+  "papel": "planejador",
+  "vendor": "gpt",
+  "titulo": "Planejar e orquestrar a correção",
+  "profundidade": 0,
+  "status": "concluido",
+  "criado_em": "2026-10-20T20:05:54+00:00",
+  "perfil": {
+    "vendor": "gpt",
+    "modelo": "gpt-6-astra",
+    "effort": "medium"
+  },
+  "modelo": "gpt-6-astra",
+  "effort": "medium",
+  "modo": "segundo_plano",
+  "inicio": "2026-10-20T20:05:54+00:00",
+  "pid": 65484,
+  "supervisor_pid": 89860,
+  "comando": [
+    "C:\\Users\\<USUARIO>\\AppData\\Local\\Programs\\OpenAI\\Codex\\bin\\codex.exe",
+    "exec",
+    "--skip-git-repo-check",
+    "-C",
+    "S:\\projetos multi i.a\\MEGA B R A I  N",
+    "-m",
+    "gpt-6-astra",
+    "-c",
+    "model_reasoning_effort=\"medium\"",
+    "--json",
+    "-o",
+    "S:\\projetos multi i.a\\MEGA B R A I  N\\.mb-ponte\\261020-170554-b2c2be\\nos\\n0\\ultima-mensagem.txt",
+    "<prompt curto>"
+  ],
+  "fim": "2026-10-20T20:28:47+00:00",
+  "exit_code": 0,
+  "sessao_id": "01a15aeb-a4c6-7443-a3ed-6afa4bfc0fdc",
+  "sessao_fonte": "saida.log:json CLI",
+  "sessao_vendor": "gpt",
+  "sessao_capturada_em": "2026-10-20T20:28:47+00:00"
+}

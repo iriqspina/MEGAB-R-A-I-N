@@ -78,11 +78,12 @@ class QuotaCell(QAbstractButton):
         querying = theme.row_source(self.row_id) in owner._querying
         state = state_label(self.display, self.focus, querying)
         self.state_symbol = "↻" if querying else ("!" if (self.display or {}).get("status") not in (None, "ok") else ("◷" if (self.display or {}).get("stale") else "●"))
-        self.reset_count = reset_summary((self.display or {}).get('details'))
-        reset_date=''
-        if self.reset_count=='—':
-            observed,reset_date=observed_resets(self.row_id)
-            if observed:self.reset_count=reset_summary({'resets':observed})+'*'
+        from quota_details_data import resolve_resets
+        browser = None if owner.demo else browser_account(self.row_id)
+        resolved=resolve_resets((self.display or {}).get('details'),browser,fetched_at=(self.display or {}).get('fetched_at'),stale=(self.display or {}).get('stale') or (self.display or {}).get('status')!='ok')
+        self.reset_count = reset_summary({'resets':resolved['current']})
+        reset_date=resolved['observed_at'] if resolved['source']=='browser' else ''
+        if resolved['current'] and resolved['source']=='browser':self.reset_count+='*'
         self.meta = f"{duration_label(self.focus)} · {self.state_symbol} {state}"
         label = provider_name(self.row_id, owner._canonical_labels)
         # Whole column body: every window, reset, balance and source. Browser
@@ -257,6 +258,18 @@ class QuotaStrip(QWidget):
         self.menu.clicked.connect(lambda _checked=False: owner.open_settings())
         self.menu.setContextMenuPolicy(Qt.CustomContextMenu)
         self.menu.customContextMenuRequested.connect(lambda _pos: owner._show_menu())
+        self.pin = QPushButton("◆" if owner.settings.always_on_top else "◇", self)
+        self.pin.setCheckable(True)
+        self.pin.setChecked(owner.settings.always_on_top)
+        self.pin.setAccessibleName("Fixar Cotas de IA acima de todas as janelas")
+        self.pin.setToolTip("Fixar a estrutura completa acima de todas as janelas · Ctrl+T")
+        self.pin.setEnabled(hasattr(owner, '_toggle_always_on_top'))
+        self.pin.clicked.connect(lambda: owner._toggle_always_on_top())
+        self.reload = QPushButton("↻", self)
+        self.reload.setAccessibleName("Recarregar todas as fontes agora")
+        self.reload.setToolTip("Recarregar tudo · todas as fontes em paralelo, inclusive as em pausa · F5")
+        self.reload.setEnabled(hasattr(owner, 'manual_refresh'))
+        self.reload.clicked.connect(lambda: owner.manual_refresh())
         self.previous = QPushButton("‹", self)
         self.next = QPushButton("›", self)
         self.previous.setAccessibleName("Provedores anteriores")
@@ -268,7 +281,7 @@ class QuotaStrip(QWidget):
         self.counter.setAttribute(Qt.WA_TransparentForMouseEvents)
         self.empty = QLabel("Escolha provedores no menu ≡", self)
         self.empty.setAlignment(Qt.AlignCenter)
-        for button in (self.menu, self.previous, self.next):
+        for button in (self.menu, self.pin, self.reload, self.previous, self.next):
             button.setFocusPolicy(Qt.StrongFocus)
 
     def fonts(self):
@@ -334,7 +347,7 @@ class QuotaStrip(QWidget):
         button_font.setPixelSize(16)
         label_font = QFont(self.owner.settings.font_family)
         label_font.setPixelSize(11)
-        for button in (self.menu, self.previous, self.next):
+        for button in (self.menu, self.pin, self.previous, self.next):
             button.setFont(button_font)
         for label in (self.mode, self.counter, self.empty):
             label.setFont(label_font)
@@ -373,14 +386,17 @@ class QuotaStrip(QWidget):
             if cell.row_id not in self.order[self.start:self.start + cap]:
                 cell.hide()
         height = self.height()
-        self.mode.setVisible(height >= 60)
+        self.mode.hide()
+        self.pin.setChecked(self.owner.settings.always_on_top)
+        self.pin.setText("◆" if self.owner.settings.always_on_top else "◇")
+        self.pin.setGeometry(22, (height - 24) // 2, 22, 24)
+        self.reload.setGeometry(46, (height - 24) // 2, 22, 24)
         if height >= 60:
-            self.drag_handle.setGeometry(10, 2, 24, 20)
-            self.mode.setGeometry(0, 23, CONTROL_WIDTH, 17)
-            self.menu.setGeometry(10, height - 27, 24, 24)
+            self.drag_handle.setGeometry(0, 0, 20, height - 28)
+            self.menu.setGeometry(0, height - 27, 22, 24)
         else:
-            self.drag_handle.setGeometry(0, 0, 18, height)
-            self.menu.setGeometry(19, (height - 24) // 2, 24, 24)
+            self.drag_handle.setGeometry(0, 0, 20, max(0, height - 24))
+            self.menu.setGeometry(0, height - 24, 22, 24)
         paged = cap < count
         nav_x = self.width() - (NAV_WIDTH if paged else 0)
         for widget in (self.previous,self.next,self.counter):widget.setVisible(paged)

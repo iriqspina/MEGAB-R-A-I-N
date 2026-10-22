@@ -11,9 +11,11 @@ Grava 3 linhas num arquivo de lições. Esta versão para Codex não inclui o ho
 
 Escolha o destino pelo alcance da lição.
 
-### GLOBAL (default) — `<MEGABRAIN_ROOT>/licoes-megabrain.md`
+### GLOBAL (default) — `<MEGABRAIN_ROOT>/memoria/nucleo/licoes-megabrain.md`
 
-Na central, localize o arquivo de lições pelo estado do projeto; não presuma um caminho absoluto de outra máquina.
+`MEGABRAIN_ROOT` é a pasta da central (nesta máquina, `<MEGABRAIN_ROOT>`); em outra máquina, confirme a central antes de gravar. É o único arquivo global de lições: `bin/mb-indice-licoes.py` indexa ele e só ele, e o hook de prompt devolve as 5 entradas mais próximas de cada pedido.
+
+**Nunca grave em `<MEGABRAIN_ROOT>/licoes-megabrain.md` (raiz da central).** Esse arquivo ficava fora do índice e foi retirado em 261016, com as entradas levadas para o núcleo; se ele reaparecer, é órfão.
 
 Use quando a lição vale **para qualquer projeto**: comportamento de ferramenta, limite de formato, armadilha de processo, padrão que se repete entre clientes.
 
@@ -37,6 +39,25 @@ Não achou e a lição é claramente do projeto → crie `licoes-megabrain.md` n
 > Essa lição seria útil num cliente completamente diferente? **Sim → global. Não → projeto.**
 
 Em qualquer destino: **anexe ao fim**, nunca reescreva o arquivo.
+
+### Como anexar — sempre pelo `mb_trava.py`
+
+Não use `>>`, editor nem escrita direta. O `anexar` espera a trava do arquivo, lê e grava dentro dela e mantém o fim de linha (CRLF ou LF) que o arquivo já tem. Em 261016 um append direto entrou com a trava ativa e trocou o fim de linha do arquivo inteiro.
+
+```bash
+python "<MEGABRAIN_ROOT>/bin/mb_trava.py" anexar \
+  --arquivo "<MEGABRAIN_ROOT>/memoria/nucleo/licoes-megabrain.md" \
+  --agente codex-<4 caracteres da sessão> --porque "registrar-licao" --entrada - <<'EOF'
+## YYMMDD — <contexto>
+GATILHO: ...
+LIÇÃO: ...
+ATALHO: ...
+EOF
+```
+
+- Heredoc com aspas (`<<'EOF'`) para a barra invertida não ser interpretada. PowerShell ou outro shell: grave a entrada num arquivo UTF-8 temporário e passe `--entrada <caminho>`.
+- Lição de projeto: troque só o `--arquivo` (a trava continua morando na central).
+- `RECUSADO: ... está com <agente>` = outra sessão está gravando. Espere alguns segundos e repita; não contorne.
 
 ## Formato da entrada
 
@@ -82,7 +103,7 @@ Não registre:
 
 ## Promoção — quando a lição vira skill
 
-Ao gravar, verifique se o arquivo já tem entradas com o **mesmo gatilho**.
+Ao gravar, verifique se o arquivo já tem entradas com o **mesmo gatilho**. No global, que tem centenas de entradas, procure com `python "<MEGABRAIN_ROOT>/bin/mb-indice-licoes.py" --buscar "<gatilho>" --n 5` em vez de ler o arquivo inteiro.
 
 | Ocorrências | Ação |
 |---|---|
@@ -94,7 +115,9 @@ Lição que se repete três vezes não é memória, é procedimento não escrito
 
 ## Manutenção
 
-Quando o arquivo passar de ~40 entradas, relate a necessidade de consolidação e proponha o merge. Consolidar pode apagar ou reescrever histórico, então exige autorização explícita.
+Arquivo de projeto: quando passar de ~40 entradas, relate a necessidade de consolidação e proponha o merge. Consolidar pode apagar ou reescrever histórico, então exige autorização explícita.
+
+Global (`memoria/nucleo/`): não proponha consolidação por contagem. Ele é lido por proximidade (5 entradas por pedido) e tem centenas de entradas de propósito. Proponha só os grupos que `python bin/mb-indice-licoes.py --recontar` marcar como 3×+.
 
 ## Cabeçalho para arquivo novo
 
@@ -117,3 +140,4 @@ fazer direto). Só entra o que muda comportamento futuro.
 4. **Sobrescrever o arquivo.** Sempre anexe. Perder o histórico apaga o valor acumulado.
 5. **Registrar preferência permanente aqui.** Preferência é configuração, não lição — o lugar dela é o `SYSTEM.md`.
 6. **Consolidar sem autorização.** Merge ou remoção de lições muda histórico; primeiro proponha a ação e aguarde autorização.
+7. **Gravar na raiz da central.** `<MEGABRAIN_ROOT>/licoes-megabrain.md` fica fora do índice: 76 lições gravadas lá não apareciam por proximidade até 261016.

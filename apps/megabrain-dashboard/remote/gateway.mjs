@@ -1,7 +1,34 @@
 // A single-destination proxy. The local application owns pairing, sessions and CSRF.
 // No project data, cookies, request URLs or bodies are written to cloud storage/logs.
 const MAX_BODY_BYTES = 350_000;
+// Same contract as central_attachments.MAX_UPLOAD_BODY (one 8 MiB image in base64 plus
+// the JSON envelope). Only the exact upload route gets it; every other write keeps 350 kB.
+const MAX_UPLOAD_BYTES = 4 * Math.floor((8 * 1024 * 1024 + 2) / 3) + 8192;
 const METHODS = new Set(['GET', 'HEAD', 'POST', 'PUT', 'DELETE']);
+// Opaque ids issued by the backend: central_store.ident (project, file, report),
+// sha256 of an attachment, and central_bridge order names.
+const HEX20 = '[a-f0-9]{20}';
+const HEX64 = '[a-f0-9]{64}';
+const ORDER = '\\d{6}-\\d{6}-[a-f0-9]{6}';
+const UPLOAD = new RegExp(`^/api/projects/${HEX20}/attachments$`);
+const REPORT_READ = new RegExp(`^/api/reports/${HEX20}/(status|view|render|note-receipts)$`);
+const REPORT_WRITE = new RegExp(`^/api/reports/${HEX20}/(draft|feedback|resolve)$`);
+const PROJECT_READ = new RegExp(`^/api/projects/${HEX20}/(attachments/${HEX64}|bridge|control)$`);
+const BRIDGE_CONFIG = new RegExp(`^/api/projects/${HEX20}/(?:bridge|control)$`);
+const BRIDGE_ACTION = new RegExp(`^/api/projects/${HEX20}/bridge/(send|orders/${ORDER}/stop)$`);
+// These open or configure something on the Windows computer itself. The phone gets a
+// readable refusal instead of a silent 404; the backend is never contacted.
+const LOCAL_ONLY = [
+  ['POST', new RegExp(`^/api/dispatch/${HEX20}$`), 'O despacho abre um terminal neste computador. Use o MegaBrain no PC.'],
+  ['POST', /^\/api\/present$/, 'Apresentar abre a janela do MegaBrain no computador. Use o MegaBrain no PC.'],
+  ['GET', /^\/api\/report-audit$/, 'O diagnóstico de relatórios mostra as pastas do computador. Consulte no MegaBrain do PC.'],
+  ['POST', /^\/api\/quotas\/open-widget$/, 'A janela do widget abre somente no aplicativo deste computador.'],
+  ['GET', /^\/api\/quotas\/widget-settings$/, 'Configure o widget pelo MegaBrain deste computador.'],
+  ['POST', /^\/api\/quotas\/widget-settings$/, 'Configure o widget pelo MegaBrain deste computador.'],
+  ['GET', /^\/api\/quotas\/widget-settings\/requests\/[A-Za-z0-9_-]{1,100}$/, 'Consulte a aplicação pelo MegaBrain deste computador.'],
+  // 261021: rota do trabalho interrompido "responder comentário"; remoto só depois da decisão daquela frente.
+  ['POST', /^\/api\/projects\/[a-zA-Z0-9_-]+\/comments\/[a-zA-Z0-9_-]+\/replies$/, 'Responder a um comentário ainda funciona só no MegaBrain deste computador.'],
+];
 const FORWARDED_HEADERS = [
   'accept', 'accept-language', 'content-type', 'cookie', 'origin',
   'range', 'if-range', 'x-mb-csrf', 'idempotency-key',
@@ -43,7 +70,18 @@ function permittedRoute(path, method) {
   if (/%2f|%5c|%00|%2e/i.test(path) || path.includes('\\')) return false;
   const read = method === 'GET' || method === 'HEAD';
   if (read && (['/', '/index.html', '/manifest.webmanifest', '/manifest.json', '/sw.js', '/favicon.ico', '/brand.png', '/icon-192.png', '/icon-512.png'].includes(path) || /^\/(assets|icons)\/[a-zA-Z0-9_./-]+$/.test(path))) return true;
-  if (read && /^\/api\/(health|session|projects|workspace|events|jobs|guide|connection)$/.test(path)) return true;
+  // Comment tools of the app shell (web/public), loaded by CursorTools.tsx.
+  if (read && /^\/cursor-ferramentas-v\d+(?:\.\d+)*\.js$/.test(path)) return true;
+  if (read && /^\/api\/(health|session|search|projects|workspace|events|jobs|guide|connection)$/.test(path)) return true;
+  // 261020: reads the app added after 261011; the backend serves them to remote sessions
+  // (quotas reports local_controls=false there, so the widget buttons stay hidden).
+  if (read && /^\/api\/(returns|session-connections|quotas|bridge\/vendors)$/.test(path)) return true;
+  // Interactive reports: status, authenticated wrapper, isolated render, note receipts.
+  if (read && (REPORT_READ.test(path) || PROJECT_READ.test(path))) return true;
+  if (method === 'POST' && (REPORT_WRITE.test(path) || UPLOAD.test(path))) return true;
+  // Correction bridge runs on the computer, like jobs and report feedback already do.
+  if (method === 'PUT' && BRIDGE_CONFIG.test(path)) return true;
+  if (method === 'POST' && BRIDGE_ACTION.test(path)) return true;
   if (read && path === '/api/connection/qr') return true;
   if (read && /^\/api\/(projects|files)\/[a-zA-Z0-9_-]+$/.test(path)) return true;
   if (read && /^\/api\/projects\/[a-zA-Z0-9_-]+\/(process|routing|code-files)$/.test(path)) return true;
@@ -55,9 +93,18 @@ function permittedRoute(path, method) {
   return method === 'POST' && /^\/api\/projects\/[a-zA-Z0-9_-]+\/(comments|references|jobs|route-preview)$/.test(path);
 }
 
-async function boundedBody(request) {
+function localOnly(path, method) {
+  const verb = method === 'HEAD' ? 'GET' : method;
+  return LOCAL_ONLY.find(([wanted, pattern]) => wanted === verb && pattern.test(path))?.[2] ?? null;
+}
+
+function bodyLimit(path, method) {
+  return method === 'POST' && UPLOAD.test(path) ? MAX_UPLOAD_BYTES : MAX_BODY_BYTES;
+}
+
+async function boundedBody(request, limit) {
   const length = request.headers.get('content-length');
-  if (length !== null && (!/^\d+$/.test(length) || Number(length) > MAX_BODY_BYTES)) throw new RangeError('body_limit');
+  if (length !== null && (!/^\d+$/.test(length) || Number(length) > limit)) throw new RangeError('body_limit');
   if (!request.body) return null;
   const reader = request.body.getReader();
   const chunks = [];
@@ -67,7 +114,7 @@ async function boundedBody(request) {
       const { value, done } = await reader.read();
       if (done) break;
       bytes += value.byteLength;
-      if (bytes > MAX_BODY_BYTES) { await reader.cancel(); throw new RangeError('body_limit'); }
+      if (bytes > limit) { await reader.cancel(); throw new RangeError('body_limit'); }
       chunks.push(value);
     }
   } finally { reader.releaseLock(); }
@@ -86,6 +133,8 @@ export default {
     const incoming = new URL(request.url);
     if (incoming.origin !== publicOrigin) return fail(421, 'invalid_host', 'Endereço não permitido.');
     if (!METHODS.has(request.method)) return fail(405, 'method_not_allowed', 'Método não permitido.');
+    const local = localOnly(incoming.pathname, request.method);
+    if (local) return fail(403, 'local_only', local);
     if (!permittedRoute(incoming.pathname, request.method)) return fail(404, 'not_found', 'Recurso não encontrado.');
     // Pairing credentials are accepted in a JSON body; URL query credentials never pass.
     for (const key of incoming.searchParams.keys()) {
@@ -98,7 +147,7 @@ export default {
     if (write && !/^application\/json(?:\s*;|$)/i.test(request.headers.get('content-type') ?? '')) return fail(415, 'json_required', 'Envie os dados no formato JSON.');
 
     let body = null;
-    try { if (write) body = await boundedBody(request); }
+    try { if (write) body = await boundedBody(request, bodyLimit(incoming.pathname, request.method)); }
     catch { return fail(413, 'body_too_large', 'Pedido acima do limite permitido.'); }
     const headers = new Headers();
     for (const name of FORWARDED_HEADERS) {

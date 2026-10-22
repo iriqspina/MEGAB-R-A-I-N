@@ -301,7 +301,8 @@ def test_browser_evidence_is_distinct_from_automatic_data(qt_app, monkeypatch, t
     assert "browser" in kinds and "legend" in kinds and kinds[-1] == "source"
     browser = next(f for f in fields if f.kind == "browser")
     assert "USD 12,50" in browser.text and "01/09 08:15" in browser.text
-    assert any(f.kind == "reset" and f.text.endswith("*") for f in fields)
+    assert any(f.kind == "reset" and 'não confirmado' in f.text for f in fields)
+    assert not any(f.kind == "reset" and '1/1' in f.text for f in fields)
     assert fields[-1].text.startswith("auto · ") and "01/09 08:15" not in fields[-1].text
     win.update_settings({"visual_mode": "legacy"})
     assert any(t.startswith("$ saldo*") for t in win._segments["claude"]._fields.texts())

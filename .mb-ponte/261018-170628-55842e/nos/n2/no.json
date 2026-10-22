@@ -1,0 +1,27 @@
+{
+  "id": "n2",
+  "pai": "n0",
+  "papel": "worker",
+  "vendor": "gpt",
+  "titulo": "Receber e vincular prints no servidor",
+  "profundidade": 1,
+  "status": "concluido",
+  "criado_em": "2026-10-18T20:11:07+00:00",
+  "timeout": 10800,
+  "supervisor_pid": 80136,
+  "modo": "segundo_plano",
+  "inicio": "2026-10-18T20:11:07+00:00",
+  "pid": 65804,
+  "comando": [
+    "C:\\Users\\<USUARIO>\\AppData\\Local\\Programs\\OpenAI\\Codex\\bin\\codex.exe",
+    "exec",
+    "--skip-git-repo-check",
+    "-C",
+    "S:\\projetos multi i.a\\MEGA B R A I  N",
+    "-o",
+    "S:\\projetos multi i.a\\MEGA B R A I  N\\.mb-ponte\\261018-170628-55842e\\nos\\n2\\ultima-mensagem.txt",
+    "<prompt curto>"
+  ],
+  "fim": "2026-10-18T20:23:36+00:00",
+  "exit_code": 0
+}

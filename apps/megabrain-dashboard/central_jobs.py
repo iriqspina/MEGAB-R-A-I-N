@@ -38,5 +38,11 @@ def execute(store,sources,job):
             if current['status'] not in {'queued','running'}:return
             if current.get('cancel_requested'):
                 _cancel_waiting(store,current);return
+            from central_project_control import check
+            try: check(store,job['project_id'])
+            except ValueError as error:
+                current.update(status='interrupted',stage='Projeto aguardando retomada explícita',error=str(error),updated_at=now())
+                store.update_job_if_active(current)
+                return
             return _execute_workflow(store,sources,current)
         finally:QUEUE_LOCK.release()

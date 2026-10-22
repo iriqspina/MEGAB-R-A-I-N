@@ -30,3 +30,55 @@
 @media(min-width:1300px){.app-shell{grid-template-columns:220px minmax(0,1fr)}.project-rail{width:220px}.main-shell{margin-left:0}.rail-collapsed{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:1100px){.report-desk{grid-template-columns:minmax(0,1fr) 210px}}
 @media(max-width:759px){.report-desk{display:flex;flex-direction:column}.report-desk>.grid-holder{width:100%}.report-library{position:static;width:100%;max-height:400px;order:-1}.library-items{max-height:240px}.report-note{flex-wrap:wrap}.report-note textarea{min-width:80%}.report-note button{margin-left:auto}.module-shortcuts button{font-size:12px}.module-head{cursor:default}}
+
+/* 261014 · sem modo Organizar: o título move e as bordas/cantos redimensionam nas três grades.
+   A seleção de texto fica bloqueada só no título, nas alças e durante o gesto (classe no <html>). */
+.module-head,.home-panel-title,.response-window-title,.mb-layout-handle{user-select:none;-webkit-user-select:none}
+.mb-grid-gesture,.mb-grid-gesture *{user-select:none!important;-webkit-user-select:none!important}
+.mb-grid-gesture iframe{pointer-events:none!important}
+.react-grid-layout>.react-grid-item>.react-resizable-handle{position:absolute;z-index:6;margin:0;padding:0;background:none!important;transform:none!important;touch-action:none;border-radius:4px}
+.react-grid-layout>.react-grid-item>.react-resizable-handle::after{content:none!important;display:none!important}
+.react-grid-layout>.react-grid-item>.react-resizable-handle.react-resizable-handle-n{top:0;bottom:auto;left:18px;right:18px;width:auto;height:7px;cursor:ns-resize}
+.react-grid-layout>.react-grid-item>.react-resizable-handle.react-resizable-handle-s{bottom:0;top:auto;left:18px;right:18px;width:auto;height:7px;cursor:ns-resize}
+.react-grid-layout>.react-grid-item>.react-resizable-handle.react-resizable-handle-e{right:0;left:auto;top:18px;bottom:18px;width:7px;height:auto;cursor:ew-resize}
+.react-grid-layout>.react-grid-item>.react-resizable-handle.react-resizable-handle-w{left:0;right:auto;top:18px;bottom:18px;width:7px;height:auto;cursor:ew-resize}
+.react-grid-layout>.react-grid-item>.react-resizable-handle.react-resizable-handle-ne{top:0;right:0;bottom:auto;left:auto;width:18px;height:18px;cursor:nesw-resize}
+.react-grid-layout>.react-grid-item>.react-resizable-handle.react-resizable-handle-sw{bottom:0;left:0;top:auto;right:auto;width:18px;height:18px;cursor:nesw-resize}
+.react-grid-layout>.react-grid-item>.react-resizable-handle.react-resizable-handle-nw{top:0;left:0;bottom:auto;right:auto;width:18px;height:18px;cursor:nwse-resize}
+.react-grid-layout>.react-grid-item>.react-resizable-handle.react-resizable-handle-se{bottom:0;right:0;top:auto;left:auto;width:18px;height:18px;cursor:nwse-resize}
+.react-grid-layout>.react-grid-item>.react-resizable-handle.react-resizable-handle-se::after{content:""!important;display:block!important;position:absolute;right:4px;bottom:4px;width:7px;height:7px;border-right:2px solid color-mix(in srgb,var(--pink) 65%,transparent);border-bottom:2px solid color-mix(in srgb,var(--pink) 65%,transparent);border-left:0;border-top:0;transform:none}
+.react-grid-layout>.react-grid-item>.react-resizable-handle:hover,.react-grid-layout>.react-grid-item.resizing>.react-resizable-handle{background:color-mix(in srgb,var(--pink) 22%,transparent)!important}
+@media(pointer:coarse){.react-grid-layout>.react-grid-item>.react-resizable-handle.react-resizable-handle-s{height:14px;left:28px;right:28px}}
+.react-grid-item.home-panel>header,.react-grid-item.response-window>header{padding-top:10px;padding-right:24px;}
+/* 261014 · fluidez da mesa: fora do gesto os painéis deslizam e assentam suavemente (padrão home de celular);
+   o item ativo segue o ponteiro sem atraso. pinned-report (quadro de projeto) mantém o comportamento anterior. */
+.react-grid-layout>.react-grid-item.pinned-report{transition:none;}
+.react-grid-layout>.react-grid-item.home-panel{transition:transform .24s cubic-bezier(.2,.8,.2,1),width .24s cubic-bezier(.2,.8,.2,1),height .24s cubic-bezier(.2,.8,.2,1),top .24s cubic-bezier(.2,.8,.2,1),left .24s cubic-bezier(.2,.8,.2,1);}
+.react-grid-layout>.react-grid-item.home-panel.react-draggable-dragging,.react-grid-layout>.react-grid-item.home-panel.resizing{transition:none;z-index:40;}
+.react-grid-layout>.react-grid-item.home-panel.react-draggable-dragging{box-shadow:0 18px 44px #00000066;border-color:color-mix(in srgb,var(--pink) 55%,transparent);}
+.react-grid-layout>.react-grid-item.home-panel.resizing{z-index:35;box-shadow:0 12px 30px #0000004d;}
+.react-grid-placeholder{opacity:.5;transition:all .18s ease-out;}
+.react-grid-item.response-window>.response-window-body,.react-grid-item.response-window>footer{margin:0 8px 8px;}
+.react-grid-item.module-card>.module-body{margin:0 8px 18px;}
+.module-head .icon-button.selected{color:var(--pink);border-color:color-mix(in srgb,var(--pink) 45%,transparent)}
+.home-view-holder[hidden],.responses-holder[hidden]{display:none!important}
+.preview-locked{display:flex;flex-direction:column;width:100%;height:100%;min-height:0}
+.preview-locked>.preview-static-notice{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.preview-locked>.preview-frame{flex:1;min-height:0;width:100%;border:0}
+/* 261016: avisos do salvamento do painel — sem conexão (discreto), grande demais, rascunho parado, erro. */
+.save-state.offline{color:var(--muted)}
+.save-state:not(:disabled){cursor:pointer}
+.save-notice{display:flex;align-items:flex-start;gap:12px;border:1px solid #f4cb8233;background:#f4cb820a;border-radius:12px;padding:12px 14px;margin:-6px 0 14px;color:var(--amber)}
+.save-notice>svg{flex:none;margin-top:2px}
+.save-notice>div:first-of-type{flex:1;min-width:0}
+.save-notice strong{display:block;font-size:13px;color:#f3e6cf;margin-bottom:3px}
+.save-notice p{font-size:12px;line-height:1.55;color:#c9bca8;margin:0}
+.save-notice-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.save-notice-actions>button{min-height:34px;padding:7px 12px;font-size:11px;gap:6px}
+@media (max-width:640px){.save-notice{flex-wrap:wrap}.save-notice-actions{width:100%}.save-notice-actions>button{flex:1}}
+:root[data-mb-theme=light] .save-notice{background:#fbf3e4;border-color:#d9b26a;color:#7a4f0a}
+:root[data-mb-theme=light] .save-notice strong{color:#4a3006}
+:root[data-mb-theme=light] .save-notice p{color:#5c4a2e}
+/* 261020: Abrir e Baixar nas prévias de arquivo do catálogo (PDF, imagem, texto). */
+.preview-file{display:flex;flex-direction:column;flex:1;min-width:0;min-height:0;width:100%;height:100%}.preview-file>.preview-image,.preview-file>.preview-frame{flex:1;min-height:0}.preview-file-actions{display:flex;flex-wrap:wrap;align-items:center;gap:2px 14px;padding:4px 12px;font-size:11px;line-height:1.5;color:#d2c3df;background:#292132;border-bottom:1px solid #55475f;flex-shrink:0;margin:0}.preview-file-actions>span{flex:1 1 220px}.preview-static-notice>.text-button{margin-left:10px}
+:root[data-mb-theme=light] .preview-file-actions{background:#f4eef7;color:#4a3d55;border-color:#d8cce0}

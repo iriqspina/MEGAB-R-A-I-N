@@ -1,0 +1,3 @@
+TL;DR — Revisão concluída: **correções necessárias**. Registrei três achados com reprodução e correção mínima: espera bloqueando etapas permitidas, pausa atravessada antes do lançamento e ausência de estado persistente fora do diálogo.
+
+Resumo gravado e relido em [resultado.md](</<MEGABRAIN_ROOT>/.mb-ponte/261020-170554-b2c2be/nos/n3/resultado.md>). Não alterei a implementação nem concluí a ordem.

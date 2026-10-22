@@ -67,6 +67,27 @@ class QuotaApiTests(unittest.TestCase):
     def setUp(self):
         self.fixture=harness.CentralSecurityTests();self.fixture.setUp();self.auth=self.fixture.local_login()
     def tearDown(self):self.fixture.tearDown()
+    def test_inline_settings_auth_csrf_and_remote_scope(self):
+        path='/api/quotas/widget-settings'
+        self.assertEqual(self.fixture.request(self.fixture.local,path)[0],401)
+        body={'changes':{'size_value':20},'expected_revision':'a'*64}
+        self.assertEqual(self.fixture.request(self.fixture.local,path,method='POST',body=body,headers={'cookie':self.auth['cookie']})[0],403)
+        headers={**self.fixture.remote_headers,'cookie':self.auth['cookie'],'x-mb-csrf':self.auth['x-mb-csrf']}
+        for endpoint in (path,path+'/requests/'+'b'*32):
+            self.assertEqual(self.fixture.request(self.fixture.remote,endpoint,headers=headers)[0],403)
+        self.assertEqual(self.fixture.request(self.fixture.remote,path,method='POST',body=body,headers=headers)[0],403)
+    def test_inline_settings_request_and_receipt_are_distinct(self):
+        path='/api/quotas/widget-settings';revision='a'*64
+        with patch('central_quotas.widget_settings',return_value={'revision':revision,'values':{'size_value':19}}):
+            status,_,raw=self.fixture.request(self.fixture.local,path,headers=self.auth)
+            self.assertEqual(status,200);self.assertEqual(json.loads(raw)['revision'],revision)
+        with patch('central_quotas.request_widget_settings',return_value={'status':'requested','request_id':'b'*32}) as send:
+            status,_,raw=self.fixture.request(self.fixture.local,path,method='POST',body={'changes':{'size_value':20},'expected_revision':revision},headers=self.auth)
+            self.assertEqual(status,200);self.assertEqual(json.loads(raw)['status'],'requested');send.assert_called_once_with({'size_value':20},revision)
+        with patch('central_quotas.widget_settings_status',return_value={'status':'applied','revision':'c'*64}) as receipt:
+            status,_,raw=self.fixture.request(self.fixture.local,path+'/requests/'+'b'*32,headers=self.auth)
+            self.assertEqual(status,200);self.assertEqual(json.loads(raw)['status'],'applied');receipt.assert_called_once_with('b'*32)
+        self.assertEqual(self.fixture.request(self.fixture.local,path,method='POST',body={'changes':{},'expected_revision':revision,'command':'anything'},headers=self.auth)[0],400)
     def test_read_requires_login_and_launch_requires_csrf(self):
         self.assertEqual(self.fixture.request(self.fixture.local,'/api/quotas',headers={})[0],401)
         with patch('central_quotas.quota_view',return_value={'accounts':[]}):

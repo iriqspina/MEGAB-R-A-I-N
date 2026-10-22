@@ -13,6 +13,12 @@ def read_json(path, default=None):
     try: return json.loads(Path(path).read_text(encoding='utf-8-sig'))
     except (OSError, ValueError): return {} if default is None else default
 
+# Estados finais conhecidos dos pedidos. Escritores canônicos: central_workflows.py (queued/running,
+# completed/partial, failed) e central_jobs.py (interrupted); done/success/error/cancelled são legado.
+# blocked, ausente ou desconhecido contam como ativos (nada some); status novo de pedido entra aqui.
+# web/src/Execution.tsx (isJobRunning/jobStatusText) mantém a lista da interface; manter as duas em acordo.
+JOB_TERMINAL_STATUSES = frozenset({'completed','done','success','failed','error','cancelled','interrupted','partial'})
+
 WORKSPACE = dict(openProjects=[], activeProject=None, compareProject=None, layouts={}, hiddenModules={}, density='comfortable', longPressMs=1000, views=[])
 PROCESS = {'name':'Criação com revisão', 'mode':'analysis', 'stages':[
     {'id':'brief','title':'Entender e propor','role':'creator','model':'codex','effort':'xhigh','enabled':True,'instruction':''},
@@ -61,11 +67,43 @@ class Store:
         data=dict(data,id=data.get('id') or uuid.uuid4().hex,at=data.get('at') or now())
         with self.db() as c: c.execute(f'INSERT OR REPLACE INTO {table} VALUES(?,?,?)',(data['id'],project,json.dumps(data,ensure_ascii=False)))
         return data
-    def listing(self, table, project=None):
+    def patch(self, table, item_id, fields):
+        """Merge fields into one record, keeping every original field (bridge status, correction)."""
         assert table in {'comments','refs','jobs'}
         with self.db() as c:
-            rows=c.execute(f'SELECT data FROM {table}'+(' WHERE project=?' if project else '')+' ORDER BY rowid DESC LIMIT 250',(project,) if project else ()).fetchall()
+            c.execute('BEGIN IMMEDIATE')
+            row=c.execute(f'SELECT data FROM {table} WHERE id=?',(item_id,)).fetchone()
+            if not row: raise KeyError('Registro não encontrado.')
+            data=dict(json.loads(row['data']),**fields)
+            c.execute(f'UPDATE {table} SET data=? WHERE id=?',(json.dumps(data,ensure_ascii=False),item_id))
+        return data
+    def listing(self, table, project=None, *, include_resolved=False):
+        assert table in {'comments','refs','jobs'}
+        conditions=[]; params=[]
+        if project:
+            conditions.append('project=?'); params.append(project)
+        if table=='comments' and not include_resolved:
+            # Keep the original record for history and idempotent retries. Filter
+            # before LIMIT so completed notes cannot crowd out pending ones.
+            conditions.append("json_extract(data,'$.status') IS NOT 'CORRIGIDO_VERIFICADO'")
+        where=' WHERE '+' AND '.join(conditions) if conditions else ''
+        with self.db() as c:
+            rows=c.execute(f'SELECT data FROM {table}'+where+' ORDER BY rowid DESC LIMIT 250',params).fetchall()
         return [json.loads(x[0]) for x in rows]
+    def jobs_overview(self, project=None, *, history_limit=250):
+        """B-APP F0 · D12: every non-terminal job, then the newest terminal ones.
+        Project filter runs before any limit; unknown status counts as active so nothing hides."""
+        history_limit=max(0,min(int(history_limit),250))
+        terminal=sorted(JOB_TERMINAL_STATUSES); marks=','.join('?'*len(terminal))
+        scope,params=(' AND project=?',[project]) if project else ('',[])
+        is_terminal=f"json_extract(data,'$.status') IN ({marks})"
+        with self.db() as c:
+            c.execute('BEGIN')  # uma leitura só: pedido que termina no meio não duplica nem some
+            active=c.execute(f'SELECT data FROM jobs WHERE NOT COALESCE({is_terminal},0){scope} ORDER BY rowid DESC',terminal+params).fetchall()
+            history=c.execute(f'SELECT data FROM jobs WHERE {is_terminal}{scope} ORDER BY rowid DESC LIMIT ?',terminal+params+[history_limit]).fetchall()
+            total=c.execute(f'SELECT COUNT(*) FROM jobs WHERE {is_terminal}{scope}',terminal+params).fetchone()[0]
+        return dict(jobs=[json.loads(x[0]) for x in active+history],active_count=len(active),
+                    history_total=total,history_returned=len(history),history_truncated=total>len(history))
     def job(self,job_id):
         with self.db() as c: row=c.execute('SELECT data FROM jobs WHERE id=?',(job_id,)).fetchone()
         if not row: raise KeyError('Pedido não encontrado.')
@@ -87,7 +125,8 @@ class Store:
             rows=c.execute('SELECT id,data FROM events WHERE id>? ORDER BY id LIMIT 150',(after,)).fetchall()
             rev=c.execute('SELECT COALESCE(MAX(id),0) FROM events').fetchone()[0]
         return {'revision':rows[-1]['id'] if rows else rev,'events':[dict(json.loads(r['data']),id=r['id']) for r in rows]}
-    def create_once(self,table,project,data,key=None,digest=None):
+    def create_once(self,table,project,data,key=None,digest=None,equivalentes=()):
+        # equivalentes: assinaturas que o chamador considera a MESMA tentativa (ex.: nota antes/depois da zona do cursor, 261022).
         assert table in {'comments','refs','jobs'}
         scope=table+':'+project
         data=dict(data,id=uuid.uuid4().hex,at=now())
@@ -95,7 +134,7 @@ class Store:
             c.execute('BEGIN IMMEDIATE')
             old=c.execute('SELECT digest,item_id FROM requests WHERE scope=? AND key=?',(scope,key)).fetchone() if key else None
             if old:
-                if old['digest']!=digest: raise Conflict('Esta tentativa já foi usada com outro conteúdo. Reabra a ação antes de salvar.')
+                if old['digest']!=digest and old['digest'] not in equivalentes: raise Conflict('Esta tentativa já foi usada com outro conteúdo. Reabra a ação antes de salvar.')
                 row=c.execute(f'SELECT data FROM {table} WHERE id=?',(old['item_id'],)).fetchone()
                 return json.loads(row['data']),False
             if table=='jobs' and c.execute("SELECT 1 FROM jobs WHERE json_extract(data,'$.status') IN ('queued','running') LIMIT 1").fetchone():

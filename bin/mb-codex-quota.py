@@ -48,19 +48,11 @@ def main() -> int:
 
     pacing = budget_pacing.provider_pacing(result)
     plan = result.get("message", "")
-    current = {}
-    if BUDGET.exists():
-        try:
-            current = json.loads(BUDGET.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError):
-            current = {}
-    if not isinstance(current, dict):
-        current = {}
-    current[key] = {"pacing": pacing, "updated_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat()}
-    BUDGET.parent.mkdir(parents=True, exist_ok=True)
-    tmp = BUDGET.with_name(BUDGET.name + "." + uuid.uuid4().hex + ".tmp")
-    tmp.write_text(json.dumps(current, ensure_ascii=False, indent=2), encoding="utf-8")
-    os.replace(tmp, BUDGET)
+    from json_io import update_json
+    def merge(current):
+        current[key]={'pacing':pacing,'updated_at':datetime.now(timezone.utc).replace(microsecond=0).isoformat()}
+        return current
+    update_json(BUDGET,merge)
 
     windows = [(w.get("id"), w.get("used_percent"), w.get("resets_at")) for w in result.get("windows", [])]
     print(f"[mb-codex-quota] {key} ({plan}) gravado em dados/orcamento_ia.json")

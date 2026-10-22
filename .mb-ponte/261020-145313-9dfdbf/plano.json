@@ -1,0 +1,24 @@
+{
+  "objetivo": "Corrigir as 6 notas da mesa do app MegaBrain (app:home): comentar sobre botão clica o botão; comentário não fixa em áreas; Cotas IA junto e configurado no MegaBrain; seletor com 'Todos os projetos' padrão; só relatórios com ícone e nome; notas app:home entram sozinhas na ponte.",
+  "criterios": [
+    "Teste CDP na instância isolada: modo Comentar e segurar sobre botões de topo, barra da mesa, lateral, catálogo e link não disparam o botão (cliques=0) e abrem nota/leque, em 1440 e 390 px; antes havia falhas no mesmo teste",
+    "Seletor do catálogo abre em 'Todos os projetos'; escolher um projeto filtra e mostra os módulos dele",
+    "Catálogo mostra só relatórios HTML/PDF, cada um com ícone do tipo e nome inteiro embaixo (0 nomes cortados), recente primeiro",
+    "POST /api/projects/{pid}/comments com target app:home devolve ponte.estado=fila (teste unitário) e o comentário guarda ponte",
+    "npm run build sem erro; test:ui 12/12; testes Python da ponte e segurança verdes",
+    "App real reiniciado, saúde OK e assets servidos = dist novo; widget Cotas IA vivo"
+  ],
+  "tarefas": [
+    {"id": "t1", "titulo": "Reproduzir e corrigir cursor sobre botões e áreas sem resposta", "papel": "worker", "vendor": "claude", "arquivos": ["web/src/CursorTools.tsx", "web/src/HomeDesk.tsx", "web/src/App.tsx", "web/src/MultiReportWorkspace.tsx"], "depende_de": [], "revisor_vendor": "glm"},
+    {"id": "t2", "titulo": "Catálogo: Todos os projetos padrão + só relatórios com ícone e nome", "papel": "worker", "vendor": "claude", "arquivos": ["web/src/HomeCatalog.tsx", "web/src/home-desk.css"], "depende_de": [], "revisor_vendor": "glm"},
+    {"id": "t3", "titulo": "Notas app:home entram na ponte pela rota de comentários", "papel": "worker", "vendor": "claude", "arquivos": ["central_server.py", "tests/test_central_bridge.py"], "depende_de": [], "revisor_vendor": "glm"},
+    {"id": "t4", "titulo": "Cotas IA: conferir abertura junto e configurações dentro do MegaBrain (já existentes)", "papel": "worker", "vendor": "claude", "arquivos": ["central_desktop.py (só leitura)", "central_quotas.py (só leitura)"], "depende_de": [], "revisor_vendor": "glm"},
+    {"id": "t5", "titulo": "Revisão independente do diff e das provas", "papel": "revisor", "vendor": "glm", "arquivos": ["somente leitura"], "depende_de": ["t1", "t2", "t3"], "revisor_vendor": "glm"},
+    {"id": "t6", "titulo": "Build, reinício do app, conferência e conclusão pela ponte", "papel": "worker", "vendor": "claude", "arquivos": ["web/dist"], "depende_de": ["t1", "t2", "t3", "t5"], "revisor_vendor": "glm"}
+  ],
+  "duvidas_registradas": [
+    "'relatórios completos' lido como entregas HTML e PDF; texto (.md/.txt), imagem e áudio ficam fora do catálogo da mesa (seguem na Biblioteca do projeto)",
+    "Em 'Todos os projetos' os módulos por projeto ficam ocultos com aviso; aparecem ao escolher um projeto",
+    "Segurar sobre select e sobre alças de arrastar continua com a página (gesto nativo/arraste); Comentar funciona neles"
+  ]
+}

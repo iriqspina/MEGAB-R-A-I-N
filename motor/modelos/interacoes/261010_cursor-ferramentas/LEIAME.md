@@ -1,4 +1,6 @@
-# Ferramentas do cursor · v1.1 · 261011
+# Ferramentas do cursor · v1.5 · 261017
+
+Gesto vigente: **segurar 0,4 s parado** (detalhes em "Gesto vigente", abaixo). As menções a 2 s e 0,7 s neste arquivo são histórico.
 
 Ideia do <USUARIO> (Portfólio, 10/10/2026): segurar o botão esquerdo abre um menu em leque em volta do ponteiro;
 ali o cursor troca de ferramenta (Interagir ↔ Comentar).
@@ -15,7 +17,29 @@ Pedido literal (261011): "Quero uma alteração também nessa funcionalidade do 
   `capabilities: {comments: {}}` (ou `{"composer_only": true}` se só abrir o composer). Para ditar a nota local, declarar também a capability de microfone.
 - Consumidores: Portfólio · Decisões do Portfólio (`Portfolio/evidence/261010_decisoes/tools/build.py`), geradores POP (`bin/mb_pop_tema.html_interacoes`), `bin/mb-interacoes.py`, modelo `../261010_decisoes-respondiveis/`.
 
-## O que mudou na v1.1 (261011)
+## Gesto vigente (v1.5, 261017)
+
+- **Segurar 0,4 s parado** abre o leque (`segurarMs: 400`, `cancelarAoMover: true`). Pedido registrado em `memoria/estado/DECISOES.md` (13/10): "400 ms exclusivamente parado". A folga de poucos px abaixo é a leitura da v1.5 para a tremida da mão; ainda não foi confirmada pelo <USUARIO>.
+- "Parado" tem uma folga pequena para a tremida natural da mão: `tolerancia` 3 px no mouse e `toleranciaToque` 8 px no dedo ou caneta (escolhida por `pointerType`). Mexer mais que isso cancela até o próximo clique.
+- Com `cancelarAoMover: false`, arrastar para a direita continua sendo seleção de texto.
+- Mouse: segurar, deslizar até a opção e soltar escolhe; soltar sem deslizar fecha o leque. Dedo: soltar sem deslizar deixa o leque aberto e um toque na opção escolhe; tocar fora fecha.
+- O segurar funciona em qualquer ferramenta (Interagir, Comentar, Desenhar, Aprovar). Esc volta a Interagir.
+- As menções a **2 s** (v1.0) e **0,7 s** (v1.1) mais abaixo são histórico.
+
+## O que mudou na v1.5 (261017)
+
+- Com Comentar ou Aprovar ativos, segurar voltou a abrir o leque (o bug de 15/10 transformava o segurar em nota ou aprovação sem querer). O clique curto continua comentando ou aprovando.
+- Fechar o leque tocando fora não cria nota. Com uma nota aberta, o 1º clique fora fecha a nota (o rascunho fica salvo) e o próximo comenta.
+- Folga do "parado" separada por tipo de ponteiro (`tolerancia` mouse 3 px, `toleranciaToque` 8 px).
+- Toque: soltar sem deslizar mantém o leque aberto; dedo sobre o leque não rola a página.
+- Nota perto do rodapé abre acima do ponto; o chip não some em relatório baixo (a regra de 480 px vale só para tela de toque).
+- Depois de escolher no leque, o foco do teclado volta para onde estava (ou para o chip, se o leque abriu por ele).
+- Nota sem texto e sem rascunho não é gravada nem sincronizada e some ao fechar. Sem mudança real, as notas não são gravadas de novo.
+- Sair da janela (blur) devolve a ferramenta a Interagir: uma ferramenta ativa por vez entre a mesa do app e o relatório.
+- API nova para barras externas: `ferramentas()` (id, nome, ativa) e `dicaSegurar()` ("segure 0,4 s"). `CursorFerramentas.versao` = `'1.5'`.
+- Teste de regressão: `evidence/261017_cursor-harness/teste-cursor/` (ver `LEIA.txt`): Edge headless pela mesa e pelo relatório reais (B1 a B16) e o motor Qt do app (`qt261013/261013_testar-cursor-v15.py` e `qt_alvo_controles.py`).
+
+## O que mudou na v1.1 (261011) · histórico (o tempo vigente é 0,4 s parado, ver acima)
 
 - **Segurar 0,7 s e poder mexer o mouse.** `segurarMs` padrão 700 (era 2000). Enquanto segura, o ponteiro anda à vontade; o anel acompanha e o menu abre onde o ponteiro estiver quando completa o tempo (não onde começou). Rolar a página continua cancelando. Ao abrir, a seleção de texto criada pelo arraste é limpa e o clique seguinte continua engolido. Chip: "segure 0,7 s".
 - **`cancelarAoMover`** (padrão `false`). `true` volta ao jeito da v1.0: mexer mais que `tolerancia` (10 px) cancela.
@@ -39,6 +63,8 @@ Pedido literal (261011): "Quero uma alteração também nessa funcionalidade do 
 | Mac | `Ctrl+Espaço` costuma trocar o idioma do teclado no sistema; usar o botão. |
 
 ## Testes
+
+261017 (v1.5), teste de regressão em `evidence/261017_cursor-harness/teste-cursor/` (`LEIA.txt`): Edge headless com a mesa e o relatório reais (`central_reports.render_report`), 29 verificações herdadas mais B12 a B16 (foco depois da escolha, tremida de 2 px no mouse não cancela e 6 px cancela, tremida de 5 px no dedo não cancela, dedo solto mantém o leque, nota vazia não gravada); harness 261013 no motor Qt do app e `qt_alvo_controles.py` com mouse nativo.
 
 261010 (v1.0): segurar/cancelar ao mover, clique engolido após abrir o menu, troca de ferramenta, nota local criada/editada/excluída, celular 390 px por emulação.
 

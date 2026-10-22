@@ -1,0 +1,207 @@
+{
+  "schema_version": 1,
+  "policy": "261020-relatorios-glm-max",
+  "master": "motor/modelos/relatorios/260914_pop/relatorio-pop.html",
+  "interaction_master": "motor/modelos/interacoes",
+  "status": "piloto_um_caso_verificado_tecnicamente",
+  "references": [
+    {
+      "id": "pop-260914",
+      "path": "motor/modelos/relatorios/260914_pop/relatorio-pop.html",
+      "role": "modelo_mestre_existente",
+      "approval_scope": "ver LEIAME do POP; não aprova novas composições"
+    }
+  ],
+  "candidates": [
+    {
+      "artifact_sha256": "90d11b15205ad4b1937a688e433418f31d870a7ddd3d7b4882fc02de5b63b4d7",
+      "source_project": "S:\\projetos multi i.a\\MEGA B R A I  N",
+      "source_manifest": "evidence/261020_relatorios-glm/manifest.json",
+      "cycle": 1,
+      "status": "superseded_with_verified_correction",
+      "active_reference": false
+    },
+    {
+      "artifact_sha256": "53cd9af8d2080918b4fd858695a4647914037b02e286fda365ae9dc6fdf9dd94",
+      "source_project": "S:\\projetos multi i.a\\MEGA B R A I  N",
+      "source_manifest": "evidence/261020_relatorios-glm/manifest.json",
+      "cycle": 2,
+      "status": "superseded_with_verified_correction",
+      "active_reference": false
+    },
+    {
+      "id": "rejected-de9acf1041560fdf",
+      "artifact_sha256": "de9acf1041560fdf093fd6191e48ea77cc69862304e35904ef2f54102bc0e04a",
+      "status": "rejected",
+      "rejection": {
+        "artifact_sha256": "de9acf1041560fdf093fd6191e48ea77cc69862304e35904ef2f54102bc0e04a",
+        "status": "rejected",
+        "reason": "Frase sobre Convidar omite distinção sem convite e com acesso; exige convite válido, não concede código a quem não tem.",
+        "evidence": [
+          {
+            "path": "evidence\\261020_acesso-turma\\revisao-relatorio-2-reprovado.json",
+            "sha256": "78995e888448237d0ec7b07851929080a22434e70618f0f060ab8a7bbcbd70c3"
+          }
+        ],
+        "at": "2026-10-21T00:52:19.352404+00:00",
+        "source_project": "S:\\projetos multi i.a\\Bubble",
+        "source_report": "00_PARA-VOCE\\06_App-de-teste\\261020_Acesso-turma\\INICIO.html",
+        "source_manifest": "S:\\projetos multi i.a\\Bubble\\evidence\\261020_acesso-turma\\manifest-relatorio.json",
+        "human_approval": "NAO_MEDIDO",
+        "approval_scope": "Rejeicao registrada por evidencia; nao inferir autoria humana"
+      }
+    },
+    {
+      "id": "rejected-1b66afb1f8a87230",
+      "artifact_sha256": "1b66afb1f8a87230e87dfafd97f20d93ff46376591cd4ada3d9054a92fe181c7",
+      "status": "rejected",
+      "rejection": {
+        "artifact_sha256": "1b66afb1f8a87230e87dfafd97f20d93ff46376591cd4ada3d9054a92fe181c7",
+        "status": "rejected",
+        "reason": "Limite de 3 sessoes GLM atingido com 1 achado aberto (nav-centro-corta-esquerda-390), corrigido no montador e confirmado na producao-4 (pacote minimo); reenquadrado em manifesto final com historico preservado",
+        "evidence": [
+          {
+            "path": "evidence\\261021_fable-analise\\revisao-3.json",
+            "sha256": "a668115fb01a4cadbab12408bfd531c5e0aeb0396b17396dc3909d2057681af8"
+          },
+          {
+            "path": "evidence\\261021_fable-analise\\correcoes-volta3.md",
+            "sha256": "cba7f3832b3c42505483d78adde96dec205b6811c1ba205eda8df09b12f93c41"
+          }
+        ],
+        "at": "2026-10-21T19:59:07.829916+00:00",
+        "source_project": "S:\\projetos multi i.a\\Bubble",
+        "source_report": "00_PARA-VOCE\\09_Revisao-geral\\261021_ANALISE-APP-NO-AR.html",
+        "source_manifest": "S:\\projetos multi i.a\\Bubble\\evidence\\261021_fable-analise\\manifest.json",
+        "human_approval": "NAO_MEDIDO",
+        "approval_scope": "Rejeicao registrada por evidencia; nao inferir autoria humana"
+      }
+    },
+    {
+      "id": "rejected-269af26b24909beb",
+      "artifact_sha256": "269af26b24909bebe92e785aef1a9905926284b89c47aad46050c50907c80d1d",
+      "status": "rejected",
+      "rejection": {
+        "artifact_sha256": "269af26b24909bebe92e785aef1a9905926284b89c47aad46050c50907c80d1d",
+        "status": "rejected",
+        "reason": "Provas regeneradas apos o init (prints do prejoin recapturados) e correcao de integracao do rodape aplicada: artifact do ciclo 1 nao e mais o do arquivo; producao 1 e parecer Claude preservados",
+        "evidence": [
+          {
+            "path": "evidence\\261022_analise-discord-bug\\revisao-ciclo1.json",
+            "sha256": "acbfc05e33114d46df780e4765dcb77fc2b576e928093ab82eeb43f38efe6b3f"
+          }
+        ],
+        "at": "2026-10-22T17:37:25.641322+00:00",
+        "source_project": "S:\\projetos multi i.a\\Bubble",
+        "source_report": "00_PARA-VOCE\\07_Referencia-Discord\\261015_DISCORD-ANATOMIA.html",
+        "source_manifest": "S:\\projetos multi i.a\\Bubble\\evidence\\261022_analise-discord-bug\\manifest.json",
+        "human_approval": "NAO_MEDIDO",
+        "approval_scope": "Rejeicao registrada por evidencia; nao inferir autoria humana"
+      }
+    }
+  ],
+  "promoted": [
+    {
+      "path": "motor\\modelos\\relatorios\\glm\\promovidos\\esteira-papeis-aprendizado\\0e37e74c1deea3c6dcb2a1ca791b97e6905bbc0dce88c0565e6d16303a350daf",
+      "status": "active",
+      "artifact_sha256": "0e37e74c1deea3c6dcb2a1ca791b97e6905bbc0dce88c0565e6d16303a350daf",
+      "provenance": "motor\\modelos\\relatorios\\glm\\promovidos\\esteira-papeis-aprendizado\\0e37e74c1deea3c6dcb2a1ca791b97e6905bbc0dce88c0565e6d16303a350daf\\provenance.json",
+      "provenance_sha256": "878a1835269138a248cf611946b00946dbfebfd3d3d92db47a9369726331e714",
+      "source_project": "S:\\projetos multi i.a\\MEGA B R A I  N",
+      "source_report": "00_PARA-VOCE\\260915_padronizacao-relatorios\\260915_GALERIA-OPCOES.html",
+      "source_manifest": "evidence\\261020_relatorios-glm\\manifest.json",
+      "technical_approval": "VERIFICADO_TECNICAMENTE",
+      "human_approval": "NAO_MEDIDO",
+      "approval_scope": "Somente este artefato e ciclo; adaptacao exige nova revisao",
+      "promoted_at": "2026-10-21T00:30:15.633188+00:00"
+    }
+  ],
+  "metrics": {
+    "sample_reports": 1,
+    "first_pass_accepted": 0,
+    "verified_final_reports": 1,
+    "substantive_corrections": 2,
+    "resolved_findings": 4,
+    "recurrence": null,
+    "meaning": "Caso observado; melhoria longitudinal NAO_MEDIDO; não mede treino dos pesos",
+    "source": "evidence/261020_relatorios-glm/manifest.json"
+  },
+  "revocations": [
+    {
+      "artifact_sha256": "de9acf1041560fdf093fd6191e48ea77cc69862304e35904ef2f54102bc0e04a",
+      "status": "rejected",
+      "reason": "Frase sobre Convidar omite distinção sem convite e com acesso; exige convite válido, não concede código a quem não tem.",
+      "evidence": [
+        {
+          "path": "evidence\\261020_acesso-turma\\revisao-relatorio-2-reprovado.json",
+          "sha256": "78995e888448237d0ec7b07851929080a22434e70618f0f060ab8a7bbcbd70c3"
+        }
+      ],
+      "at": "2026-10-21T00:52:19.352404+00:00",
+      "source_project": "S:\\projetos multi i.a\\Bubble",
+      "source_report": "00_PARA-VOCE\\06_App-de-teste\\261020_Acesso-turma\\INICIO.html",
+      "source_manifest": "S:\\projetos multi i.a\\Bubble\\evidence\\261020_acesso-turma\\manifest-relatorio.json",
+      "human_approval": "NAO_MEDIDO",
+      "approval_scope": "Rejeicao registrada por evidencia; nao inferir autoria humana"
+    },
+    {
+      "artifact_sha256": "1b66afb1f8a87230e87dfafd97f20d93ff46376591cd4ada3d9054a92fe181c7",
+      "status": "rejected",
+      "reason": "Limite de 3 sessoes GLM atingido com 1 achado aberto (nav-centro-corta-esquerda-390), ja corrigido no montador e confirmado na producao-4 (pacote minimo); reenquadrado em manifesto final com o historico preservado",
+      "evidence": [
+        {
+          "path": "evidence\\261021_fable-analise\\revisao-3.json",
+          "sha256": "a668115fb01a4cadbab12408bfd531c5e0aeb0396b17396dc3909d2057681af8"
+        },
+        {
+          "path": "evidence\\261021_fable-analise\\correcoes-volta3.md",
+          "sha256": "cba7f3832b3c42505483d78adde96dec205b6811c1ba205eda8df09b12f93c41"
+        }
+      ],
+      "at": "2026-10-21T19:58:54.650785+00:00",
+      "source_project": "S:\\projetos multi i.a\\Bubble",
+      "source_report": "00_PARA-VOCE\\09_Revisao-geral\\261021_ANALISE-APP-NO-AR.html",
+      "source_manifest": "S:\\projetos multi i.a\\Bubble\\evidence\\261021_fable-analise\\manifest.json",
+      "human_approval": "NAO_MEDIDO",
+      "approval_scope": "Rejeicao registrada por evidencia; nao inferir autoria humana"
+    },
+    {
+      "artifact_sha256": "1b66afb1f8a87230e87dfafd97f20d93ff46376591cd4ada3d9054a92fe181c7",
+      "status": "rejected",
+      "reason": "Limite de 3 sessoes GLM atingido com 1 achado aberto (nav-centro-corta-esquerda-390), corrigido no montador e confirmado na producao-4 (pacote minimo); reenquadrado em manifesto final com historico preservado",
+      "evidence": [
+        {
+          "path": "evidence\\261021_fable-analise\\revisao-3.json",
+          "sha256": "a668115fb01a4cadbab12408bfd531c5e0aeb0396b17396dc3909d2057681af8"
+        },
+        {
+          "path": "evidence\\261021_fable-analise\\correcoes-volta3.md",
+          "sha256": "cba7f3832b3c42505483d78adde96dec205b6811c1ba205eda8df09b12f93c41"
+        }
+      ],
+      "at": "2026-10-21T19:59:07.829916+00:00",
+      "source_project": "S:\\projetos multi i.a\\Bubble",
+      "source_report": "00_PARA-VOCE\\09_Revisao-geral\\261021_ANALISE-APP-NO-AR.html",
+      "source_manifest": "S:\\projetos multi i.a\\Bubble\\evidence\\261021_fable-analise\\manifest.json",
+      "human_approval": "NAO_MEDIDO",
+      "approval_scope": "Rejeicao registrada por evidencia; nao inferir autoria humana"
+    },
+    {
+      "artifact_sha256": "269af26b24909bebe92e785aef1a9905926284b89c47aad46050c50907c80d1d",
+      "status": "rejected",
+      "reason": "Provas regeneradas apos o init (prints do prejoin recapturados) e correcao de integracao do rodape aplicada: artifact do ciclo 1 nao e mais o do arquivo; producao 1 e parecer Claude preservados",
+      "evidence": [
+        {
+          "path": "evidence\\261022_analise-discord-bug\\revisao-ciclo1.json",
+          "sha256": "acbfc05e33114d46df780e4765dcb77fc2b576e928093ab82eeb43f38efe6b3f"
+        }
+      ],
+      "at": "2026-10-22T17:37:25.641322+00:00",
+      "source_project": "S:\\projetos multi i.a\\Bubble",
+      "source_report": "00_PARA-VOCE\\07_Referencia-Discord\\261015_DISCORD-ANATOMIA.html",
+      "source_manifest": "S:\\projetos multi i.a\\Bubble\\evidence\\261022_analise-discord-bug\\manifest.json",
+      "human_approval": "NAO_MEDIDO",
+      "approval_scope": "Rejeicao registrada por evidencia; nao inferir autoria humana"
+    }
+  ]
+}

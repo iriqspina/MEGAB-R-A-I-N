@@ -63,6 +63,9 @@ Evidência e números: `memoria/cerebro/wiki/260910_niveis-de-esforco-o-que-muda
    seguem a configuração exibida por `prepare`. `xhigh`/`max` só com flag explícita e
    motivo escrito; `low` só para worker delimitado. Reexecutar em esforço maior
    apenas o que falhou no teste (estratégia low→reexecução da Anthropic).
+   **Falha que não sai (261020, pedido do <USUARIO>):** 2 tentativas próprias com
+   causa medida → Codex (brief congelado com erro literal) → ZCode; coordenador
+   confere cada retorno. Regra ESCALONAR-FALHA na identidade.
 7. **Lado da cota.** Antes de despachar, conferir idade e saldo de todas as janelas
    aplicáveis em `dados/orcamento_ia.json`. Comparar ritmo apenas entre janelas
    equivalentes, usando `used_percent ÷ (100 × elapsed_fraction)`; início de janela
@@ -142,3 +145,7 @@ python -B -X utf8 -m unittest discover -s <CENTRAL>/apps/automations/tests -v
 ```
 
 Fonte canônica: `motor/skills/orquestracao1/SKILL.md`. Os plugins Claude, Codex e Kimi são cópias derivadas; a fonte manda.
+
+## Relatórios: GLM compõe, Codex/Claude revisam (261020)
+
+Ao criar, regenerar ou corrigir relatório humano, aplicar `/relatorios-glm` (fonte central `motor/skills/relatorios-glm/SKILL.md`). GLM principal MAX é compositor obrigatório; Codex/Claude revisam fontes, imagens e controles e podem fornecer modelos finalizados. Última correção substantiva volta ao GLM. Exceção apenas crédito extremo comprovado sem reset útil; falha técnica não troca produtor. Esta regra específica prevalece sobre papéis genéricos anteriores somente para relatórios. Evitar Claude MAX e ultracode. Gate `bin/mb-relatorios-glm.py`, evidência e exemplo promovido por prova; nunca prometer erro zero ou recarga de chats abertos.

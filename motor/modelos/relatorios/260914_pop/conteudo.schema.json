@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "megabrain-pop/conteudo.schema.json",
+  "title": "ReportContent · modelo mestre MegaBrain (B-APP F0, PLANO_FINAL §5.4.2)",
+  "description": "Conteúdo estruturado que qualquer fornecedor entrega; o gerador preenche o mestre POP. Regras que JSON Schema não expressa (recomendada dentro das opções, tópico de decisão existente, histórico em ordem decrescente, datas com fuso) ficam em bin/mb-verificar-relatorio.py. context e history são opcionais de propósito: entrega curta não precisa inventar histórico.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "projectId", "taskId", "title", "author", "responseAt", "summary", "topics", "sources"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "projectId": {"type": "string", "minLength": 1},
+    "taskId": {"type": "string", "minLength": 1},
+    "title": {"type": "string", "minLength": 1, "description": "Sem limite de tamanho: o plano proíbe limite que apague conteúdo (§5.4.1.4); o gerador cuida da quebra."},
+    "author": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["vendor"],
+      "properties": {
+        "vendor": {"type": "string", "minLength": 1},
+        "client": {"type": "string"},
+        "model": {"type": "string"}
+      }
+    },
+    "responseAt": {"type": "string", "format": "date-time"},
+    "summary": {"type": "string", "minLength": 1},
+    "context": {"type": "string"},
+    "options": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {"theme": {"enum": ["auto", "claro", "escuro"]}}
+    },
+    "topics": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "number", "title", "shortLines", "figures"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"},
+          "number": {"type": "string", "pattern": "^[0-9]+(\\.[0-9]+)*$"},
+          "title": {"type": "string", "minLength": 1},
+          "shortLines": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["icon", "text"],
+              "properties": {"icon": {"type": "string", "minLength": 1}, "text": {"type": "string", "minLength": 1}}
+            }
+          },
+          "figures": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["source", "role", "caption"],
+              "properties": {
+                "source": {"type": "string", "minLength": 1},
+                "role": {"enum": ["proof", "illustration"]},
+                "caption": {"type": "string", "minLength": 1},
+                "observedAt": {"type": "string", "format": "date-time"},
+                "hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+              }
+            }
+          },
+          "process": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "steps"],
+            "properties": {
+              "kind": {"enum": ["antes-depois", "esteira", "mapa-decisao"]},
+              "steps": {
+                "type": "array",
+                "minItems": 2,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["label"],
+                  "properties": {"label": {"type": "string", "minLength": 1}, "detail": {"type": "string"}}
+                }
+              }
+            }
+          },
+          "metrics": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["label", "value", "unit", "scope"],
+              "properties": {
+                "label": {"type": "string", "minLength": 1},
+                "value": {"type": ["number", "string"]},
+                "unit": {"type": "string", "minLength": 1},
+                "scope": {"type": "string", "minLength": 1},
+                "source": {"type": "string"},
+                "observedAt": {"type": "string", "format": "date-time"},
+                "estimate": {"type": "boolean"}
+              }
+            }
+          },
+          "actions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["label", "kind"],
+              "properties": {
+                "label": {"type": "string", "minLength": 1},
+                "kind": {"enum": ["abrir", "copiar", "aviso"]},
+                "target": {"type": "string"}
+              }
+            }
+          },
+          "details": {"type": "string"}
+        }
+      }
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "contextTopicId", "question"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"},
+          "contextTopicId": {"type": "string"},
+          "question": {"type": "string", "minLength": 1},
+          "options": {"type": "array", "items": {"type": "string", "minLength": 1}},
+          "recommended": {"type": "string"},
+          "explanation": {"type": "boolean", "description": "true = a caixa da decisão oferece campo de texto para o <USUARIO> explicar (§5.4.1.5 'campo quando necessário'). Não é o texto da explicação; contexto vai no tópico apontado por contextTopicId."}
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["label", "path"],
+        "properties": {"label": {"type": "string"}, "path": {"type": "string"}, "observedAt": {"type": "string", "format": "date-time"}}
+      }
+    },
+    "history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["at", "text"],
+        "properties": {"at": {"type": "string", "format": "date-time"}, "text": {"type": "string", "minLength": 1}}
+      }
+    }
+  }
+}

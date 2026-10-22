@@ -275,7 +275,7 @@ class TestCodex(unittest.TestCase):
                 resultado = providers.fetch_provider("codex_gpt2")
         self.assertEqual(resultado["status"], "ok")
         self.assertEqual(resultado["provider"], "codex_gpt2")
-        self.assertIn("plus", resultado["message"])
+        self.assertIn("Plus", resultado["message"])  # 261020 A3: nome canônico do vendor
         # O app-server resolve o home pelo env do processo pai: a sobrescrita
         # tem que chegar no Popen, senão o card gpt2 leria a conta principal.
         self.assertEqual(vistos["env"]["CODEX_HOME"], str(Path(tmp)))
@@ -604,7 +604,7 @@ class TestZai(unittest.TestCase):
         with _patched(providers, "_http", stub):
             r = providers.fetch_provider("zai")
         self.assertEqual(r["status"], "ok")
-        self.assertEqual(r["message"], "Plano pro.")
+        self.assertEqual(r["message"], "Plano Pro.")  # 261020 A3: nome canônico do vendor
         self.assertEqual(len(r["windows"]), 2)
         self.assertNotIn(FAKE_TOKEN, json.dumps(r))
 

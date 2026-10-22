@@ -1,0 +1,143 @@
+{
+  "template_id": "megabrain-pop",
+  "template_version": "0.1.0-f0",
+  "status": "rascunho_f0",
+  "content_schema_version": 1,
+  "interaction_version": "cursor-ferramentas v1.6 (segurarMs 400)",
+  "vigencia": "2026-10-21",
+  "plano": "evidence/261020_bapp-planejamento/PLANO_FINAL.md §5.4",
+  "nota": "B-APP F0: contrato preparado (schema, fixture, verificador). Nenhum gerador consome este manifesto ainda; ativação nos consumidores é F1. Rótulos v1.2/v1.3 do POP não certificam pacote publicado. Não declara conformidade geral.",
+  "pendente_f1": "O gerador F1 deve emitir <meta name=\"mb-template\" content=\"megabrain-pop@<versão>\"> em cada relatório; sem isso a camada html fica 'não verificado'. O mestre não recebe a marca antes do gerador, para que relatórios montados à mão não aleguem versão.",
+  "verificador": "bin/mb-verificar-relatorio.py",
+  "consumidores_integrados": [],
+  "componentes": [
+    {
+      "path": "motor/modelos/relatorios/260914_pop/relatorio-pop.html",
+      "papel": "mestre",
+      "sha256": "92afc26fdade5972035be3616893c6b6945a625a8cd2cb6a39308ae491e6e820"
+    },
+    {
+      "path": "motor/modelos/relatorios/260914_pop/conteudo.schema.json",
+      "papel": "schema",
+      "sha256": "4be966828d4263815662642d20ed8b8be5bd229a39d72d412ae4dc2eff131284"
+    },
+    {
+      "path": "motor/modelos/relatorios/260914_pop/fixtures/minima.json",
+      "papel": "fixture",
+      "sha256": "efb81028e26c181b309e60e2feb2af294352ccd7f27e74d7675e8d4dc7a5aece"
+    },
+    {
+      "path": "motor/modelos/interacoes/261010_cursor-ferramentas/cursor-ferramentas.js",
+      "papel": "interacao",
+      "sha256": "3b39e23be93334d12f1d3cb635d864b9ff0b50b5c95d962f777134eb9c7737cb"
+    },
+    {
+      "path": "motor/modelos/interacoes/261010_decisoes-respondiveis/decisoes-respondiveis.js",
+      "papel": "interacao",
+      "sha256": "3c26f4b2868a08001659607e664c1d233916938312ff50968d6b3c29b6a6c38e"
+    },
+    {
+      "path": "motor/modelos/interacoes/261011_agrupamento-visual/agrupamento.css",
+      "papel": "interacao",
+      "sha256": "c8f2c1f8f2b213d12a139c52816d610dcad6513262dfbd081d164965e46a710b"
+    },
+    {
+      "path": "motor/modelos/interacoes/261011_agrupamento-visual/agrupamento.js",
+      "papel": "interacao",
+      "sha256": "3d1935822d9f457e5e24e74935f4131aea9490ac69dab6ce6c81ec2f821c3590"
+    },
+    {
+      "path": "bin/mb_pop_tema.py",
+      "papel": "montador",
+      "sha256": "b636ab0f5aa4a004f8521f0aa2705f02aa1c686fc453f64510b162205d81997f"
+    }
+  ],
+  "historico": [
+    {
+      "gravado_em": "2026-10-21T19:08:31-03:00",
+      "componentes": [
+        {
+          "path": "motor/modelos/relatorios/260914_pop/relatorio-pop.html",
+          "papel": "mestre",
+          "sha256": "92afc26fdade5972035be3616893c6b6945a625a8cd2cb6a39308ae491e6e820"
+        },
+        {
+          "path": "motor/modelos/relatorios/260914_pop/conteudo.schema.json",
+          "papel": "schema",
+          "sha256": "4be966828d4263815662642d20ed8b8be5bd229a39d72d412ae4dc2eff131284"
+        },
+        {
+          "path": "motor/modelos/relatorios/260914_pop/fixtures/minima.json",
+          "papel": "fixture",
+          "sha256": "b23577f77f0185ba9f75c12d1b7ea8d8162c5fc95a77c8b55fe5701891ae4172"
+        },
+        {
+          "path": "motor/modelos/interacoes/261010_cursor-ferramentas/cursor-ferramentas.js",
+          "papel": "interacao",
+          "sha256": "3b39e23be93334d12f1d3cb635d864b9ff0b50b5c95d962f777134eb9c7737cb"
+        },
+        {
+          "path": "motor/modelos/interacoes/261010_decisoes-respondiveis/decisoes-respondiveis.js",
+          "papel": "interacao",
+          "sha256": "3c26f4b2868a08001659607e664c1d233916938312ff50968d6b3c29b6a6c38e"
+        },
+        {
+          "path": "motor/modelos/interacoes/261011_agrupamento-visual/agrupamento.css",
+          "papel": "interacao",
+          "sha256": "c8f2c1f8f2b213d12a139c52816d610dcad6513262dfbd081d164965e46a710b"
+        },
+        {
+          "path": "motor/modelos/interacoes/261011_agrupamento-visual/agrupamento.js",
+          "papel": "interacao",
+          "sha256": "3d1935822d9f457e5e24e74935f4131aea9490ac69dab6ce6c81ec2f821c3590"
+        },
+        {
+          "path": "bin/mb_pop_tema.py",
+          "papel": "montador",
+          "sha256": "b636ab0f5aa4a004f8521f0aa2705f02aa1c686fc453f64510b162205d81997f"
+        }
+      ]
+    },
+    {
+      "gravado_em": null,
+      "componentes": [
+        {
+          "path": "relatorios/260914_pop/relatorio-pop.html",
+          "papel": "mestre",
+          "sha256": "92afc26fdade5972035be3616893c6b6945a625a8cd2cb6a39308ae491e6e820"
+        },
+        {
+          "path": "relatorios/260914_pop/conteudo.schema.json",
+          "papel": "schema",
+          "sha256": "183d67e8aba171ae692131b0e9e6b8a1183d8108177455d8dce08e4fac8e6acf"
+        },
+        {
+          "path": "relatorios/260914_pop/fixtures/minima.json",
+          "papel": "fixture",
+          "sha256": "951b1433f04008c6ddee65b823bb1d60d1e47f76cb68803072db04623aced2a2"
+        },
+        {
+          "path": "interacoes/261010_cursor-ferramentas/cursor-ferramentas.js",
+          "papel": "interacao",
+          "sha256": "3b39e23be93334d12f1d3cb635d864b9ff0b50b5c95d962f777134eb9c7737cb"
+        },
+        {
+          "path": "interacoes/261010_decisoes-respondiveis/decisoes-respondiveis.js",
+          "papel": "interacao",
+          "sha256": "3c26f4b2868a08001659607e664c1d233916938312ff50968d6b3c29b6a6c38e"
+        },
+        {
+          "path": "interacoes/261011_agrupamento-visual/agrupamento.css",
+          "papel": "interacao",
+          "sha256": "c8f2c1f8f2b213d12a139c52816d610dcad6513262dfbd081d164965e46a710b"
+        },
+        {
+          "path": "interacoes/261011_agrupamento-visual/agrupamento.js",
+          "papel": "interacao",
+          "sha256": "3d1935822d9f457e5e24e74935f4131aea9490ac69dab6ce6c81ec2f821c3590"
+        }
+      ]
+    }
+  ],
+  "gravado_em": "2026-10-21T19:10:13-03:00"
+}

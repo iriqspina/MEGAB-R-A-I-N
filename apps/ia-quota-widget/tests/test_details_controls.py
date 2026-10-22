@@ -103,7 +103,7 @@ def test_failure_marks_previous_values_and_preserves_focus(win, qt_app):
 def test_refresh_calls_owner_and_respects_existing_cooldown(win, qt_app, monkeypatch):
     details = open_details(win, qt_app)
     calls = []
-    monkeypatch.setattr(win, "poll_now", lambda: calls.append("poll"))
+    monkeypatch.setattr(win, "poll_now", lambda **_kw: calls.append("poll"))  # 261020 A8: force kwarg
     details.refresh_button.click()
     assert calls == ["poll"] and win._manual_refresh_locked
     assert not details.refresh_button.isEnabled()

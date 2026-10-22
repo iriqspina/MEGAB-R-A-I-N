@@ -1,0 +1,78 @@
+{
+  "versao": 1,
+  "ordem_id": "261020-155433-db4bbe",
+  "criado_em": "2026-10-20T18:54:33+00:00",
+  "projeto": "S:\\projetos multi i.a\\MEGA B R A I  N",
+  "central": "S:\\projetos multi i.a\\MEGA B R A I  N",
+  "origem": "enviar-ao-projeto",
+  "vendor": "glm",
+  "modo": "segundo_plano",
+  "vendors_ativos": [
+    "claude",
+    "gpt",
+    "glm"
+  ],
+  "comentarios": [
+    {
+      "id": "7f2ae0e861614cc4acae777f4e27c7df",
+      "at": "2026-10-20T18:53:09+00:00",
+      "texto": "Respostas recebidas pelo relatório",
+      "notas": [
+        {
+          "texto": "resolva e deixe automatizado",
+          "onde": "Z.ai sem detalhes. “Resets —” porque o extrator de detalhes só existe para Codex e Claude;",
+          "ancora": {
+            "base": "#pagina",
+            "idx": [
+              2,
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          "criado_em": "2026-10-20T18:53:04.044Z"
+        }
+      ],
+      "decisoes": null,
+      "relatorio": "00_PARA-VOCE\\261020_cotas-mapa-bapp\\261020_RELATORIO.html",
+      "relatorio_hash": "cae4167f4054a923e0420f4b03b43d1ee312b0bde6e82a5a34f232a400f54a9f",
+      "onde": "261020_RELATORIO.html",
+      "versao_anterior": true,
+      "anexos": []
+    },
+    {
+      "id": "6f7b2b09d3384b9296c34f623e3855c5",
+      "at": "2026-10-20T18:53:27+00:00",
+      "texto": "Respostas recebidas pelo relatório",
+      "notas": [
+        {
+          "texto": "resolva e deixe automatizado sem custo de i.a. nem leitura via i.a. se possível",
+          "onde": "Z.ai sem detalhes. “Resets —” porque o extrator de detalhes só existe para Codex e Claude;",
+          "ancora": {
+            "base": "#pagina",
+            "idx": [
+              2,
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          "criado_em": "2026-10-20T18:53:04.044Z"
+        }
+      ],
+      "decisoes": null,
+      "relatorio": "00_PARA-VOCE\\261020_cotas-mapa-bapp\\261020_RELATORIO.html",
+      "relatorio_hash": "cae4167f4054a923e0420f4b03b43d1ee312b0bde6e82a5a34f232a400f54a9f",
+      "onde": "261020_RELATORIO.html",
+      "versao_anterior": true,
+      "anexos": []
+    }
+  ],
+  "coordenacao": "",
+  "limites": {
+    "profundidade": 3,
+    "nos": 16
+  }
+}

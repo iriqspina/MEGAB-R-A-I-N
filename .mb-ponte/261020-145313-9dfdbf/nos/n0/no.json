@@ -1,0 +1,21 @@
+{
+  "id": "n0",
+  "pai": null,
+  "papel": "planejador",
+  "vendor": "claude",
+  "titulo": "Planejar e orquestrar a correção",
+  "profundidade": 0,
+  "status": "concluido",
+  "criado_em": "2026-10-20T17:53:13+00:00",
+  "modo": "segundo_plano",
+  "inicio": "2026-10-20T17:53:13+00:00",
+  "pid": 48136,
+  "supervisor_pid": 43784,
+  "comando": [
+    "C:\\Users\\<USUARIO>\\.local\\bin\\claude.exe",
+    "-p",
+    "<prompt curto>"
+  ],
+  "fim": "2026-10-20T18:31:34+00:00",
+  "exit_code": 0
+}

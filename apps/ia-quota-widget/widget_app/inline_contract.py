@@ -13,6 +13,7 @@ from math import isfinite
 from . import paths, theme
 from .formatting import age_label, parse_iso, reset_label, reset_label_absolute
 from .observed_info import observed_resets
+from quota_details_data import resolve_resets
 from .quota_focus import duration_label, duration_minutes, is_reserve
 
 BRT = timezone(timedelta(hours=-3))
@@ -103,18 +104,14 @@ NOT_STARTED_TEXT = "não iniciada"  # termo convergente dos 3 layouts cegos 2610
 
 
 def window_not_started(window, fetched_at) -> bool:
-    """Zero use and no real countdown (261012 audit): Codex returns reading time
-    + window length while unused; Z.ai returns no reset. Same state, same text."""
-    used = window.get("used_percent")
-    if isinstance(used, bool) or not isinstance(used, (int, float)) or used > 0:
-        return False
-    reset = parse_iso(window.get("resets_at"))
-    if reset is None:
-        return True
-    fetched, minutes = parse_iso(fetched_at), duration_minutes(window)
-    if fetched is None or not minutes or not reset.tzinfo or not fetched.tzinfo:
-        return False
-    return abs((reset - fetched).total_seconds() - minutes * 60) <= 180
+    """Deprecated compatibility API: no factual start signal is available.
+
+    The current normalized window contract exposes only id, label, used_percent,
+    resets_at and duration_minutes. Keep the signature for existing callers.
+    Zero use, missing reset and a reset equal to fetched time + duration are
+    insufficient evidence of inactivity.
+    """
+    return False
 
 
 def browser_account(row_id):
@@ -209,17 +206,14 @@ def provider_fields(row_id, display, *, number_mode="used", reset_mode="relative
 def _extras(row_id, display, browser) -> list[Field]:
     fields: list[Field] = []
     details = display.get("details") or {}
-    live_resets = details.get("resets") or []
+    reset_state=resolve_resets(details,browser,fetched_at=display.get('fetched_at'),stale=display.get('stale') or display.get('status')!='ok')
+    live_resets = reset_state['current']
+    browser_used=bool(live_resets and reset_state['source']=='browser')
     for index, item in enumerate(live_resets):
-        fields.append(_reset_field(index, item))
-    browser_used = False
-    if not live_resets and browser and browser.get("resets"):
-        browser_used = True
-        for index, item in enumerate(browser["resets"]):
-            fields.append(_reset_field(index, item, browser.get("reset_observed_at") or browser.get("observed_at")))
-    if not live_resets and not browser_used:
-        fields.append(Field("reset:none", "reset", f"♻ resets: {UNKNOWN} não informado",
-                            tooltip="A fonte não informou estoque de resets. Não é zero."))
+        fields.append(_reset_field(index, item,reset_state['observed_at'] if reset_state['source']=='browser' else None))
+    if not live_resets:
+        fields.append(Field("reset:none", "reset", f"♻ resets: {UNKNOWN} não confirmado",
+                            tooltip="Estoque atual não confirmado; histórico não é disponibilidade. Não é zero."))
 
     financial = details.get("financial") or []
     for index, item in enumerate(financial):

@@ -172,6 +172,13 @@ def write_budget_status(config, provider, pacing):
     """Ritmo é telemetria consultiva — nunca deve derrubar um despacho."""
     path = Path(config["central"]) / "dados" / "orcamento_ia.json"
     try:
+        io_module=_load_central_module(config,'apps/ia-quota-widget/json_io.py','quota_json_io')
+        if io_module is not None:
+            def merge(current):
+                current[provider]={'pacing':pacing,'updated_at':now()}
+                return current
+            io_module.update_json(path,merge)
+            return
         current = read_json(path) if path.exists() else {}
         if not isinstance(current, dict):
             current = {}

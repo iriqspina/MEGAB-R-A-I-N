@@ -9,7 +9,7 @@ import mb_trava as trava
 import mb_utils as u
 
 MARCADOR='<!-- MEGABRAIN:CATALOGO:1 -->'
-ESTADOS=('rascunho','em_revisao','pronto','arquivado','nao_verificado')
+ESTADOS=('rascunho','em_revisao','pronto','arquivado','nao_verificado','revisado_com_pendencias','atencao')
 LEITURA={'.html','.htm','.md','.txt','.pdf','.png','.jpg','.jpeg','.gif','.svg','.docx','.xlsx','.pptx','.mp4','.wav','.mp3','.json'}
 def e(value): return html.escape(str(value),quote=True)
 def caminho(root,value):

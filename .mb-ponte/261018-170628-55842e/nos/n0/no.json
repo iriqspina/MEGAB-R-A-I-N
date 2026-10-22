@@ -1,0 +1,24 @@
+{
+  "id": "n0",
+  "pai": null,
+  "papel": "planejador",
+  "vendor": "gpt",
+  "titulo": "Planejar e orquestrar a correção",
+  "profundidade": 0,
+  "status": "rodando",
+  "criado_em": "2026-10-18T20:06:28+00:00",
+  "supervisor_pid": 91892,
+  "modo": "segundo_plano",
+  "inicio": "2026-10-18T20:06:29+00:00",
+  "pid": 82416,
+  "comando": [
+    "C:\\Users\\<USUARIO>\\AppData\\Local\\Programs\\OpenAI\\Codex\\bin\\codex.exe",
+    "exec",
+    "--skip-git-repo-check",
+    "-C",
+    "S:\\projetos multi i.a\\MEGA B R A I  N",
+    "-o",
+    "S:\\projetos multi i.a\\MEGA B R A I  N\\.mb-ponte\\261018-170628-55842e\\nos\\n0\\ultima-mensagem.txt",
+    "<prompt curto>"
+  ]
+}

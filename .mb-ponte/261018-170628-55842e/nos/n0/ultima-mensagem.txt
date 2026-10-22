@@ -1,0 +1,14 @@
+🧭 MegaBrain · pedido: “executar tarefa do nó n0” · passo 5/5
+
+**TL;DR — tarefa executada e ordem concluída como “corrigida”.** O resumo foi gravado em [resultado.md](</<MEGABRAIN_ROOT>/.mb-ponte/261018-170628-55842e/nos/n0/resultado.md>).
+
+1. **Entregue:** prints por Ctrl+V e arquivo nos campos coerentes, mapa aperfeiçoado e correções no envio e encerramento dos comentários.
+2. **Conferido no destino:** os três comentários receberam “Corrigido pela IA · confira”, com os textos originais preservados.
+3. **Verificado:** suíte de 341 testes, 3 pulados e nenhuma falha; versão compilada, provas visuais e revisões independentes GLM aprovadas.
+
+O aplicativo confirmou a abertura da [entrega visual](</<MEGABRAIN_ROOT>/00_PARA-VOCE/261011_app-megabrain/261011_APP-MEGABRAIN.html>). Os limites da validação estão registrados no resumo.
+
+```text
+<MEGABRAIN_ROOT>\.mb-ponte\261018-170628-55842e\nos\n0
+```
+

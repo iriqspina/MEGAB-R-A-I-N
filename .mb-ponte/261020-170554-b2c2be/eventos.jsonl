@@ -1,0 +1,13 @@
+{"at": "2026-10-20T20:05:54+00:00", "tipo": "ordem_criada", "vendor": "gpt", "comentarios": ["c11ff4d6166b4494848293ea5e568c34"]}
+{"at": "2026-10-20T20:05:54+00:00", "tipo": "no_iniciado", "no": "n0", "vendor": "gpt", "pid": 65484}
+{"at": "2026-10-20T20:07:45+00:00", "tipo": "no_despachado", "no": "n1", "pai": "n0", "papel": "worker", "vendor": "gpt", "titulo": "Cursor e espera real por projeto"}
+{"at": "2026-10-20T20:07:46+00:00", "tipo": "no_iniciado", "no": "n1", "vendor": "gpt", "pid": 78844}
+{"at": "2026-10-20T20:08:57+00:00", "tipo": "no_despachado", "no": "n2", "pai": "n0", "papel": "revisor", "vendor": "gpt", "titulo": "Revisão do contrato e skill opcional"}
+{"at": "2026-10-20T20:08:57+00:00", "tipo": "no_iniciado", "no": "n2", "vendor": "gpt", "pid": 100916}
+{"at": "2026-10-20T20:10:18+00:00", "tipo": "no_terminou", "no": "n2", "status": "concluido", "exit_code": 0}
+{"at": "2026-10-20T20:13:17+00:00", "tipo": "no_despachado", "no": "n3", "pai": "n0", "papel": "revisor", "vendor": "gpt", "titulo": "Revisão final de controle e cursor"}
+{"at": "2026-10-20T20:13:18+00:00", "tipo": "no_iniciado", "no": "n3", "vendor": "gpt", "pid": 78880}
+{"at": "2026-10-20T20:24:59+00:00", "tipo": "no_terminou", "no": "n1", "status": "concluido", "exit_code": 0}
+{"at": "2026-10-20T20:26:49+00:00", "tipo": "no_terminou", "no": "n3", "status": "concluido", "exit_code": 0}
+{"at": "2026-10-20T20:28:25+00:00", "tipo": "ordem_concluida", "status": "parcial"}
+{"at": "2026-10-20T20:28:47+00:00", "tipo": "no_terminou", "no": "n0", "status": "concluido", "exit_code": 0}

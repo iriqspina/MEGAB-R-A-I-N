@@ -1,0 +1,25 @@
+{
+  "id": "n1",
+  "pai": "n0",
+  "papel": "revisor",
+  "vendor": "glm",
+  "titulo": "Revisar plano de prints e mapa",
+  "profundidade": 1,
+  "status": "concluido",
+  "criado_em": "2026-10-18T20:08:29+00:00",
+  "timeout": 10800,
+  "supervisor_pid": 18908,
+  "modo": "segundo_plano",
+  "inicio": "2026-10-18T20:08:29+00:00",
+  "pid": 66500,
+  "comando": [
+    "C:\\Program Files\\nodejs\\node.EXE",
+    "C:\\Users\\<USUARIO>\\AppData\\Roaming\\npm\\node_modules\\zcode-app-cli\\bin\\zcode.js",
+    "--prompt",
+    "<prompt curto>",
+    "--cwd",
+    "S:\\projetos multi i.a\\MEGA B R A I  N"
+  ],
+  "fim": "2026-10-18T20:15:06+00:00",
+  "exit_code": 0
+}

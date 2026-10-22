@@ -1,0 +1,24 @@
+{
+  "id": "n0",
+  "pai": null,
+  "papel": "planejador",
+  "vendor": "glm",
+  "titulo": "Planejar e orquestrar a correção",
+  "profundidade": 0,
+  "status": "concluido",
+  "criado_em": "2026-10-18T23:18:05+00:00",
+  "modo": "segundo_plano",
+  "inicio": "2026-10-18T23:18:06+00:00",
+  "pid": 90408,
+  "supervisor_pid": 94048,
+  "comando": [
+    "C:\\Program Files\\nodejs\\node.EXE",
+    "C:\\Users\\<USUARIO>\\AppData\\Roaming\\npm\\node_modules\\zcode-app-cli\\bin\\zcode.js",
+    "--prompt",
+    "<prompt curto>",
+    "--cwd",
+    "S:\\projetos multi i.a\\MEGA B R A I  N"
+  ],
+  "fim": "2026-10-18T23:24:10+00:00",
+  "exit_code": 0
+}

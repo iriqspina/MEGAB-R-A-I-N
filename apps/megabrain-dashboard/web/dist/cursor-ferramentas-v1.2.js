@@ -1,4 +1,17 @@
-/* cursor-ferramentas v1.4 · 261013 · MEGABRAIN
+/* cursor-ferramentas v1.5 · 261017 · MEGABRAIN
+   Gesto vigente: segurar 0,4 s parado (segurarMs: 400). As menções a 2 s, 1 s e 0,7 s abaixo são histórico.
+   v1.5 (261017):
+   · segurar volta a abrir o leque com Comentar ou Aprovar ativos (o clique curto continua comentando/aprovando).
+   · fechar o leque tocando fora, ou o 1º clique fora de uma nota aberta, não cria nota nova.
+   · "parado" tem folga por tipo de ponteiro: tolerancia (mouse, padrão 3 px) e toleranciaToque (dedo/caneta,
+     padrão 8 px). A tremida natural da mão não cancela; arrastar de verdade cancela.
+   · toque: soltar o dedo sem deslizar deixa o leque aberto para escolher com um toque (no mouse, soltar fecha).
+   · dedo no leque não rola a página; nota perto do rodapé abre acima; chip não some em iframe baixo.
+   · depois de escolher no leque o foco do teclado volta para onde estava.
+   · nota sem texto e sem rascunho não é gravada nem sincronizada; some ao fechar.
+   · sair da janela (blur) volta a Interagir: uma ferramenta ativa por vez entre mesa e relatório.
+   · API: ferramentas() e dicaSegurar() para barras externas (ex.: barra de reserva do relatório).
+   Teste de regressão: evidence/261017_cursor-harness/teste-cursor/ (LEIA.txt).
    v1.4: no app Qt, voz usa ditado do Windows por clique explícito, sem SpeechRecognition;
    rascunho salvo a cada entrada de texto, inclusive ditado. O Windows controla ouvir/parar.
    v1.3: 0,4 s exclusivamente parado; mover cancela até o próximo clique.
@@ -22,7 +35,7 @@
      salva em chaveAprovacoes; API confirmar/confirmado/desconfirmar/aprovacoes e opção confirmados.
    Uso: CursorFerramentas.iniciar({ ...opções }) → controle { usar, atual, abrirMenu, fecharMenu,
    notas, limparNotas, configurar, destruir, ditarAoComentar, desenhos, pincel, desfazer, limparDesenhos,
-   confirmar, desconfirmar, confirmado, aprovacoes }. Sem dependências; injeta o próprio CSS. */
+   confirmar, desconfirmar, confirmado, aprovacoes, ferramentas, dicaSegurar }. Sem dependências; injeta o próprio CSS. */
 (function (global) {
   'use strict';
   if (global.CursorFerramentas) return;
@@ -110,6 +123,7 @@
     '.cf-editor .cf-ed-onde{font-size:12px;opacity:.72;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
     '.cf-editor textarea{width:100%;box-sizing:border-box;min-height:74px;resize:vertical;border-radius:8px;border:1px solid var(--cf-borda);background:rgba(127,127,127,.12);color:inherit;font:inherit;padding:8px}',
     '.cf-editor textarea:focus{outline:2px solid var(--cf-foco);outline-offset:1px}',
+    '.cf-ed-rota{font-size:11px;min-width:0;max-width:100%}.cf-ed-rota summary{cursor:pointer;overflow-wrap:anywhere}.cf-ed-rota label{display:grid;gap:3px;margin-top:6px;min-width:0}.cf-ed-rota select{box-sizing:border-box;width:100%;min-width:0;max-width:100%;padding:6px;border:1px solid var(--cf-borda);border-radius:6px;color:var(--cf-tinta);background:var(--cf-fundo);font:inherit}.cf-ed-rota p{margin:5px 0 0;line-height:1.35;overflow-wrap:anywhere}.cf-ed-rota [role="status"]{color:#eab64c}',
     '.cf-editor .cf-provisorio{font-style:italic;font-size:13px;line-height:1.35;opacity:.62;overflow-wrap:anywhere}',
     '.cf-editor .cf-mic-aviso{font-size:12px;line-height:1.35;opacity:.85}',
     '.cf-editor .cf-provisorio:empty,.cf-editor .cf-mic-aviso:empty{display:none}',
@@ -123,18 +137,99 @@
     '@keyframes cf-pulso{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--cf-acento) 65%,transparent)}70%{box-shadow:0 0 0 9px transparent}100%{box-shadow:0 0 0 0 transparent}}',
     '.cf-ed-acoes button:focus-visible{outline:2px solid var(--cf-foco);outline-offset:2px}',
     '.cf-toast{position:fixed;left:50%;top:16px;transform:translateX(-50%);z-index:2147483602;background:var(--cf-fundo);color:var(--cf-tinta);box-shadow:var(--cf-sombra),0 0 0 1px var(--cf-borda);border-radius:999px;padding:9px 15px;font:600 13px/1.3 system-ui,sans-serif;max-width:calc(100vw - 32px);text-align:center;pointer-events:none}',
-    '@media (max-height:480px){.dr-barra{position:static!important;bottom:auto!important;z-index:auto!important}.cf-chip{position:static;left:auto;bottom:auto;max-width:100%;margin:12px 16px;box-sizing:border-box}.cf-chip-btn{max-width:100%;white-space:normal;flex-wrap:wrap;overflow-wrap:anywhere;justify-content:center}}',
+    '@media (max-height:480px) and (pointer:coarse){.dr-barra{position:static!important;bottom:auto!important;z-index:auto!important}}', // 261018: o chip fica sempre fixo e visivel, mesmo em relatorio baixo no celular
     '@media (prefers-reduced-motion:reduce){.cf-botao,.cf-anel,.cf-alvo{transition:none!important}.cf-ed-acoes .cf-mic[aria-pressed="true"]{animation:none!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--cf-acento) 45%,transparent)}}'
   ].join('\n');
 
-  var instanciaAtiva = null;
+  /* Anexos ficam como referências curtas. File e prévias vivem só nesta sessão. */
+  var ANEXO_MAX = 8 * 1024 * 1024, ANEXO_TIPOS = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
+  function normalizarAnexos(values) {
+    var seen = {};
+    return (Array.isArray(values) ? values : []).filter(function (v) {
+      if (!v || typeof v.id !== 'string' || !v.id || v.id.length > 160 || seen[v.id] || typeof v.path !== 'string' || !v.path || v.path.length > 4000 || ANEXO_TIPOS.indexOf(v.mime) < 0 || !Number.isSafeInteger(v.size) || v.size <= 0 || v.size > ANEXO_MAX || typeof v.url !== 'string' || !/^\/api\/projects\/[a-zA-Z0-9_-]+\/attachments\/[a-zA-Z0-9_-]+$/.test(v.url)) return false;
+      seen[v.id] = true; return true;
+    }).slice(0, 6).map(function (v) { return { id: v.id, path: v.path, name: String(v.name || 'Print').slice(0, 240), mime: v.mime, size: v.size, url: v.url }; });
+  }
+  var campoAnexoSeq = 0;
+  function montarAnexos(o) {
+    var doc = o.elemento.ownerDocument, host = o.transporte || global.MegaBrainAttachments, ativos = true, msg = '', seq = 0;
+    var campoId = 'mb-anexo-' + Date.now().toString(36) + '-' + (++campoAnexoSeq);
+    var itens = normalizarAnexos(o.getAnexos()).map(function (ref) { return { chave: ++seq, ref: ref, estado: 'pronto', previa: '' }; });
+    if (!doc.getElementById('mb-anexos-estilo')) {
+      var css = doc.createElement('style'); css.id = 'mb-anexos-estilo';
+      css.textContent = '.mb-anexos{margin:8px 0;display:grid;gap:6px;font:12px/1.4 system-ui}.mb-anexos button{font:inherit;cursor:pointer;border:1px solid #8886;border-radius:7px;padding:5px 8px;background:transparent;color:inherit}.mb-anexos button:disabled{opacity:.5;cursor:wait}.mb-anexos-lista{display:flex;gap:6px;flex-wrap:wrap}.mb-anexo{position:relative;display:grid;gap:3px;width:100px;padding:5px;border:1px solid #8886;border-radius:7px;overflow:hidden}.mb-anexo img{width:100%;height:65px;object-fit:contain;background:#8882}.mb-anexo span{overflow-wrap:anywhere}.mb-anexos-erro{color:#c73c3c}.mb-anexo-acoes{display:flex;gap:3px;flex-wrap:wrap}.mb-anexo-acoes button{padding:3px;font-size:11px}';
+      (doc.head || doc.documentElement).appendChild(css);
+    }
+    var box = doc.createElement('div'); box.className = 'mb-anexos cf-ui';
+    var picker = doc.createElement('input'); picker.type = 'file'; picker.accept = ANEXO_TIPOS.join(','); picker.multiple = true; picker.hidden = true; picker.setAttribute('aria-label', 'Escolher prints');
+    var choose = doc.createElement('button'); choose.type = 'button'; choose.textContent = '📎 Escolher print';
+    var list = doc.createElement('div'); list.className = 'mb-anexos-lista';
+    var status = doc.createElement('div'); status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
+    box.appendChild(choose); box.appendChild(picker); box.appendChild(list); box.appendChild(status); if (o.container) o.container.appendChild(box); else o.elemento.insertAdjacentElement('afterend', box);
+    function bloqueado() { return itens.some(function (i) { return i.estado !== 'pronto'; }); }
+    function avisar() { if (!ativos) return; var state = { pendente: itens.some(function (i) { return i.estado === 'enviando'; }), bloqueado: bloqueado(), total: itens.length }; doc.dispatchEvent(new CustomEvent('mb-attachments-state', { detail: { id: campoId, bloqueado: state.bloqueado } })); if (typeof o.aoEstado === 'function') o.aoEstado(state); }
+    function refs() { o.setAnexos(normalizarAnexos(itens.filter(function (i) { return i.ref; }).map(function (i) { return i.ref; }))); }
+    function pintar() {
+      if (!ativos) return; list.replaceChildren();
+      itens.forEach(function (item) {
+        var tile = doc.createElement('div'); tile.className = 'mb-anexo';
+        if (item.previa) { var img = doc.createElement('img'); img.src = item.previa; img.alt = item.ref ? item.ref.name : item.file.name; tile.appendChild(img); }
+        var name = doc.createElement('span'); name.textContent = item.ref ? item.ref.name : item.file.name; tile.appendChild(name);
+        var state = doc.createElement('span'); state.textContent = item.estado === 'enviando' ? 'Enviando…' : item.erro || 'Print anexado'; if (item.erro) state.className = 'mb-anexos-erro'; tile.appendChild(state);
+        var actions = doc.createElement('div'); actions.className = 'mb-anexo-acoes';
+        if (item.estado === 'erro') { var retry = doc.createElement('button'); retry.type = 'button'; retry.textContent = 'Tentar de novo'; retry.addEventListener('click', function () { enviar(item); }); actions.appendChild(retry); }
+        var remove = doc.createElement('button'); remove.type = 'button'; remove.textContent = 'Remover'; remove.setAttribute('aria-label', 'Remover print ' + name.textContent); remove.addEventListener('click', function () { itens = itens.filter(function (i) { return i !== item; }); msg = ''; refs(); pintar(); }); actions.appendChild(remove); tile.appendChild(actions); list.appendChild(tile);
+      });
+      status.textContent = msg || (itens.length ? itens.length + ' de 6 prints · Ctrl+V também funciona' : 'Ctrl+V para colar um print · PNG, JPEG, GIF ou WebP · até 8 MiB cada'); status.className = msg ? 'mb-anexos-erro' : ''; choose.disabled = itens.length >= 6; avisar();
+    }
+    function preview(item) {
+      if (!item.ref || item.previa || !host || typeof host.preview !== 'function') return;
+      Promise.resolve().then(function () { return host.preview(item.ref, o.contexto); }).then(function (url) { if (ativos && itens.indexOf(item) >= 0 && typeof url === 'string' && /^data:image\/(png|jpeg|gif|webp);base64,[A-Za-z0-9+/=]+$/.test(url) && url.length <= Math.ceil(ANEXO_MAX / 3) * 4 + 100) { item.previa = url; pintar(); } }).catch(function () { /* referência segue acessível mesmo se a miniatura não carregar */ });
+    }
+    function enviar(item) {
+      if (item.estado === 'enviando' || itens.indexOf(item) < 0) return;
+      var file = item.file;
+      if (!file || ANEXO_TIPOS.indexOf(file.type) < 0 || file.size <= 0 || file.size > ANEXO_MAX) { item.estado = 'erro'; item.erro = 'Use PNG, JPEG, GIF ou WebP de até 8 MiB.'; pintar(); return; }
+      item.estado = 'enviando'; item.erro = ''; pintar();
+      Promise.resolve().then(function () { if (!host || typeof host.upload !== 'function') throw new Error('Abra no aplicativo MegaBrain para anexar. Texto e print continuam neste editor.'); return host.upload(file, o.contexto); }).then(function (value) {
+        if (!ativos || itens.indexOf(item) < 0) return; var ref = normalizarAnexos([value])[0]; if (!ref) throw new Error('O aplicativo devolveu um anexo inválido. Tente novamente.'); item.ref = ref; item.file = null; item.estado = 'pronto'; refs(); preview(item); pintar();
+      }).catch(function (error) { if (!ativos || itens.indexOf(item) < 0) return; item.estado = 'erro'; item.erro = String(error && error.message || 'Falha ao anexar. Tente novamente ou remova o print.').slice(0, 400); pintar(); });
+    }
+    function adicionar(files) {
+      var values = Array.from(files || []); msg = '';
+      values.forEach(function (file) {
+        if (itens.length >= 6) { msg = 'Limite de 6 prints. Os já escolhidos e o texto foram preservados.'; return; }
+        var item = { chave: ++seq, file: file, estado: 'novo', previa: '' }; itens.push(item);
+        if (ANEXO_TIPOS.indexOf(file.type) >= 0 && file.size > 0 && file.size <= ANEXO_MAX && typeof global.FileReader === 'function') { var reader = new global.FileReader(); reader.onload = function () { if (ativos && itens.indexOf(item) >= 0) { item.previa = typeof reader.result === 'string' ? reader.result : ''; pintar(); } }; reader.readAsDataURL(file); }
+        enviar(item);
+      }); pintar();
+    }
+    function colar(event) {
+      var data = event.clipboardData, files = data && Array.from(data.items || []).filter(function (item) { return item.kind === 'file'; }).map(function (item) { return item.getAsFile(); }).filter(Boolean);
+      if (!files || !files.length) return; event.preventDefault(); adicionar(files);
+      var text = data.getData('text/plain'), target = event.target || o.elemento; if (text && typeof target.setRangeText === 'function') { target.setRangeText(text, target.selectionStart, target.selectionEnd, 'end'); target.dispatchEvent(new Event('input', { bubbles: true })); }
+    }
+    choose.addEventListener('click', function () { picker.click(); }); picker.addEventListener('change', function () { adicionar(picker.files); picker.value = ''; }); o.elemento.addEventListener('paste', colar);
+    pintar(); itens.forEach(preview);
+    return { bloqueado: bloqueado, quantidade: function () { return itens.length; }, adicionar: adicionar, destruir: function () { if (!ativos) return; ativos = false; doc.dispatchEvent(new CustomEvent('mb-attachments-state', { detail: { id: campoId, bloqueado: false } })); if (typeof o.aoEstado === 'function') o.aoEstado({ pendente: false, bloqueado: false, total: 0 }); o.elemento.removeEventListener('paste', colar); box.remove(); } };
+  }
+
+  var instanciaAtiva = null, ultimoBridge = global.MegaBrainBridge || null;
+  // Só o visualizador do relatório valida origem/token antes de emitir este evento.
+  global.addEventListener('mb-report-bridge', function (e) {
+    if (!e.detail || !Array.isArray(e.detail.catalogo) || !Array.isArray(e.detail.vendors)) return;
+    ultimoBridge = e.detail;
+    if (instanciaAtiva) instanciaAtiva.configurar({ ponte: ultimoBridge });
+  });
+  function normalizarRota(v) { return v && typeof v.vendor === 'string' && v.vendor && typeof v.modelo === 'string' && v.modelo && typeof v.effort === 'string' && v.effort ? { vendor: v.vendor, modelo: v.modelo, effort: v.effort } : null; }
   function iniciar(opcoes) {
     if (instanciaAtiva) instanciaAtiva.destruir();
     var o = {
       segurarMs: 400,
       cancelarAoMover: true,
       atrasoVisualMs: 80,
-      tolerancia: 0,
+      tolerancia: 3, // mouse: px de folga que ainda contam como "parado"
+      toleranciaToque: 8, // dedo e caneta: px de folga que ainda contam como "parado"
       raio: 82,
       ignorar: 'input,textarea,select,[contenteditable=""],[contenteditable="true"],[data-cf-ignorar]',
       modo: 'auto',
@@ -173,7 +268,7 @@
     var segurando = null, engolir = false, engolirT = 0, menu = null, menuAbertoEm = 0, focoAntes = null, pontos = [], deslize = null;
     var caixaAlvo = null, chip = null, chipBtn = null, toastEl = null, toastT = 0;
     var shell = null, pinos = null, editor = null, voz = null, camadaD = null, barra = null, traco = null, historico = [], micHotkey = null;
-    var notas = carregar();
+    var notas = carregar(), notasGravadas = JSON.stringify(notas);
     var prefs = ler(o.chavePrefs, {}); if (!prefs || typeof prefs !== 'object') prefs = {};
     var ditar = typeof prefs.ditarAoComentar === 'boolean' ? prefs.ditarAoComentar : o.ditarAoComentar === true;
     var pincel = { modo: 'pincel', cor: o.cores[0], espessura: 4 };
@@ -183,8 +278,14 @@
     var aprovs = ler(o.chaveAprovacoes, []); if (!Array.isArray(aprovs)) aprovs = [];
 
     function evento(tipo, dados) { if (typeof o.aoEvento === 'function') try { o.aoEvento(tipo, dados || {}); } catch (e) {} }
+    // 261018: textos sem teclado no toque; nota salva vai ao projeto quando ha aoSalvarNota
+    var ultimoTipo = '';
+    function entradaDeToque() { return ultimoTipo ? (ultimoTipo === 'touch' || ultimoTipo === 'pen') : !!(global.matchMedia && global.matchMedia('(pointer:coarse)').matches); }
+    function enviaProjeto() { return typeof o.aoSalvarNota === 'function'; }
+    function rotuloSalvar() { return (enviaProjeto() ? 'Enviar' : 'Salvar') + (entradaDeToque() ? '' : ' · Ctrl+Enter'); }
     function ehUI(el) { return !!(el && el.closest && el.closest('.cf-ui')); }
-    function ignorado(el) { return !!(o.ignorar && el && el.closest && el.closest(o.ignorar)); }
+    // Explicit tools can target controls excluded only from the hold gesture.
+    function ignorado(el, acao) { var seletor = acao && typeof o.ignorarAlvo === 'string' ? o.ignorarAlvo : o.ignorar; return !!(seletor && el && el.closest && el.closest(seletor)); }
     function ler(chave, padrao) { try { var v = JSON.parse(global.localStorage.getItem(chave)); return v == null ? padrao : v; } catch (e) { return padrao; } }
     function gravar(chave, v) { try { global.localStorage.setItem(chave, JSON.stringify(v)); } catch (e) {} }
 
@@ -208,10 +309,12 @@
       prog.style.transition = 'none'; prog.style.strokeDashoffset = '150.8';
     }
     function aoBaixar(e) {
+      if (e.isPrimary !== false && e.pointerType) ultimoTipo = e.pointerType;
       if (e.button !== 0 || e.isPrimary === false) return;
       clearTimeout(engolirT); engolir = false;
       if (menu || ehUI(e.target)) return;
-      if (ignorado(e.target)) return;
+      if (ignorado(e.target, !!atual.aoClicar)) return;
+      if (atual.aoClicar) { e.preventDefault(); e.stopImmediatePropagation(); } // a ferramenta segura o clique; o segurar continua abrindo o menu
       cancelar();
       // x/y: onde começou; cx/cy: onde o ponteiro está agora (o menu abre aqui)
       var s = segurando = { x: e.clientX, y: e.clientY, cx: e.clientX, cy: e.clientY, id: e.pointerId, tipo: e.pointerType };
@@ -232,27 +335,31 @@
         descartarTraco(); // o segurar virou menu: o ponto inicial não era desenho
         html.classList.add('cf-segurando'); // agora é segurar de verdade: sem seleção de texto até soltar
         limparSelecao(true);
-        abrirMenu(s.cx, s.cy, s.id == null ? 0 : s.id);
+        abrirMenu(s.cx, s.cy, s.id == null ? 0 : s.id, s.tipo);
         evento('segurou', { x: s.cx, y: s.cy, inicioX: s.x, inicioY: s.y });
       }, o.segurarMs);
     }
+    function ehToque(tipo) { return tipo === 'touch' || tipo === 'pen'; }
+    // folga do "parado": dedo e caneta tremem mais que o mouse (v1.5)
+    function folga(tipo) { var t = +(ehToque(tipo) ? o.toleranciaToque : o.tolerancia); return t >= 0 ? t : 0; }
     function aoMover(e) {
       var s = segurando;
       if (s && (s.id == null || e.pointerId === s.id)) {
-        var dx = e.clientX - s.x, dy = e.clientY - s.y;
-        if (o.cancelarAoMover || traco) { if (Math.hypot(dx, dy) > o.tolerancia) cancelar(); } // desenhando: mexeu = traço
-        else if (dx > o.tolerancia && dx >= Math.abs(dy)) { cancelar(); evento('segurar', { cancelado: 'selecao' }); } // à direita = selecionar texto
+        var dx = e.clientX - s.x, dy = e.clientY - s.y, tol = folga(s.tipo);
+        if (o.cancelarAoMover || traco) { if (Math.hypot(dx, dy) > tol) cancelar(); } // desenhando: mexeu = traço
+        else if (dx > tol && dx >= Math.abs(dy)) { cancelar(); evento('segurar', { cancelado: 'selecao' }); } // à direita = selecionar texto
         else { s.cx = e.clientX; s.cy = e.clientY; posAnel(s.cx, s.cy); }
       }
       if (traco && e.pointerId === traco.id) estenderTraco(e);
       if (menu && deslize && e.pointerId === deslize.id) {
-        if (Math.hypot(e.clientX - deslize.x, e.clientY - deslize.y) > 6) deslize.mexeu = true;
+        if (Math.hypot(e.clientX - deslize.x, e.clientY - deslize.y) > deslize.limite) deslize.mexeu = true;
         mirar(itemEm(e.clientX, e.clientY));
       }
       if (engolir && (e.buttons & 1)) limparSelecao();
       if (!segurando && !menu && atual.destacar) destacar(e.clientX, e.clientY);
     }
     function aoSoltar(e) {
+      if (e && atual.aoClicar && !menu && !ehUI(e.target) && !ignorado(e.target, true)) { e.preventDefault(); e.stopImmediatePropagation(); }
       if (segurando && e && e.pointerId !== segurando.id) return;
       if (deslize && e && e.pointerId !== deslize.id) return;
       cancelar(); html.classList.remove('cf-segurando');
@@ -260,7 +367,8 @@
       if (menu && deslize) { // segurou, deslizou e soltou: escolhe sem clique extra
         var d = deslize; deslize = null; mirar(null);
         if (e && e.type === 'pointerup' && d.mexeu) soltarNoMenu(itemEm(e.clientX, e.clientY));
-        else fecharMenu();
+        else if (!(e && e.type === 'pointerup' && ehToque(d.tipo))) fecharMenu(); // mouse (v1.3): soltar sem deslizar fecha
+        // dedo (v1.5): soltar sem deslizar deixa o leque aberto; escolhe com um toque, toque fora fecha
       }
       if (engolir) { clearTimeout(engolirT); engolirT = setTimeout(function () { engolir = false; }, 700); }
     }
@@ -273,19 +381,20 @@
     }
     function aoRolar() { cancelar(); esconderAlvo(); }
     function aoClicar(e) {
-      if (engolir) { e.preventDefault(); e.stopPropagation(); engolir = false; return; }
-      if (ignorado(e.target)) return;
+      if (engolir) { e.preventDefault(); e.stopImmediatePropagation(); engolir = false; return; }
+      if (ignorado(e.target, !!atual.aoClicar)) return;
       if (atual.aoClicar && !menu && !ehUI(e.target)) {
-        e.preventDefault(); e.stopPropagation();
+        e.preventDefault(); e.stopImmediatePropagation();
+        if (editor) { fecharEditor(); return; } // 1o clique fora fecha a nota aberta; o proximo comenta
         var alvo = e.target;
         atual.aoClicar({ alvo: alvo, x: e.clientX, y: e.clientY, evento: e }, api);
       }
     }
     function aoMousedown(e) {
-      if (ignorado(e.target)) return;
-      if (atual.aoClicar && !menu && !ehUI(e.target) && e.button === 0) e.preventDefault();
+      if (ignorado(e.target, !!atual.aoClicar)) return;
+      if (atual.aoClicar && !menu && !ehUI(e.target) && e.button === 0) { e.preventDefault(); e.stopImmediatePropagation(); }
     }
-    function aoContexto(e) { if (segurando) e.preventDefault(); }
+    function aoContexto(e) { if (segurando || menu) e.preventDefault(); } // toque longo com o leque aberto não abre o menu nativo
     function aoSelecionar(e) { if ((segurando || engolir) && html.classList.contains('cf-segurando')) e.preventDefault(); }
     function aoTecla(e) {
       if (editor && editor.mic && e.ctrlKey && !e.altKey && !e.metaKey && (e.code === 'Space' || e.key === ' ')) {
@@ -306,6 +415,27 @@
     }
 
     /* ---------- menu em leque ---------- */
+    var alvoControle = null;
+    function controleProjeto() {
+      var transport = o.controleProjeto || global.MegaBrainProjectControl;
+      var box = doc.createElement('div'); box.className = 'cf-ui cf-project-control';
+      box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true'); box.setAttribute('aria-label', 'Controle do projeto');
+      box.style.cssText = 'position:fixed;z-index:2147483646;left:50%;top:50%;transform:translate(-50%,-50%);width:min(350px,calc(100vw - 32px));box-sizing:border-box;padding:22px;border:1px solid #8888;border-radius:18px;background:#20212b;color:#fff;box-shadow:0 12px 80px #0008;font:14px/1.45 system-ui';
+      box.innerHTML = '<h2 style="margin:0 0 12px;font-size:19px">Controle do projeto</h2><p data-state role="status" aria-live="polite">Consultando projeto…</p><div style="display:flex;gap:0;justify-content:center;margin:22px 0"><button data-mode="aguardando" style="border-radius:50% 35% 35% 50%">&#9684;<br>Aguardar retorno</button><button data-mode="pausado" style="border-radius:35% 50% 50% 35%">&#8545;<br>Pausar projeto</button></div><p style="font-size:12px">Aguardar: trabalhos já iniciados podem terminar. Pausar: bloqueia também suas próximas etapas. Processos em curso não são encerrados; avisos continuam chegando.</p><p style="font-size:12px">Sem retomada por tempo ou por chegada de relatório. Agentes externos não cooperantes ficam fora deste controle.</p><button data-mode="ativo">▶ Retomar projeto</button> <button data-close>Fechar</button>';
+      var state = box.querySelector('[data-state]'), buttons = Array.prototype.slice.call(box.querySelectorAll('[data-mode]')), view = null, closed = false, focus = doc.activeElement;
+      box.querySelectorAll('button').forEach(function (b) { b.type='button'; b.style.cssText += ';color:inherit;background:#303340;border:1px solid #9297b5;padding:12px;min-height:44px;cursor:pointer;font:inherit'; });
+      buttons.slice(0,2).forEach(function (b) { b.style.cssText += ';width:140px;height:100px;box-shadow:0 0 0 6px #52577760;position:relative'; });
+      function close() { closed=true;box.remove();if(focus && focus.isConnected)focus.focus(); }
+      function busy(v) { buttons.forEach(function (b) { b.disabled=v; }); }
+      function show(value) { view=value;state.textContent=(value.projeto||'Projeto')+' · '+({ativo:'Ativo',aguardando:'Aguardando retorno',pausado:'Pausado'}[value.data.modo]||'Estado desconhecido');buttons.forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.mode===value.data.modo));b.style.background=b.dataset.mode===value.data.modo?'#654265':'#303340';}); }
+      box.querySelector('[data-close]').onclick=close;
+      box.addEventListener('keydown',function(e){if(e.key==='Escape'){e.stopPropagation();close();}if(e.key==='Tab'){var bs=Array.prototype.slice.call(box.querySelectorAll('button:not(:disabled)'));var i=bs.indexOf(doc.activeElement);e.preventDefault();bs[(i+(e.shiftKey?-1:1)+bs.length)%bs.length].focus();}});
+      doc.body.appendChild(box);box.querySelector('[data-close]').focus();busy(true);
+      var target=alvoControle;
+      function call(mode) { if(typeof transport!=='function')return Promise.reject(new Error('Abra este relatório no aplicativo MegaBrain para controlar o projeto.'));return Promise.resolve().then(function(){return transport(target,mode,view && view.revision);}); }
+      call().then(function(v){if(!closed){show(v);busy(false);}}).catch(function(e){if(!closed)state.textContent='Não foi possível consultar: '+e.message;});
+      buttons.forEach(function(b){b.onclick=function(){busy(true);state.textContent='Salvando…';call(b.dataset.mode).then(function(v){if(!closed){show(v);busy(false);}}).catch(function(e){if(!closed){state.textContent='Não salvo: '+e.message+' Feche e abra para conferir o estado atual.';}});};});
+    }
     function itensMenu() {
       var its = FERR.map(function (f) { return { id: f.id, nome: f.nome, rotulo: f.nome, icone: f.icone, ativo: f === atual, papel: 'menuitemradio' }; });
       if (o.microfone !== false) {
@@ -314,15 +444,17 @@
           nome: 'Ditado: ' + (ditar ? 'ligado' : 'desligado') + (tem ? '' : ' (sem suporte)'),
           rotulo: vozNativa() ? 'Ditado do Windows ao comentar (abertura por clique)' : 'Ativar microfone ao comentar' + (tem ? '' : ' (sem suporte neste navegador)') });
       }
+      its.push({id:'cf-projeto',controle:true,nome:'Controle do projeto',rotulo:'Aguardar retorno, pausar ou retomar projeto',icone:'<path d="M8 5v14M16 5v14"/>',papel:'menuitem'});
       return its;
     }
-    function abrirMenu(x, y, idPonteiro) {
+    function abrirMenu(x, y, idPonteiro, tipoPonteiro) {
       if (menu) return;
+      alvoControle = doc.elementFromPoint(x,y);
       var its = itensMenu(), n = its.length;
       focoAntes = doc.activeElement;
       menu = doc.createElement('div'); menu.className = 'cf-menu cf-ui'; menu.setAttribute('role', 'menu'); menu.setAttribute('aria-label', 'Ferramentas do cursor');
       var veu = doc.createElement('div'); veu.className = 'cf-veu'; menu.appendChild(veu);
-      veu.addEventListener('pointerdown', function (ev) { ev.preventDefault(); fecharMenu(); });
+      veu.addEventListener('pointerdown', function (ev) { ev.preventDefault(); engolir = true; fecharMenu(); });
       var passo = n <= 5 ? 62 : 360 / n;
       pontos = its.map(function (it, i) {
         var ang = (n <= 5 ? (-90 + (i - (n - 1) / 2) * passo) : (-90 + i * passo)) * Math.PI / 180;
@@ -348,12 +480,14 @@
         if (menu !== este) return; // Esc já fechou este menu no listener global
         var bs = Array.prototype.slice.call(este.querySelectorAll('.cf-botao'));
         var i = bs.indexOf(doc.activeElement);
+        if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();doc.activeElement.click();return;}
         if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown' || (ev.key === 'Tab' && !ev.shiftKey)) { ev.preventDefault(); bs[(i + 1) % bs.length].focus(); }
         else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp' || (ev.key === 'Tab' && ev.shiftKey)) { ev.preventDefault(); bs[(i - 1 + bs.length) % bs.length].focus(); }
       });
       doc.body.appendChild(menu);
       encaixar(x, y);
-      deslize = idPonteiro != null ? { id: idPonteiro, x: x, y: y, mexeu: false } : null;
+      deslize = idPonteiro != null ? { id: idPonteiro, x: x, y: y, mexeu: false, tipo: tipoPonteiro || '',
+        limite: ehToque(tipoPonteiro) ? Math.max(6, folga(tipoPonteiro) * 1.5) : 6 } : null;
       menuAbertoEm = Date.now();
       esconderAlvo();
       requestAnimationFrame(function () { requestAnimationFrame(function () {
@@ -397,6 +531,7 @@
       if (p.centro) fecharMenu(); else escolher(p.it);
     }
     function escolher(it) {
+      if(it.controle){fecharMenu(true);controleProjeto();return;}
       if (it.mic) { fecharMenu(true); alternarDitado(); return; }
       usar(it.id); fecharMenu(true);
     }
@@ -404,7 +539,9 @@
       if (!menu) return;
       var m = menu; menu = null; deslize = null; pontos = []; m.classList.remove('aberto');
       setTimeout(function () { if (m.parentNode) m.parentNode.removeChild(m); }, 260);
-      if (!escolheu && focoAntes && focoAntes.focus) try { focoAntes.focus({ preventScroll: true }); } catch (e) {}
+      // v1.5 (CF-12): com escolha, o foco também volta para onde estava (se ainda existe e não é peça do próprio cursor; o chip vale)
+      var f = focoAntes; focoAntes = null;
+      if (f && f.focus && f.isConnected !== false && (!escolheu || !ehUI(f) || f === chipBtn)) try { f.focus({ preventScroll: true }); } catch (e) {}
       evento('menu', { aberto: false });
     }
 
@@ -417,7 +554,8 @@
       if (!f.destacar) esconderAlvo();
       mostrarBarra(!!f.desenho);
       atualizarChip();
-      toast(f.id === FERR[0].id ? 'Ferramenta: ' + f.nome + '. Cliques voltam ao normal.' : 'Ferramenta: ' + f.nome + (f.desenho ? '. Arraste para desenhar.' : '. Clique onde quiser.') + ' Esc volta ao normal.');
+      if (entradaDeToque()) toast(f.id === FERR[0].id ? 'Ferramenta: ' + f.nome + '. Toques voltam ao normal.' : f.nome + (f.desenho ? ': arraste para desenhar.' : ': toque onde quiser.') + ' Segure de novo para trocar.');
+      else toast(f.id === FERR[0].id ? 'Ferramenta: ' + f.nome + '. Cliques voltam ao normal.' : 'Ferramenta: ' + f.nome + (f.desenho ? '. Arraste para desenhar.' : '. Clique onde quiser.') + ' Segure de novo ou Esc para trocar.');
       if (typeof o.aoMudar === 'function') try { o.aoMudar(f.id, f); } catch (e) {}
       evento('ferramenta', { id: f.id });
     }
@@ -449,9 +587,10 @@
       if (!chipBtn) return;
       var nn = notas.length;
       chipBtn.classList.toggle('ativo', atual !== FERR[0]);
-      chipBtn.innerHTML = svg(atual.icone) + '<span>' + atual.nome + (nn ? ' · ' + nn + ' nota' + (nn > 1 ? 's' : '') : '') + '</span><small>segure ' + (o.segurarMs / 1000).toLocaleString('pt-BR') + ' s</small>';
+      chipBtn.innerHTML = svg(atual.icone) + '<span>' + atual.nome + (nn ? ' · ' + nn + ' nota' + (nn > 1 ? 's' : '') : '') + '</span><small>' + dicaSegurar() + '</small>';
       chipBtn.setAttribute('aria-label', 'Ferramenta atual: ' + atual.nome + '. Abrir menu de ferramentas');
     }
+    function dicaSegurar() { return 'segure ' + (o.segurarMs / 1000).toLocaleString('pt-BR') + ' s'; }
     function toast(t) {
       if (!toastEl) { toastEl = doc.createElement('div'); toastEl.className = 'cf-toast cf-ui'; toastEl.setAttribute('role', 'status'); doc.body.appendChild(toastEl); }
       toastEl.textContent = t; toastEl.hidden = false; clearTimeout(toastT);
@@ -522,6 +661,9 @@
         ox: r.width ? (ctx.x - r.left) / r.width : 0, oy: r.height ? (ctx.y - r.top) / r.height : 0,
         px: ctx.x + global.scrollX, py: ctx.y + global.scrollY
       };
+      // 261022: seção com data-cf-zona (ex.: Ponte de correção da central) fica gravada na nota ao nascer; não se recalcula depois.
+      var zona = ctx.alvo.closest && ctx.alvo.closest('[data-cf-zona]');
+      if (zona) nota.zona = zona.getAttribute('data-cf-zona');
       notas.push(nota); desenharPinos(); abrirEditor(nota, true);
     }
     function camadaPinos() {
@@ -566,19 +708,25 @@
       atualizarChip();
     }
     function abrirEditor(nota, nova) {
-      fecharEditor(true);
+      if (fecharEditor(true) === false) return;
       var comMic = o.microfone !== false;
       var ed = doc.createElement('div'); ed.className = 'cf-editor cf-ui'; ed.setAttribute('role', 'dialog');
       var idx = notas.indexOf(nota) + 1, idAviso = 'cf-aviso-' + nota.id;
       ed.setAttribute('aria-label', 'Nota ' + idx);
       ed.innerHTML = '<div class="cf-ed-onde">Nota ' + idx + ' · perto de: <span></span></div>' +
+        '<details class="cf-ed-rota"><summary>Destino deste comentário</summary><div></div></details>' +
         '<textarea aria-label="Texto da nota" placeholder="' + (comMic ? 'Escreva ou dite o comentário…' : 'Escreva o comentário…') + '"></textarea>' +
         (comMic ? '<div class="cf-provisorio" aria-hidden="true"></div><div class="cf-mic-aviso" role="status" id="' + idAviso + '"></div>' : '') +
         '<div class="cf-ed-acoes"><button type="button" class="cf-excluir" aria-label="Excluir nota">Excluir</button>' +
         (comMic ? '<button type="button" class="cf-mic" aria-pressed="false" aria-label="Ditar com o microfone" aria-describedby="' + idAviso + '" title="Ditar com o microfone (Ctrl+Espaço)">' + svg(ICONES.microfone) + '</button>' : '') +
-        '<button type="button" class="cf-salvar" aria-label="Salvar nota" title="Salvar (Ctrl+Enter)">Salvar · Ctrl+Enter</button></div>';
+        '<button type="button" class="cf-salvar" aria-label="' + (enviaProjeto() ? 'Enviar nota ao projeto' : 'Salvar nota') + '" title="' + (enviaProjeto() ? 'Enviar' : 'Salvar') + ' (Ctrl+Enter)">' + rotuloSalvar() + '</button></div>';
       ed.querySelector('.cf-ed-onde span').textContent = nota.onde || '—';
       var ta = ed.querySelector('textarea'); ta.value = nota.rascunho != null ? nota.rascunho : (nota.texto || '');
+      var anexosAntes = JSON.stringify(normalizarAnexos(nota.anexos));
+      var anexosCampo = montarAnexos({ elemento: ta, contexto: nota, transporte: o.anexos,
+        getAnexos: function () { return nota.anexos; }, setAnexos: function (refs) { nota.anexos = refs; guardar(); },
+        aoEstado: function (s) { ed.querySelector('.cf-salvar').disabled = s.bloqueado; if (editor && editor.el === ed) posicionarEditor(nota); }
+      });
       // Persist before any voice handoff or renderer failure. Draft is not approval/send.
       ta.addEventListener('input', function () { nota.rascunho = ta.value; guardar(); });
       var mic = ed.querySelector('.cf-mic');
@@ -587,10 +735,11 @@
         mic.title = 'Abrir ditado do Windows (Ctrl+Espaço)';
       }
       ed.querySelector('.cf-salvar').addEventListener('click', function () {
+        if (anexosCampo.bloqueado()) { toast('Espere o print terminar ou remova o anexo com erro. O rascunho foi preservado.'); return; }
         soltarMic(true); // o que estava em cinza entra antes de salvar
-        nota.texto = ta.value.trim(); delete nota.rascunho; if (!nota.texto) remover(nota); else { guardar(); if (typeof o.aoSalvarNota === 'function') o.aoSalvarNota(JSON.parse(JSON.stringify(nota))); toast('Nota ' + idx + ' salva.'); } ta.value=nota.texto; fecharEditor(true); desenharPinos();
+        var t = ta.value.trim(); if (!t && !normalizarAnexos(nota.anexos).length) { nota.texto = ''; delete nota.rascunho; remover(nota); } else salvarTexto(nota, t); ta.value = nota.texto || ''; editor.anexosAntes = JSON.stringify(normalizarAnexos(nota.anexos)); fecharEditor(true); desenharPinos();
       });
-      ed.querySelector('.cf-excluir').addEventListener('click', function () { if ((ta.value.trim() || nota.texto || nota.rascunho) && !global.confirm('Excluir esta nota e seu rascunho local?')) return; ta.value=''; delete nota.rascunho; remover(nota); editor.nova=false; fecharEditor(true); desenharPinos(); toast('Nota excluída.'); });
+      ed.querySelector('.cf-excluir').addEventListener('click', function () { if ((ta.value.trim() || nota.texto || nota.rascunho || anexosCampo.quantidade()) && !global.confirm('Excluir esta nota e seu rascunho local?')) return; ta.value=''; delete nota.rascunho; nota.anexos=[]; anexosCampo.destruir(); remover(nota); editor.nova=false; fecharEditor(true, true); desenharPinos(); toast('Nota excluída.'); });
       ta.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey)) ed.querySelector('.cf-salvar').click(); });
       if (mic) {
         mic.addEventListener('mousedown', function (ev) { ev.preventDefault(); }); // clique de mouse não tira o foco do texto
@@ -598,7 +747,8 @@
       }
       camadaPinos().appendChild(ed);
       editor = { el: ed, nota: nota, nova: nova, ta: ta, mic: mic,
-        prov: ed.querySelector('.cf-provisorio'), aviso: ed.querySelector('.cf-mic-aviso') };
+        prov: ed.querySelector('.cf-provisorio'), aviso: ed.querySelector('.cf-mic-aviso'), anexos: anexosCampo, anexosAntes: anexosAntes };
+      prepararRota(ed, nota, nova);
       posicionarEditor(nota);
       setTimeout(function () { ta.focus({ preventScroll: true }); }, 0);
       if (mic && nova && ditar) {
@@ -606,29 +756,98 @@
         else ligarMic();
       }
     }
+    function prepararRota(ed, nota, nova) {
+      var bridge = o.ponte || ultimoBridge;
+      desenharRota(ed, nota, nova, bridge);
+      if (typeof o.carregarPonte === 'function') {
+        Promise.resolve().then(function () { return o.carregarPonte(nota); }).then(function (value) {
+          if (editor && editor.el === ed) desenharRota(ed, nota, nova, value);
+        }).catch(function () {
+          if (!editor || editor.el !== ed) return;
+          ed.querySelector('.cf-ed-rota div').textContent = 'Catálogo indisponível. Sem escolha, a nota herda o padrão do projeto.';
+        });
+      }
+    }
+    function desenharRota(ed, nota, nova, bridge) {
+      var box = ed.querySelector('.cf-ed-rota'), body = box.querySelector('div'), summary = box.querySelector('summary');
+      body.textContent = '';
+      var route = normalizarRota(nota.rota), locked = !nova && !!String(nota.texto || '').trim();
+      summary.textContent = route ? 'Destino: ' + route.vendor + ' · ' + route.modelo + ' · ' + route.effort : 'Destino: padrão deste projeto';
+      if (!bridge || !Array.isArray(bridge.catalogo) || !Array.isArray(bridge.vendors)) { body.textContent = 'Consultando o catálogo do projeto…'; return; }
+      function modelos(id) { var c = bridge.catalogo.find(function (v) { return v.vendor === id; }); return c && Array.isArray(c.modelos) ? c.modelos : []; }
+      function primeiro(id) { var m = modelos(id).find(function (v) { return v.ativo !== false && Array.isArray(v.efforts) && v.efforts.length; }); return m ? { vendor: id, modelo: m.id, effort: m.efforts.indexOf('high') >= 0 ? 'high' : m.efforts[0] } : null; }
+      function info(text, error) { var p = doc.createElement('p'); p.textContent = text; if (error) p.setAttribute('role', 'status'); body.appendChild(p); }
+      function field(name, value, options, change) {
+        var label = doc.createElement('label'), select = doc.createElement('select'); label.textContent = name;
+        select.setAttribute('aria-label', 'Destino da nota: ' + name); select.disabled = locked;
+        options.forEach(function (v) { var opt = doc.createElement('option'); opt.value = v.id; opt.textContent = v.nome; opt.disabled = !!v.disabled; select.appendChild(opt); });
+        select.value = value; select.addEventListener('change', function () { change(select.value); guardar(); desenharRota(ed, nota, nova, bridge); box.open = true; posicionarEditor(nota); });
+        label.appendChild(select); body.appendChild(label);
+      }
+      var janelaGLM = bridge.data && bridge.data.modo === 'janela';
+      var vendors = [{ id: '', nome: 'Padrão deste projeto' }].concat(bridge.vendors.map(function (v) { var modeBlocked = janelaGLM && v.id === 'glm'; return { id: v.id, nome: v.nome + (!v.ativo ? ' · ' + (v.motivo || 'indisponível') : modeBlocked ? ' · exige segundo plano' : !primeiro(v.id) ? ' · sem modelos' : ''), disabled: !v.ativo || !primeiro(v.id) || modeBlocked }; }));
+      if (route && !vendors.some(function (v) { return v.id === route.vendor; })) vendors.push({ id: route.vendor, nome: route.vendor + ' · indisponível', disabled: true });
+      field('IA', route ? route.vendor : '', vendors, function (id) { if (!id) delete nota.rota; else nota.rota = primeiro(id); });
+      if (route) {
+        var list = modelos(route.vendor), model = list.find(function (m) { return m.id === route.modelo; });
+        var options = list.map(function (m) { return { id: m.id, nome: m.nome + (m.ativo === false ? ' · ' + (m.motivo || 'indisponível') : ''), disabled: m.ativo === false || !m.efforts.length }; });
+        if (!model) options.push({ id: route.modelo, nome: route.modelo + ' · indisponível', disabled: true });
+        field('Modelo', route.modelo, options, function (id) { var m = list.find(function (v) { return v.id === id; }); if (m) nota.rota = { vendor: route.vendor, modelo: id, effort: m.efforts.indexOf(route.effort) >= 0 ? route.effort : m.efforts[0] }; });
+        var efforts = model && Array.isArray(model.efforts) ? model.efforts : [], opts = efforts.map(function (e) { return { id: e, nome: e }; });
+        if (efforts.indexOf(route.effort) < 0) opts.push({ id: route.effort, nome: route.effort + ' · indisponível', disabled: true });
+        field('Esforço', route.effort, opts, function (effort) { nota.rota = { vendor: route.vendor, modelo: route.modelo, effort: effort }; });
+        var vendor = bridge.vendors.find(function (v) { return v.id === route.vendor; });
+        if (!vendor || !vendor.ativo || !model || model.ativo === false || efforts.indexOf(route.effort) < 0) info('Destino indisponível; nenhuma outra IA será escolhida automaticamente.', true);
+        if (route.vendor === 'glm' && janelaGLM) info('GLM recebe correção em segundo plano; altere o modo do projeto.', true);
+      } else {
+        var inherited = bridge.data && bridge.data.pipeline && bridge.data.pipeline.planejador;
+        info(inherited ? 'Herdará ' + inherited.vendor + ' · ' + inherited.modelo + ' · ' + inherited.effort + '.' : 'Herdará o planejador configurado neste projeto.');
+      }
+      if (locked) info('Editar mantém o destino e o contexto. Para outra IA, crie uma nota nova.');
+      else info('A escolha vale só para esta nota. Salvar não muda os padrões do projeto.');
+    }
     function posicionarEditor(nota) {
       if (!editor) return;
       var p = posicao(nota), cam = camadaPinos().getBoundingClientRect();
       var maxX = global.innerWidth - cam.left - 276 + 0, x = Math.max(16 - cam.left, Math.min(p.x + 14, maxX));
-      editor.el.style.left = x + 'px'; editor.el.style.top = (p.y + 8) + 'px';
+      var h = editor.el.offsetHeight || 180, y = p.y + 8;
+      if (p.y + cam.top + 8 + h > global.innerHeight - 8) y = Math.max(8 - cam.top, p.y - h - 8); // sem espaco embaixo: abre acima
+      editor.el.style.left = x + 'px'; editor.el.style.top = y + 'px';
     }
-    function fecharEditor(silencioso) {
+    // 261018 (H1): nota fechada com texto (clique fora, Esc, outra nota) e salva/enviada; descartar e pelo botao Excluir
+    function salvarTexto(nota, texto) {
+      nota.texto = texto; delete nota.rascunho; guardar();
+      var n = notas.indexOf(nota) + 1;
+      if (enviaProjeto()) { o.aoSalvarNota(JSON.parse(JSON.stringify(nota))); toast('Enviando nota ' + n + '…'); }
+      else toast('Nota ' + n + ' salva neste aparelho.');
+    }
+    function fecharEditor(silencioso, forcar) {
       if (!editor) return;
+      if (!forcar && editor.anexos && editor.anexos.bloqueado()) { editor.nota.rascunho = editor.ta.value; guardar(); toast('Espere o print terminar ou remova o anexo com erro. O rascunho foi preservado.'); return false; }
       if (vozNativa() && typeof global.megabrainCancelDictation === 'function') global.megabrainCancelDictation();
-      soltarMic();
+      soltarMic(true);
       var e = editor; editor = null;
       micHotkey = null;
-      if (e.ta.value.trim() !== (e.nota.texto || '')) { e.nota.rascunho=e.ta.value; guardar(); toast('Rascunho preservado neste aparelho. Abra a nota e use Salvar · Ctrl+Enter para enviar.'); }
-      if (e.nova && !e.nota.texto && !e.nota.rascunho) remover(e.nota);
+      var t = e.ta.value.trim();
+      var mudouAnexo = e.anexosAntes !== JSON.stringify(normalizarAnexos(e.nota.anexos));
+      if (!forcar && (t || normalizarAnexos(e.nota.anexos).length) && (t !== (e.nota.texto || '') || mudouAnexo)) salvarTexto(e.nota, t);
+      else if (!t && e.nota.rascunho != null) { delete e.nota.rascunho; guardar(); }
+      if (e.anexos) e.anexos.destruir();
+      if (vazia(e.nota)) remover(e.nota); // v1.5 (C7): sem texto e sem rascunho, a nota some ao fechar
       if (e.el.parentNode) e.el.parentNode.removeChild(e.el);
       if (!silencioso) desenharPinos();
     }
     function remover(nota) { var i = notas.indexOf(nota); if (i >= 0) notas.splice(i, 1); guardar(); }
-    function carregar() { try { var v = JSON.parse(global.localStorage.getItem(o.chave) || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
+    function vazia(n) { return !String(n && n.texto || '').trim() && !String(n && n.rascunho || '').trim() && !normalizarAnexos(n && n.anexos).length; }
+    function carregar() { try { var v = JSON.parse(global.localStorage.getItem(o.chave) || '[]'); return Array.isArray(v) ? v.filter(function (n) { return n && !vazia(n); }) : []; } catch (e) { return []; } }
+    // v1.5 (C7): nota vazia (sem texto e sem rascunho) não é gravada nem sincronizada; sem mudança real, não grava de novo
     function guardar() {
-      try { global.localStorage.setItem(o.chave, JSON.stringify(notas)); } catch (e) {}
-      if (typeof o.aoMudarNotas === 'function') try { o.aoMudarNotas(notas.slice()); } catch (e) {}
-      evento('notas', { total: notas.length });
+      var salvas = notas.filter(function (n) { return !vazia(n); }), json = JSON.stringify(salvas);
+      if (json === notasGravadas) return;
+      notasGravadas = json;
+      try { global.localStorage.setItem(o.chave, json); } catch (e) {}
+      if (typeof o.aoMudarNotas === 'function') try { o.aoMudarNotas(salvas.slice()); } catch (e) {}
+      evento('notas', { total: salvas.length });
     }
 
     /* ---------- ditado por voz (nota local) ---------- */
@@ -934,6 +1153,10 @@
     global.addEventListener('keydown', aoTecla, true);
     global.addEventListener('keyup', aoSoltarTecla, true);
     global.addEventListener('scroll', aoRolar, true);
+    function aoTocarMover(e) { if (menu && deslize && e.cancelable) e.preventDefault(); } // dedo no leque: desliza para escolher, nao rola
+    global.addEventListener('touchmove', aoTocarMover, { capture: true, passive: false });
+    function aoSairDaJanela() { if (!destruida && !menu && !editor && !traco && atual !== FERR[0]) usar(FERR[0].id); } // uma ferramenta ativa por vez (mesa x relatorio)
+    global.addEventListener('blur', aoSairDaJanela);
     global.addEventListener('resize', desenharPinos);
     if (global.ResizeObserver) { ro = new ResizeObserver(redesenhar); ro.observe(doc.body); }
     montarChip();
@@ -946,9 +1169,9 @@
       atual: function () { return atual.id; },
       abrirMenu: function (x, y) { abrirMenu(x, y); },
       fecharMenu: function () { fecharMenu(); },
-      notas: function () { return notas.map(function (n, i) { return { n: i + 1, texto: n.texto, onde: n.onde, criado_em: n.criado_em }; }); },
-      limparNotas: function () { notas = []; guardar(); fecharEditor(true); desenharPinos(); },
-      configurar: function (mudas) { for (var k in mudas) o[k] = mudas[k]; atualizarChip(); },
+      notas: function () { return notas.map(function (n, i) { return vazia(n) ? null : Object.assign({}, n, { n: i + 1, texto: n.texto || '', anexos: normalizarAnexos(n.anexos) }); }).filter(Boolean); },
+      limparNotas: function () { fecharEditor(true, true); notas = []; notasGravadas = null; guardar(); desenharPinos(); },
+      configurar: function (mudas) { for (var k in mudas) o[k] = mudas[k]; atualizarChip(); if (mudas.ponte && editor) desenharRota(editor.el, editor.nota, editor.nova, mudas.ponte); },
       ditarAoComentar: function (v) { if (v != null && !!v !== ditar) alternarDitado(!!v); return ditar; },
       desenhos: function () { return JSON.parse(JSON.stringify(tracos)); },
       pincel: function (m) {
@@ -960,18 +1183,22 @@
       confirmar: function (a, extra) { return confirmar(a, extra); },
       desconfirmar: function (a) { return desconfirmar(a, 'api'); },
       confirmado: function (a) { var key=chaveDe(a),i=idxAprov(key);return i>=0 && validoAprov(aprovs[i],elementoDe(key)); },
+      // v1.5: para barras externas (ex.: barra de reserva do relatório) marcarem a ferramenta ativa e mostrarem a dica do gesto
+      ferramentas: function () { return FERR.map(function (f) { return { id: f.id, nome: f.nome, ativa: f === atual }; }); },
+      dicaSegurar: dicaSegurar,
       aprovacoes: function () { return aprovs.map(function(a){var row=JSON.parse(JSON.stringify(a));row.obsoleta=!validoAprov(a,elementoDe(a.chave));return row}); },
       destruir: function () {
         if (destruida) return; destruida=true;
         clearTimeout(engolirT);
         if (instanciaAtiva===api) instanciaAtiva=null;
-        cancelar(); traco = null; fecharMenu(); fecharEditor(true); soltarMic(); html.classList.remove('cf-segurando');
+        cancelar(); traco = null; fecharMenu(); if (editor) { editor.nota.rascunho = editor.ta.value; guardar(); } fecharEditor(true, true); soltarMic(); html.classList.remove('cf-segurando');
         global.removeEventListener('pointerdown', aoBaixar, true); global.removeEventListener('pointermove', aoMover, true);
         global.removeEventListener('pointerup', aoSoltar, true); global.removeEventListener('pointercancel', aoSoltar, true);
         global.removeEventListener('click', aoClicar, true); global.removeEventListener('mousedown', aoMousedown, true);
         global.removeEventListener('contextmenu', aoContexto, true); global.removeEventListener('dragstart', aoArrastar, true);
         doc.removeEventListener('selectstart', aoSelecionar, true);
         global.removeEventListener('keydown', aoTecla, true); global.removeEventListener('scroll', aoRolar, true);
+        global.removeEventListener('touchmove', aoTocarMover, true); global.removeEventListener('blur', aoSairDaJanela);
         global.removeEventListener('keyup', aoSoltarTecla, true);
         global.removeEventListener('resize', desenharPinos); if (ro) ro.disconnect();
         [anel, chip, chipBtn, pinos, caixaAlvo, toastEl, camadaD, barra].forEach(function (x) { if (x && x.parentNode) x.parentNode.removeChild(x); });
@@ -983,5 +1210,5 @@
     return api;
   }
 
-  global.CursorFerramentas = { iniciar: iniciar, versao: '1.4', icones: ICONES };
+  global.CursorFerramentas = { iniciar: iniciar, versao: '1.5', icones: ICONES, anexos: { normalizar: normalizarAnexos, montarCampo: montarAnexos } };
 })(window);

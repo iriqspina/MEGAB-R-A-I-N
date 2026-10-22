@@ -1,0 +1,12 @@
+{
+  "objetivo": "Adicionar Aguardar retorno e Pausar projeto ao cursor, com agrupamento visual e bloqueio real de novas execuções, e criar uma skill opcional de análise de ações relacionadas.",
+  "criterios": ["Espera e pausa persistem e não retomam por temporizador", "Retornos em curso permanecem recebíveis sem apagar trabalho", "Duas ações distinguíveis, próximas e acessíveis por teclado e toque", "Skill opcional contém critérios e contraindicações", "Testes, build e capturas conferidos; limitações declaradas"],
+  "interpretacao": "Retorno significa aviso de relatório novo conforme glossário. Aguardar retorno deixa trabalhos já iniciados terminarem e bloqueia novas execuções até retomada explícita. Pausar bloqueia novas etapas cooperativamente, sem matar processos ou perder trabalho. Esta ordem implementa o pedido explícito; não autoriza retomar outras frentes.",
+  "tarefas": [
+    {"id":"implementacao","titulo":"Controle real e cursor agrupado","papel":"worker","vendor":"gpt","arquivos":["apps/megabrain-dashboard/","motor/modelos/interacoes/261010_cursor-ferramentas/","00_PARA-VOCE/261020_bapp-planejamento/PLANEJAMENTO-BAPP.html","evidence/261020_cursor-pausa/"],"depende_de":[],"revisor_vendor":"gpt"},
+    {"id":"skill","titulo":"Análise opcional de ações relacionadas","papel":"planejador","vendor":"gpt","arquivos":["motor/skills/agrupar-acoes/","memoria/cerebro/raw/261020_cursor-pausa-design.md"],"depende_de":[],"revisor_vendor":"gpt"},
+    {"id":"revisao","titulo":"Revisão independente e integração","papel":"revisor","vendor":"gpt","arquivos":[".mb-ponte/261020-170554-b2c2be/"],"depende_de":["implementacao","skill"],"revisor_vendor":"gpt"}
+  ],
+  "rota": "Pipeline congelada GPT gpt-6-astra medium por papel. Codex principal consultado ao vivo: 13% usado na janela retornada; outras contas não serão simuladas.",
+  "generico_evitar": "Botões que só mudam rótulos sem impedir despacho; transformar proximidade visual em regra obrigatória universal."
+}

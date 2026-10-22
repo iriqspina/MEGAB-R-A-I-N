@@ -1,0 +1,7 @@
+{"at": "2026-10-20T17:53:13+00:00", "tipo": "ordem_criada", "vendor": "claude", "comentarios": ["37904f2337be457db034f379da1a40ca", "b93a7e3af03149e0a4fbaaacda0e8326", "3d1652449185417f857462df155a254f", "2aee7c275a2446f48b0ae2af27ea7486", "19545827f9ed4993b04e6f1afa08cefe", "bf5e74af93ab42048904c8f81f46c7e8"]}
+{"at": "2026-10-20T17:53:13+00:00", "tipo": "no_iniciado", "no": "n0", "vendor": "claude", "pid": 48136}
+{"at": "2026-10-20T18:11:57+00:00", "tipo": "no_despachado", "no": "n1", "pai": "n0", "papel": "revisor", "vendor": "glm", "titulo": "Revisão: cursor, catálogo e ponte app:home"}
+{"at": "2026-10-20T18:11:57+00:00", "tipo": "no_iniciado", "no": "n1", "vendor": "glm", "pid": 69904}
+{"at": "2026-10-20T18:26:16+00:00", "tipo": "no_terminou", "no": "n1", "status": "concluido", "exit_code": 0}
+{"at": "2026-10-20T18:31:10+00:00", "tipo": "ordem_concluida", "status": "corrigido"}
+{"at": "2026-10-20T18:31:34+00:00", "tipo": "no_terminou", "no": "n0", "status": "concluido", "exit_code": 0}

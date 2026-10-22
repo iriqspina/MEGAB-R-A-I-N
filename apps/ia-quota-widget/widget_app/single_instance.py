@@ -10,6 +10,7 @@ class SingleInstanceGuard:
         self._key=key
         self._server=None
         self._callback=None
+        self._settings_callback=None
         self._timer=None
         self._queue=paths.DATA_DIR/'window-requests'/hashlib.sha256(key.encode()).hexdigest()[:12]
 
@@ -42,7 +43,13 @@ class SingleInstanceGuard:
         os.replace(temp,path)
         return True  # queued; the existing GUI consumes it on its event loop
 
+    def set_settings_callback(self,callback):
+        self._settings_callback=callback
+
     def _drain_requests(self):
+        if self._settings_callback:
+            from .settings_exchange import process_requests
+            process_requests(self._settings_callback)
         if not self._callback or not self._queue.is_dir():return
         for path in sorted(self._queue.glob('*.json'))[:20]:
             try:

@@ -61,6 +61,65 @@ def fonte_default() -> Path:
     return u.achar(central(), "licoes-megabrain.md")
 
 
+def _blocos(texto: str) -> list[str]:
+    """Entradas `## ` do arquivo, sem títulos de grupo `# Tema` no meio."""
+    blocos = []
+    for parte in re.split(r"(?m)^(?=## )", texto.replace("\r\n", "\n")):
+        if parte.startswith("## "):
+            linhas = [l for l in parte.split("\n") if not re.match(r"^# (?!#)", l)]
+            blocos.append("\n".join(linhas).strip("\n"))
+    return blocos
+
+
+def _norm(texto: str) -> str:
+    return " ".join(sorted(tokens(texto)))
+
+
+def absorver_orfao() -> int:
+    """Leva para o canônico as entradas de um `licoes-megabrain.md` solto na
+    raiz da central e retira o órfão. Devolve quantas entraram; nunca levanta.
+
+    Até 261016 a skill registrar-licao gravava na raiz, fora do índice (76
+    lições invisíveis por proximidade). Sessões abertas com a skill antiga e o
+    plugin já sincronizado ainda recriam o arquivo; como buscar() roda a cada
+    prompt, o órfão é absorvido na próxima consulta. Idempotente: entrada já
+    presente no canônico não entra de novo, e o órfão só sai se não mudou
+    durante a cópia (o arquivado fica em .mb-log/licoes-orfas/).
+    """
+    raiz = central() / "licoes-megabrain.md"
+    try:
+        fonte = fonte_default()
+        if not raiz.is_file() or raiz.resolve() == fonte.resolve():
+            return 0
+        agente = trava.agente_script("mb-indice-licoes")
+        with trava.travado(raiz, agente, "absorve lições órfãs da raiz"):
+            bruto = raiz.read_bytes()
+            existentes = {_norm(b) for b in _blocos(u.safe_read_text(fonte) or "")}
+            novas, vistas = [], set()
+            for b in _blocos(bruto.decode("utf-8", errors="replace")):
+                chave = _norm(b)
+                if chave and chave not in existentes and chave not in vistas:
+                    novas.append(b)
+                    vistas.add(chave)
+            if novas:
+                trava.anexar(fonte, "\n" + "\n\n".join(novas) + "\n", agente,
+                             "absorve lições órfãs da raiz")
+            if raiz.read_bytes() != bruto:
+                return len(novas)   # alguém gravou agora; a próxima rodada leva
+            pasta = central() / ".mb-log" / "licoes-orfas"
+            pasta.mkdir(parents=True, exist_ok=True)
+            carimbo = trava._agora().strftime("%y%m%d-%H%M%S")
+            os.replace(raiz, pasta / f"{carimbo}_{os.getpid()}__licoes-megabrain.md")
+        try:
+            import mb_telemetria as tel
+            tel.registrar("licoes_orfas_absorvidas", n=len(novas))
+        except Exception:
+            pass
+        return len(novas)
+    except Exception:
+        return 0
+
+
 def caminho_indice() -> Path:
     return u.pasta(central(), "dna") / "indice-licoes.json"
 
@@ -166,6 +225,9 @@ def carregar_indice() -> dict | None:
 
 def indexar(force: bool = False, silencioso: bool = False) -> dict | None:
     """Gera/atualiza o índice. Retorna o índice, ou None se a fonte sumiu."""
+    absorvidas = absorver_orfao()
+    if absorvidas and not silencioso:
+        print(f"absorvidas {absorvidas} lição(ões) órfã(s) da raiz da central")
     texto = u.safe_read_text(fonte_default())
     if texto is None:
         if not silencioso:

@@ -2,7 +2,7 @@ from PySide6.QtCore import QPoint, QSize, Qt
 from PySide6.QtGui import QColor, QFont, QPainter
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QSizePolicy, QVBoxLayout, QWidget
 
-from . import theme, ui_motion
+from . import account_state, theme, ui_motion
 from .formatting import (
     age_label,
     age_seconds,
@@ -630,6 +630,13 @@ class ProviderSegment(QFrame):
                 lines.append(f"Fonte: {display['source']}")
             if display.get("fetched_at"):
                 lines.append(f"Leitura: {age_label(display['fetched_at'])}")
+        estado = display.get("account_state") if isinstance(display, dict) else None
+        if estado:
+            lines.append(f"Conta: {account_state.texto_curto(estado)}")
+            if estado.get("observacao"):
+                lines.append(str(estado["observacao"]))
+            if estado.get("api_respondeu_em"):
+                lines.append(f"API respondeu em {age_label(estado['api_respondeu_em'])} (contradição; causa não verificada).")
         self._name_wrap.setToolTip("\n".join(lines))
         self._name_wrap.setAccessibleName(" · ".join(lines))
 
@@ -648,6 +655,7 @@ class ProviderSegment(QFrame):
             return
 
         status = display["status"]
+        estado_conta = display.get("account_state") or {}
         stale_age = age_seconds(display["fetched_at"]) if display["stale"] else None
         color = theme.stale_aware_track_color(
             status, worst["used_percent"] if worst else None, display["stale"], stale_age, status_colors
@@ -672,6 +680,10 @@ class ProviderSegment(QFrame):
             else:
                 hint = theme.STATUS_SHORT_LABEL.get(status, status) or status
 
+        if estado_conta and estado_conta.get("estado") not in (None, "ativo"):
+            selo = account_state.texto_curto(estado_conta)
+            api = estado_conta.get("api_respondeu_em")
+            hint = f"{selo} · API respondeu ({age_label(api)})" if api else selo
         self._hint.setText(hint)
         self._hint.setToolTip(display.get("message") or hint)
         self._rebuild_bars(display, pacing)

@@ -269,6 +269,9 @@ class MainWindow(QWidget):
         self._save_settings()
 
     def open_settings(self, show: bool = True):
+        if show and not self.demo and not self._session_only:
+            from .central_link import open_in_brain
+            return open_in_brain('quota-settings')
         from .settings_dialog import SettingsDialog
 
         if self._settings_dialog is None:
@@ -281,7 +284,36 @@ class MainWindow(QWidget):
             self._settings_dialog.activateWindow()
         return self._settings_dialog
 
+    def apply_external_settings(self, changes, expected_revision):
+        """Called on the Qt thread; acknowledge only after applying and reading back."""
+        from . import settings_exchange
+        if self._session_only:
+            raise ValueError('Esta é uma prévia; configurações reais não são alteradas.')
+        if self._settings_dialog is not None and self._settings_dialog.isVisible():
+            raise ValueError('Há uma edição aberta nas configurações do widget. Feche-a e releia aqui.')
+        if self._size_save_timer.isActive():
+            self._size_save_timer.stop()
+            self._save_settings()
+        before=settings_exchange.settings_view()
+        if before['revision']!=expected_revision:
+            raise ValueError('A configuração mudou. Releia para preservar a alteração mais recente.')
+        settings_exchange.validate_patch(changes)
+        self.settings=persistence.load_settings()
+        if 'visible_providers' in changes:
+            changes={**changes,'visible_providers':{**self.settings.visible_providers,**changes['visible_providers']}}
+        if 'provider_order' in changes:
+            changes={**changes,'provider_order':changes['provider_order']+[p for p in self.settings.provider_order if p not in changes['provider_order']]}
+        self.update_settings(changes)
+        after=settings_exchange.settings_view()
+        applied={k:after['values'][k] for k in changes}
+        exact=all(applied[k]==v for k,v in changes.items())
+        return {'status':'applied' if exact else 'adjusted','revision':after['revision'],'values':after['values'],
+                'applied':applied,'message':'Aplicado e confirmado pelo widget.' if exact else 'O widget ajustou uma opção; confira os valores retornados.'}
+
     def open_quota_details(self, row_id, anchor=None):
+        if not self.demo and not self._session_only:
+            from .central_link import open_in_brain
+            return open_in_brain('quota-account', provider=row_id)
         anchor = anchor or self.strip.cells.get(row_id) or self.strip.menu
         if self._quota_details is not None:
             self._quota_details.close()
@@ -996,12 +1028,18 @@ class MainWindow(QWidget):
     # dados
     # ------------------------------------------------------------------
 
-    def poll_now(self):
+    def poll_now(self, force: bool = False):
         if not self.demo:
             self._request_mcp_health()
         visible_ids = self._visible_sources()
         if not self.demo:
-            visible_ids = [pid for pid in visible_ids if self._backoff.ready(pid) and pid not in self._querying]
+            # force (botão "Recarregar tudo", 261020) dispensa a pausa de
+            # backoff: todas as fontes visíveis consultadas em paralelo.
+            visible_ids = [
+                pid
+                for pid in visible_ids
+                if pid not in self._querying and (force or self._backoff.ready(pid))
+            ]
         if not visible_ids:
             self._update_refresh_feedback()
             return
@@ -1054,11 +1092,13 @@ class MainWindow(QWidget):
         self._refresh_btn.setEnabled(ready and not busy and not self._manual_refresh_locked)
 
     def manual_refresh(self):
-        if self._manual_refresh_locked or self._querying & set(self._visible_sources()):
+        # Força o reload de TODAS as fontes ao mesmo tempo (pedido 261020):
+        # botão universal no trilho e no painel, em vez de cada uma por vez.
+        if self._manual_refresh_locked:
             return
         self._manual_refresh_locked = True
         QTimer.singleShot(MANUAL_REFRESH_COOLDOWN_MS, self._unlock_manual_refresh)
-        self.poll_now()
+        self.poll_now(force=True)
 
     def _unlock_manual_refresh(self):
         self._manual_refresh_locked = False
@@ -1205,6 +1245,9 @@ class MainWindow(QWidget):
 
     def _sync_top_button(self):
         enabled = self.settings.always_on_top
+        if hasattr(self, 'strip') and hasattr(self.strip, 'pin'):
+            self.strip.pin.setChecked(enabled)
+            self.strip.pin.setText("◆" if enabled else "◇")
         self._top_btn.setChecked(enabled)
         self._top_btn.setText("◆" if enabled else "◇")
         label = f"Sempre acima: {'ligado' if enabled else 'desligado'} (Ctrl+T)"
@@ -1215,6 +1258,7 @@ class MainWindow(QWidget):
         if self._tray is None:
             return
         self._tray_click_action.setChecked(self.settings.click_through)
+        self._tray_click_action.setVisible(self.demo or self._session_only)
         # Com "atravessar cliques" a janela não recebe mouse: a bandeja é a saída.
         needed = self.settings.click_through or bool(self.settings.alert_percent) or self._minimized
         self._tray.setVisible(needed)
@@ -1247,6 +1291,17 @@ class MainWindow(QWidget):
 
     def _show_menu(self):
         menu = QMenu(self)
+        if not self.demo and not self._session_only:
+            menu.addAction("Configurar no Brain App…\tCtrl+,", self.open_settings)
+            menu.addAction("Ver todas as contas no Brain App", lambda: self.open_quota_details('all'))
+            pin=menu.addAction("Sempre acima\tCtrl+T", self._toggle_always_on_top)
+            pin.setCheckable(True);pin.setChecked(self.settings.always_on_top)
+            menu.addAction("Atualizar agora\tF5", self.manual_refresh)
+            menu.addSeparator()
+            menu.addAction("Sair", self._quit)
+            anchor=self.strip.menu if self.settings.visual_mode=="trilho" else self._options_btn
+            menu.exec(anchor.mapToGlobal(anchor.rect().bottomLeft()))
+            return
         comparison_shortcut = "\tCtrl+D" if self.settings.visual_mode == "trilho" else ""
         menu.addAction("Comparar todas as barras" + comparison_shortcut, lambda: self.open_quota_details('all', self.strip.menu))
         menu.addAction("Configurações…\tCtrl+,", self.open_settings)
@@ -1300,6 +1355,8 @@ class MainWindow(QWidget):
         menu.exec(anchor.mapToGlobal(anchor.rect().bottomLeft()))
 
     def _show_providers_menu(self):
+        if not self.demo and not self._session_only:
+            return self.open_settings()
         menu = QMenu(self)
         self._populate_providers_menu(menu)
         menu.exec(self._empty_btn.mapToGlobal(self._empty_btn.rect().bottomLeft()))

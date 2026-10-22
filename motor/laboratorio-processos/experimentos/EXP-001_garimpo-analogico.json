@@ -1,0 +1,168 @@
+{
+ "id": "EXP-001",
+ "titulo": "Garimpo analógico com seleção comparativa (superproduzir e filtrar aprendendo)",
+ "nivel": "micro",
+ "origem": "memoria/cerebro/raw/261021_pedido-laboratorio-processos.md (nota do <USUARIO> no relatório Bubble de direções visuais, 21/10/2026)",
+ "hipotese": "Coletar 2–3× o alvo com cotas de diversidade e filtrar por rubrica com 2 avaliadores de fornecedores diferentes + comparação em pares gera um conjunto final mais variado e original, sem perder fidelidade de fonte, do que coletar só o alvo e escolher por impressão.",
+ "dinamica": {
+  "versao": "v1",
+  "passos": [
+   "1. Enquadrar a ideia-alvo",
+   "2. Definir cotas de diversidade",
+   "3. Superproduzir (divergir)",
+   "4. Extrair a dinâmica",
+   "5. Misturar (bisociar)",
+   "6. Pré-filtro de integridade",
+   "7. Pontuar pela rubrica com 2+ avaliadores independentes",
+   "8. Comparar em pares na fronteira do corte",
+   "9. Selecionar os 50 com cotas",
+   "10. Triangular com futuros",
+   "11. Registrar o aprendizado"
+  ],
+  "metodo": "motor/laboratorio-processos/metodos/261021_garimpo-analogico.md"
+ },
+ "caso_base": "linha de base nova (sem controle de 50-por-impressão nesta rodada, por economia de cota Claude)",
+ "metricas": [
+  {
+   "id": "M1",
+   "nome": "superprodução",
+   "meta": "≥2,0 [ESTIMATIVA]"
+  },
+  {
+   "id": "M2",
+   "nome": "variedade (escalas, regiões, domínios, frentes)",
+   "meta": "≥ controle +20% [ESTIMATIVA]"
+  },
+  {
+   "id": "M3",
+   "nome": "originalidade média dos 50",
+   "meta": "≥ controle +0,5 [ESTIMATIVA]"
+  },
+  {
+   "id": "M4",
+   "nome": "taxa de clichê",
+   "meta": "≤10% [ESTIMATIVA]"
+  },
+  {
+   "id": "M5",
+   "nome": "fidelidade (verificados)",
+   "meta": "≥90%"
+  },
+  {
+   "id": "M6",
+   "nome": "concordância |A−B| por critério",
+   "meta": "≤1,0"
+  },
+  {
+   "id": "M7",
+   "nome": "comparações X>Y + critérios novos",
+   "meta": "≥30; ≥1"
+  },
+  {
+   "id": "M8",
+   "nome": "tendências trianguladas",
+   "meta": "≥10 itens"
+  },
+  {
+   "id": "M9",
+   "nome": "aprovação humana",
+   "meta": "registrar"
+  },
+  {
+   "id": "M10",
+   "nome": "custo",
+   "meta": "registrar"
+  }
+ ],
+ "rodadas": [
+  {
+   "data": "2026-10-21",
+   "projeto": "<PROJETOS_ROOT>/Bubble",
+   "ordem": "261020-211812-fe0b10",
+   "valores": {
+    "M1_superproducao": 4.32,
+    "coletados": 216,
+    "duplicados": 15,
+    "avaliados": 201,
+    "cortes_duros": 12,
+    "trocas_fronteira": 10,
+    "M2_variedade": {
+     "escalas": 7,
+     "familias": 7,
+     "regioes_citadas": 36,
+     "dominios_distintos": 43,
+     "frentes": {
+      "C": 11,
+      "S": 12,
+      "F": 12,
+      "T": 15
+     }
+    },
+    "M3_originalidade_media_50": 4.0,
+    "M3_originalidade_media_descartados": 3.22,
+    "M4_taxa_cliche_50": "6/50",
+    "M5_fidelidade_verificados_50": "50/50",
+    "M6_concordancia_media_abs": {
+     "forca_imagem": 0.35,
+     "dinamica": 0.91,
+     "distancia": 0.67,
+     "originalidade": 0.48,
+     "desdobramento": 0.47,
+     "fidelidade": 0.82,
+     "futuros": 0.04
+    },
+    "M7_comparacoes": 34,
+    "M7_criterio_novo_proposto": "âncora do pedido (2 trocas)",
+    "M8_tendencias_trianguladas": {
+     "tendencias": 11,
+     "itens_com_tendencia": 30
+    },
+    "urls_conferidas_pelos_avaliadores": {
+     "total": 172,
+     "ok": 153
+    },
+    "M9_aprovacao_humana": "NAO_MEDIDO (aguarda o <USUARIO>)",
+    "M10_custo": "ver EXP-001 (nós n1–n7, minutos do eventos.jsonl)"
+   },
+   "custo": {
+    "minutos_relogio_nos": {
+     "n1": 11.2,
+     "n2": 10.4,
+     "n3": 13.5,
+     "n4": 11.2,
+     "n5": 9.0,
+     "n6": 10.0,
+     "n7_gpt": 9.7
+    },
+    "chamadas": "5 workers Claude Opus 5.5 high + 1 avaliador Claude + 1 avaliador GPT (Codex) + composição GLM (ver relatório)",
+    "cota": "Claude reportava 'desacelerar' no início; GLM sessão 18%/semana 40% (00:25 UTC); Codex 1 59%/semana (00:31 UTC) — snapshots, não saldo"
+   },
+   "provas": [
+    "<PROJETOS_ROOT>/Bubble/evidence/261020_eventos-bolhas/ (candidatos-w1..w4, dedup, pool-A/B, notas-A/B, ranking, final-50, filtro-aprendizado)"
+   ]
+  }
+ ],
+ "revisor": "Avaliadores A (Claude) e B (GPT) independentes, ordem aleatória; coordenador n0 (Claude) fez as 10 trocas de fronteira — mesmo fornecedor dos coletores (limite registrado).",
+ "decisao": {
+  "estado": "ajustar",
+  "motivo": "Rodada 1 sem controle não permite promover. M1, M5, M6, M7, M8 dentro da meta; M4 = 6/50 (12%) acima de 10%; a rubrica v1 cortou as âncoras sociais pedidas (só 5/50 sociais antes das trocas).",
+  "alternativa_descartada": "promover já como referência (faltam controle e aprovação humana)"
+ },
+ "aprendizados": [
+  "A rubrica herdada da literatura (distância analógica alta = melhor) cortou quase todas as visualizações científicas de bolhas sociais, que eram justamente o exemplo do pedido. Resultado bruto: só 5 de 50 itens sociais. Correção: cota de âncoras próximas (8 de 50) + itens distantes. Na literatura isso aparece como a mistura de analogias próximas e distantes (Chan et al. 2011; Fu et al. 2013).",
+  "Os dois avaliadores discordaram mais em dinâmica (0,91) e fidelidade (0,82): dinâmica precisa de âncoras com exemplo; fidelidade depende de quem conseguiu abrir o link (403/anti-robô ≠ link morto). Proposta v2: separar 'link abre' de 'fonte sustenta a alegação'.",
+  "Itens de tendência pura (visionOS, Gaussian splatting, tipografia inflada) caíram por fonte de fornecedor ou clichê; a tendência funciona melhor como lente aplicada a fenômenos (triangulação) do que como item do acervo.",
+  "Duplicatas entre frentes (15 de 216, ~7%) concentraram-se nos exemplos sugeridos no brief (NBA, mosh pit, Bororo, capoeira, Plateau): sugestão no prompt puxa convergência. Proposta v2: dar exemplos só como 'evitar repetir'.",
+  "Seleção puramente por nota repetiria fenômenos parentes (mesmo artista, mesma física, mesma roda); o corte guloso com penalidade de escala/frente não basta, precisa de checagem de parentesco feita por quem lê os 50 juntos."
+ ],
+ "proposta_v2": [
+  "Cota de âncoras próximas (≈15%) declarada antes da coleta + itens distantes",
+  "Separar 'link abre' de 'fonte sustenta a alegação' na fidelidade",
+  "Tendência entra como lente de triangulação, não como item do acervo",
+  "Exemplos do brief marcados 'não repetir' para reduzir duplicatas entre frentes (7%)",
+  "Checagem de parentesco (mesmo artista/física/mecânica) pelo leitor dos 50 juntos",
+  "Rodar controle de 50-por-impressão na rodada 2"
+ ],
+ "humano": null,
+ "reversao": "Nada foi promovido; reverter = não usar a rubrica/protocolo v1 como referência. Arquivos ficam como histórico."
+}

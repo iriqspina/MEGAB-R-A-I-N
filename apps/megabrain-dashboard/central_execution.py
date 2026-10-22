@@ -19,6 +19,11 @@ import stat
 from urllib.parse import urlsplit
 
 LIMITS = {'max_files': 100, 'max_file_bytes': 1_000_000, 'max_total_bytes': 8_000_000}
+ATTACHMENT_NAMESPACE = '.mb-anexos'
+ATTACHMENT_LIMITS = {'max_files': 6, 'max_file_bytes': 8 * 1024 * 1024,
+                     'max_total_bytes': 48 * 1024 * 1024}
+ATTACHMENT_EXTENSIONS = {'image/png': '.png', 'image/jpeg': '.jpg',
+                         'image/gif': '.gif', 'image/webp': '.webp'}
 TEXT_EXTENSIONS = frozenset({'.py','.js','.mjs','.cjs','.ts','.tsx','.jsx','.html','.htm','.css','.scss',
     '.json','.toml','.yaml','.yml','.xml','.svg','.sql','.sh','.ps1','.cmd','.bat','.go','.rs','.java',
     '.c','.h','.cpp','.hpp','.cs','.rb','.php','.md','.txt','.csv','.ini','.cfg'})
@@ -87,7 +92,38 @@ def _text_file(path):
     return data
 
 
-def prepare_execution(project_root, job_directory, selected_paths=None):
+def _attachment_inputs(source, references):
+    """Resolve project-owned inputs separately; selected_paths stays text-only."""
+    if references is None: references=[]
+    if (not isinstance(references,list) or len(references)>ATTACHMENT_LIMITS['max_files']
+            or any(not isinstance(ref,str) for ref in references)):
+        raise ValueError('Use até 6 caminhos canônicos de anexos do próprio projeto.')
+    if not references:return [],[]
+    from central_attachments import resolve_attachments,read_attachment
+    from central_store import ident
+    pid=ident(source.resolve()); entries=[]; contents=[]; total=0
+    for resolved in resolve_attachments(source,pid,references):
+        row,data=read_attachment(source,pid,resolved['id'])
+        if row!=resolved or row.get('mime') not in ATTACHMENT_EXTENSIONS:
+            raise ValueError('O anexo mudou durante a preparação.')
+        aid=row['id']; digest=_sha(data)
+        if not re.fullmatch(r'[a-f0-9]{64}',aid) or aid!=digest:
+            raise ValueError('Hash do anexo não corresponde aos bytes recebidos.')
+        original=Path(row['path']); _no_links(original,source)
+        if not original.is_relative_to(source/ATTACHMENT_NAMESPACE):
+            raise ValueError('Anexo fora da pasta de entradas do projeto.')
+        total+=len(data)
+        if (len(data)!=row['size'] or len(data)>ATTACHMENT_LIMITS['max_file_bytes']
+                or total>ATTACHMENT_LIMITS['max_total_bytes']):
+            raise ValueError('Anexos acima do limite da execução.')
+        relative=ATTACHMENT_NAMESPACE+'/'+aid+ATTACHMENT_EXTENSIONS[row['mime']]
+        entries.append(dict(id=aid,name=row['name'],mime=row['mime'],size=len(data),
+                            sha256=digest,source_path=str(original),relative_path=relative))
+        contents.append((PurePosixPath(relative),data))
+    return entries,contents
+
+
+def prepare_execution(project_root, job_directory, selected_paths=None, *, attachments=None):
     """Create fresh workspace. None means empty; explicit files are bounded copies."""
     source=Path(project_root).absolute(); job=Path(job_directory).absolute()
     if not source.is_dir(): raise ValueError('Projeto de origem indisponível.')
@@ -108,13 +144,17 @@ def prepare_execution(project_root, job_directory, selected_paths=None):
         if total>LIMITS['max_total_bytes']: raise ValueError('Seleção acima do limite total de bytes.')
         entries.append({'relative_path':str(rel),'origin':str(original),'sha256':_sha(data),'size':len(data)})
         contents.append((rel,data))
+    attachment_entries,attachment_contents=_attachment_inputs(source,attachments)
+    contents.extend(attachment_contents)
     workspace.mkdir()
     for rel,data in contents:
         target=workspace.joinpath(*rel.parts); target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(data)
     baseline={'schema':1,'at':_now(),'project_root':str(source),'workspace':str(workspace),'files':entries,
+              'attachments':attachment_entries,'attachment_limits':dict(ATTACHMENT_LIMITS),
               'limits':dict(LIMITS),'originals_write_policy':'never','is_os_sandbox':False}
     _json(baseline_path,baseline)
-    return {'workspace':str(workspace),'baseline_path':str(baseline_path),'selected_files':entries,'limits':dict(LIMITS)}
+    return {'workspace':str(workspace),'baseline_path':str(baseline_path),'selected_files':entries,
+            'attachments':attachment_entries,'limits':dict(LIMITS),'attachment_limits':dict(ATTACHMENT_LIMITS)}
 
 
 def list_source_files(project_root):
@@ -154,18 +194,69 @@ def list_source_files(project_root):
     return {'files':files,'limits':{**LIMITS,**budgets},'truncated':truncated}
 
 
+def _inventory_attachment_inputs(workspace, entries):
+    """Account for exact binary inputs without granting a publication exception."""
+    if not isinstance(entries,list) or len(entries)>ATTACHMENT_LIMITS['max_files']:
+        raise ValueError('Manifesto de anexos inválido.')
+    expected={}; total=0
+    for row in entries:
+        if (not isinstance(row,dict) or not isinstance(row.get('id'),str)
+                or not re.fullmatch(r'[a-f0-9]{64}',row['id'])
+                or row.get('mime') not in ATTACHMENT_EXTENSIONS
+                or type(row.get('size')) is not int or not 0<row['size']<=ATTACHMENT_LIMITS['max_file_bytes']
+                or row.get('sha256')!=row['id']):
+            raise ValueError('Manifesto de anexos inválido.')
+        relative=ATTACHMENT_NAMESPACE+'/'+row['id']+ATTACHMENT_EXTENSIONS[row['mime']]
+        if row.get('relative_path')!=relative or relative in expected:
+            raise ValueError('Caminho de anexo inválido no manifesto.')
+        total+=row['size'];expected[relative]=row
+    if total>ATTACHMENT_LIMITS['max_total_bytes']:raise ValueError('Manifesto de anexos acima do limite.')
+    if not expected:return [],[]
+    blocked=[]; states=[]; folder=workspace/ATTACHMENT_NAMESPACE
+    try:
+        _no_links(folder,workspace)
+        if not folder.is_dir():raise ValueError('Namespace de anexos substituído.')
+        for index,p in enumerate(folder.iterdir()):
+            if index>=ATTACHMENT_LIMITS['max_files']:
+                blocked.append(dict(relative_path=ATTACHMENT_NAMESPACE,reason='input_attachment_scan_budget_exceeded'));break
+            relative=p.relative_to(workspace).as_posix()
+            if relative not in expected:
+                blocked.append(dict(relative_path=relative,reason='unexpected_input_attachment'))
+    except (ValueError,OSError):
+        blocked.append(dict(relative_path=ATTACHMENT_NAMESPACE,reason='input_attachment_namespace_missing_or_unsafe'))
+    for relative,row in expected.items():
+        p=workspace/relative; state='missing_or_unsafe'; digest=None
+        try:
+            _no_links(p,workspace);info=p.stat()
+            if not stat.S_ISREG(info.st_mode) or info.st_size!=row['size']:
+                state='modified'
+            else:
+                with p.open('rb') as source:data=source.read(row['size']+1)
+                digest=_sha(data)
+                state='unchanged' if len(data)==row['size'] and digest==row['sha256'] else 'modified'
+        except (ValueError,OSError):pass
+        states.append(dict(row,status=state,current_sha256=digest,visual_inspection_observed=False))
+        if state!='unchanged':blocked.append(dict(relative_path=relative,reason='input_attachment_'+state))
+    return states,blocked
+
+
 def inventory_changes(job_directory):
     job=Path(job_directory).absolute(); workspace=job/'workspace'; baseline_path=job/'execution-baseline.json'
     _no_links(baseline_path,job); baseline=json.loads(baseline_path.read_text(encoding='utf-8'))
     _no_links(workspace,job)
     if baseline.get('workspace')!=str(workspace): raise ValueError('Baseline não corresponde à execução.')
-    before={r['relative_path']:r for r in baseline['files']}; found={}; blocked=[]; skipped=[]; total=0; scanned=0; stop=False
+    attachment_entries=baseline.get('attachments',[])
+    input_attachments,attachment_blocked=_inventory_attachment_inputs(workspace,attachment_entries)
+    before={r['relative_path']:r for r in baseline['files']}; found={}; blocked=list(attachment_blocked); skipped=[]; total=0; scanned=0; stop=False
     for directory,dirs,names in os.walk(workspace,followlinks=False):
         if len(Path(directory).relative_to(workspace).parts)>12:
             blocked.append({'relative_path':Path(directory).relative_to(workspace).as_posix(),'reason':'depth_limit'});dirs[:]=[];continue
         clean=[]
         for name in sorted(dirs):
             p=Path(directory)/name; relative=p.relative_to(workspace).as_posix()
+            if relative==ATTACHMENT_NAMESPACE and attachment_entries:
+                # Exact registered inputs were checked above, including unexpected children.
+                continue
             try:
                 _no_links(p,workspace)
                 if name.casefold() in GENERATED_PRIVATE_PARTS:
@@ -199,6 +290,8 @@ def inventory_changes(job_directory):
     return {'files':list(found.values()),'removed':[p for p in before if p not in found and not (workspace/p).exists()],
             'blocked':blocked,'skipped':skipped,'originals':originals,'originals_unchanged':all(r['unchanged'] for r in originals),
             'originals_checked_count':len(originals),'originals_check_scope':'Only selected source files; OS isolation is enforced and measured separately by the model adapter.',
+            'input_attachments':input_attachments,'input_attachments_unchanged':not attachment_blocked,
+            'input_attachments_check_scope':'Exact staged image bytes and hashes only; not publication or visual inspection.',
             'total_bytes':total,'workspace':str(workspace),'at':_now()}
 
 
@@ -344,6 +437,7 @@ def finalize_execution(job_directory, stage_results=None, *, mode='code'):
                for row in inventory['files'] if row['change']!='unchanged']
     tests=observed['tests']; latest={t['suite_identity']:t for t in tests}; reasons=[];snapshot_scope={}
     if not inventory['originals_unchanged']:reasons.append('originals_changed_outside_workspace')
+    if not inventory['input_attachments_unchanged']:reasons.append('input_attachments_changed_or_missing')
     if inventory['blocked']:reasons.append('blocked_files_require_review')
     if mode in {'code','mixed'}:
         if not any(a['kind']=='code' for a in artifacts):reasons.append('no_code_artifact')

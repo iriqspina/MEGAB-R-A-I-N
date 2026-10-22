@@ -64,14 +64,20 @@ def evidence(root, value):
     return str(p)
 
 def history_data(document):
-    document=document or {};timeline=[];previous={}
-    for snapshot in document.get('quota_snapshots',[])[-60:]:
+    document=document or {};timeline=[];previous={};observations={}
+    for snapshot in document.get('quota_snapshots',[])[-420:]:
         for provider in quotas(snapshot):
             for window in provider['windows']:
-                key=(provider['provider'],window['id']);old=previous.get(key);used=window['used_percent'];delta=None
-                if old and window['duration_minutes'] is not None and old['duration_minutes']==window['duration_minutes'] and old['resets_at']==window['resets_at'] and used is not None and old['used_percent'] is not None:delta=round(used-old['used_percent'],2)
-                timeline.append(dict(provider=provider['provider'],label=provider['label'],at=provider['fetched_at'],window=window['label'],duration_minutes=window['duration_minutes'],resets_at=window['resets_at'],used_percent=used,remaining_percent=window['remaining_percent'],delta_used_points=delta))
-                previous[key]=window
+                identity=(provider['provider'],window['id'],provider['fetched_at'],window['duration_minutes'],window['resets_at'])
+                observations[identity]=(provider,window)
+    def observation_time(pair):
+        try:return datetime.fromisoformat(pair[0]['fetched_at'].replace('Z','+00:00')).timestamp()
+        except (ValueError,TypeError,AttributeError):return 0
+    for provider,window in sorted(observations.values(),key=observation_time):
+        key=(provider['provider'],window['id']);old=previous.get(key);used=window['used_percent'];delta=None
+        if old and window['duration_minutes'] is not None and old['duration_minutes']==window['duration_minutes'] and old['resets_at']==window['resets_at'] and used is not None and old['used_percent'] is not None:delta=round(used-old['used_percent'],2)
+        timeline.append(dict(provider=provider['provider'],label=provider['label'],at=provider['fetched_at'],window=window['label'],duration_minutes=window['duration_minutes'],resets_at=window['resets_at'],used_percent=used,remaining_percent=window['remaining_percent'],delta_used_points=delta))
+        previous[key]=window
     sessions=[]
     for session in document.get('usage_sessions',[])[-10:]:
         if not isinstance(session,dict):continue
@@ -80,12 +86,16 @@ def history_data(document):
             message_id=text(row.get('message_id'),120)
             if not message_id or message_id in seen:continue
             seen.add(message_id);messages.append(dict(message_id=message_id,at=text(row.get('at'),100),model=text(row.get('model'),120),tokens={text(k,80):v for k,v in row.get('tokens',{}).items() if type(v) is int and v>=0}))
+        messages.sort(key=lambda row:row['at'],reverse=True)
         totals={key:sum(m['tokens'][key] for m in messages) if all(key in m['tokens'] for m in messages) else None for key in ['input_tokens','cache_creation_input_tokens','cache_read_input_tokens','output_tokens','thinking_tokens']}
-        kind='cli_result' if session.get('record_kind')=='cli_result' else 'message'
-        notice=('Uso agregado de uma chamada CLI, identificado por result.uuid; message.id não fornecido. Não somado novamente às respostas de outra execução.' if kind=='cli_result' else 'Cada message.id é contado uma vez.')+' Raciocínio já incluído na saída. Cotas compartilhadas podem incluir outras sessões.'
+        kind=session.get('record_kind') if session.get('record_kind') in {'cli_result','session_cumulative'} else 'message'
+        notice=('Total acumulado da sessão fornecido pelo Codex; atualizações substituem o total anterior. Não representa uma resposta isolada. Entrada informada pode incluir cache.' if kind=='session_cumulative' else 'Uso agregado de uma chamada CLI, identificado por result.uuid; message.id não fornecido. Não somado novamente às respostas de outra execução.' if kind=='cli_result' else 'Cada message.id é contado uma vez.')+' Raciocínio já incluído na saída. Cotas compartilhadas podem incluir outras sessões.'
+        if session.get('partial') and kind!='session_cumulative':notice+=' Recorte local: o início do arquivo não foi coletado; totais apenas das respostas encontradas.'
         sessions.append(dict(session_id=text(session.get('session_id'),120),client=text(session.get('client'),120),label=text(session.get('label'),180),record_kind=kind,checked_at=text(session.get('checked_at'),100),unique_messages=len(messages),totals=totals,messages=messages,notice=notice))
     sessions.sort(key=lambda s:max((m.get('at') or '' for m in s['messages']),default=''),reverse=True)
-    return dict(updated_at=text(document.get('updated_at'),100),quota_timeline=timeline[-300:],usage_sessions=sessions)
+    collection=document.get('collection',{})
+    return dict(updated_at=text(document.get('updated_at'),100),quota_timeline=timeline[-300:],usage_sessions=sessions,
+        collection={k:text(collection.get(k),600) for k in ('checked_at','status','notice')} if isinstance(collection,dict) else {})
 
 def normalize(root, document, snapshot):
     source=root/RELATIVE/'operacao.json'
@@ -117,7 +127,11 @@ def sync(store, root=None, force=False):
     if not source.is_file(): return False
     document=read(source); snapshot=read(root/RELATIVE/'brainapp/cotas-atual.json')
     data=normalize(root,document,snapshot)
-    data['history']=history_data(read(root/RELATIVE/'brainapp/historico.json'))
+    history=read(root/RELATIVE/'brainapp/historico.json')
+    if root==ROOT:
+        from central_usage_history import collect,merge
+        history=merge(history,collect())
+    data['history']=history_data(history)
     job_id=ident(str(source)+'external-observer')
     revision=ident(dict(document=document,snapshot=snapshot))
     try: previous=store.job(job_id)

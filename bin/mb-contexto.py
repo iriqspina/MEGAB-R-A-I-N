@@ -7,12 +7,22 @@ este script e repassa o stdout). O que sai no stdout VIRA CONTEXTO da sessão,
 então o contrato é o inverso do mb-observar: aqui o stdout é o produto.
 
 O que injeta:
+- Toda mensagem: a triagem (1 bloco curto, conselho e não autorização). Por
+  isso o stdout só fica vazio quando a triagem está indisponível E nada novo
+  passou no corte abaixo.
 - 1ª mensagem da sessão: META.md do projeto (meta + histórico de intenção),
   a instrução de alinhamento pré-prompt (decisão 260819: todo prompt,
-  desligável com "ALINHAMENTO: off" no META.md) e as lições mais próximas
-  do prompt (índice da fase 3).
-- Mensagens seguintes: só lições relevantes AINDA NÃO injetadas na sessão.
-  Sem novidade → stdout vazio (custo zero de contexto).
+  desligável com "ALINHAMENTO: off" no META.md).
+- Lições e páginas do cérebro mais próximas do prompt: só as AINDA NÃO
+  injetadas na sessão e com score >= 0,55 (vale também no 1º prompt).
+  Prompt curto (menos de 5 palavras, ex. "continua", "ok") só aceita score
+  >= 0,7: a busca por proximidade sempre devolve "os mais próximos", mesmo
+  quando nada é próximo (H6, 261017).
+- Limpeza de ditado (C01, 261017): fala longa com vários pedidos, ou cheia de
+  hesitações e autocorreções, ganha 1 instrução curta para a resposta abrir
+  com "Entendi N itens:" (1 linha por item: [pedido], [minha leitura] ou
+  [autorização], default entre parênteses). Liga/desliga pela chave
+  `limpeza_ditado` em dados/preferencias-megabrain.json (padrão: ligado).
 
 Fail-open: qualquer erro → stdout vazio, exit 0. Nunca derruba sessão.
 
@@ -31,8 +41,10 @@ import datetime as dt
 import importlib.util
 import json
 import os
+import re
 import sys
 import tempfile
+import unicodedata
 from pathlib import Path
 
 import mb_utils as u
@@ -41,6 +53,17 @@ MAX_META_CHARS = 3000
 MAX_LICOES = 5
 MAX_PAGINAS_CEREBRO = 3   # v6.2: páginas de cerebro/ (wiki+pessoas) mais próximas do prompt
 SCORE_MINIMO_EMBED = 0.55   # abaixo disso a lição é ruído, não ajuda
+# H6 (261017): prompt curto ("continua", "ok") não tem relação com lição nem
+# com página do cérebro; só passa o que for muito próximo.
+PALAVRAS_PROMPT_CURTO = 5
+SCORE_MINIMO_PROMPT_CURTO = 0.7
+# C01 (261017): limpeza de ditado. [HEURÍSTICA] calibrada em 175 falas humanas
+# (Claude + Codex, 260916 a 261017): dispara em 42 das 175 (24%); as 64 falas
+# com menos de 20 palavras nunca disparam. Se virar ruído: limpeza_ditado=false.
+DITADO_MIN_PALAVRAS = 60          # com DITADO_MIN_PEDIDOS verbos de pedido
+DITADO_MIN_PEDIDOS = 3
+DITADO_MIN_MARCAS = 3             # hesitações + autocorreções
+DITADO_MIN_PALAVRAS_MARCAS = 30   # piso de tamanho para o gatilho por marcas
 SENTINEL_DIR = Path(tempfile.gettempdir()) / "megabrain-sessoes"
 
 
@@ -105,6 +128,90 @@ def carregar_indice_cerebro():
     return mod
 
 
+def _sem_acento(texto: str) -> str:
+    return "".join(c for c in unicodedata.normalize("NFKD", texto.casefold())
+                   if not unicodedata.combining(c))
+
+
+def prompt_curto(prompt: str) -> bool:
+    """Menos de 5 palavras ("continua", "ok", "corrige o .cmd")."""
+    return len(prompt.split()) < PALAVRAS_PROMPT_CURTO
+
+
+def score_minimo(prompt: str) -> float:
+    return SCORE_MINIMO_PROMPT_CURTO if prompt_curto(prompt) else SCORE_MINIMO_EMBED
+
+
+# Verbos de pedido (texto já sem acento). Cada ocorrência conta 1.
+_PEDIDO = re.compile(
+    r"\b(?:eu\s+)?(?:quero(?:\s+que)?|gostaria|preciso(?:\s+que)?|precisamos)\b"
+    r"|\b(?:fa(?:z|ca)|cri(?:e|a)|adicion(?:a|e)|check(?:a|e)|checar|corrig(?:e|ir)"
+    r"|consert(?:a|e)|lembr(?:a|e)|pesquis(?:a|e)|test(?:a|e)|revis(?:a|e)|ajust(?:a|e)"
+    r"|verific(?:a|que)|atualiz(?:a|e)|anali(?:sa|se)|fiscaliz(?:a|e)|compar(?:a|e)"
+    r"|organiz(?:a|e)|implement(?:a|e)|configur(?:a|e)|mostr(?:a|e)|colo(?:ca|que))\b")
+# Hesitações do ditado: "e,", "é,", "tipo", "né", "então,", reticências.
+_HESITACAO = re.compile(
+    r"(?:(?<=\s)|^)(?:e|eh|ah|bom|entao|tipo|ai|ne)\s*(?:,|\.\.\.|…)"
+    r"|\b(?:tipo|ne|sei la)\b(?!\s+de\b)|\b(?:sabe|entendeu)\s*[?,]")
+# 261018 (R1-04): linhas com cara de log ou codigo colado nao contam como fala.
+_LINHA_LOG = re.compile(
+    r"^\s*(?:[>$#|]|npm\b|pnpm\b|yarn\b|pip\b|error\b|erro\b|warn|info\b|debug\b|at\s|traceback|file\s\""
+    r"|[a-z]:[\\/]|/|\[|\{|\}|\d{1,2}:\d{2}|[-=*]{3})", re.IGNORECASE)
+
+
+def _so_fala(texto: str) -> str:
+    linhas = []
+    for linha in texto.splitlines():
+        simbolos = sum(1 for ch in linha if not (ch.isalnum() or ch.isspace() or ch in ",.;:!?'\"()-"))
+        if _LINHA_LOG.match(linha) or (linha.strip() and simbolos / max(1, len(linha.strip())) > 0.2):
+            continue
+        linhas.append(linha)
+    return "\n".join(linhas)
+# Autocorreções: "no, no", "os, os", "o, a", "é é".
+_REPETICAO = re.compile(
+    r"\b([^\W\d_]{1,8})\s*,\s*\1\b"
+    r"|\b(?:o|a|os|as|um|uma)\s*,\s*(?:o|a|os|as|um|uma)\b"
+    r"|\b([^\W\d_]{1,8})\s+\2\b")
+
+
+def detectar_ditado(prompt: str) -> dict | None:
+    """Mede a fala; devolve os números se parece ditado com vários pedidos."""
+    if not prompt or prompt.lstrip().startswith("<"):
+        return None   # mensagem de sistema/agente, não é fala dele
+    texto = _so_fala(_sem_acento(prompt))
+    palavras = len(re.findall(r"\w+", texto))
+    pedidos = len(_PEDIDO.findall(texto))
+    marcas = len(_HESITACAO.findall(texto)) + len(_REPETICAO.findall(texto))
+    por_pedidos = palavras >= DITADO_MIN_PALAVRAS and pedidos >= DITADO_MIN_PEDIDOS
+    por_marcas = palavras >= DITADO_MIN_PALAVRAS_MARCAS and marcas >= DITADO_MIN_MARCAS
+    if not (por_pedidos or por_marcas):
+        return None
+    return {"palavras": palavras, "pedidos": pedidos, "marcas": marcas}
+
+
+def instrucao_limpeza_ditado(info: dict) -> str:
+    return (
+        "### Limpeza de ditado (C01, 261017)\n"
+        f"Esta fala parece ditada com vários pedidos ({info['palavras']} palavras, "
+        f"{info['pedidos']} verbos de pedido, {info['marcas']} marcas de fala). "
+        "Abra a resposta (junto da linha-bússola/TL;DR, quando elas se aplicarem) com "
+        "\"Entendi N itens:\" e 1 linha por item, etiquetada [pedido] (ele disse), "
+        "[minha leitura] (você interpretou) ou [autorização] (ele liberou algo), "
+        "com o default que você vai seguir entre parênteses. Ignore hesitações e "
+        "autocorreções ao listar. Não bloqueie trabalho reversível: siga o default e "
+        "deixe ele corrigir de relance (\"não é isso\" + 1 frase); só espere "
+        "confirmação em artefato grande ou ação irreversível."
+    )
+
+
+def _ligado(valor, padrao: bool = True) -> bool:
+    if isinstance(valor, bool):
+        return valor
+    if isinstance(valor, str):
+        return valor.strip().lower() not in ("false", "off", "0", "nao", "não", "no")
+    return padrao
+
+
 def estado_sessao(session_id: str) -> tuple[Path, dict]:
     SENTINEL_DIR.mkdir(parents=True, exist_ok=True)
     arq = SENTINEL_DIR / f"{session_id}.ctx.json"
@@ -156,6 +263,7 @@ def montar(payload: dict, agente: str) -> str:
     injetadas = set(estado.get("injetadas", []))
 
     partes: list[str] = []
+    limpeza_ligada = True   # padrão ligado; a chave limpeza_ditado desliga
 
     # A triagem é conselho explicável, não uma autorização ou executor.
     # Uma preferência de projeto pode sobrescrever a central; ausente, herda.
@@ -163,6 +271,7 @@ def montar(payload: dict, agente: str) -> str:
         from mb_triagem import classificar, ler_config, config_path, instrucao, registrar_observacao
         base = projeto if projeto and config_path(projeto).is_file() else central()
         conf = ler_config(base)
+        limpeza_ligada = _ligado(conf.get('limpeza_ditado', True))
         rota = classificar(prompt, conf['sensibilidade'], payload.get('megabrain_context'))
         partes.append(instrucao(rota))
         if conf.get('registrar_rotas', False):
@@ -172,6 +281,16 @@ def montar(payload: dict, agente: str) -> str:
                 partes.append('Observação de rotas indisponível; a triagem acima permanece válida.')
     except (ValueError, OSError, ImportError) as exc:
         partes.append('### Triagem MEGABRAIN indisponível\nVerifique contexto, revisão e autorização manualmente; erro de configuração não dispensa etapas. ' + str(exc)[:180])
+
+    # Limpeza de ditado (C01): fala longa com vários pedidos volta ao <USUARIO>
+    # como lista de itens etiquetados. Fail-open: erro aqui nunca derruba o hook.
+    if limpeza_ligada:
+        try:
+            ditado = detectar_ditado(prompt)
+            if ditado:
+                partes.append(instrucao_limpeza_ditado(ditado))
+        except Exception:
+            pass
 
     # META.md + instrução: só na primeira mensagem da sessão.
     meta_existe = False
@@ -190,7 +309,9 @@ def montar(payload: dict, agente: str) -> str:
         if not alinhado_off:
             partes.append(instrucao_alinhamento(meta_existe))
 
-    # Lições por relevância — em toda mensagem, só as inéditas na sessão.
+    # Lições por relevância — em toda mensagem, só as inéditas na sessão e
+    # acima do corte de score (também no 1º prompt; prompt curto exige 0,7).
+    minimo = score_minimo(prompt)
     if prompt.strip():
         total_licoes = 0
         try:
@@ -205,7 +326,7 @@ def montar(payload: dict, agente: str) -> str:
         for e in achadas:
             if e["chave"] in injetadas:
                 continue
-            if e.get("score", 0) < SCORE_MINIMO_EMBED and not primeira:
+            if e.get("score", 0) < minimo:
                 continue
             novas.append(e)
         if novas:
@@ -224,7 +345,7 @@ def montar(payload: dict, agente: str) -> str:
         except Exception:
             pags = []
         novas_p = [e for e in pags if e["chave"] not in injetadas
-                   and e.get("score", 0) >= SCORE_MINIMO_EMBED]
+                   and e.get("score", 0) >= minimo]
         if novas_p:
             blocos = "\n\n".join(f"**{e['chave']}**\n{e['texto'][:900]}" for e in novas_p)
             partes.append(

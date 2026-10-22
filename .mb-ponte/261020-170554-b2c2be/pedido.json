@@ -1,0 +1,75 @@
+{
+  "versao": 1,
+  "ordem_id": "261020-170554-b2c2be",
+  "criado_em": "2026-10-20T20:05:54+00:00",
+  "projeto": "S:\\projetos multi i.a\\MEGA B R A I  N",
+  "central": "S:\\projetos multi i.a\\MEGA B R A I  N",
+  "origem": "enviar-ao-projeto",
+  "vendor": "gpt",
+  "modo": "segundo_plano",
+  "vendors_ativos": [
+    "claude",
+    "gpt",
+    "glm"
+  ],
+  "comentarios": [
+    {
+      "id": "c11ff4d6166b4494848293ea5e568c34",
+      "at": "2026-10-20T20:02:47+00:00",
+      "texto": "Respostas recebidas pelo relatório",
+      "notas": [
+        {
+          "id": "nmvh3y9sn",
+          "texto": "crie uma função no cursor inteligente que uso para editar e comentar no bapp de pausa, pois se depois de x tempo o projeto roda sozinho, eu devo poder pedir para aguardar retorno e pausar projeto (melhor entao adicionar 2 novas funcoes mas com as bolinhas meio mescladas, porque são atividades parecidas, ajuda a compreender e reduz espaço de uso no layout, aprenda isso para design e crie tmb uma skill que utilize essa forma de analise para designs nas nocoes do megabrain, não é obrigatório e sim uma ferramenta de ajuda. preciso tomar banho agora então quero que aguarde por retornos",
+          "onde": "MEGABRAIN · planejamento do aplicativo (bapp) · 20/10/2026 · plano final v1 · codex + glm ",
+          "ancora": {
+            "base": "body",
+            "idx": []
+          },
+          "criado_em": "2026-10-20T20:00:25.367Z",
+          "rota": null,
+          "anexos": []
+        }
+      ],
+      "decisoes": null,
+      "relatorio": "00_PARA-VOCE\\261020_bapp-planejamento\\PLANEJAMENTO-BAPP.html",
+      "relatorio_hash": "a21dc2c02247b63659b3c38889c63b27da5376b469536e2d953ccf3112fab5f6",
+      "onde": "PLANEJAMENTO-BAPP.html",
+      "versao_anterior": false,
+      "anexos": [],
+      "rota": null,
+      "cursor_source": null,
+      "target": "file:3a3cea528b6d8dace26d",
+      "fragmento": null,
+      "comentario_original_id": "c11ff4d6166b4494848293ea5e568c34",
+      "assinatura_humana": "14e2cdfe5bd8daf16ca1a1067ee35327ea3c3e1544304088e3746d1fc2094a42"
+    }
+  ],
+  "coordenacao": "",
+  "limites": {
+    "profundidade": 3,
+    "nos": 16
+  },
+  "pipeline": {
+    "planejador": {
+      "vendor": "gpt",
+      "modelo": "gpt-6-astra",
+      "effort": "medium"
+    },
+    "orquestrador": {
+      "vendor": "gpt",
+      "modelo": "gpt-6-astra",
+      "effort": "medium"
+    },
+    "worker": {
+      "vendor": "gpt",
+      "modelo": "gpt-6-astra",
+      "effort": "medium"
+    },
+    "revisor": {
+      "vendor": "gpt",
+      "modelo": "gpt-6-astra",
+      "effort": "medium"
+    }
+  }
+}

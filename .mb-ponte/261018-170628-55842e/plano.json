@@ -1,0 +1,36 @@
+{
+  "objetivo": "Tratar integralmente os três comentários desta ordem: aperfeiçoar o mapa por GPT, adicionar prints por Ctrl+V e arquivo nos campos coerentes do MegaBrain e registrar a correção com prova real.",
+  "criterios": [
+    "Mapa revisto por GPT, corrigido somente após janela de 20 minutos sem alteração, com backup, fonte geradora preservada e prints 1440/390 antes e depois.",
+    "Comentários do relatório, módulos, Novo pedido e decisões textuais, além das notas do cursor, aceitam colar e selecionar imagens, mostram prévia/remoção/erro e preservam o texto.",
+    "Imagens são validadas por tipo e tamanho no servidor, guardadas no projeto em .mb-anexos e vinculadas à fonte do pedido/comentário e à ponte; busca, senha e nomes ficam fora.",
+    "Testes Python, build, testes UI e prova de integração rodam; app real reiniciado e saúde/apresentação conferidas sem alterar a mesa humana.",
+    "Revisão independente por GLM/ZCode, conferência dos retornos no disco, leitura dos complementos e conclusão honesta pela ponte."
+  ],
+  "tarefas": [
+    {"id":"revisao-plano", "titulo":"Revisar plano e contrato de anexos", "papel":"revisor", "vendor":"glm", "arquivos":[".mb-ponte/261018-170628-55842e/plano.json"], "depende_de":[], "revisor_vendor":"gpt"},
+    {"id":"backend", "titulo":"Armazenamento e transporte de anexos", "papel":"worker", "vendor":"gpt", "arquivos":["apps/megabrain-dashboard/central_server.py", "apps/megabrain-dashboard/central_attachments.py", "apps/megabrain-dashboard/tests/test_central_attachments.py"], "depende_de":["revisao-plano"], "revisor_vendor":"glm"},
+    {"id":"interface", "titulo":"Colar e escolher prints nos campos coerentes", "papel":"worker", "vendor":"gpt", "arquivos":["apps/megabrain-dashboard/web/src", "apps/megabrain-dashboard/central_reports.py", "motor/modelos/interacoes/261010_cursor-ferramentas", "motor/modelos/interacoes/261010_decisoes-respondiveis", "apps/megabrain-dashboard/web/public"], "depende_de":["revisao-plano"], "revisor_vendor":"glm"},
+    {"id":"mapa", "titulo":"Revisão e correção do mapa por outro fornecedor", "papel":"worker", "vendor":"gpt", "arquivos":["bin/mb-harness-mapa.py", "dados/harness-mapa.json", "motor/modelos/harness-mapa", "motor/tests/test_mb_harness_mapa.py", "00_PARA-VOCE/261011_harnesses/261017_MAPA-DO-HARNESS.html"], "depende_de":["revisao-plano"], "revisor_vendor":"glm"},
+    {"id":"transporte-imagens", "titulo":"Entregar pixels aos clientes de IA no Novo pedido", "papel":"worker", "vendor":"gpt", "arquivos":["apps/megabrain-dashboard/model_clients.py", "apps/megabrain-dashboard/tests/test_model_clients.py"], "depende_de":["revisao-plano"], "revisor_vendor":"glm"},
+    {"id":"integracao", "titulo":"Integrar, testar e apresentar no app", "papel":"orquestrador", "vendor":"gpt", "arquivos":["apps/megabrain-dashboard/central_workflows.py (após n2)", "apps/megabrain-dashboard/tests/test_isolated_server.py", "evidence/261018_ponte-orquestradores", "memoria/estado", ".mb-ponte/261018-170628-55842e/nos/n0/resultado.md"], "depende_de":["backend","interface","mapa","transporte-imagens"], "revisor_vendor":"glm"}
+  ],
+  "contrato_anexos": {
+    "upload":"POST /api/projects/{pid}/attachments; JSON {name,mime,data}; data é base64 sem prefixo; resposta {attachment:{id,path,name,mime,size,url}}",
+    "leitura":"GET /api/projects/{pid}/attachments/{id}, autenticado",
+    "vinculo":"Na API cliente: anexos:[attachment]. Na fonte persistida do comentário e na ponte: anexos:[caminho string canônico resolvido pelo servidor]; metadata em attachment_details. A ponte permanece sem alteração. Em notas/decisões, preservar associação por nota/resposta.",
+    "limites":"PNG/JPEG/GIF/WebP; até 8 MiB por imagem e até 6 por envio; mensagem clara para erros; nenhum SVG/HTML",
+    "persistencia":".mb-anexos dentro da raiz real do projeto, fora de 00_PARA-VOCE; rascunhos preservados até envio confirmado"
+  },
+  "contexto": "DESPACHO: coordenação aqui Codex 1, workers GPT no cliente principal real da ponte e revisão GLM/ZCode. Não é Codex 2. Prioridade humana explícita sobre rota automática. Sem Git, API paga, publicação nem migração. Janela do mapa: conferir todos os mtimes imediatamente antes de escrever. Campos do app fora do Git exigem backup por worker. Não editar estado compartilhado nem dist até integração. Versão genérica recusada: botão de anexo sem transporte persistente nem prova no app. Revisão GLM n1 recebida AJUSTAR e incorporada em 18/10/2026 17:15 antes da produção: A1 teto por rota, A2 caminhos strings persistidos, A3 central_server exclusivo backend e central_reports exclusivo interface, A4 canal postMessage com bytes transitórios e refs curtas; cf. PLANO-REVISADO.json.",
+  "revisao_plano": {
+    "fonte":"nos/n1/resultado.md e evidence/261018_ponte-orquestradores/revisao-plano-glm.md",
+    "A1":"Upload com limite independente ~12 MiB por corpo JSON, leitura limitada e cap8MiB de bytes decodificados. Todas as demais rotas mantêm350KB. Sem concatenar corpo ilimitado.",
+    "A2":"Objetos apenas na fronteira da API; persistir caminhos strings resolvidos no servidor. Caminho canônico absoluto aceito para a ordem conseguir localizar o arquivo; nenhum caminho arbitrário recebido é usado para leitura. Não alterar central_bridge.",
+    "A3":"Arquivos exclusivos: backend n2 central_server/central_attachments/central_workflows/central_execution e respectivos testes; interface n3 web/src/canônicos cursor/decisões/central_reports; mapa n4 só suas fontes. Todos releem mtimes/hashes imediatamente antes de escrever e preservam alteração concorrente.",
+    "A4":"Manter CSP connect-src none no render. PostMessage dedicado e validado render→wrapper→host, upload no host; notas/drafts/ACK armazenam somente referências curtas; bytes nunca em localStorage/SQLite.",
+    "menores":"Upload idempotente por conteúdo/identidade; GET ligado ao pid; storage oculto usa validador dedicado, sem enfraquecer confined_file geral; validar bytes reais e rejeitar SVG/HTML."
+  },
+  "marcos":["1. Plano e revisão", "2. Implementação em arquivos exclusivos", "3. Integração e prova", "4. Retorno/conclusão"],
+  "ajuste_integracao_1721":"N0 observou que Novo pedido envia só metadados aos modelos textual/research e torna toda revisão com imagem incompleta. N5 estende somente adapter de assinatura com inputs visuais nativos, sem ampliar ferramentas nem trocar conta; n0 integra em central_workflows após n2 terminar. Prova de transporte/bytes por processos simulados não equivale à percepção do modelo. GLM revisa implementação final."
+}

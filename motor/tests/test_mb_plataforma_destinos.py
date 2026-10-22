@@ -21,11 +21,23 @@ class DestinosTest(unittest.TestCase):
         self.assertEqual(list(self.ext.iterdir()),[])
     def test_junction_data_does_not_write_outside(self):
         self.link('dados')
-        for action in (lambda:salvar_config(self.p,'criteriosa'),lambda:registrar_observacao(self.p,classificar('oi')),lambda:registrar(self.p,{}),lambda:coletar(self.p)):
+        for action in (lambda:salvar_config(self.p,'criteriosa'),lambda:registrar(self.p,{}),lambda:coletar(self.p)):
             with self.assertRaises(ValueError):action()
+        self.assertEqual(list(self.ext.iterdir()),[])
+    def test_junction_log_does_not_write_outside(self):
+        # H8 (261017): a observacao da triagem mora em .mb-log; o desvio por junction continua barrado.
+        self.link('.mb-log')
+        with self.assertRaises(ValueError):registrar_observacao(self.p,classificar('oi'))
         self.assertEqual(list(self.ext.iterdir()),[])
     def test_observation_has_no_prompt_or_reply(self):
         registrar_observacao(self.p,classificar('texto de entrada privado para teste'),'teste')
-        text=(self.p/'dados/triagem-observacoes.json').read_text(encoding='utf-8')
+        text=(self.p/'.mb-log/triagem-observacoes.json').read_text(encoding='utf-8')
         self.assertNotIn('texto de entrada',text);self.assertNotIn('prompt',text);self.assertEqual(json.loads(text)['total'],1)
+    def test_observation_does_not_touch_versioned_dados(self):
+        # H8 (261017): telemetria por prompt nao suja a pasta versionada dados/.
+        (self.p/'dados').mkdir()
+        antigo=self.p/'dados/triagem-observacoes.json';antigo.write_text('{"antigo": true}\n',encoding='utf-8')
+        registrar_observacao(self.p,classificar('oi'),'teste')
+        self.assertEqual(antigo.read_text(encoding='utf-8'),'{"antigo": true}\n')
+        self.assertEqual(json.loads((self.p/'.mb-log/triagem-observacoes.json').read_text(encoding='utf-8'))['total'],1)
 if __name__=='__main__':unittest.main()

@@ -85,7 +85,14 @@ class ReportApiTests(unittest.TestCase):
         self.assertEqual([Path(p) for p in project['not_indexed']],[missing.relative_to(self.fixture.project)])
         self.assertEqual([Path(p) for p in project['interactive_incompatible']],[large.relative_to(self.fixture.project)])
 
-    def test_draft_survives_store_reopen_and_is_not_restored_to_a_new_version(self):
+    def test_draft_survives_store_reopen_and_recovers_into_a_new_version(self):
+        # 261014, pedido do <USUARIO>: comentário não pode se perder quando o
+        # relatório muda de versão. A view de uma versão sem rascunho recupera
+        # o rascunho mais recente DO MESMO relatório (posições e rótulos
+        # gravados continuam dizendo onde a nota estava e o que significava).
+        # 261017 WP2: rascunho e envio feitos na versão que ele abriu
+        # continuam aceitos depois da troca, gravados com o hash antigo e a
+        # marca versao_anterior. Links (resolve) seguem exigindo a versão atual.
         original=self.fixture.html.read_bytes()
         status,_,draft=self.json(self.base+'/draft','POST',{'hash':self.hash,'storage':{'first':'human draft'}})
         self.assertEqual(status,200)
@@ -96,10 +103,13 @@ class ReportApiTests(unittest.TestCase):
         self.fixture.html.write_text('<html><h1>Version B</h1></html>')
         self.assertEqual(self.request(self.base+'/render?ticket='+self.ticket+'&version='+self.hash)[0],409)
         status,_,new_view=self.request(self.base+'/view?ticket='+self.ticket)
-        self.assertEqual(status,200);self.assertNotIn(b'human draft',new_view)
-        for tail,payload in [('draft',{'storage':{'first':'old draft'}}),('feedback',{'note':'old feedback'}),('resolve',{'path':'00_PARA-VOCE/final.html'})]:
-            self.assertEqual(self.request(self.base+'/'+tail,'POST',{'hash':self.hash,**payload})[0],409)
-        self.assertEqual(Store(self.fixture.store.path).get(key,{})['data']['storage'],{'first':'human draft'})
+        self.assertEqual(status,200);self.assertIn(b'human draft',new_view)
+        for tail,payload in [('draft',{'storage':{'first':'old draft'}}),('feedback',{'note':'old feedback'})]:
+            self.assertEqual(self.request(self.base+'/'+tail,'POST',{'hash':self.hash,**payload})[0],200)
+        self.assertEqual(self.request(self.base+'/resolve','POST',{'hash':self.hash,'path':'00_PARA-VOCE/final.html'})[0],409)
+        saved=Store(self.fixture.store.path).get(key,{})['data']
+        self.assertEqual(saved['storage'],{'first':'old draft'});self.assertTrue(saved['versao_anterior'])
+        self.assertTrue(Store(self.fixture.store.path).listing('comments',self.fixture.pid)[0]['versao_anterior'])
         self.assertNotEqual(self.fixture.html.read_bytes(),original)
 
     def test_local_storage_key_named_storage_is_preserved_as_data(self):

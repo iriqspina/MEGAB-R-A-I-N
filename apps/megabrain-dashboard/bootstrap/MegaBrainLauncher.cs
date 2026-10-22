@@ -47,23 +47,17 @@ internal static class Launcher
                 try
                 {
                     try { owns = gate.WaitOne(0); } catch (AbandonedMutexException) { owns = true; }
-                    if (!owns) { Trace("Another launcher is starting; waiting without launching."); return WaitForWindow(null); }
+                    if (!owns) { Trace("Another launcher is starting; waiting without launching."); return WaitForWindow(null, false); }
                     List<int> running = RunningCentral();
                     Trace("Launch requested. Existing central process IDs: " + String.Join(",", running));
                     IntPtr window = FindWindow(running);
                     if (window != IntPtr.Zero) { Trace("Existing window found; focusing only."); Focus(window); return 0; }
                     // A Python wrapper and its child are one launch, not two instances.
                     // If startup is already in progress, do not start another interpreter.
-                    if (running.Count > 0) { Trace("Central process exists without visible window; waiting without launching."); return WaitForWindow(null); }
-                    ProcessStartInfo start = new ProcessStartInfo(Runtime, "\"" + Entry + "\"");
-                    start.WorkingDirectory = App;
-                    start.UseShellExecute = false;
-                    start.CreateNoWindow = true;
-                    using (Process child = Process.Start(start))
+                    if (running.Count > 0) { Trace("Central process exists without visible window; waiting without launching."); return WaitForWindow(null, true); }
+                    using (Process child = StartCentral())
                     {
-                        if (child == null) throw new InvalidOperationException("O Windows não iniciou a central.");
-                        Trace("Started Python wrapper PID " + child.Id + ".");
-                        return WaitForWindow(child);
+                        return WaitForWindow(child, true);
                     }
                 }
                 finally { if (owns) gate.ReleaseMutex(); }
@@ -119,7 +113,19 @@ internal static class Launcher
         File.AppendAllText(Path.Combine(Bootstrap, "launcher.log"), DateTimeOffset.Now.ToString("o") + " " + message + Environment.NewLine, Encoding.UTF8);
     }
 
-    private static int WaitForWindow(Process started)
+    private static Process StartCentral()
+    {
+        ProcessStartInfo start = new ProcessStartInfo(Runtime, "\"" + Entry + "\"");
+        start.WorkingDirectory = App;
+        start.UseShellExecute = false;
+        start.CreateNoWindow = true;
+        Process child = Process.Start(start);
+        if (child == null) throw new InvalidOperationException("O Windows não iniciou a central.");
+        Trace("Started Python wrapper PID " + child.Id + ".");
+        return child;
+    }
+
+    private static int WaitForWindow(Process started, bool mayStart)
     {
         DateTime deadline = DateTime.UtcNow.AddSeconds(35);
         int absent = 0;
@@ -134,7 +140,14 @@ internal static class Launcher
                 if (started != null && started.HasExited)
                     throw new InvalidOperationException("O processo da central encerrou antes de abrir a janela (código " + started.ExitCode + "). Consulte data\\central-desktop.log.");
                 if (started == null)
-                    throw new InvalidOperationException("O processo anterior encerrou durante a espera. Nenhuma segunda cópia foi aberta; tente novamente.");
+                {
+                    if (!mayStart)
+                        throw new InvalidOperationException("O processo anterior encerrou durante a espera. Nenhuma segunda cópia foi aberta; tente novamente.");
+                    // O processo anterior encerrou sem abrir janela; o gate já é nosso, então abrir nova cópia em vez de falhar.
+                    Trace("Previous central exited during wait; starting a fresh copy.");
+                    started = StartCentral();
+                    absent = 0;
+                }
             }
             Thread.Sleep(350);
         }

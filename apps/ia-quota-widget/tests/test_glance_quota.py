@@ -1,6 +1,7 @@
 """No-scroll reading contract: real dated snapshot, geometry and wallet semantics."""
 import copy
 import json
+from datetime import datetime,timezone
 from pathlib import Path
 import pytest
 from PySide6.QtCore import QPoint,QRect, Qt, QTimer
@@ -14,7 +15,7 @@ from widget_app.ui_glance_quota import GlanceView
 
 
 def snap(amount=None, used=None):
-    return {'status':'ok','windows':[{'id':'session','duration_minutes':300,'used_percent':used}],
+    return {'status':'ok','fetched_at':datetime.now(timezone.utc).isoformat(),'windows':[{'id':'session','duration_minutes':300,'used_percent':used}],
             'details':{'financial':[{'title':'Créditos de uso','currency':'BRL','amount':amount}], 'resets':[]}}
 
 
@@ -55,7 +56,7 @@ def test_plan_api_cash_bonus_are_separate_and_dates_not_freshened():
     byid={i.id:i for i in items}
     assert byid['balance:plan'].value=='—' and byid['browser:balance'].value=='USD 7'
     assert byid['browser:parts'].value=='USD 2 + 5'
-    assert byid['reset:0'].manual_date==browser['reset_observed_at']
+    assert byid['reset:unknown'].value=='—'  # historical manual stock is not current
     assert byid['browser:balance'].manual_date==browser['observed_at']
 
 
@@ -98,7 +99,8 @@ def test_all_quotas_resets_balances_are_visible_without_scrolling(real_window,qt
         assert all(r['contained'] and r['text_fits'] for r in v.geometry_checks())
         assert all(i.kind in ('reset','balance') for i in v.items)
     items=[i for v in views for i in v.items]
-    assert any(i.label=='Completo*' or 'Completo*' in i.label for i in items)
+    assert any(i.id=='reset:unknown' and i.value=='—' for i in items)
+    assert not any('Completo*' in i.label for i in items)  # fixture is historical
     assert any(i.value=='USD 250' for i in items) and any(i.label=='API*' for i in items)
 
 

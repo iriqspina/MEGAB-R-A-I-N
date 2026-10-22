@@ -1,0 +1,12 @@
+{
+  "status": "parcial",
+  "resumo": "Controles agrupados de espera/pausa e skill opcional implementados; projeto em aguardando com automação desligada. Revisão independente exige correções na elegibilidade de etapas, na disputa pausa/início e no indicador persistente; entrega parcial, sem retomada automática.",
+  "provas": [
+    ".mb-ponte/261020-170554-b2c2be/nos/n0/resultado.md; nos/n3/resultado.md; evidence/261020_cursor-pausa/native-proof.json; ui-results.json; final-targeted-tests.txt"
+  ],
+  "pendencias": [
+    "Pendências da equipe: corrigir os três achados da revisão, reconciliar edição concorrente e completar prova de teclado. Nenhuma ação manual exigida agora; aguardar retomada explícita."
+  ],
+  "concluido_em": "2026-10-20T20:28:25+00:00",
+  "por": "n0"
+}

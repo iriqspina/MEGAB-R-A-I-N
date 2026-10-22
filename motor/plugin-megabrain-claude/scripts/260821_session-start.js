@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * 260821_session-start.js — hook SessionStart do plugin megabrain (Claude/Cowork). v1.1.1
+ * 260821_session-start.js — hook SessionStart do plugin megabrain (Claude/Cowork). v1.2.0
  *
  * Faz duas coisas, sem depender da memória do usuário:
  *   1. Injeta o núcleo do protocolo (texto de megabrain-core, curto — custa
@@ -9,6 +9,8 @@
  *      conectada (até 2 níveis) e injeta o MAIS RECENTE por data de
  *      modificação ("por recência"). Sem embeddings — essa infra não existe
  *      no sandbox Cowork; a versão Kimi/desktop faz por proximidade.
+ *      Exceção (v1.2.0, 261016): aberto na própria central, usa sempre o
+ *      canônico memoria/nucleo/licoes-megabrain.md.
  *
  * Sem memória global por usuário: a v1.0.0 assumia ~/.metaprotocolo/licoes.md,
  * arquivo que não existe no projeto real. A memória viva é licoes-megabrain.md
@@ -115,10 +117,34 @@ function projectRoots() {
   });
 }
 
+/**
+ * Na central o arquivo de lições é um só: memoria/nucleo/licoes-megabrain.md
+ * (o mesmo que mb_utils.achar e o índice de proximidade leem). Sem isto, uma
+ * raiz solta ou as LICOES.md de apps/ e pets/ ganhavam por mtime (261016).
+ */
+function centralLessonFile(root) {
+  const nucleo = path.join(root, "memoria", "nucleo");
+  try {
+    const canon = path.join(nucleo, "licoes-megabrain.md");
+    if (
+      fs.statSync(canon).isFile() &&
+      fs.statSync(path.join(nucleo, "MEGABRAIN.md")).isFile()
+    ) {
+      return canon;
+    }
+  } catch {
+    /* não é a central */
+  }
+  return null;
+}
+
 /** Arquivo de lições mais recentemente modificado entre as raízes. */
 function findMostRecentLessonFile() {
+  const roots = projectRoots();
+  const canon = roots.length ? centralLessonFile(roots[0]) : null;
+  if (canon) return canon;
   const found = [];
-  for (const root of projectRoots()) collectLessonFiles(root, found);
+  for (const root of roots) collectLessonFiles(root, found);
   let best = null;
   let bestMtime = -1;
   for (const f of new Set(found)) {

@@ -52,9 +52,9 @@ def codex_details(payload):
     resets=payload.get('rateLimitResetCredits')
     notes=[]; reset_rows=[]
     if isinstance(resets,dict) and number(resets.get('availableCount')) is not None:
-        notes.append(f"Redefinições gratuitas disponíveis: {int(number(resets['availableCount']))}.")
         reset_rows.append({'title':'Resets gratuitos Codex','count':int(number(resets['availableCount'])),'kind':'account','usable':number(resets['availableCount'])>0})
-    return {'financial':[row],'notes':notes,'product_shares':[],'resets':reset_rows}
+    return {'financial':[row],'notes':notes,'product_shares':[],'resets':reset_rows,
+            'resets_status':'reported' if reset_rows else 'unknown'}
 
 
 def claude_details(payload):
@@ -94,14 +94,42 @@ def claude_details(payload):
                 reset_rows.append({'title':'Reset completo' if kind=='full' else 'Reset de 5 horas' if kind=='five_hour' else 'Oferta de reset',
                      'count':int(count),'total':int(total) if total is not None and total.is_integer() else None,'kind':str(kind or 'unknown'),
                      'expires_at':timestamp(grant.get('ends_at')),'usable':grant.get('usable_now') is True and grant.get('paused') is not True})
-    return {'financial':rows,'product_shares':shares,'resets':reset_rows,'product_shares_as_of':breakdown.get('as_of') if isinstance(breakdown,dict) else None,
+    grants=offers.get('grants') if isinstance(offers,dict) else None
+    reset_status='reported' if reset_rows else 'none' if isinstance(grants,list) and not grants else 'unknown'
+    if isinstance(grants,list) and len(reset_rows)!=len(grants):reset_status='unknown'
+    return {'financial':rows,'product_shares':shares,'resets':reset_rows,'resets_status':reset_status,'product_shares_as_of':breakdown.get('as_of') if isinstance(breakdown,dict) else None,
             'notes':['Participação por produto divide o consumo semanal; não é saldo individual de cada produto.']}
+
+
+def zai_details(payload, windows=None):
+    """Envelope ``{data: {limits[], level}}`` + janelas parseadas -> notas.
+
+    Sem dinheiro: os valores da API são créditos de uso por janela, não saldo
+    em moeda. Reusa ``parse_zai_quota`` (mesma fonte) para não re-derivar
+    duração; campo que a API não dá não aparece.
+    """
+    if not isinstance(payload, dict):
+        return {}
+    data = payload.get("data") if isinstance(payload.get("data"), dict) else {}
+    level = data.get("level")
+    notes = [f"Plano {level}." if isinstance(level, str) and level else "Plano não informado pela API."]
+    for window in windows or []:
+        if not isinstance(window, dict):
+            continue
+        nome = str(window.get("label") or window.get("id") or "Limite")
+        usado = number(window.get("used_percent"))
+        if usado is not None:
+            notes.append(f"{nome}: {100.0 - usado:.1f}% livre.")
+    notes.append("Valores em créditos de uso da API Z.ai; não são dólares nem assinatura.")
+    return {'financial': [], 'product_shares': [], 'notes': notes[:10], 'resets': []}
 
 
 def sanitize_details(raw):
     """Normalize only documented UI fields, including zero; null stays missing."""
     if not isinstance(raw,dict):return {}
     out={'financial':[],'product_shares':[],'notes':[],'resets':[]}
+    if raw.get('resets_status') in ('reported','none','unknown'):
+        out['resets_status']=raw['resets_status']
     for item in raw.get('financial') or []:
         if not isinstance(item,dict):continue
         row={k:str(item[k])[:300] for k in ('title','currency','status','note','expires_at') if isinstance(item.get(k),str)}
@@ -111,7 +139,7 @@ def sanitize_details(raw):
     for item in raw.get('product_shares') or []:
         if isinstance(item,dict) and number(item.get('percent')) is not None and number(item['percent'])<=100:
             out['product_shares'].append({'name':str(item.get('name','Produto'))[:80],'percent':number(item['percent'])})
-    out['notes']=[str(v)[:300] for v in raw.get('notes') or [] if isinstance(v,str)][:10]
+    out['notes']=[str(v)[:300] for v in raw.get('notes') or [] if isinstance(v,str) and not v.startswith('Redefinições gratuitas')][:10]
     for item in raw.get('resets') or []:
         if not isinstance(item,dict):continue
         count=number(item.get('count'))
@@ -123,6 +151,53 @@ def sanitize_details(raw):
         out['resets'].append(row)
     if isinstance(raw.get('product_shares_as_of'),str):out['product_shares_as_of']=raw['product_shares_as_of']
     return out
+
+
+def resolve_resets(details, browser=None, *, fetched_at=None, now=None, stale=False):
+    """Keep historical stock out of current totals. Time limits are heuristics.
+
+    A poll without reset fields is unknown, never proof of zero. Browser
+    observations retain their own clock; a new usage poll cannot renew them.
+    """
+    from datetime import datetime, timezone
+    clock=now or datetime.now(timezone.utc)
+    def date(value):
+        try:
+            parsed=datetime.fromisoformat(value.replace('Z','+00:00'))
+            return parsed if parsed.tzinfo else None
+        except (AttributeError,TypeError,ValueError):return None
+    def fresh(value,seconds):
+        stamp=date(value)
+        return stamp is not None and 0 <= (clock-stamp).total_seconds() < seconds
+    details=details if isinstance(details,dict) else {}
+    rows=details.get('resets') or []
+    status=details.get('resets_status') or ('reported' if rows else 'unknown')
+    browser=browser if isinstance(browser,dict) else {}
+    observed=browser.get('resets') or []
+    stamp=browser.get('reset_observed_at')  # wallet timestamps cannot freshen reset stock
+    history=[{**row,'observed_at':stamp,'source':'browser'} for row in observed]
+    source='automatic';current=[]
+    if not stale and fresh(fetched_at,900) and status in ('reported','none'):
+        current=list(rows)
+        if status=='none':
+            current=[{'title':'Resets','kind':'offers','count':0,'usable':False}]
+    elif (not stale and fresh(stamp,86400) and not browser.get('unavailable')
+          and browser.get('verification_status')!='unavailable'
+          and observed and all(date(r.get('expires_at')) and date(r['expires_at'])>clock for r in observed)
+          and (date(fetched_at) is None or date(stamp)>date(fetched_at))):
+        current=list(observed);status='reported';source='browser'
+    else:status='unknown'
+    valid=[]
+    for row in current:
+        expiry=date(row.get('expires_at'))
+        if expiry is not None and expiry<=clock:
+            history.append({**row,'observed_at':stamp if source=='browser' else fetched_at,'source':source,'expired':True})
+        else:valid.append(dict(row))
+    if current and not valid:status='expired'
+    if source=='automatic' and not current and rows:
+        history.extend({**r,'observed_at':fetched_at,'source':'automatic'} for r in rows)
+    return {'current':valid,'history':history,'status':status,'source':source,
+            'observed_at':stamp if source=='browser' else fetched_at}
 
 
 def reset_summary(details):

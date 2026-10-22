@@ -1,12 +1,28 @@
-export type Project = {id:string; name:string; color?:string; summary?:string; updated_at?:string; next_step?:string; source?:string; delivery_count?:number;report_count?:number};
+export type Project = {id:string; name:string; color?:string; source_name?:string; source_color?:string; summary?:string; updated_at?:string; next_step?:string; source?:string; delivery_count?:number;report_count?:number};
 export type Delivery = {id:string; title:string; status?:string; updated_at?:string; summary?:string; file_id?:string; type?:string; verified?:boolean; verification_label?:string; session?:string};
 export type Asset = {id:string; name:string; title?:string; type?:string; role?:string; url?:string; updated_at?:string;author?:string;source?:string;origin?:string};
 export type Activity = {id:string|number; title:string; detail?:string; at?:string; kind?:string; project_id?:string};
-export type Comment = {id:string; text:string; target:string; at:string; anchor?:{x:number;y:number};feedback_key?:string;source_hash?:string;status?:string;correction?:string;onde?:string;decision_count?:number;note_count?:number;source?:string};
+export type Comment = {id:string; text:string; target:string; at:string; anchor?:{x:number;y:number};feedback_key?:string;source_hash?:string;status?:string;correction?:string;onde?:string;decision_count?:number;note_count?:number;source?:string;ponte?:{estado:string;ordem?:string;vendor?:string;ativos?:number}};
+/** Ponte de correção (261018): comentário → planejador → orquestradores → workers. */
+export type BridgeVendor = {id:string;nome:string;empresa:string;cli:string;ativo:boolean;motivo:string;aviso:string};
+export type BridgeNode = {id:string;pai:string|null;papel:string;vendor:string;nome_vendor:string;titulo:string;profundidade:number;status:string;status_observado?:string|null;inicio?:string|null;fim?:string|null;exit_code?:number|null;erro?:string|null;resumo:string;saida:string};
+export type BridgeOrder = {ordem_id:string;dir:string;criado_em:string;vendor:string;nome_vendor:string;modo:string;comentarios:string[];resumo_pedido:string;situacao:string;nos:BridgeNode[];resultado:{status:string;resumo:string;provas:string[];pendencias:string[];concluido_em:string}|null;plano:{objetivo:string;tarefas:{id:string;titulo:string;vendor:string;papel:string}[]}|null;complementos:number;ativos:number};
+export type BridgeRole = 'planejador'|'orquestrador'|'worker'|'revisor';
+export type BridgeRoute = {vendor:string;modelo:string;effort:string};
+export type BridgeModel = {id:string;nome:string;efforts:string[];ativo?:boolean;motivo?:string};
+export type BridgeCatalog = {vendor:string;modelos:BridgeModel[]};
+export type BridgePipeline = Partial<Record<BridgeRole,BridgeRoute>>;
+export type BridgePreset = {id:string;nome:string;descricao:string;tradeoff:string;fonte:string;pipeline:BridgePipeline};
+export type BridgeConfig = {auto:boolean;vendor:string|null;pipeline?:BridgePipeline;modo:'segundo_plano'|'janela';espera_segundos:number;coordenacao:string;vendor_indisponivel?:string};
+/** 261022: lote ainda na fila da ponte (aguardando silêncio, retomada do projeto ou lançamento). */
+export type BridgePending = {chave:string;revisao:number;estado:string;comentarios:string[];criado_em?:string;lancar_apos?:number;vendor?:string;nome_vendor?:string;resumo:string};
+export type BridgeView = {revision:number;data:BridgeConfig;vendors:BridgeVendor[];catalogo?:BridgeCatalog[];presets?:BridgePreset[];ordens:BridgeOrder[];lancamento:boolean;pasta:string;pendentes?:BridgePending[];controle?:string|null};
+export type BridgeReceipt = {estado:string;vendor?:string;nome_vendor?:string;em_segundos?:number;ordem?:string;mensagem?:string;controle?:string|null;partes?:BridgeReceipt[]}|null;
 export type ProjectDetail = {project:Project; deliveries:Delivery[]; assets:Asset[]; references?:Asset[]; activity:Activity[]; sessions:{id:string; vendor:string; title:string;status:string; updated_at?:string;evidence?:string}[]; comments:Comment[]; revision:string};
 export type LayoutItem = {i:string;x:number;y:number;w:number;h:number;minW?:number;minH?:number;maxW?:number};
-export type HomePanelKind = 'project'|'process'|'report';
-export type HomePanel = {key:string; kind:HomePanelKind; project_id:string; ref?:string; title:string};
+export type HomePanelKind = 'project'|'process'|'report'|'module'|'global'|'strip';
+/** preview: cópia validada do item resolvido no catálogo quando o relatório foi aberto (só para kind 'report'). */
+export type HomePanel = {key:string; kind:HomePanelKind; project_id:string; ref?:string; title:string; preview?:Preview};
 export type Workspace = {openProjects:string[];activeProject:string|null;compareProject:string|null;layouts:Record<string,LayoutItem[]>;hiddenModules:Record<string,string[]>;density:string;longPressMs:number;views:unknown[];view?:'home'|'project';startView?:'home'|'last';homePanels?:HomePanel[];[key:string]:unknown};
 export type Versioned<T> = {revision:number;data:T};
 export type Capability = 'textual'|'research'|'code';

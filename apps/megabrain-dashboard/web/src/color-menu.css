@@ -1,0 +1,30 @@
+/* 261016: menu Cores no alto (mesmo padrão do Meu painel); bolinhas da paleta + arco-íris para qualquer cor. */
+.color-menu{position:relative}.color-menu-trigger{min-height:44px;white-space:nowrap}
+.color-menu-panel{position:fixed;z-index:120;width:min(470px,calc(100vw - 24px));padding:16px 16px 12px;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 32px #0004;max-height:calc(100dvh - 100px);overflow:auto;box-sizing:border-box}
+.color-menu-panel>header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.color-menu-panel>header>div{display:flex;flex-direction:column;gap:4px;min-width:0}
+.color-menu-panel>header strong{font-size:17px}
+.color-menu-panel>header small{font-size:12px;color:var(--muted);line-height:1.45}
+.color-menu-panel>header button{width:44px;height:44px;flex-shrink:0;border:0;background:transparent;color:var(--text);border-radius:10px;display:grid;place-items:center;cursor:pointer}
+.color-group{border:0;padding:0;margin:16px 0 4px;min-width:0}
+.color-group legend{font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);padding:0}
+.color-group>p{font-size:12px;color:var(--muted);margin:4px 0 8px;line-height:1.4}
+.color-group ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.color-group li{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 8px 7px 10px;border:1px solid var(--line);border-left:3px solid var(--row-color);border-radius:10px;background:color-mix(in srgb,var(--row-color) 6%,transparent)}
+.color-row-name{display:flex;align-items:center;gap:8px;min-width:0}
+.color-row-name i{width:12px;height:12px;border-radius:50%;background:var(--row-color);flex-shrink:0}
+.color-row-name>span{display:flex;flex-direction:column;min-width:0}
+.color-row-name strong{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.color-row-name small{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.color-row-choices{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.color-dot{width:26px;height:26px;min-width:26px;border-radius:50%;border:0;background:var(--choice);color:#1b1822;display:grid;place-items:center;padding:0;cursor:pointer}
+.color-dot[aria-pressed=true]{outline:2px solid var(--choice);outline-offset:2px}
+.color-dot:focus-visible,.color-custom:focus-within{outline:2px solid var(--text);outline-offset:2px}
+.color-custom{position:relative;display:block;width:26px;height:26px;border-radius:50%;overflow:hidden;flex-shrink:0;cursor:pointer;background:conic-gradient(#ff6b6b,#ffd93d,#6bcb77,#4d96ff,#c77dff,#ff6b6b)}
+.color-custom.is-custom{background:radial-gradient(circle,var(--custom) 0 55%,transparent 57%),conic-gradient(#ff6b6b,#ffd93d,#6bcb77,#4d96ff,#c77dff,#ff6b6b);outline:2px solid var(--custom);outline-offset:2px;overflow:visible}
+.color-custom input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:0;padding:0;margin:0}
+.color-reset{width:30px;min-width:30px;height:30px;padding:0;margin:0;box-sizing:border-box;flex-shrink:0}.color-reset-slot{display:block;width:30px;flex-shrink:0}
+/* Reset local: a regra global de label/botão dava margem ao arco-íris e largura extra ao desfazer. */
+.color-row-choices>*{margin:0}.color-row-choices>.color-reset{width:30px;min-width:30px;height:30px}
+.color-menu-more{margin:6px 0 2px;font-size:12px}
+@media(max-width:759px){.color-menu-trigger>span{display:none}.color-menu-panel{left:12px!important;right:12px!important;width:auto}.color-group li{flex-wrap:wrap}.color-row-choices{width:100%;justify-content:flex-start;gap:8px}.color-dot,.color-custom{width:34px;height:34px;min-width:34px}}

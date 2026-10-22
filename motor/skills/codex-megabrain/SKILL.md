@@ -143,3 +143,7 @@ Ao concluir tarefa não trivial:
 6. Alterar stack porque uma tecnologia parece melhor fora do contexto.
 7. Fazer push ou sobrescrever projeto mais novo como parte automática do
    handoff.
+
+## Relatórios: GLM compõe, Codex/Claude revisam (261020)
+
+Ao criar, regenerar ou corrigir relatório humano, aplicar `/relatorios-glm` (fonte central `motor/skills/relatorios-glm/SKILL.md`). GLM principal MAX é compositor obrigatório; Codex/Claude revisam fontes, imagens e controles e podem fornecer modelos finalizados. Última correção substantiva volta ao GLM. Exceção apenas crédito extremo comprovado sem reset útil; falha técnica não troca produtor. Esta regra específica prevalece sobre papéis genéricos anteriores somente para relatórios. Evitar Claude MAX e ultracode. Gate `bin/mb-relatorios-glm.py`, evidência e exemplo promovido por prova; nunca prometer erro zero ou recarga de chats abertos.

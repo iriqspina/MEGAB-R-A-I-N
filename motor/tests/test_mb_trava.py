@@ -223,6 +223,20 @@ class TestIds(Base):
         self.assertTrue(depois.endswith(
             "## 260825b — dois\r\nlinha 2\r\n".encode("utf-8")))
 
+    def test_anexar_titulo_ganha_linha_em_branco_uma_vez(self):
+        raiz = self.tmpdir()
+        alvo = raiz / "licoes-megabrain.md"
+        alvo.write_bytes(b"## 261016 \xe2\x80\x94 um\nATALHO: x\n")
+        trava.anexar(alvo, "\n## 261016 — dois\nATALHO: y\n", "codex", raiz=raiz)
+        trava.anexar(alvo, "linha solta\n", "codex", raiz=raiz)
+        self.assertEqual(
+            alvo.read_text(encoding="utf-8"),
+            "## 261016 — um\nATALHO: x\n\n## 261016 — dois\nATALHO: y\n"
+            "linha solta\n")
+        alvo.write_bytes(b"## a\r\n\r\n")
+        trava.anexar(alvo, "## b\n", "codex", raiz=raiz)
+        self.assertEqual(alvo.read_bytes(), b"## a\r\n\r\n## b\r\n")
+
     def test_anexar_normaliza_legado_latin1_para_utf8(self):
         raiz = self.tmpdir()
         alvo = raiz / "licoes-megabrain.md"

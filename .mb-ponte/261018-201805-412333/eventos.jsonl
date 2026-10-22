@@ -1,0 +1,4 @@
+{"at": "2026-10-18T23:18:05+00:00", "tipo": "ordem_criada", "vendor": "glm", "comentarios": ["fccb6658c4ee450f83df223ec2e42b46"]}
+{"at": "2026-10-18T23:18:06+00:00", "tipo": "no_iniciado", "no": "n0", "vendor": "glm", "pid": 90408}
+{"at": "2026-10-18T23:23:31+00:00", "tipo": "ordem_concluida", "status": "parcial"}
+{"at": "2026-10-18T23:24:10+00:00", "tipo": "no_terminou", "no": "n0", "status": "concluido", "exit_code": 0}

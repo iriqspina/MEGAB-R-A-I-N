@@ -38,6 +38,18 @@ class ReportTests(unittest.TestCase):
         path.write_bytes(content if isinstance(content, bytes) else content.encode())
         return path
 
+    def test_missing_cursor_asset_preserves_document_and_warning_bootstrap(self):
+        original_read = Path.read_text
+        def without_cursor(path, *args, **kwargs):
+            if path.name == 'cursor-ferramentas.js':
+                raise FileNotFoundError('Synthetic missing shared asset')
+            return original_read(path, *args, **kwargs)
+        with patch.object(Path, 'read_text', without_cursor):
+            result = self.render('<head></head><main id="still-visible">Peça preservada</main>')
+        self.assertIn('Peça preservada', result)
+        self.assertIn('Comentários indisponíveis nesta página', result)
+        self.assertIn("send('loaded'", result)
+
     def test_wrapper_and_child_policies_keep_network_and_api_isolated(self):
         wrapper = reports.wrapper_report(self.fid, self.token)
         self.assertIn('/api/reports/' + self.fid + '/render?ticket=' + self.token, wrapper)
@@ -65,6 +77,16 @@ class ReportTests(unittest.TestCase):
         self.assertLess(result.index('Object.defineProperty(window'), result.index('window.fixtureLoaded'))
         self.assertIn("hook('CursorFerramentas'", result)
         self.assertIn("hook('DecisoesRespondiveis'", result)
+
+    def test_plain_prototype_gets_current_cursor_without_mutating_source(self):
+        result = self.render('<!doctype html><html><head><style>body{background:#123456}</style></head><body><button id="normal">Abrir card</button></body></html>')
+        self.assertIn("global.CursorFerramentas = { iniciar: iniciar, versao: '1.5'", result)
+        self.assertIn("function ensureCursor()", result)
+        self.assertIn("Comentar neste relatório: clique no ponto desejado", result)
+        self.assertIn("className='mb-report-tools cf-ui'", result)
+        self.assertIn("px:coordinate(v.px),py:coordinate(v.py)", result)
+        self.assertIn('body{background:#123456}', result)
+        self.assertIn('<button id="normal">Abrir card</button>', result)
 
     def test_images_css_fonts_and_parent_assets_are_inlined_within_project(self):
         self.put('assets/photo.png', b'fixture-image')

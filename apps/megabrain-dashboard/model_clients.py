@@ -40,6 +40,91 @@ ROOT = Path(__file__).resolve().parents[2]
 CAPABILITIES = {'textual':{'codex','claude','glm'}, 'research':{'claude'}, 'code':{'codex'}}
 CONTROL_FILES = {'.git','.codex','.claude','agents.md','claude.md'}
 NODE_OPTIONS = '--preserve-symlinks --preserve-symlinks-main'
+IMAGE_LIMITS = {'max_files':6, 'max_file_bytes':8*1024*1024, 'max_total_bytes':48*1024*1024}
+
+
+class ImageTransportUnavailable(ValueError):
+    pass
+
+
+def _image_inputs(run: Path, image_paths: list[str | Path] | None) -> tuple[list[dict[str,Any]],list[bytes]]:
+    """Only prepared inputs belonging to the stage's sibling job workspace.
+
+    The HTTP layer must resolve attachment IDs and prepare the job first. This
+    private adapter boundary never accepts project/browser paths as authority.
+    """
+    if image_paths is None: return [],[]
+    if not isinstance(image_paths,list) or len(image_paths)>IMAGE_LIMITS['max_files']:
+        raise ValueError('image_paths deve ser uma lista com até 6 imagens preparadas.')
+    if not image_paths:return [],[]
+    if not run.is_relative_to(ROOT):raise ValueError('Imagens exigem logdir de etapa dentro do MegaBrain.')
+    folder=run.parent/'workspace'/'.mb-anexos'
+    _no_links(folder)
+    if not folder.is_dir():raise ValueError('Pasta de anexos do próprio job não preparada.')
+    rows=[]; contents=[]; seen=set(); total=0
+    from central_attachments import validate_image  # leaf module; no model-client dependency
+    for value in image_paths:
+        if not isinstance(value,(str,Path)):
+            raise ValueError('Cada imagem deve ter um caminho absoluto canônico.')
+        path=Path(value)
+        if not path.is_absolute() or '..' in path.parts:
+            raise ValueError('Cada imagem deve ter um caminho absoluto canônico.')
+        _no_links(path)
+        resolved=path.resolve(strict=True)
+        if path!=resolved or not resolved.is_relative_to(folder) or resolved in seen:
+            raise ValueError('Imagem repetida, não canônica ou fora dos anexos do próprio job.')
+        info=path.stat()
+        if not stat.S_ISREG(info.st_mode) or info.st_nlink!=1 or not 0<info.st_size<=IMAGE_LIMITS['max_file_bytes']:
+            raise ValueError('Imagem deve ser arquivo regular sem hardlinks e ter até 8 MiB.')
+        total+=info.st_size
+        if total>IMAGE_LIMITS['max_total_bytes']:raise ValueError('Imagens excedem o total de 48 MiB.')
+        with path.open('rb') as stream:
+            opened=os.fstat(stream.fileno())
+            if (opened.st_dev,opened.st_ino,opened.st_nlink)!=(info.st_dev,info.st_ino,1):
+                raise ValueError('Imagem mudou durante a leitura.')
+            data=stream.read(IMAGE_LIMITS['max_file_bytes']+1)
+            after=os.fstat(stream.fileno())
+        _no_links(path)
+        current=path.stat()
+        # On native Windows, path stat and fstat can expose different legacy
+        # ctime values (creation/change time). Identity, size, mtime and link
+        # count are comparable across both APIs.
+        signature=lambda s:(s.st_dev,s.st_ino,s.st_size,s.st_mtime_ns,s.st_nlink)
+        if len(data)!=info.st_size or signature(info)!=signature(after) or signature(after)!=signature(current):
+            raise ValueError('Imagem mudou durante a leitura.')
+        mime,_=validate_image(data)
+        digest=hashlib.sha256(data).hexdigest()
+        rows.append({'id':digest,'path':str(resolved),'mime':mime,'size':len(data),'sha256':digest,
+                     'transported':False,'state':'validated','visual_inspection_observed':False})
+        contents.append(data);seen.add(resolved)
+    return rows,contents
+
+
+def _image_cli_support(model: str, timeout: float) -> dict[str,Any]:
+    """A local --help probe, never an inference/capability request to a model."""
+    if model=='glm':
+        if _sha(ZCODE)!=ZCODE_SHA256:
+            raise ImageTransportUnavailable('ZCode mudou; capacidade visual exige nova revisão do executável.')
+        node=shutil.which('node')
+        if not node:raise ImageTransportUnavailable('Node indisponível para verificar o ZCode real.')
+        args=[node,str(ZCODE),'--help'];flags=['--attach']
+    else:
+        args=[str(CODEX),'exec','--help'] if model=='codex' else [str(CLAUDE),'--help']
+        flags=['--image'] if model=='codex' else ['--input-format','stream-json','--output-format']
+    check=subprocess.run(args,capture_output=True,text=True,encoding='utf-8',errors='replace',
+        timeout=min(15,max(.001,timeout)),creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
+    help_text=check.stdout+check.stderr
+    if check.returncode or any(flag not in help_text for flag in flags):
+        raise ImageTransportUnavailable('Cliente instalado não confirma entrada visual nesta configuração.')
+    if model=='glm':
+        # The pinned official bundle's GLM-5.3 catalog declares text-only input.
+        # --attach alone does not prove pixels reach that model. Tools stay off;
+        # do not silently route to a vision model/MCP or send metadata as success.
+        raise ImageTransportUnavailable('ZCode aceita --attach, mas GLM-5.3 main/max é somente texto no catálogo verificado; sem troca de modelo ou ferramentas visuais.')
+    return {'mechanism':'codex_exec_image' if model=='codex' else 'claude_stream_json_image',
+            'capability_evidence':'installed CLI --help; Claude multimodal schema: official Agent SDK streaming-input documentation',
+            'help_exit_code':check.returncode,'help_sha256':hashlib.sha256(help_text.encode()).hexdigest(),
+            'scope':'native_cli_input_only; no provider receipt or perception proof'}
 
 
 def _code_runtime(env: dict[str,str]) -> dict[str,Any]:
@@ -488,7 +573,8 @@ def run_model(model: str, effort: str, prompt: str, cwd: str | Path,
               deadline_monotonic: float | None = None,
               capability: str = 'textual', execution_dir: str | Path | None = None,
               cancel_event: Any = None, max_turns: int = 12,
-              codex_account: str | None = None) -> dict[str, Any]:
+              codex_account: str | None = None,
+              image_paths: list[str | Path] | None = None) -> dict[str, Any]:
     """One no-retry invocation. Use a fresh logdir for each invocation.
 
     timeout_seconds bounds this subprocess; optional deadline_monotonic shares a
@@ -497,6 +583,8 @@ def run_model(model: str, effort: str, prompt: str, cwd: str | Path,
     Research is Claude-only and max_turns bounds native agentic turns (not calls).
     Codex code defaults to primary; textual keeps secondary. Explicit account
     selection changes CODEX_HOME in this child process only; never falls back.
+    image_paths accepts only prepared images in logdir.parent/workspace/.mb-anexos.
+    Visual transport records submission to the native CLI, never model perception.
     """
     if model not in {'codex','claude','glm'}:
         raise ValueError('model must be codex, claude or glm')
@@ -523,9 +611,11 @@ def run_model(model: str, effort: str, prompt: str, cwd: str | Path,
     if timeout <= 0 or (cancel_event is not None and cancel_event.is_set()):
         return {'text':'', 'exit_code':1, 'status':'deadline_exhausted' if timeout<=0 else 'cancelled', 'actual_model':None,
                 'capability':capability,'model_called':False,'tool_results':[],'web_sources':[],
+                'image_inputs':[], 'image_transport':{'mechanism':'none','state':'not_started'},
+                'visual_inspection_observed':False,
                 'effort_requested':effort, 'effort_evidence':'not run'}
     source = Path(cwd).resolve(strict=True)
-    if capability!='textual': _no_links(Path(logdir))
+    if capability!='textual' or image_paths: _no_links(Path(logdir))
     run = Path(logdir).resolve()
     if capability!='textual' and not run.is_relative_to(ROOT):
         raise ValueError('Active capabilities require a logdir inside this MegaBrain workspace')
@@ -554,14 +644,29 @@ def run_model(model: str, effort: str, prompt: str, cwd: str | Path,
         'max_turns':max_turns if capability=='research' else None,
         'retry_scope':'Wrapper never retries; GLM client retry limit 0; Claude/Codex internal network policy belongs to their CLIs.',
         'quota_status':'NAO_MEDIDO', 'timeout_seconds':timeout,
+        'image_inputs':[], 'image_transport':{'mechanism':'none','state':'not_requested'},
+        'image_limits':dict(IMAGE_LIMITS),
+        'visual_inspection_observed':False,
         'status':'starting', 'text':'', 'exit_code':None,
         'effort_evidence':'request only; output does not prove equivalent compute across vendors'}
     glm_before = None
+    images=[]; image_contents=[]; image_secrets=[]; stdin_prompt=None if model=='glm' else prompt
     try:
         def budget_remaining() -> float:
             remaining=timeout-(time.monotonic()-start)
             if remaining<=0:raise TimeoutError('Deadline exhausted before inference startup')
             return remaining
+        images,image_contents=_image_inputs(run,image_paths)
+        meta['image_inputs']=images
+        if images:
+            meta['image_transport']={'mechanism':'none','state':'validating_client',
+                'visual_inspection_observed':False,'provider_visual_ack_observed':False}
+            transport=_image_cli_support(model,budget_remaining())
+            meta['image_transport'].update(transport,state='prepared')
+            for row in images:row['transport']=transport['mechanism']
+            # Suppress even an accidental CLI echo of the image's encoded bytes.
+            image_secrets=[base64.b64encode(data).decode('ascii') for data in image_contents]
+            secrets.extend(image_secrets)
         if capability=='code':
             env['CODEX_HOME']=str(selected_home)
             meta['runtime']=_code_runtime(env)
@@ -574,6 +679,15 @@ def run_model(model: str, effort: str, prompt: str, cwd: str | Path,
                 '--effort',effort,'--output-format','stream-json' if capability=='research' else 'json']
             if capability=='research':args+=['--restricted','--no-chrome','--allowedTools','WebSearch,WebFetch',
                 '--max-turns',str(max_turns),'--verbose','--permission-prompts','none']
+            if images:
+                args[args.index('--output-format')+1]='stream-json'
+                args+=['--input-format','stream-json']
+                if '--verbose' not in args:args.append('--verbose')
+                content=[{'type':'text','text':prompt}]+[
+                    {'type':'image','source':{'type':'base64','media_type':row['mime'],'data':encoded}}
+                    for row,encoded in zip(images,image_secrets)]
+                stdin_prompt=json.dumps({'type':'user','message':{'role':'user','content':content},
+                                         'parent_tool_use_id':None},ensure_ascii=False)+'\n'
             meta.update(requested_model='claude-opus-5-5', auth_route='existing claude.ai subscription; API env removed')
             meta['context_isolation']='--safe-mode disables CLAUDE.md auto-discovery/customizations; managed policy may still apply'
             meta['auth_evidence']=_verify_auth(model,env,budget_remaining())
@@ -592,6 +706,10 @@ def run_model(model: str, effort: str, prompt: str, cwd: str | Path,
             if capability=='code':
                 args[2:2]=['--strict-config',*_code_permissions(),*_code_runtime_args(env)]
             else:args[2:2]=['--sandbox','read-only']
+            if images:
+                # The option accepts multiple values. An explicit '--' keeps
+                # the final '-' prompt out of the last image's value list.
+                args[-1:-1]=[part for row in images for part in ('--image',row['path'])]+['--']
             meta.update(requested_model='gpt-6-astra', auth_route=f'Codex {selected_account} ChatGPT, CODEX_HOME child only')
             meta['auth_evidence']=_verify_auth(model,env,budget_remaining())
         else:
@@ -619,19 +737,29 @@ def run_model(model: str, effort: str, prompt: str, cwd: str | Path,
         remaining=budget_remaining()
         if cancel_event is not None and cancel_event.is_set():
             meta['status']='cancelled'; return meta
+        if images and model=='codex':
+            # The native CLI opens paths itself; catch swaps during auth/help
+            # before handing them over. This is not an OS race-proof lock.
+            refreshed,_=_image_inputs(run,image_paths)
+            if [(r['path'],r['sha256']) for r in refreshed]!=[(r['path'],r['sha256']) for r in images]:
+                raise ValueError('Imagem mudou antes do envio ao cliente.')
+        remaining=budget_remaining()
         proc = subprocess.Popen(args,cwd=work,env=env,stdin=subprocess.PIPE,stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,text=True,encoding='utf-8',errors='replace',
             creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
         meta.update(model_called=True,pid=proc.pid if isinstance(proc.pid,int) else None,command_arguments=args,
                     model_called_evidence='Inference CLI launched; provider/model evidence is in completion metadata, if received')
+        if images:
+            meta['image_transport']['state']='cli_started'
+            for row in images:row['state']='cli_started'
         timed_out = False
         stop_reason=None
         if cancel_event is not None or capability!='textual':
-            stdout,stderr,stop_reason=_communicate(proc,None if model=='glm' else prompt,remaining,cancel_event,capability=='code')
+            stdout,stderr,stop_reason=_communicate(proc,stdin_prompt,remaining,cancel_event,capability=='code')
             timed_out=stop_reason=='timeout'
         else:
             try:
-                stdout, stderr = proc.communicate(None if model=='glm' else prompt,timeout=remaining)
+                stdout, stderr = proc.communicate(stdin_prompt,timeout=remaining)
             except subprocess.TimeoutExpired:
                 timed_out = True
                 proc.kill()
@@ -658,12 +786,13 @@ def run_model(model: str, effort: str, prompt: str, cwd: str | Path,
             if last.exists(): last.write_text(meta['text'],encoding='utf-8')
             meta['actual_model_evidence']='CLI selection gpt-6-astra; JSONL response does not echo independent model identity'
         else:
-            if capability=='research':
+            if capability=='research' or (model=='claude' and images):
                 events=_events(stdout)
                 record=next((row for row in reversed(events) if row.get('type')=='result'),{})
                 meta['tool_results'],meta['web_sources']=_tool_evidence(events,model,work,run/'stdout.log')
                 meta['tool_events']=[r['name'] for r in meta['tool_results']]
-                if any(r['kind'] not in {'web_search','web_fetch'} for r in meta['tool_results']):meta['status']='tool_policy_violation'
+                allowed_kinds={'web_search','web_fetch'} if capability=='research' else set()
+                if any(r['kind'] not in allowed_kinds for r in meta['tool_results']):meta['status']='tool_policy_violation'
                 if not record and meta['status']=='completed':meta['status']='missing_result_event'
             else:record=json.loads(stdout) if stdout.strip() else {}
             meta['session_id']=record.get('sessionId') or record.get('session_id')
@@ -692,9 +821,19 @@ def run_model(model: str, effort: str, prompt: str, cwd: str | Path,
         meta['rate_limit_detected']=_rate_limit_failure(stdout,stderr)
         if meta['rate_limit_detected'] and meta['status'] not in {'completed','cancelled','timeout'}:
             meta['status']='rate_limited_no_retry'
+    except ImageTransportUnavailable as exc:
+        meta.update(status='image_transport_unavailable',error=_redact(str(exc),secrets))
+        meta['image_transport'].update(state='unsupported',limitation=str(exc))
+        for row in images:row.update(state='unsupported',transport='unsupported')
     except Exception as exc:
         meta.update(status='error',error=_redact(f'{type(exc).__name__}: {exc}',secrets))
     finally:
+        if images:
+            submitted=meta['status']=='completed' and meta['exit_code']==0
+            meta['image_transport']['state']='submitted_to_cli' if submitted else meta['image_transport']['state']
+            for row in images:
+                row['transported']=submitted
+                if submitted:row['state']='submitted_to_cli'
         if capability=='code':
             try:meta['workspace_after']=_manifest(work)
             except Exception as exc:

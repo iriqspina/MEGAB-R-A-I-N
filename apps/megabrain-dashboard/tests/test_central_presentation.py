@@ -8,6 +8,21 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from central_presentation import PresentationQueue
 
 class PresentationTests(unittest.TestCase):
+    def test_quota_destination_is_bounded_and_receipt_matches(self):
+        with tempfile.TemporaryDirectory() as folder:
+            directory=Path(folder)
+            for ident,view,provider in [('0','javascript:evil','all'),('1','quota-account','unknown'),('1a',[],'all'),('1b','quota-account',{}),('2','quota-account','codex_gpt2')]:
+                (directory/(ident+'.json')).write_text(json.dumps({'at':time.time(),'project':'synthetic','view':view,'provider':provider}),encoding='utf-8')
+            queue=PresentationQueue(directory)
+            payload=queue.next()
+            self.assertEqual(payload['view'],'quota-account')
+            self.assertEqual(payload['provider'],'codex_gpt2')
+            self.assertEqual(payload['requestId'],'2')
+            self.assertTrue((directory/'0.invalid').exists())
+            self.assertTrue((directory/'1.invalid').exists())
+            self.assertFalse(queue.finish({'requestId':'wrong','ok':True}))
+            self.assertTrue(queue.finish({'requestId':'2','ok':True,'view':'quota-account'}))
+
     def test_invalid_request_does_not_block_and_dispatch_is_not_success(self):
         with tempfile.TemporaryDirectory() as folder:
             directory=Path(folder)

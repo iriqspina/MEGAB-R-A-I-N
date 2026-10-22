@@ -11,6 +11,7 @@ from fastapi.responses import FileResponse, JSONResponse, Response, HTMLResponse
 from central_store import Store, Conflict, WORKSPACE, PROCESS, ROOT, now, ident, read_json, validate_process
 from central_sources import Sources
 from central_routing import DEFAULT_ROUTES, validate_routing, preview, routing_document
+from central_attachments import MAX_UPLOAD_BODY, save_attachment, read_attachment, resolve_attachments, attachment_fields, normalize_feedback
 
 PRIVATE=APP/'data/.private'
 def secret_file(name):
@@ -24,8 +25,22 @@ def secret_file(name):
         except FileExistsError: pass
     return p.read_text(encoding='ascii').strip()
 
-def build_app(store=None,sources=None,remote=False):
+# 261022 (<USUARIO>: "faça só o quadro 'Ponte de correção' da central MegaBrain despachar para a ponte"):
+# a seção Ponte de correção (BridgePanel, no quadro Agora do projeto e da página inicial) leva
+# data-cf-zona="ponte-correcao" e a nota do cursor envia essa zona. Decide pela marca estrutural, não pelo
+# rótulo visível (revisão Codex 2: botões e campos da seção têm rótulo próprio; outro título igual não é a seção).
+ZONA_PONTE='ponte-correcao'
+def nota_do_quadro_ponte(comment):
+    source=comment.get('cursor_source')
+    return isinstance(source,dict) and source.get('zona')==ZONA_PONTE
+
+def build_app(store=None,sources=None,remote=False,port=8766,bridge=None):
+    # port selects the accepted local Host; scripts/isolated_server.py serves a database copy on 8768.
+    # 261018 ponte: só o app real (banco padrão, fora de instância isolada) abre sessões de IA.
+    real_store=store is None and os.environ.get('MB_ISOLATED')!='1' and os.environ.get('MB_PONTE')!='0'
     store=store or Store(); sources=sources or Sources(store)
+    from central_bridge import Ponte, PonteErro, vendors as bridge_vendors, listar_ordens, parar as bridge_stop, PASTA as BRIDGE_DIR
+    ponte=bridge or Ponte(store,sources,lancar=real_store)
     gateway=secret_file('gateway.key'); master=secret_file('native.key')
     failures={}; qr_pairs={}; auth_lock=threading.RLock()
     @asynccontextmanager
@@ -38,17 +53,25 @@ def build_app(store=None,sources=None,remote=False):
                 try:
                     await asyncio.to_thread(sources.poll)
                 except Exception: logging.getLogger('megabrain.watcher').exception('Falha ao atualizar fontes; nova tentativa em 3 segundos')
+                try:
+                    await asyncio.to_thread(ponte.tick)
+                except Exception: logging.getLogger('megabrain.watcher').exception('Falha na ponte de correção; nova tentativa em 3 segundos')
                 await asyncio.sleep(3)
         task=asyncio.create_task(watcher())
         yield
         task.cancel()
     app=FastAPI(docs_url=None,redoc_url=None,openapi_url=None,lifespan=lifespan)
-    app.state.store=store; app.state.sources=sources
+    app.state.store=store; app.state.sources=sources; app.state.ponte=ponte
     def request_identity(request,body):
         key=request.headers.get('idempotency-key')
         if key and not re.fullmatch(r'[A-Za-z0-9_-]{16,100}',key): raise ValueError('Identificador da tentativa inválido.')
         digest=hashlib.sha256(json.dumps(body,sort_keys=True,ensure_ascii=False).encode()).hexdigest()
         return key,digest
+    def comment_route(body):
+        # A escolha humana é validada antes de salvar o comentário. Ausência
+        # significa herdar o projeto; não transformar erro em outra IA.
+        from central_bridge_routing import validar_rota
+        return validar_rota(body['rota']) if body.get('rota') is not None else None
     @app.middleware('http')
     async def security(request,call_next):
         host=request.headers.get('host','')
@@ -59,7 +82,7 @@ def build_app(store=None,sources=None,remote=False):
             parsed=urlsplit(origin)
             if parsed.scheme!='https' or not parsed.netloc or parsed.path not in ('','/') or parsed.username: return JSONResponse({'detail':'Origem inválida.'},status_code=403)
         else:
-            if host not in {'127.0.0.1:8766','localhost:8766','testserver'}: return JSONResponse({'detail':'Host inválido.'},status_code=403)
+            if host not in {f'127.0.0.1:{port}',f'localhost:{port}','testserver'}: return JSONResponse({'detail':'Host inválido.'},status_code=403)
             origin='http://'+host
         request.state.origin=origin.rstrip('/')
         if request.method in {'POST','PUT','PATCH','DELETE'}:
@@ -67,12 +90,14 @@ def build_app(store=None,sources=None,remote=False):
             if supplied_origin and supplied_origin!=request.state.origin: return JSONResponse({'detail':'Origem não autorizada.'},status_code=403)
             if request.headers.get('sec-fetch-site')=='cross-site': return JSONResponse({'detail':'Requisição externa bloqueada.'},status_code=403)
             try: length=int(request.headers.get('content-length','0'))
-            except ValueError: length=9999999
-            if length>350000: return JSONResponse({'detail':'Pedido grande demais.'},status_code=413)
+            except ValueError: return JSONResponse({'detail':'Tamanho do pedido inválido.'},status_code=413)
+            upload=request.method=='POST' and re.fullmatch(r'/api/projects/[^/]+/attachments',request.url.path)
+            limit=MAX_UPLOAD_BODY if upload else 350000
+            if length<0 or length>limit: return JSONResponse({'detail':'Pedido grande demais.'},status_code=413)
             chunks=[]; size=0
             async for chunk in request.stream():
                 size+=len(chunk)
-                if size>350000: return JSONResponse({'detail':'Pedido grande demais.'},status_code=413)
+                if size>limit: return JSONResponse({'detail':'Pedido grande demais.'},status_code=413)
                 chunks.append(chunk)
             # Starlette's cached request forwards this bounded body downstream.
             request._body=b''.join(chunks)
@@ -126,19 +151,44 @@ def build_app(store=None,sources=None,remote=False):
         response.set_cookie('mb_session',token,max_age=30*86400,httponly=True,secure=remote,samesite='strict',path='/')
         return response
     @app.get('/api/session')
-    def session(request:Request): return dict(authenticated=True,csrf=request.state.session['csrf'],remote=remote,version='2.0.0')
+    def session(request:Request): return dict(authenticated=True,csrf=request.state.session['csrf'],remote=remote,version='2.0.0',central_project_id=ident(ROOT))
     @app.post('/api/logout')
     def logout(request:Request):
         store.auth_revoke(request.cookies.get('mb_session',''))
         r=JSONResponse({'ok':True}); r.delete_cookie('mb_session'); return r
     @app.get('/api/projects')
     def projects(): return sources.summaries()
+    @app.get('/api/search')
+    def search(q:str='',project:str|None=None,kind:str|None=None,scope:str='todos',cursor:str|None=None,limit:int=50):
+        # 261021 F0b · localizador: índice de metadados, sem corpo de relatório.
+        return sources.catalog.search(q,project or None,kind or None,scope,cursor or None,limit,projects=sources.summaries()['projects'])
     @app.get('/api/session-connections')
     def session_connections():
         from central_session_connections import snapshot
         return snapshot(APP, sources)
     @app.get('/api/projects/{pid}')
     def detail(pid:str): return sources.detail(pid)
+    @app.post('/api/projects/{pid}/attachments')
+    async def upload_attachment(pid:str,r:Request):
+        root=sources.root(pid);body=await r.json();key,digest=request_identity(r,body)
+        document='attachment-upload:'+pid+':'+key if key else None
+        previous=store.get(document,{}) if document else None
+        if previous and previous['revision']:
+            if previous['data'].get('digest')!=digest:raise Conflict('Esta tentativa já foi usada com outra imagem.')
+            saved,_=read_attachment(root,pid,previous['data']['id'])
+            return {'attachment':saved}
+        saved=save_attachment(root,pid,body)
+        if document:
+            try:store.put(document,0,dict(digest=digest,id=saved['id']))
+            except Conflict:
+                prior=store.get(document,{})['data']
+                if prior.get('digest')!=digest:raise Conflict('Esta tentativa já foi usada com outra imagem.')
+                saved,_=read_attachment(root,pid,prior['id'])
+        return {'attachment':saved}
+    @app.get('/api/projects/{pid}/attachments/{aid}')
+    def download_attachment(pid:str,aid:str):
+        root=sources.root(pid);saved,data=read_attachment(root,pid,aid)
+        return Response(data,media_type=saved['mime'],headers={'Content-Security-Policy':"sandbox; default-src 'none'; frame-ancestors 'self'"})
     @app.get('/api/workspace')
     def workspace(): return store.get('workspace',WORKSPACE)
     @app.get('/api/returns')
@@ -174,12 +224,63 @@ def build_app(store=None,sources=None,remote=False):
         return list_source_files(sources.root(pid))
     @app.post('/api/projects/{pid}/comments')
     async def comment(pid:str,r:Request):
-        sources.root(pid); b=await r.json(); text=str(b.get('text','')).strip()
-        if not 1<=len(text)<=6000: raise ValueError('Escreva uma nota de até 6.000 caracteres.')
-        out,created=store.create_once('comments',pid,dict(text=text,target=str(b.get('target','project'))[:180],anchor=b.get('anchor')),*request_identity(r,b))
+        root=sources.root(pid); b=await r.json(); text=b.get('text','')
+        if not isinstance(text,str):raise ValueError('Comentário inválido.')
+        text=text.strip();attachments=resolve_attachments(root,pid,b.get('anexos',[]))
+        if len(text)>6000 or (not text and not attachments): raise ValueError('Escreva uma nota de até 6.000 caracteres ou adicione uma imagem.')
+        provenance = b.get('cursor_source'); route=comment_route(b)
+        extra = attachment_fields(attachments)
+        if route is not None:extra['rota']=route
+        if isinstance(provenance,dict):
+            extra['cursor_source']={k:str(provenance[k])[:240] for k in ('note_id','storage_key','where','created_at','zona') if isinstance(provenance.get(k),str)}
+        payload=dict(text=text,target=str(b.get('target','project'))[:180],anchor=b.get('anchor'),**extra)
+        ponte.validar_destino(pid,payload)
+        # 261022 (revisão Codex 2, R5): a zona do cursor não muda o conteúdo da nota; reenvio da mesma tentativa
+        # com ou sem zona devolve o mesmo comentário em vez de 409 sem fim — inclusive recibo gravado antes desta
+        # versão (assinatura do corpo inteiro, com ou sem a única zona existente).
+        identidade=dict(b,cursor_source={k:v for k,v in provenance.items() if k!='zona'}) if isinstance(provenance,dict) else b
+        chave,assinatura=request_identity(r,identidade)
+        equivalentes={request_identity(r,b)[1]}
+        if isinstance(provenance,dict) and provenance.get('zona') in (None,ZONA_PONTE):  # R6: outra zona compara estrito
+            equivalentes.add(request_identity(r,dict(identidade,cursor_source=dict(identidade['cursor_source'],zona=ZONA_PONTE)))[1])
+        out,created=store.create_once('comments',pid,payload,chave,assinatura,equivalentes=tuple(equivalentes))
         sources.cache.pop(pid,None)
-        if created: store.event(pid,'Comentário salvo','comment')
-        return {'comment':out}
+        bridge_info=None
+        if created:
+            store.event(pid,'Comentário salvo','comment')
+            # 261020: notas do cursor no próprio app (target app:home e demais app:*) seguem a mesma ponte das
+            # respostas de relatório, sem resgate manual. Notas de quadro (module:*) ficam como antes, exceto a
+            # seção Ponte de correção (decisão do <USUARIO> em 261022); falha da ponte não perde o comentário salvo.
+            if str(out.get('target','')).startswith('app:') or route is not None or nota_do_quadro_ponte(out):
+                try:bridge_info=ponte.receber(pid,root,out)
+                except Exception as error:
+                    logging.getLogger('megabrain.ponte').exception('Ponte não recebeu o comentário')
+                    bridge_info=dict(estado='erro',mensagem=str(error)[:300])
+        return {'comment':out,'ponte':bridge_info}
+    @app.post('/api/projects/{pid}/comments/{cid}/replies')
+    async def comment_reply(pid:str,cid:str,r:Request):
+        # 261021: "comentar comentários". A resposta é um comentário próprio ligado ao original (responde_a/fio);
+        # leva o texto, as notas e o retorno do agente como contexto e segue a mesma ponte. Ordem do original
+        # ainda aberta → complemento dela; concluída → ordem nova (central_bridge._ordem_aberta_do_original).
+        root=sources.root(pid); b=await r.json(); text=b.get('text','')
+        if not isinstance(text,str) or not text.strip() or len(text.strip())>6000:raise ValueError('Escreva uma resposta de até 6.000 caracteres.')
+        with store.db() as c:row=c.execute('SELECT data FROM comments WHERE id=? AND project=?',(cid,pid)).fetchone()
+        if not row:raise KeyError('Comentário original não encontrado neste projeto.')
+        original=json.loads(row[0]);fb=original.get('feedback') if isinstance(original.get('feedback'),dict) else {}
+        contexto=dict(id=original.get('id'),at=original.get('at'),texto=str(original.get('text') or '')[:6000],onde=original.get('onde'),
+                      relatorio=original.get('source'),target=original.get('target'),correcao=str(original.get('correction') or '')[:3000] or None,
+                      notas=[dict(onde=str(n.get('onde') or '')[:240],texto=str(n.get('texto') or '')[:3000]) for n in (fb.get('notas') or [])[:30] if isinstance(n,dict) and n.get('texto')])
+        payload=dict(text=text.strip(),target='reply:'+cid,responde_a=cid,fio=original.get('fio') or cid,contexto_original=contexto)
+        out,created=store.create_once('comments',pid,payload,*request_identity(r,b))
+        sources.cache.pop(pid,None)
+        bridge_info=None
+        if created:
+            store.event(pid,'Resposta a comentário salva','comment')
+            try:bridge_info=ponte.receber(pid,root,out)
+            except Exception as error:
+                logging.getLogger('megabrain.ponte').exception('Ponte não recebeu a resposta')
+                bridge_info=dict(estado='erro',mensagem=str(error)[:300])
+        return {'comment':out,'ponte':bridge_info}
     @app.post('/api/projects/{pid}/references')
     async def reference(pid:str,r:Request):
         sources.root(pid); b=await r.json(); url=str(b.get('url','')).strip(); u=urlsplit(url)
@@ -203,16 +304,60 @@ def build_app(store=None,sources=None,remote=False):
         if not isinstance(digest,str) or not re.fullmatch(r'[a-f0-9]{64}',digest):
             raise ValueError('A versão do relatório é obrigatória.')
         return digest
+    # 261017 WP2: a IA pode regravar o relatório enquanto o <USUARIO> comenta.
+    # A versão que ele abriu continua aceita para rascunho e envio, gravada com
+    # o hash antigo e a marca versao_anterior. Só vale para versões já servidas
+    # a ESTE relatório (fid); hash de outro relatório ou nunca aberto: 409.
+    def remember_report_version(fid,digest):
+        key='report-versions:'+fid
+        for _ in range(3):
+            saved=store.get(key,{'hashes':[]})
+            hashes=[h for h in (saved['data'].get('hashes') or []) if isinstance(h,str)] if isinstance(saved['data'],dict) else []
+            if digest in hashes:return
+            try:store.put(key,saved['revision'],dict(hashes=(hashes+[digest])[-60:],at=now()));return
+            except Conflict:continue
+    def report_opened_version(fid,body):
+        wanted=report_version(body)
+        path,root,digest=report_source(fid)
+        if wanted==digest:return path,root,digest,digest
+        saved=store.get('report-versions:'+fid,{'hashes':[]})['data']
+        known=isinstance(saved,dict) and wanted in (saved.get('hashes') or [])
+        # Versões abertas antes deste registro existir deixaram rascunho.
+        if not known:known=store.get('report-draft:'+fid+':'+wanted,{})['revision']>0
+        if not known:raise HTTPException(409,'O relatório mudou. Reabra a versão atual antes de salvar sua resposta.')
+        return path,root,wanted,digest
+    @app.get('/api/reports/{fid}/note-receipts')
+    def report_note_receipts(fid:str,hash:str):
+        from central_note_receipts import note_receipts
+        path,root,digest,atual=report_opened_version(fid,dict(hash=hash))
+        return note_receipts(store,ident(root),fid,digest)
     @app.get('/api/reports/{fid}/status')
     def report_status(fid:str):
         path,root,digest=report_source(fid)
         return dict(hash=digest,modified_at=path.stat().st_mtime,title=path.name)
     @app.get('/api/reports/{fid}/view')
-    def report_view(fid:str,ticket:str):
+    async def report_view(fid:str,ticket:str):
         from central_reports import wrapper_report,view_headers
         path,root,digest=report_source(fid)
-        draft=store.get('report-draft:'+fid+':'+digest,{}).get('data',{})
-        return HTMLResponse(wrapper_report(fid,ticket,draft.get('storage',{}),digest),headers=view_headers)
+        remember_report_version(fid,digest)
+        registro=store.get('report-draft:'+fid+':'+digest,{})
+        draft=registro.get('data',{})
+        if not registro.get('revision'):
+            # Sem rascunho NESTA versão (registro inexistente — rascunho vazio
+            # gravado de propósito é respeitado e não cai aqui): recupera o
+            # rascunho mais recente deste mesmo relatório. As notas da versão
+            # anterior voltam; a âncora exata pode não existir mais, mas a
+            # posição gravada e o rótulo de onde a nota foi cravada continuam
+            # dizendo onde estava e o que significava. Rascunhos de outros
+            # relatórios não vazam: a busca é prefixada pelo fid.
+            with store.db() as c:
+                row=c.execute("SELECT data FROM documents WHERE key LIKE ? ORDER BY json_extract(data,'$.at') DESC LIMIT 1",('report-draft:'+fid+':%',)).fetchone()
+            if row:
+                candidato=json.loads(row['data']) if isinstance(row['data'],str) else row['data']
+                if isinstance(candidato.get('storage'),dict) and candidato['storage']:
+                    draft=candidato
+        from central_comment_visibility import visible_report_storage
+        return HTMLResponse(wrapper_report(fid,ticket,visible_report_storage(store,fid,draft.get('storage',{})),digest),headers=view_headers)
     @app.get('/api/reports/{fid}/render')
     def report_render(fid:str,ticket:str,version:str|None=None):
         from central_reports import render_report,render_headers
@@ -220,7 +365,7 @@ def build_app(store=None,sources=None,remote=False):
         return HTMLResponse(render_report(path,root,fid,ticket),headers=render_headers)
     @app.post('/api/reports/{fid}/draft')
     async def report_draft(fid:str,r:Request):
-        body=await r.json();path,root,digest=report_source(fid,report_version(body))
+        body=await r.json();path,root,digest,atual=report_opened_version(fid,body)
         payload=body.get('storage',{})
         storage=payload if isinstance(payload,dict) else None
         if not isinstance(storage,dict) or len(storage)>100 or len(json.dumps(storage))>128000:
@@ -228,26 +373,103 @@ def build_app(store=None,sources=None,remote=False):
         if any(not isinstance(k,str) or len(k)>250 or not isinstance(v,str) or len(v)>50000 for k,v in storage.items()):
             raise ValueError('Conteúdo de rascunho inválido.')
         key='report-draft:'+fid+':'+digest;current=store.get(key,{})
-        return store.put(key,current['revision'],dict(storage=storage,source_hash=digest,source=str(path.relative_to(root)),at=now()))
+        data=dict(storage=storage,source_hash=digest,source=str(path.relative_to(root)),at=now())
+        if digest!=atual:data.update(versao_anterior=True,hash_atual=atual)
+        return store.put(key,current['revision'],data)
     @app.post('/api/reports/{fid}/feedback')
     async def report_feedback(fid:str,r:Request):
-        body=await r.json();path,root,digest=report_source(fid,report_version(body))
-        note=body.get('note','');feedback=body.get('feedback')
+        body=await r.json();path,root,digest,atual=report_opened_version(fid,body);anterior=digest!=atual
+        note=body.get('note','');feedback=body.get('feedback');route=comment_route(body)
         if not isinstance(note,str) or len(note)>6000:raise ValueError('Comentário inválido.')
         if feedback is not None:
             if not isinstance(feedback,dict) or feedback.get('kind') not in {'notes','decisions'} or len(json.dumps(feedback))>128000:
                 raise ValueError('Resposta de relatório inválida.')
-            feedback={k:v for k,v in feedback.items() if k in {'kind','finalizado','respostas','notas','resumo_texto'}}
+            feedback={k:v for k,v in feedback.items() if k in {'kind','finalizado','respostas','notas','resumo_texto','resumo_texto_original','anexos'}}
             if feedback.get('kind')=='decisions' and feedback.get('finalizado') is not True:
                 raise ValueError('Finalize as respostas antes de enviá-las ao projeto.')
-        if not note.strip() and not feedback:raise ValueError('Escreva uma nota ou finalize suas respostas.')
+        feedback,attachments=normalize_feedback(root,ident(root),feedback,body.get('anexos',[]))
+        if feedback:
+            for item in feedback.get('notas',[]):
+                selected=comment_route(item)
+                if selected is not None:item['rota']=selected
+        if not note.strip() and not feedback and not attachments:raise ValueError('Escreva uma nota, adicione uma imagem ou finalize suas respostas.')
         choices=feedback.get('respostas',{}) if feedback else {}
         notes=feedback.get('notas',[]) if feedback else []
-        payload=dict(text=(note.strip() or 'Respostas recebidas pelo relatório')[:6000],target='file:'+fid,feedback=feedback,source=str(path.relative_to(root)),source_hash=digest,status='Recebido, aguardando correção',onde=path.name,decision_count=len(choices) if isinstance(choices,(dict,list)) else 0,note_count=len(notes) if isinstance(notes,list) else 0)
+        payload=dict(text=(note.strip() or ('' if attachments else 'Respostas recebidas pelo relatório'))[:6000],target='file:'+fid,feedback=feedback,source=str(path.relative_to(root)),source_hash=digest,status='Recebido, aguardando correção',onde=path.name,decision_count=len(choices) if isinstance(choices,(dict,list)) else 0,note_count=len(notes) if isinstance(notes,list) else 0,**attachment_fields(attachments))
+        if route is not None:payload['rota']=route
+        if anterior:payload.update(versao_anterior=True,hash_atual=atual)
+        ponte.validar_destino(ident(root),payload)
         out,created=store.create_once('comments',ident(root),payload,*request_identity(r,body))
         sources.cache.pop(ident(root),None)
-        if created:store.event(ident(root),'Resposta recebida: '+path.name,'feedback_received')
-        return {'comment':out,'status':payload['status']}
+        bridge_info=None
+        if created:
+            store.event(ident(root),'Resposta recebida: '+path.name+(' (versão anterior)' if anterior else ''),'feedback_received')
+            # 261018: o comentário segue sozinho para o planejador; falha da ponte não perde o comentário salvo.
+            try:bridge_info=ponte.receber(ident(root),root,out)
+            except Exception as error:
+                logging.getLogger('megabrain.ponte').exception('Ponte não recebeu o comentário')
+                bridge_info=dict(estado='erro',mensagem=str(error)[:300])
+        return {'comment':out,'status':payload['status'],'versao_anterior':anterior,'ponte':bridge_info}
+    def bridge_view(pid):
+        from central_bridge_routing import catalogo, presets
+        root=sources.root(pid);cfg=ponte.config(pid)
+        return dict(revision=cfg['revision'],data=cfg['data'],vendors=bridge_vendors(ponte.central),ordens=listar_ordens(root,10),
+                    catalogo=catalogo(ponte.central),presets=presets(ponte.central),
+                    lancamento=bool(ponte.lancar),pasta=str(root/BRIDGE_DIR),
+                    pendentes=ponte.pendentes_view(pid),controle=ponte._controle(pid))
+    @app.get('/api/bridge/vendors')
+    def bridge_vendor_list():return {'vendors':bridge_vendors(ponte.central)}
+    @app.get('/api/projects/{pid}/control')
+    def project_control_get(pid:str):
+        from central_project_control import read
+        sources.root(pid)
+        return dict(read(store,pid), projeto=sources.root(pid).name)
+    @app.put('/api/projects/{pid}/control')
+    async def project_control_put(pid:str,r:Request):
+        from central_project_control import save
+        sources.root(pid); b=await r.json()
+        return dict(save(store,pid,b.get('revision'),b.get('modo')), projeto=sources.root(pid).name)
+    @app.get('/api/projects/{pid}/bridge')
+    def bridge_get(pid:str):return bridge_view(pid)
+    @app.put('/api/projects/{pid}/bridge')
+    async def bridge_put(pid:str,r:Request):
+        sources.root(pid);b=await r.json()
+        ponte.salvar_config(pid,b.get('revision'),b.get('data'))
+        store.event(pid,'Ponte de correção configurada','configuration')
+        return bridge_view(pid)
+    @app.post('/api/projects/{pid}/bridge/send')
+    async def bridge_send(pid:str,r:Request):
+        root=sources.root(pid);b=await r.json()
+        result=ponte.enviar_agora(pid,root,b.get('comment_ids'),b.get('vendor'),b.get('modo'),b.get('coordenacao'),pipeline=b.get('pipeline'))
+        sources.cache.pop(pid,None)
+        return result
+    @app.post('/api/projects/{pid}/bridge/pending/discard')
+    async def bridge_discard_pending(pid:str,r:Request):
+        # 261022 Bubble: lote já atendido à mão por outra sessão sai da fila sem abrir ordem duplicada na retomada.
+        sources.root(pid);b=await r.json()
+        if not isinstance(b,dict) or not isinstance(b.get('chave'),str) or type(b.get('revisao')) is not int:
+            raise ValueError('Informe o lote e a versão vista no painel.')
+        result=ponte.descartar_pendente(pid,b['chave'],b.get('motivo',''),revisao=b['revisao'])
+        sources.cache.pop(pid,None)
+        return result
+    @app.post('/api/projects/{pid}/bridge/orders/{oid}/stop')
+    def bridge_stop_order(pid:str,oid:str):
+        root=sources.root(pid)
+        if not re.fullmatch(r'\d{6}-\d{6}-[a-f0-9]{6}',oid):raise ValueError('Ordem inválida.')
+        stopped=bridge_stop(root/BRIDGE_DIR/oid)
+        store.event(pid,f'Ponte: parada pedida na ordem {oid}','bridge',ordem=oid)
+        return {'parados':stopped}
+    @app.post('/api/dispatch/{fid}')
+    async def dispatch_terminal(fid:str,r:Request):
+        import central_dispatch
+        body=await r.json();path,root,digest=report_source(fid,report_version(body))
+        from central_project_control import check
+        check(store,ident(root))
+        central_dispatch.validar(body)
+        result=central_dispatch.dispatch(path,root,body)
+        sources.cache.pop(ident(root),None)
+        store.event(ident(root),f"Despacho pro terminal · {result['ia']} · {path.name}",'dispatch_sent')
+        return result
     def presentation(path,root):
         asset=sources.index_file(path,root)
         if not asset:raise ValueError('Arquivo não disponível para apresentação.')
@@ -306,7 +528,7 @@ def build_app(store=None,sources=None,remote=False):
             return HTMLResponse('<meta charset="utf-8"><style>body{font:16px/1.65 system-ui;background:#16151c;color:#e8e5ed;padding:24px}pre{white-space:pre-wrap;overflow-wrap:anywhere}</style><pre>'+html.escape(content)+'</pre>',headers={'Content-Security-Policy':"sandbox; default-src 'none'; style-src 'unsafe-inline'; frame-ancestors 'self'"})
         return FileResponse(p,media_type=mimetypes.guess_type(p.name)[0] or 'application/octet-stream',headers={'Content-Security-Policy':"sandbox; default-src 'none'; frame-ancestors 'self'"})
     @app.get('/api/jobs')
-    def jobs(): return {'jobs':store.listing('jobs')}
+    def jobs(project:str|None=None): return store.jobs_overview(project or None)
     @app.post('/api/jobs/{jid}/cancel')
     def cancel_job(jid:str):
         job=store.job(jid)
@@ -346,13 +568,17 @@ def build_app(store=None,sources=None,remote=False):
         return FileResponse(path,media_type=TEXT_TYPES[path.suffix.lower()],headers={'Content-Security-Policy':"sandbox; default-src 'none'; frame-ancestors 'self'"})
     @app.post('/api/projects/{pid}/jobs')
     async def create_job(pid:str,r:Request):
-        sources.root(pid); b=await r.json(); prompt=str(b.get('prompt','')).strip()
-        if not 1<=len(prompt)<=20000: raise ValueError('Escreva um pedido de até 20.000 caracteres.')
+        from central_project_control import check
+        check(store,pid)
+        root=sources.root(pid); b=await r.json(); prompt=b.get('prompt','')
+        if not isinstance(prompt,str):raise ValueError('Pedido inválido.')
+        prompt=prompt.strip();attachments=resolve_attachments(root,pid,b.get('anexos',[]))
+        if len(prompt)>20000 or (not prompt and not attachments): raise ValueError('Escreva um pedido de até 20.000 caracteres ou adicione uma imagem.')
         selected=b.get('selected_paths',[])
         if not isinstance(selected,list) or len(selected)>100 or any(not isinstance(p,str) or len(p)>500 for p in selected):raise ValueError('Seleção de arquivos inválida.')
         route_doc=routing_document(store,pid); route=preview(route_doc['data'],prompt,b.get('category'),b.get('categories'))
         validate_routing(route_doc['data'])
-        job,created=store.create_once('jobs',pid,dict(project_id=pid,title=prompt[:120],prompt=prompt,status='queued',stage='Na fila',model=None,output='',updated_at=now(),route=route,route_revision=route_doc['revision'],selected_paths=selected,execution_plan=route['execution_plan'],verification={'status':'pending','summary':'Aguardando execução e provas.'}),*request_identity(r,b))
+        job,created=store.create_once('jobs',pid,dict(project_id=pid,title=prompt[:120] or 'Pedido com imagem',prompt=prompt,status='queued',stage='Na fila',model=None,output='',updated_at=now(),route=route,route_revision=route_doc['revision'],selected_paths=selected,execution_plan=route['execution_plan'],verification={'status':'pending','summary':'Aguardando execução e provas.'},**attachment_fields(attachments)),*request_identity(r,b))
         def run():
             from central_jobs import execute
             execute(store,sources,job)
@@ -385,6 +611,23 @@ def build_app(store=None,sources=None,remote=False):
         body=await request.json()
         if not isinstance(body,dict) or 'action' not in body or set(body)-{'action','tab'}:raise ValueError('Pedido de cotas inválido.')
         return open_widget(body['action'],body.get('tab',1))
+    @app.get('/api/quotas/widget-settings')
+    def quota_settings():
+        if remote:raise HTTPException(403,'Configure o widget pelo MegaBrain deste computador.')
+        from central_quotas import widget_settings
+        return widget_settings()
+    @app.post('/api/quotas/widget-settings')
+    async def quota_settings_save(request:Request):
+        if remote:raise HTTPException(403,'Configure o widget pelo MegaBrain deste computador.')
+        from central_quotas import request_widget_settings
+        body=await request.json()
+        if not isinstance(body,dict) or set(body)!={'changes','expected_revision'}:raise ValueError('Pedido de configuração inválido.')
+        return request_widget_settings(body['changes'],body['expected_revision'])
+    @app.get('/api/quotas/widget-settings/requests/{request_id}')
+    def quota_settings_receipt(request_id:str):
+        if remote:raise HTTPException(403,'Consulte a aplicação pelo MegaBrain deste computador.')
+        from central_quotas import widget_settings_status
+        return widget_settings_status(request_id)
     @app.get('/api/connection/qr')
     def qr(r:Request):
         info=read_json(APP/'data/connection.json'); url=info.get('remote_url')

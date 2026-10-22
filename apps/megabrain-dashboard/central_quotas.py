@@ -7,6 +7,7 @@ from pathlib import Path
 import subprocess
 import threading
 import time
+import sys
 
 ROOT=Path(__file__).resolve().parents[2]
 LABELS={'codex':'Codex · conta principal','codex_gpt2':'Codex · segunda conta','claude':'Claude','zai':'Z.ai','spark':'Codex Spark','gemini_cli':'Gemini CLI','gemini_web':'Gemini','antigravity':'Antigravity'}
@@ -77,7 +78,16 @@ def quota_view(root=ROOT,now=None):
             period='5 horas' if minutes==300 else 'Semana' if minutes==10080 else f'{minutes:g} minutos' if minutes else 'Período não informado'
             if minutes and w.get('duration_is_fallback'):period+=' [ESTIMATIVA]'
             windows.append(dict(id=str(w.get('id',''))[:120],label=str(w.get('label') or w.get('id') or 'Janela')[:160],period=period,used_percent=used,remaining_percent=None if used is None else round(100-used,2),duration_minutes=minutes,resets_at=_reset(w.get('resets_at'))))
-        accounts.append(dict(id=provider,label=label,observed_at=stamp if isinstance(stamp,str) else None,age_seconds=None if age is None else round(max(0,age)),fresh=age is not None and age<=300 and any(w['used_percent'] is not None for w in windows),source=str(cached.get('source') or 'Cache do widget')[:160] if use_cache else 'Leitor local de assinatura · dados/orcamento_ia.json',windows=windows))
+        # Same allowlisted supplementary data as the widget: zero remains zero.
+        folder=str(ROOT/'apps/ia-quota-widget')
+        if folder not in sys.path:sys.path.insert(0,folder)
+        from quota_details_data import sanitize_details
+        from widget_app.observed_info import balance_evidence_sections,observed_info,observed_sections
+        detail=sanitize_details(cached.get('details'))
+        data_dir=root/'apps/ia-quota-widget/app/data'
+        sections=[{'title':title,'text':body} for title,body in balance_evidence_sections(provider,data_dir)+observed_sections(observed_info(provider,data_dir))]
+        detail['observed_sections']=sections
+        accounts.append(dict(id=provider,label=label,observed_at=stamp if isinstance(stamp,str) else None,age_seconds=None if age is None else round(max(0,age)),fresh=age is not None and age<=300 and any(w['used_percent'] is not None for w in windows),source=str(cached.get('source') or 'Cache do widget')[:160] if use_cache else 'Leitor local de assinatura · dados/orcamento_ia.json',windows=windows,details=detail,details_observed_at=cstamp if isinstance(cstamp,str) else None))
     return dict(observed_at=now.isoformat(),freshness_seconds=300,accounts=accounts,notice='Consumo compartilhado da conta. Percentual não equivale a tokens, dinheiro ou consumo deste projeto. Dados antigos permanecem identificados; reler não consulta o fornecedor.')
 
 def open_widget(action, tab=1):
@@ -93,3 +103,34 @@ def open_widget(action, tab=1):
         process=subprocess.Popen([str(executable),str(script),*(['--settings','--settings-tab',str(tab)] if action=='settings' else [])],cwd=folder,creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
         _last_launch=time.monotonic()
     return dict(status='requested',message='Pedido enviado ao Cotas IA neste computador.',pid=process.pid)
+
+
+def _settings_exchange():
+    folder=str(ROOT/'apps/ia-quota-widget')
+    if folder not in sys.path:sys.path.insert(0,folder)
+    from widget_app import settings_exchange
+    return settings_exchange
+
+
+def widget_settings():
+    return _settings_exchange().settings_view()
+
+
+def request_widget_settings(changes, expected_revision):
+    result=_settings_exchange().request_patch(changes,expected_revision)
+    ensure_widget()
+    return result
+
+
+def widget_settings_status(request_id):
+    return _settings_exchange().request_status(request_id)
+
+
+def ensure_widget():
+    """Fixed startup route: singleton guard shows an existing instance, without settings."""
+    try:return open_widget('show')
+    except ValueError as exc:
+        if 'Aguarde a janela' in str(exc):return {'status':'requested','message':'A abertura do widget já foi solicitada.'}
+        return {'status':'unavailable','message':str(exc)}
+    except OSError:
+        return {'status':'unavailable','message':'Não foi possível abrir o widget neste computador.'}

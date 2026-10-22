@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (QApplication, QDialog, QHBoxLayout, QLabel, QPush
                                QScrollArea, QSizePolicy, QToolButton, QVBoxLayout, QWidget, QProgressBar)
 
 from . import paths, theme
-from .formatting import age_label, parse_iso, reset_label
+from .formatting import age_label, friendly_window_label, parse_iso, reset_label
 from .observed_info import observed_info, observed_sections, balance_evidence_sections
 from .provider_brand import ACCOUNT_URLS, brand_pixmap, provider_name
 from .quota_focus import duration_label, focus_window, general_windows, is_reserve
@@ -111,7 +111,7 @@ class QuotaDetails(QDialog):
         self.scroll.setWidget(self.body)
         root.addWidget(self.scroll, 1)
         actions = QHBoxLayout()
-        self.refresh_button = self._button("↻ Atualizar", "Atualizar consultas visíveis · pausa existente entre consultas", self._refresh_now)
+        self.refresh_button = self._button("↻ Recarregar tudo", "Força nova consulta de TODAS as fontes agora, inclusive as que estão em pausa", self._refresh_now)
         self.refresh_button.setShortcut("F5")
         self.copy_button = self._button("⧉ Copiar", "Copiar dados exibidos, com credenciais removidas", self.copy_visible)
         self.account_button = self._button("↗ Conta", "Abrir conta oficial no navegador padrão", self.open_account)
@@ -159,7 +159,7 @@ class QuotaDetails(QDialog):
     def _refresh_now(self):
         self.owner.manual_refresh()
         self.refresh()
-        self.feedback.setText("↻ Pedido enviado · consultas respeitam a pausa existente.")
+        self.feedback.setText("↻ Recarregando tudo · todas as fontes consultadas agora, em paralelo.")
 
     def open_account(self):
         url = ACCOUNT_URLS.get(self.row_id)
@@ -241,7 +241,7 @@ class QuotaDetails(QDialog):
             reset = window.get("resets_at")
             relative = reset_label(reset) if parse_iso(reset) and parse_iso(reset).tzinfo else "renovação desconhecida"
             label.setText(
-                f"{safe_text(window.get('label') or window.get('id')) or 'Janela'}"
+                f"{friendly_window_label(window.get('label')) or safe_text(window.get('id')) or 'Janela'}"
                 + (" · ★ Destaque da faixa" if window is focus else "")
                 + (" · leitura anterior" if previous else "")
                 + f"\n◉ {detailed_percent(used)} usado · {detailed_percent(remaining)} restante"
@@ -250,7 +250,10 @@ class QuotaDetails(QDialog):
             label.setToolTip(f"Valor bruto usado: {used!r}% · restante calculado: {remaining!r}%" if used is not None else "Percentual não informado pela fonte")
         if not windows:
             self.summary.setText(self.summary.text() + "\nNenhuma janela disponível nesta leitura.")
-        extra = self._extra_text(display.get("details"))
+        from quota_details_data import resolve_resets
+        resolved=resolve_resets(display.get('details'),fetched_at=display.get('fetched_at'),stale=display.get('stale') or display.get('status')!='ok')
+        extra = self._extra_text({**(display.get('details') or {}),'resets':resolved['current']})
+        if not resolved['current'] and any(k in (display.get('details') or {}) for k in ('resets','resets_status')):extra='♻ Resets atuais: — não confirmado.\n'+extra
         self.extras.setText(("◈ Consulta automática" + (" · leitura anterior" if previous else "") + "\n" + extra) if extra else "")
         balances = balance_evidence_sections(self.row_id)
         if balances:

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GraficoPilula · demo</title>
+<style>
+body{margin:0;font-family:Inter,"Segoe UI",system-ui,sans-serif;background:#E9ECF2;color:#0D1117;padding:32px 16px}
+h1{font-size:22px;margin:0 0 4px}p{color:#3B4250;margin:0 0 24px;font-size:14px}
+.linha{display:flex;flex-wrap:wrap;gap:28px;align-items:center}
+.item{display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.item b{font-size:13px}
+.p1{width:84px;height:30px}.p2{width:210px;height:75px}
+.m .gpilula{outline:1.5px dashed rgba(124,92,255,.7);outline-offset:-1px}
+label{font-size:13px;display:inline-flex;gap:6px;align-items:center;margin-bottom:20px}
+</style>
+</head>
+<body>
+<h1>GraficoPilula · 3 estilos</h1>
+<p>Dados simulados. Tamanho real (84 × 30) e ampliado (210 × 75). Origem: Bubble, 22/10/2026.</p>
+<label><input type="checkbox" id="m"> ver máscara</label>
+<div class="linha" id="lin"></div>
+<script src="grafico-mascara-pilula.js"></script>
+<script>
+var gs = [];
+["onda", "espelho", "liquido"].forEach(function (t) {
+  var box = document.createElement("div"); box.className = "item";
+  box.innerHTML = "<b>" + t + "</b><span class='p1'></span><span class='p2'></span>";
+  document.getElementById("lin").appendChild(box);
+  box.querySelectorAll("span").forEach(function (s) { gs.push(GraficoPilula.montar(s, { tipo: t })); });
+});
+var a = 1700, b = 330;
+function tick() {
+  a = Math.max(0, a + (1750 - a) * .3 + (Math.random() - .5) * 700); b = Math.max(0, b + (330 - b) * .3 + (Math.random() - .5) * 140);
+  gs.forEach(function (g) { g.amostra({ a: a, b: b, saude: "boa", teto: 5000 }); });
+}
+tick(); setInterval(tick, 2000);
+document.getElementById("m").addEventListener("change", function (e) { document.body.classList.toggle("m", e.target.checked); });
+</script>
+</body>
+</html>

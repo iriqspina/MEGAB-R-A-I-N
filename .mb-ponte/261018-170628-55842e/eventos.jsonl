@@ -1,0 +1,39 @@
+{"at": "2026-10-18T20:06:28+00:00", "tipo": "ordem_criada", "vendor": "gpt", "comentarios": ["5cd09832c8cb411282e5195366f5aff9", "5c5f8e40508c450aa2b9f9c94a530bbf", "d2aae69c238e470faa46727864fc8ca5"]}
+{"at": "2026-10-18T20:06:29+00:00", "tipo": "no_iniciado", "no": "n0", "vendor": "gpt", "pid": 82416}
+{"at": "2026-10-18T20:08:27+00:00", "tipo": "complemento", "comentario": "coord-mapa-1708"}
+{"at": "2026-10-18T20:08:29+00:00", "tipo": "no_despachado", "no": "n1", "pai": "n0", "papel": "revisor", "vendor": "glm", "titulo": "Revisar plano de prints e mapa"}
+{"at": "2026-10-18T20:08:29+00:00", "tipo": "no_iniciado", "no": "n1", "vendor": "glm", "pid": 66500}
+{"at": "2026-10-18T20:11:07+00:00", "tipo": "no_despachado", "no": "n2", "pai": "n0", "papel": "worker", "vendor": "gpt", "titulo": "Receber e vincular prints no servidor"}
+{"at": "2026-10-18T20:11:07+00:00", "tipo": "no_iniciado", "no": "n2", "vendor": "gpt", "pid": 65804}
+{"at": "2026-10-18T20:11:08+00:00", "tipo": "no_despachado", "no": "n3", "pai": "n0", "papel": "worker", "vendor": "gpt", "titulo": "Colar e escolher prints nos campos"}
+{"at": "2026-10-18T20:11:08+00:00", "tipo": "no_iniciado", "no": "n3", "vendor": "gpt", "pid": 87072}
+{"at": "2026-10-18T20:11:09+00:00", "tipo": "no_despachado", "no": "n4", "pai": "n0", "papel": "worker", "vendor": "gpt", "titulo": "Revisar e corrigir o mapa por GPT"}
+{"at": "2026-10-18T20:11:09+00:00", "tipo": "no_iniciado", "no": "n4", "vendor": "gpt", "pid": 35980}
+{"at": "2026-10-18T20:15:06+00:00", "tipo": "no_terminou", "no": "n1", "status": "concluido", "exit_code": 0}
+{"at": "2026-10-18T20:15:16+00:00", "tipo": "complemento", "comentario": "coord-arquivos-1716"}
+{"at": "2026-10-18T20:16:12+00:00", "tipo": "complemento", "comentario": "coord-arquivos-1720"}
+{"at": "2026-10-18T20:21:14+00:00", "tipo": "no_despachado", "no": "n5", "pai": "n0", "papel": "worker", "vendor": "gpt", "titulo": "Levar prints aos clientes de IA"}
+{"at": "2026-10-18T20:21:15+00:00", "tipo": "no_iniciado", "no": "n5", "vendor": "gpt", "pid": 32968}
+{"at": "2026-10-18T20:23:36+00:00", "tipo": "no_terminou", "no": "n2", "status": "concluido", "exit_code": 0}
+{"at": "2026-10-18T20:24:19+00:00", "tipo": "no_despachado", "no": "n6", "pai": "n0", "papel": "revisor", "vendor": "glm", "titulo": "Revisar armazenamento e segurança dos prints"}
+{"at": "2026-10-18T20:24:19+00:00", "tipo": "no_iniciado", "no": "n6", "vendor": "glm", "pid": 95116}
+{"at": "2026-10-18T20:29:01+00:00", "tipo": "no_terminou", "no": "n5", "status": "concluido", "exit_code": 0}
+{"at": "2026-10-18T20:30:12+00:00", "tipo": "no_despachado", "no": "n7", "pai": "n0", "papel": "revisor", "vendor": "glm", "titulo": "Revisar campos, cursor e transporte de imagens"}
+{"at": "2026-10-18T20:30:13+00:00", "tipo": "no_iniciado", "no": "n7", "vendor": "glm", "pid": 69576}
+{"at": "2026-10-18T20:30:13+00:00", "tipo": "no_despachado", "no": "n8", "pai": "n0", "papel": "revisor", "vendor": "glm", "titulo": "Revisar mapa corrigido pelo GPT"}
+{"at": "2026-10-18T20:30:14+00:00", "tipo": "no_iniciado", "no": "n8", "vendor": "glm", "pid": 80668}
+{"at": "2026-10-18T20:34:18+00:00", "tipo": "no_terminou", "no": "n4", "status": "concluido", "exit_code": 0}
+{"at": "2026-10-18T20:34:58+00:00", "tipo": "no_terminou", "no": "n6", "status": "concluido", "exit_code": 0}
+{"at": "2026-10-18T20:35:47+00:00", "tipo": "no_terminou", "no": "n3", "status": "concluido", "exit_code": 0}
+{"at": "2026-10-18T20:42:00+00:00", "tipo": "no_terminou", "no": "n8", "status": "concluido", "exit_code": 0}
+{"at": "2026-10-18T20:42:17+00:00", "tipo": "no_terminou", "no": "n7", "status": "concluido", "exit_code": 0}
+{"at": "2026-10-18T20:43:54+00:00", "tipo": "complemento", "comentario": "coord-harness-build"}
+{"at": "2026-10-18T20:50:18+00:00", "tipo": "no_despachado", "no": "n9", "pai": "n0", "papel": "revisor", "vendor": "glm", "titulo": "Revisar recibos entre perfis e integração final"}
+{"at": "2026-10-18T20:50:19+00:00", "tipo": "no_iniciado", "no": "n9", "vendor": "glm", "pid": 91760}
+{"at": "2026-10-18T21:04:37+00:00", "tipo": "no_terminou", "no": "n9", "status": "concluido", "exit_code": 0}
+{"at": "2026-10-18T21:08:06+00:00", "tipo": "ordem_concluida", "status": "corrigido"}
+{"at": "2026-10-18T21:10:20+00:00", "tipo": "ordem_concluida", "status": "parcial"}
+{"at": "2026-10-18T21:10:20+00:00", "tipo": "no_despachado", "no": "n10", "pai": "n0", "papel": "revisor", "vendor": "glm", "titulo": "Revisar conclusão posterior da ponte"}
+{"at": "2026-10-18T21:10:21+00:00", "tipo": "no_iniciado", "no": "n10", "vendor": "glm", "pid": 65744}
+{"at": "2026-10-18T21:16:19+00:00", "tipo": "ordem_concluida", "status": "corrigido"}
+{"at": "2026-10-18T21:16:27+00:00", "tipo": "no_terminou", "no": "n10", "status": "concluido", "exit_code": 0}

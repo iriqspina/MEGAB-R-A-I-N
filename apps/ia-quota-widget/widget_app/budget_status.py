@@ -16,26 +16,16 @@ from datetime import datetime, timezone
 from typing import Any
 
 from . import paths
+from json_io import update_json
 
 
-def write(provider: str, pacing: dict[str, Any]) -> None:
+def write(provider: str, pacing: dict[str, Any]) -> bool:
     path = paths.BUDGET_STATUS_PATH
     try:
-        current: dict[str, Any] = {}
-        if path.exists():
-            try:
-                current = json.loads(path.read_text(encoding="utf-8"))
-            except (json.JSONDecodeError, OSError):
-                current = {}
-        if not isinstance(current, dict):
-            current = {}
-        current[provider] = {
-            "pacing": pacing,
-            "updated_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
-        }
-        path.parent.mkdir(parents=True, exist_ok=True)
-        tmp = path.with_name(path.name + "." + uuid.uuid4().hex + ".tmp")
-        tmp.write_text(json.dumps(current, ensure_ascii=False, indent=2), encoding="utf-8")
-        os.replace(tmp, path)
+        def merge(current):
+            current[provider]={'pacing':pacing,'updated_at':datetime.now(timezone.utc).replace(microsecond=0).isoformat()}
+            return current
+        update_json(path,merge)
+        return True
     except Exception:
-        pass
+        return False

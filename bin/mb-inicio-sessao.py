@@ -115,7 +115,10 @@ def resumo(root: Path = CENTRAL, visual: bool = False, caso_visual: str | None =
             "percentuais; custo estimado não é custo medido. Registre rota, prova e reavaliação. "
             "Se o trabalho é visual, rode --visual e aplique o protocolo por formato: "
             "decisão humana, fato observado e inferência separados; compare renders e registre "
-            "resultado/evidência por critério antes de declarar aprovação técnica."
+            "resultado/evidência por critério antes de declarar aprovação técnica. "
+            "Relatórios novos ou regenerados: leia /relatorios-glm; GLM principal MAX compõe e corrige, "
+            "Codex/Claude revisam fontes e pixels e podem criar modelos finalizados. Exceção só crédito "
+            "extremo comprovado sem reset útil; validar bin/mb-relatorios-glm.py. Evitar Claude MAX e ultracode."
         ),
     }
 
@@ -138,6 +141,24 @@ def conectar_app(project: Path, application: str | None = None,
                               session_id=session_id, hook=hook, no_open=no_open, source="mb-inicio-sessao")
     except (OSError, ValueError, AttributeError, ImportError):
         return {"presentation_state": "unavailable", "error": "session_registration_unavailable"}
+
+
+def auditar_relatorios(project: Path) -> dict:
+    """Fiscalização mecânica da sessão; não despacha IA nem retoma tarefas."""
+    helper = CENTRAL / "bin/mb-auditar-relatorios-glm.py"
+    if not helper.is_file():
+        return {"status": "NAO_MEDIDO", "reason": "monitor ausente"}
+    try:
+        spec = importlib.util.spec_from_file_location("mb_startup_report_audit", helper)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        result = module.audit(project=project)
+        rows = [row for item in result["projects"] for row in item["reports"]]
+        return {"status": "observado", "changed": result["changed"],
+                "reports": len(rows), "blocked": sum(bool(row.get("blocked")) for row in rows),
+                "model_calls": 0, "queue": str(project / ".automations/relatorios-glm/fila-correcao.json")}
+    except (OSError, ValueError, ImportError, AttributeError, KeyError) as exc:
+        return {"status": "NAO_MEDIDO", "reason": str(exc), "model_calls": 0}
 
 
 def projeto_sessao(path: Path) -> Path:
@@ -173,6 +194,7 @@ def main(argv: list[str] | None = None) -> int:
     data["conexao_app"] = conectar_app(projeto_sessao(Path(args.project or hook.get("cwd") or os.getcwd())),
                                       args.application or hook.get("application", hook.get("aplicacao")),
                                       args.session_id, args.no_app, hook)
+    data["auditoria_relatorios"] = auditar_relatorios(projeto_sessao(Path(args.project or hook.get("cwd") or os.getcwd())))
     if args.json:
         print(json.dumps(data, ensure_ascii=False, indent=2))
         return 0 if data["pronto"] and "erro" not in data["aprendizado_visual"] else 2

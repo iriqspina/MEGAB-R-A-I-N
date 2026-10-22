@@ -1,0 +1,6 @@
+TL;DR — **Nó n2 executado: backend implementado e 101 testes aprovados**, sem falhas ou testes pulados.
+
+1. Resumo gravado em [resultado.md](<<MEGABRAIN_ROOT>/.mb-ponte/261018-170628-55842e/nos/n2/resultado.md>).
+2. Contrato, hashes, backups e provas registrados em [resultado.json](<<MEGABRAIN_ROOT>/evidence/261018_ponte-orquestradores/backend/resultado.json>).
+3. Integração no aplicativo, transporte visual aos modelos, revisão GLM final e reinício permanecem com n0. Nenhuma IA real ou banco de produção foi acionado pelos testes.
+

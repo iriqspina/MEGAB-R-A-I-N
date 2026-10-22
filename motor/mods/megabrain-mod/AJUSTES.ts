@@ -102,7 +102,11 @@ export const AJUSTES: Ajustes = {
   // 'bloquear'  = recusa sempre; o Claude tem que te pedir no chat e você
   //               roda (ex.: pelo 11_enviar-pro-github.cmd).
   // 'desligado' = não vigia nada.
-  guardaComandos: 'perguntar',
+  // 261016 — <USUARIO> pediu Claude livre, sem caixa de autorização ("não
+  // posso ficar clicando... ser livre q nem os outros"). Reinícios/matar
+  // processo já eram autorização permanente (261015). Voltar atrás:
+  // troque 'desligado' por 'perguntar' (ou 'bloquear' pra trava dura).
+  guardaComandos: 'desligado',
 
   // Se um comando tiver estas palavras, nesta ordem, a guarda age.
   // Vale pro terminal do Claude e pro Desktop Commander.

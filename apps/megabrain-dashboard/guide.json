@@ -16,12 +16,13 @@
     },
     {
       "id": "tutorial-mesa",
-      "title": "Minha mesa: a visão geral",
+      "title": "Meu painel: a visão geral",
       "summary": "O logo e Meu espaço levam à página principal, com projetos e retornos recentes.",
       "items": [
-        "🏠 Clique em um projeto da barra ou arraste-o para abrir embaixo. A página principal permite manter projetos e pedidos juntos.",
-        "↔️ Use Lado a lado para comparar os painéis abertos. A mesa guarda tamanho e posição.",
-        "🔎 Buscar na mesa, ou Ctrl K, encontra projetos e entregas. Abra o item encontrado para trazer seu contexto.",
+        "🏠 Clique em um card para abrir no painel; clique outra vez para fechar. Arrastar abre e mantém os demais visíveis.",
+        "🧩 Adicionar ao painel oferece módulos do projeto, relatórios, sessões e cotas. Os cards usam dados reais, sem iniciar pedidos.",
+        "↔️ Mova pelo título e puxe bordas ou cantos para ajustar tamanho. A seleção e a disposição ficam salvas ao retornar.",
+        "🔎 Buscar no painel, ou Ctrl K, encontra projetos e entregas. Abra o item encontrado para trazer seu contexto.",
         "🕓 Confira a data e a origem de cada resultado; uma atualização do catálogo não muda a data do documento."
       ],
       "image_file": "apps/megabrain-dashboard/web/public/tutorial/261014_mesa.svg"
@@ -33,7 +34,7 @@
       "items": [
         "📁 Coloque seus projetos ao lado da pasta MegaBrain, com ESTADO.md, MEGABRAIN ou 00_PARA-VOCE. A descoberta atual não cadastra automaticamente pastas fora desse conjunto.",
         "🧭 Agora resume o contexto; Resultados abre as entregas; Atividade mostra pedidos, etapas e registros.",
-        "🗂️ Arquivos ficam no projeto de origem. A biblioteca permite colocá-los na mesa sem criar uma cópia do acervo.",
+        "🗂️ Arquivos ficam no projeto de origem. A biblioteca permite colocá-los no painel sem criar uma cópia do acervo.",
         "🔄 Use Módulos do projeto → Atualizar dados para reler a fonte. Sem estado registrado, o app informa a lacuna."
       ],
       "image_file": "apps/megabrain-dashboard/web/public/tutorial/261014_projetos.svg"
@@ -101,10 +102,10 @@
     {
       "id": "tutorial-relatorios",
       "title": "Relatórios: abrir e comparar",
-      "summary": "HTML, imagens e outros arquivos compatíveis abrem na mesa com origem e contexto.",
+      "summary": "HTML, imagens e outros arquivos compatíveis abrem no painel com origem e contexto.",
       "items": [
-        "📚 Resultados ou Todos os retornos → relatório. Na biblioteca, use + ou arraste o arquivo para a mesa.",
-        "↔️ Adicionar resposta e referências permite comparar documentos. Organizar janelas ajusta ordem, largura e altura; recolher não apaga o original.",
+        "📚 Resultados ou Todos os retornos → relatório. Na biblioteca, use + ou arraste o arquivo para o painel.",
+        "↔️ Adicionar resposta e referências permite comparar documentos. Mover pelo título e puxar bordas ou cantos ajusta ordem, largura e altura; recolher mantém o editor aberto.",
         "📝 HTML compatível conserva sua aparência e recursos locais. Uma versão nova oferece Abrir versão nova para proteger o rascunho anterior.",
         "📦 HTML interativo: até 64 MB; recursos locais até 8 MB por arquivo e 40 MB no conjunto. Recursos de rede indisponíveis na prévia precisam ser incluídos localmente."
       ],
@@ -116,7 +117,7 @@
       "summary": "Adicione fontes e coloque uma referência junto do resultado que você está avaliando.",
       "items": [
         "🔗 Referências → Adicionar link. Informe um endereço completo com https:// e um título claro.",
-        "🖼️ Biblioteca → Referências mostra as fontes indexadas; o botão + coloca o item na mesa.",
+        "🖼️ Biblioteca → Referências mostra as fontes indexadas; o botão + coloca o item no painel.",
         "↔️ Abra referência e resultado juntos para avaliar recorte, composição e conteúdo sem trocar de contexto.",
         "🧾 Confira origem e autoria. Imagem de exemplo ou anúncio encontrado não comprova venda, demanda ou aprovação."
       ],
@@ -196,22 +197,22 @@
     },
     {
       "id": "tutorial-organizar",
-      "title": "Organizar: espaço e posição",
-      "summary": "Mova o que você usa para perto; mantenha referências e resultados visíveis juntos.",
+      "title": "Painel: mover e ajustar tamanho",
+      "summary": "A organização fica disponível diretamente nos títulos, bordas e cantos de cada janela.",
       "items": [
-        "🧩 No projeto, Organizar libera ajustes pelo título e controles de tamanho. Concluir organização volta à leitura.",
-        "📚 Módulos do projeto mostra ou oculta cada área. Restaurar organização recupera a disposição inicial.",
-        "↔️ Em respostas, Organizar janelas permite mover pelo título e redimensionar pela borda; botões oferecem a mesma alternativa.",
-        "💾 A mesa salva automaticamente. Se houver conflito com outro dispositivo, preserve o rascunho e escolha qual versão recarregar."
+        "🖱️ Segure o título para mover. Puxe bordas ou cantos para mudar largura e altura; o cursor indica a direção.",
+        "🧩 Adicionar ao painel abre ou fecha cada módulo por um clique. Módulos do projeto mostra ou oculta áreas; fechar conserva a posição.",
+        "↔️ As janelas de resposta também movem pelo título. No celular, ajuste altura pela borda inferior e use os botões para mudar a ordem.",
+        "💾 A organização salva sozinha ao soltar. Em conflito com outro dispositivo, preserve o rascunho e escolha a versão para recarregar."
       ],
       "image_file": "apps/megabrain-dashboard/web/public/tutorial/261014_organizar.svg"
     },
     {
       "id": "tutorial-tema",
       "title": "Aparência e acesso rápido",
-      "summary": "Minha mesa ajusta o tema, a barra de projetos e o espaço entre os elementos.",
+      "summary": "Meu painel ajusta o tema, a barra de projetos e o espaço entre os elementos.",
       "items": [
-        "🎨 Minha mesa → Tema escolhe Claro ou Escuro. A aparência do HTML original permanece no próprio documento.",
+        "🎨 Meu painel → Tema escolhe Claro ou Escuro. A aparência do HTML original permanece no próprio documento.",
         "📐 Barra de projetos pode ficar nos lados, em cima ou embaixo; escolha Expandida, Só ícones ou Oculta.",
         "🧭 Mostrar projetos traz a barra de volta. Espaços entre elementos muda o intervalo, mantendo texto e botões.",
         "⚙️ Acesso rápido reúne Cotas de IA, Processo do projeto, Levar no celular e Configurações. Restaurar aparência recupera a configuração inicial."
@@ -244,8 +245,8 @@
     },
     {
       "id": "tutorial-backup",
-      "title": "Backup: preserve fontes e dados da mesa",
-      "summary": "Salvar a mesa e preservar os arquivos do projeto são tarefas diferentes.",
+      "title": "Backup: preserve fontes e dados do painel",
+      "summary": "Salvar o painel e preservar os arquivos do projeto são tarefas diferentes.",
       "items": [
         "💾 O banco apps/megabrain-dashboard/data/central.sqlite3 guarda dados da central. A pasta data também pode conter configuração privada; mantenha a cópia protegida.",
         "📁 Faça backup dos projetos, relatórios e recursos originais. O catálogo aponta para arquivos; não guarda uma cópia integral deles.",

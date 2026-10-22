@@ -1,0 +1,25 @@
+{
+  "id": "n9",
+  "pai": "n0",
+  "papel": "revisor",
+  "vendor": "glm",
+  "titulo": "Revisar recibos entre perfis e integração final",
+  "profundidade": 1,
+  "status": "concluido",
+  "criado_em": "2026-10-18T20:50:18+00:00",
+  "timeout": 10800,
+  "modo": "segundo_plano",
+  "inicio": "2026-10-18T20:50:19+00:00",
+  "pid": 91760,
+  "supervisor_pid": 77432,
+  "comando": [
+    "C:\\Program Files\\nodejs\\node.EXE",
+    "C:\\Users\\<USUARIO>\\AppData\\Roaming\\npm\\node_modules\\zcode-app-cli\\bin\\zcode.js",
+    "--prompt",
+    "<prompt curto>",
+    "--cwd",
+    "S:\\projetos multi i.a\\MEGA B R A I  N"
+  ],
+  "fim": "2026-10-18T21:04:37+00:00",
+  "exit_code": 0
+}

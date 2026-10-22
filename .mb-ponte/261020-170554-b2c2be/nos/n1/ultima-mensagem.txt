@@ -1,0 +1,6 @@
+**TL;DR — Execução do nó n1 registrada em [resultado.md](<<MEGABRAIN_ROOT>/.mb-ponte/261020-170554-b2c2be/nos/n1/resultado.md>).**
+
+Implementei os controles de aguardar, pausar e retomar, com testes e capturas em 1440 e 390 px. O projeto ficou **aguardando retorno**, com despacho automático desligado.
+
+O resumo contém arquivos, provas e limites: falha preexistente da suíte, apresentação nativa sem confirmação visual de primeiro plano e gateway remoto ainda não publicado. Não concluí a ordem-raiz; a revisão independente permanece com n0.
+

@@ -31,7 +31,9 @@ nos 2 temas + contraste computado + rede).
 ## Elementos obrigatórios · v1.3 · 261010 (pedido do <USUARIO>)
 
 "Lembre-se disso como elemento necessário principal e recrie para os relatórios megabrain dos projetos."
-1. **Ferramentas do cursor** em todo relatório POP: segurar 2 s → menu em leque → Comentar. Os geradores
+1. **Ferramentas do cursor** em todo relatório POP: segurar o clique 0,4 s parado (mover cancela; era 2 s até
+   261017; valor vigente em `motor/modelos/interacoes/261010_cursor-ferramentas/cursor-ferramentas.js`)
+   → menu em leque → Comentar. Os geradores
    inserem via `mb_pop_tema.html_interacoes()`; HTML à mão via `bin/mb-interacoes.py`; o template
    `260914_pop/relatorio-pop.html` já traz o bloco entre as marcas `mb-interacoes`.
 2. **Decisões respondíveis** quando o relatório pede decisão: caixas por pergunta, recomendação marcada,

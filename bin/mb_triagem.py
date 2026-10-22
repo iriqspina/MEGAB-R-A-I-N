@@ -76,6 +76,11 @@ def destino_local(projeto,nome):
     root=Path(projeto).resolve();p=(root/'dados'/nome).resolve()
     if not p.is_relative_to(root): raise ValueError('Destino de dados sai do projeto: '+str(p))
     return p
+def destino_log(projeto,nome):
+    """Telemetria vai para <projeto>/.mb-log/ (ignorada pelo git), nunca para dados/ (versionada)."""
+    root=Path(projeto).resolve();p=(root/'.mb-log'/nome).resolve()
+    if not p.is_relative_to(root): raise ValueError('Destino de log sai do projeto: '+str(p))
+    return p
 def config_path(projeto): return destino_local(projeto,'preferencias-megabrain.json')
 def ler_config(projeto):
     p=config_path(projeto)
@@ -106,10 +111,12 @@ def instrucao(resultado):
             +'Destinos: link com caminho absoluto verificado e pasta completa copiável; não prometer botão que o chat não oferece.')
 
 def registrar_observacao(projeto, resultado, agente='desconhecido'):
-    """Metadados limitados; não guarda pedido, resposta, segredo nem hash do pedido."""
+    """Metadados limitados; não guarda pedido, resposta, segredo nem hash do pedido.
+    H8 (261017): grava em <projeto>/.mb-log/triagem-observacoes.json (não versionado);
+    o arquivo antigo em dados/ não é lido nem apagado por aqui."""
     import mb_trava as t
     import mb_utils as u
-    p=destino_local(projeto,'triagem-observacoes.json')
+    p=destino_log(projeto,'triagem-observacoes.json')
     with t.travado(p,agente=t.agente_script('mb-triagem-observacao'),motivo='Registrar somente rota e contadores'):
         doc=json.loads(p.read_text(encoding='utf-8-sig')) if p.exists() else {'schema_version':1,'total':0,'por_rota':{},'recentes':[]}
         if not isinstance(doc,dict) or doc.get('schema_version')!=1: raise ValueError('Registro de observações inválido')

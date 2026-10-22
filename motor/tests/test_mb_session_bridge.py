@@ -56,7 +56,7 @@ class SessionBridgeTests(unittest.TestCase):
         self.assertEqual(row, persisted)
         self.assertEqual(row["error"], "native_launcher_unavailable")
         self.assertNotIn("sensitive-session-value", json.dumps(row))
-        self.assertEqual(row["application"], "desconhecido")
+        self.assertEqual(row["application"], "Invocação avulsa")
         self.assertEqual(len(row["id"]), 24)
         self.assertTrue(row["started_at"].endswith("+00:00"))
 
