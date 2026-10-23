@@ -98,6 +98,28 @@
         "human_approval": "NAO_MEDIDO",
         "approval_scope": "Rejeicao registrada por evidencia; nao inferir autoria humana"
       }
+    },
+    {
+      "id": "rejected-cf66c61c598bff2d",
+      "artifact_sha256": "cf66c61c598bff2d3b65b6c5d33a41e554e906c612c34d231c35285d226d9de1",
+      "status": "rejected",
+      "rejection": {
+        "artifact_sha256": "cf66c61c598bff2d3b65b6c5d33a41e554e906c612c34d231c35285d226d9de1",
+        "status": "rejected",
+        "reason": "Candidato do ciclo 4 superseded antes da revisao: fragment-1 sem titulo h2; producao-2 certificada corrige e entra como novo ciclo",
+        "evidence": [
+          {
+            "path": "evidence\\261023_contador-online\\revogacao-ciclo4.json",
+            "sha256": "fa9ea63d9f0bb83b925f9caf7176592da4263a6158253cb22db2015563a9bc85"
+          }
+        ],
+        "at": "2026-10-23T05:01:43.106449+00:00",
+        "source_project": "S:\\projetos multi i.a\\Vira",
+        "source_report": "00_PARA-VOCE\\261017_vira-lancamento\\VIRA-LANCAMENTO.html",
+        "source_manifest": "S:\\projetos multi i.a\\Vira\\evidence\\261021_lancamento-web\\manifest.json",
+        "human_approval": "NAO_MEDIDO",
+        "approval_scope": "Rejeicao registrada por evidencia; nao inferir autoria humana"
+      }
     }
   ],
   "promoted": [
@@ -200,6 +222,23 @@
       "source_project": "S:\\projetos multi i.a\\Bubble",
       "source_report": "00_PARA-VOCE\\07_Referencia-Discord\\261015_DISCORD-ANATOMIA.html",
       "source_manifest": "S:\\projetos multi i.a\\Bubble\\evidence\\261022_analise-discord-bug\\manifest.json",
+      "human_approval": "NAO_MEDIDO",
+      "approval_scope": "Rejeicao registrada por evidencia; nao inferir autoria humana"
+    },
+    {
+      "artifact_sha256": "cf66c61c598bff2d3b65b6c5d33a41e554e906c612c34d231c35285d226d9de1",
+      "status": "rejected",
+      "reason": "Candidato do ciclo 4 superseded antes da revisao: fragment-1 sem titulo h2; producao-2 certificada corrige e entra como novo ciclo",
+      "evidence": [
+        {
+          "path": "evidence\\261023_contador-online\\revogacao-ciclo4.json",
+          "sha256": "fa9ea63d9f0bb83b925f9caf7176592da4263a6158253cb22db2015563a9bc85"
+        }
+      ],
+      "at": "2026-10-23T05:01:43.106449+00:00",
+      "source_project": "S:\\projetos multi i.a\\Vira",
+      "source_report": "00_PARA-VOCE\\261017_vira-lancamento\\VIRA-LANCAMENTO.html",
+      "source_manifest": "S:\\projetos multi i.a\\Vira\\evidence\\261021_lancamento-web\\manifest.json",
       "human_approval": "NAO_MEDIDO",
       "approval_scope": "Rejeicao registrada por evidencia; nao inferir autoria humana"
     }

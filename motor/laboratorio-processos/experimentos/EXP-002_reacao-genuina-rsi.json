@@ -1,0 +1,85 @@
+{
+ "id": "EXP-002",
+ "titulo": "Skill reacao-genuina com ciclo de casos (RSI): analisar layout pela reação pré-racional e otimizar por casos registrados",
+ "nivel": "micro",
+ "origem": "memoria/cerebro/raw/261022_pedido-skill-reacao-genuina.md (pedido do <USUARIO> na sessão ZCode do Bubble, 22/10/2026: skill que aprenda em modo sistemático equivalente a RSI, refine continuamente até estável; não usar sempre e em tudo)",
+ "hipotese": "Se toda análise de layout/interação for guiada pelos princípios da skill reacao-genuina e registrar caso com métricas de percepção + reação humana literal, então as propostas passam a acertar a escolha do <USUARIO> na 1ª tentativa com mais frequência que a linha de base (impressão sem método), e os princípios convergem (≤1 ajuste a cada 3 casos após o 3º caso).",
+ "dinamica": {
+  "versao": "v1",
+  "passos": [
+   "1. Gate: é layout/overlay/controle/fluxo interativo? Se não, não usa a skill",
+   "2. Rodar o checklist de 9 perguntas na ordem do olhar",
+   "3. Propor mudança com métricas antes→depois (frases obrigatórias, área de alvo, feedback pré-clique, estados por imagem)",
+   "4. Registrar caso em motor/skills/reacao-genuina/casos/ com previsão e reação humana pendente",
+   "5. Coletar reação literal do <USUARIO> (decisões respondíveis) e fechar o caso",
+   "6. Lição confirma/contradiz princípio → versionar princípio (negativo preservado)",
+   "7. Promover/reverter pela regra do lab (2 rodadas ou 1 + aprovação); estabilidade = 3 casos sem mudança de princípio"
+  ],
+  "metodo": "motor/skills/reacao-genuina/SKILL.md"
+ },
+ "caso_base": "linha de base nova (proposições anteriores de layout no Bubble foram por impressão e discussão direta, sem casos/métricas)",
+ "metricas": [
+  {"id": "M1", "nome": "casos registrados por rodada", "como_medir": "contagem de arquivos em motor/skills/reacao-genuina/casos/ criados na rodada", "fonte": "disco central", "meta": "≥1"},
+  {"id": "M2", "nome": "casos com reação humana literal coletada", "como_medir": "campo 'reação humana' preenchido com fala/registro do <USUARIO> ÷ casos fechados", "fonte": "caso + respostas das decisões respondíveis", "meta": "100% dos fechados"},
+  {"id": "M3", "nome": "ajustes de princípio por 3 casos (após o 3º)", "como_medir": "contagem de versões de princípios (v1→v2…) por janela de 3 casos", "fonte": "SKILL.md (histórico de versões)", "meta": "≤1 [ESTIMATIVA]"},
+  {"id": "M4", "nome": "aprovação direta do <USUARIO> (escolha/acordo na 1ª resposta)", "como_medir": "respostas.json das decisões respondíveis sem contra-ordem textual ÷ casos decididos", "fonte": "respostas.json + chat", "meta": "≥60% [ESTIMATIVA]"},
+  {"id": "M5", "nome": "regressões (aprovado em proposta, rejeitado em produção)", "como_medir": "proposta aprovada que gerou quebra/retirada no código após implementar", "fonte": "git do projeto + casos", "meta": "0"},
+  {"id": "M6", "nome": "defeitos de percepção apontados pela revisão independente", "como_medir": "contagem por classe (render, legibilidade, overflow, decisão não renderizada) por rodada", "fonte": "parecer do revisor (este arquivo, campo revisor)", "meta": "decrescer entre rodadas"},
+  {"id": "M7", "nome": "uso indevido da skill (fora do gate)", "como_medir": "auditoria de casos: aplicação em texto de estado/documento/decisão de negócio", "fonte": "casos registrados", "meta": "0"},
+  {"id": "M8", "nome": "custo", "como_medir": "minutos de relógio e chamadas por fornecedor na rodada", "fonte": "sessão + registro do coordenador", "meta": "registrar"}
+ ],
+ "rodadas": [
+  {
+   "data": "2026-10-22",
+   "projeto": "<PROJETOS_ROOT>/Bubble",
+   "ordem": "sessão ZCode 261022 (noite)",
+   "valores": {
+    "M1_casos": 1,
+    "M2_reacao_humana": "PENDENTE (decisões respondíveis entregues no relatório da tarefa)",
+    "M3_ajustes_principio": 0,
+    "M4_aprovacao_direta": "NAO_MEDIDO",
+    "M5_regressoes": 0,
+    "M6_defeitos_revisao": {
+     "rodada_r1_parecer": "1ª passagem NÃO APROVADO (2 críticos + 6 menores); 2ª passagem APROVADO após correção; 390 verificado por medição CDP real",
+     "rodada_r1_classes": ["componente não embutido", "bug de escopo JS", "evidência não cobre fim da página", "contradição rodapé×EXP", "legibilidade SVG 390px", "campo formato incompleto"]
+    },
+    "M7_uso_indevido": 0,
+    "m390_emulacao_real": {"vw": 390, "fig_svg_px": 640, "page_scrollWidth": 390},
+    "prev_caso_001": {
+     "frases_obrigatorias": "1 → 0",
+     "area_alvo": "~15% → ~70%",
+     "feedback_pre_clique": "rótulo → hover"
+    }
+   },
+   "custo": {
+    "minutos": 55,
+    "chamadas": "1 produtor GLM (ZCode MAX, sessão única) + 2 passagens do revisor independente megabrain-reviewer (ZCode)",
+    "cota": "snapshot não coletado nesta rodada — NAO_MEDIDO"
+   },
+   "provas": [
+    "<PROJETOS_ROOT>/Bubble/00_PARA-VOCE/10_Design-thinking/261022_REACAO-GENUINA-OVERLAY.html",
+    "<PROJETOS_ROOT>/Bubble/evidence/261022_reacao-genuina/ (prints 1440 fatiados + 390)",
+    "<MEGABRAIN_ROOT>/motor/skills/reacao-genuina/SKILL.md",
+    "<MEGABRAIN_ROOT>/motor/skills/reacao-genuina/casos/caso-001-bubble-overlay-261022.md"
+   ]
+  }
+ ],
+ "revisor": "megabrain-reviewer (ZCode), independente do produtor. 1ª passagem: NÃO APROVADO — decisões respondíveis sem motor embutido no HTML (o injetor mb-interacoes só embute cursor/agrupamento) e script de espera com ReferenceError; 6 menores. Correções aplicadas pelo produtor (motor v1.2 embutido inline, retry corrigido, media query 390 com scroll horizontal, prints regenerados com virtual-time, JSON completado). 2ª passagem: APROVADO — 4 caixas de decisão renderizadas com recomendação pré-marcada, fatias 1440 cobrem o documento inteiro, sem quebra visual pela injeção; ressalva menor (evidência 390 sem viewport real) fechada na sequência por medição CDP com emulação real 390px: vw=390, svg=.fig com 640px (media query ativa) e scrollW da página=390 (sem overflow horizontal). Prova: evidence/261022_reacao-genuina/relatorio-390-emulado.png + cap390.cjs.",
+ "decisao": {
+  "estado": "ajustar",
+  "motivo": "v1 recém-criada; hipótese não testada sem reação humana e sem 2ª rodada",
+  "alternativa_descartada": "promover v1 já como referência (sem caso fechado)"
+ },
+ "aprendizados": [
+  "mb-interacoes.py embute cursor-ferramentas e agrupamento, mas NÃO o motor decisoes-respondiveis: HTML à mão com decisões precisa embutir motor/modelos/interacoes/261010_decisoes-respondiveis/decisoes-respondiveis.js inline antes do consumidor (falha da rodada 1, corrigida).",
+  "Screenshot headless de página com JS assíncrono precisa de --virtual-time-budget, senão a prova mostra componente 'vazio' que na realidade renderiza (falsa evidência de defeito).",
+  "Caminho relativo em --screenshot do Chrome headless falha com 'Acesso negado' neste ambiente; usar caminho absoluto Windows."
+ ],
+ "humano": null,
+ "gate_relatorios_glm": {
+  "estado": "CANDIDATO_PREVIA",
+  "motivo": "mb-abrir-entrega bloqueou a entrega formal (sem manifesto GLM no ledger). Apresentado com --preview (candidato explícito, pendências preservadas). A revisão interna megabrain-reviewer (ZCode/GLM) não satisfaz o gate, que exige revisor codex/claude/human com sessão real distinta.",
+  "proximo_passo": "Após as 4 decisões respondíveis do <USUARIO> (que alteram o relatório — produzir o exemplar formal antes seria produzir duas vezes): ciclo 1 do ledger = produção do fragmento substantivo via wrapper apps/megabrain-dashboard/model_clients.py (GLM MAX real, result.json preservado) + integração mecânica POP/cursor + revisão Codex (6 critérios + findings) + inspeção 1440/390 escala 1 + verify + deliver. Sem forjar result.json."
+ },
+ "reversao": "Skill é aditiva (não muda pipeline existente); reverter = não usar a skill e arquivar casos como histórico. Nenhum código do Bubble foi alterado nesta rodada (planejamento apenas)."
+}
